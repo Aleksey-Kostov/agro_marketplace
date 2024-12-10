@@ -1,3 +1,9 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import BuyerItems
+from ..sellers.admin import SellerItemsAdmin
+
+
+@admin.register(BuyerItems)
+class BuyerItemsAdmin(SellerItemsAdmin):
+    pass
