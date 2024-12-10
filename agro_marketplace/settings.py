@@ -28,7 +28,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [config('DJANGO_HOST', default='agro_marketplace.azurewebsites.net')]
 
 # Application definition
 
@@ -129,6 +129,15 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": config(
+            "STATICFILES_STORAGE_BACKEND",
+            default="whitenoise.storage.CompressedManifestStaticFilesStorage"
+        ),
+    },
+}
 # STORAGES = {
 #     # ...
 #     "staticfiles": {
