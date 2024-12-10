@@ -1,0 +1,80 @@
+{% load static %}
+{% load message_tags %}
+
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            <i class="fas fa-plus-circle"></i> Add
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="{% url 'create_seller' %}"><i class="fas fa-dollar-sign"></i>
+                                Sell</a>
+                            <a class="dropdown-item" href="{% url 'create-buyer' %}"><i
+                                    class="fas fa-shopping-cart"></i> Buy</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'message-inbox' %}">
+                            <i class="fas fa-envelope"></i> Messages
+                            {% unread_message_count user as unread_count %}
+                            {% if unread_count > 0 %}
+                                <span class="badge bg-danger text-white">{{ unread_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" id="profileDropdown" role="button" data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            <i class="fas fa-user-circle"></i> Profile
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="profileDropdown">
+                            <a class="dropdown-item" href="{% url 'profile-edit' user.pk %}"><i
+                                    class="fas fa-user-edit"></i> Edit Profile</a>
+                            <a class="dropdown-item" href="{% url 'profile-details' user.pk %}"><i
+                                    class="fas fa-info-circle"></i> Info Profile</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </li>
+                    <li class="nav-item">
+                        {% if user.profile.profile_photo %}
+                            <img src="{{ user.profile.profile_photo.url }}" alt="Profile Picture"
+                                 class="profile-picture">
+                        {% else %}
+                            <img src="{% static 'images/profile_picture.webp' %}" alt="Profile Picture"
+                                 class="profile-picture">
+                        {% endif %}
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}"><i class="fas fa-user-plus"></i> Register</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+{% if user.is_authenticated %}
+    <div class="welcome-container text-end shadow-sm rounded p-3">
+        <div class="welcome-text">
+            <!-- Displaying the logged-in user's name -->
+            Welcome, <span class="user-name">{{ user.profile.full_name|default:user.username }}</span>
+        </div>
+        <div id="currentDateTime" class="current-date-time"></div>
+    </div>
+{% endif %}
+

@@ -1,0 +1,41 @@
+{% extends 'common/base.html' %}
+{% block content %}
+    <main class="container my-4">
+        <div class="mailbox-container">
+            <div class="col-12 text-center">
+                <!-- Back Button -->
+                <a href="{% url 'message-inbox' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+
+            <!-- Message Box -->
+            <div class="message-box">
+                <h3>{{ message.title }}</h3>
+
+                <!-- Sender Information -->
+                <div class="sender-info">
+                    <span><strong>From:</strong> {{ message.sender.profile.username_in_marketplace }}</span>
+                    <span><strong>To:</strong> {{ message.recipient.profile.username_in_marketplace }}</span>
+                    <span><strong>Date:</strong> {{ message.timestamp|date:"d F, Y H:i" }}</span>
+                </div>
+
+                <!-- Message Content -->
+                <div class="message-content ">
+                    <p>{{ message.body|safe|linebreaksbr }}</p>
+                </div>
+
+                <!-- Reply Button -->
+                <div class="button-group d-flex justify-content-start">
+                    <a href="{% url 'reply-message' message.pk %}" class="custom-button replay-button me-2">
+                        <i class="fas fa-reply"></i> Reply
+                    </a>
+                    <a href="{% url 'delete-message' message.pk %}" class="custom-button delete"
+                       onclick="deleteMessage(this)">
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

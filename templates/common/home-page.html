@@ -1,0 +1,75 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+    <!-- Main Content -->
+    <main class="container my-4">
+        <section class="statistics bg-light p-4 rounded my-4">
+            <h3>Platform Statistics</h3>
+            <p>Here’s a quick look at the current growth of Agro Marketplace.</p>
+            
+            <div class="statistic d-flex justify-content-between">
+                <div class="stat-item text-center">
+                    <h4>1,500</h4>
+                    <p>Sellers Active on the Platform</p>
+                </div>
+                <div class="stat-item text-center">
+                    <h4>3,200</h4>
+                    <p>Buyers Active on the Platform</p>
+                </div>
+                <div class="stat-item text-center">
+                    <h4>120</h4>
+                    <p>All Agro Products</p>
+                </div>
+            </div>
+            <p class="pt-3">Don't have an account? <a href="#" class="text-primary">Register here</a></p>
+        </section>
+        <h2>Latest News in Agriculture</h2>
+        
+        <!-- News Item 1 -->
+        <div class="news-item d-flex my-3">
+            <div class="news-image">
+                <img src="https://storage.googleapis.com/jm-gcp-bethestory-p-12po-bucket/uploads/2023/09/sustainable-agriculture.jpg" alt="Farm Technology 1" class="img-fluid">
+            </div>
+            <div class="news-content ms-4">
+                <h4>Innovative Farming Practices: The Future of Agriculture</h4>
+                <p>New farming technologies are revolutionizing the way crops are cultivated, making agriculture more efficient and sustainable. <strong>Innovative farming practices</strong> such as precision agriculture are leading to increased productivity and reduced environmental impact.</p>
+            </div>
+        </div>
+    
+        <!-- News Item 2 -->
+        <div class="news-item d-flex my-3">
+            <div class="news-image">
+                <img src="https://www.shutterstock.com/image-photo/drone-shot-tractor-spraying-lush-600nw-2464594961.jpg" alt="Farm Technology 1" class="img-fluid">
+            </div>
+            <div class="news-content ms-4">
+                <h4>Smart Farming: How Technology is Transforming Agriculture</h4>
+                <p>From drones to AI-powered tractors, technology is changing the way we farm. These advancements are helping farmers optimize their operations, reduce costs, and increase yields.</p>
+            </div>
+        </div>
+        
+        <!-- News Item 3 -->
+        <div class="news-item d-flex my-3">
+            <div class="news-image">
+                <img src="https://assets.weforum.org/article/image/GA8VNP2I6YbZ_S-WqfOegwL4LJvhQ3CakkfJBOJOEJY.jpg" alt="Agriculture News 2" class="img-fluid">
+            </div>
+            <div class="news-content ms-4">
+                <h4>Climate Change and Agriculture: Adapting for the Future</h4>
+                <p>As climate change accelerates, agriculture is facing new challenges. Farmers must adopt climate-resilient strategies to cope with extreme weather patterns and ensure food security for future generations.</p>
+            </div>
+        </div>
+    
+        <!-- News Item 4 -->
+        <div class="news-item d-flex my-3">
+            <div class="news-image">
+                <img src="https://images.newscientist.com/wp-content/uploads/2022/04/06130427/SEI_89824138.jpg?crop=16:9,smart&width=1200&height=675&upscale=true" alt="Sustainability in Farming" class="img-fluid">
+            </div>
+            <div class="news-content ms-4">
+                <h4>Sustainable Agriculture: The Key to Long-Term Food Security</h4>
+                <p>Sustainable farming practices are crucial for maintaining healthy soils, reducing environmental impact, and ensuring food security. Learn about the best practices that are shaping the future of farming.</p>
+            </div>
+        </div>
+    
+    </main>
+    <!-- Footer -->
+{% endblock %}

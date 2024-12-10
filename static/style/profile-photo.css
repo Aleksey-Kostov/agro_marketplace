@@ -1,0 +1,146 @@
+.profile-photo-container {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #ddd;
+}
+
+.profile-photo-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upload-overlay {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    text-align: center;
+    color: white;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.upload-overlay i {
+    font-size: 1.5em;
+}
+
+.details {
+    margin: 0 10rem;
+}
+
+.details2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.text-details {
+    background-color: rgba(201, 187, 187, 0.9);
+    border-radius: 8px;
+}
+
+.info-profile {
+    display: flex;
+    width: 500px;
+    justify-content: center;
+    align-items: center;
+}
+
+.info-profile-text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.picture-details {
+    width: 100px;
+    height: 100px;
+}
+
+/**/
+
+/* Profile photo container */
+.profile-photo-container {
+    text-align: center; /* Center all content within the container */
+    margin-bottom: 1rem;
+}
+
+/* Profile photo preview styling */
+.profile-photo-preview {
+    max-width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem; /* Space between photo and button */
+}
+
+
+/**/
+
+.profile-picture {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.profile-photo-container {
+    position: relative;
+    display: inline-block;
+    width: 150px; /* Size of the circular container */
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 20px; /* Space between photo and form */
+}
+
+.profile-photo-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures the image fills the container */
+    border-radius: 50%; /* Makes the image circular */
+}
+
+.profile-photo-container .upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.profile-photo-container:hover .upload-overlay {
+    opacity: 1;
+}
+
+.profile-photo-container input[type="file"] {
+    opacity: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}

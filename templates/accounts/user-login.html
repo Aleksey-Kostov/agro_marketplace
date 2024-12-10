@@ -1,0 +1,46 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+<main class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center mb-4">Login to Agro Marketplace</h2>
+            <form method="POST" action="{% url 'login' %}" class="p-4 border rounded">
+                {% csrf_token %}
+                <!-- Username field -->
+                <div class="mb-3">
+                    {{ form.username.label_tag }}
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.username.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Password field -->
+                <div class="mb-3">
+                    {{ form.password.label_tag }}
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.password.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary mt-3">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </div>
+
+                <p class="text-center mt-3">
+                    Don't have an account? <a href="{% url 'register' %}" class="text-primary">Register here</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}

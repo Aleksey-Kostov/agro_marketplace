@@ -1,0 +1,147 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+    <main class="container my-4">
+        <section class="edit-profile">
+            <h2>Edit Profile</h2>
+            <form action="{% url 'profile-edit' request.user.pk %}" method="POST" enctype="multipart/form-data"
+                  class="row g-3">
+                {% csrf_token %}
+
+                <!-- Profile Photo -->
+                <div class="col-md-12 mb-3 text-center">
+                    {% if form.profile_photo.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.profile_photo.errors }}
+                        </div>
+                    {% endif %}
+                    <div class="profile-photo-container">
+                        <img src="
+                                
+                                {% if form.profile_photo.value %}{{ form.profile_photo.value.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
+                             alt="Profile Photo" id="profile-img-preview" class="profile-preview-img">
+                        <div class="upload-overlay">
+                            <i class="fas fa-camera"></i>
+                            <input type="file" id="id_profile_photo" name="profile_photo" class="profile-photo-input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full Name -->
+                <div class="col-md-6 mb-3">
+                    {{ form.full_name.label_tag }}
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.full_name.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Username in Agro Marketplace -->
+                <div class="col-md-6 mb-3">
+                    {{ form.username_in_marketplace.label_tag }}
+                    {{ form.username_in_marketplace }}
+                    {% if form.username_in_marketplace.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.username_in_marketplace.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Email -->
+                <div class="col-md-6 mb-3">
+                    {{ form.email.label_tag }}
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.email.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Country Code and Phone -->
+
+
+                <div class="col-md-2">
+                    {{ form.country_code.label_tag }}
+                    {{ form.country_code }}
+                    {% if form.country_code.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.country_code.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    {{ form.phone.label_tag }}
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.phone.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                       
+                
+
+                <!-- Town -->
+                <div class="col-md-6 mb-3">
+                    {{ form.town.label_tag }}
+                    {{ form.town }}
+                    {% if form.town.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.town.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                 <div class="col-md-6 mb-3">
+                    {{ form.description.label_tag }}
+                    {{ form.description }}
+                     {% if form.description.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.description.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-12">
+                    <h3>Change Password</h3>
+                </div>
+                <!-- New Password -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        {{ form.new_password.label_tag }}
+                        {{ form.new_password }}
+                        {% if form.new_password.errors %}
+                            <div class="alert alert-danger">
+                                {{ form.new_password.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form.confirm_password.label_tag }}
+                        {{ form.confirm_password }}
+                        {% if form.confirm_password.errors %}
+                            <div class="alert alert-danger">
+                                {{ form.confirm_password.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Save Changes Button -->
+                <div class="col-12 text-center">
+                    <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+                </div>
+
+                <!-- Back Button -->
+                <div class="col-12">
+                    <a href="{% url 'dash' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </form>
+        </section>
+    </main>
+{% endblock %}

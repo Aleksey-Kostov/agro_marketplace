@@ -1,0 +1,236 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+    <main class="container my-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <h2 class="text-center mb-4">Buy in Agro Marketplace</h2>
+                    <form action="{% url 'create-buyer' %}" method="POST" class="p-4 border rounded"
+                          enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <!-- Title Field -->
+                        <div class="mb-3">
+                            {{ buyer_form.title.label_tag }}
+                            {{ buyer_form.title }}
+                            {% if buyer_form.title.errors %}
+                                <div class="alert alert-danger">
+                                    {{ buyer_form.title.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <!-- Category Field -->
+                        <div class="mb-3">
+                            {{ buyer_form.category.label_tag }}
+                            {{ buyer_form.category }}
+                            {% if buyer_form.category.errors %}
+                                <div class="alert alert-danger">
+                                    {{ buyer_form.category.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <!-- Location Field with Icon -->
+                        {{ buyer_form.location.label_tag }}
+                        <div class="mb-3 d-flex align-items-center">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                {{ buyer_form.location }}
+                                {% if buyer_form.location.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ buyer_form.location.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- Description Field -->
+                        <div class="mb-3">
+                            {{ buyer_form.description.label_tag }}
+                            {{ buyer_form.description }}
+                            {% if buyer_form.description.errors %}
+                                <div class="alert alert-danger">
+                                    {{ buyer_form.description.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="photo-framework">
+                            <label for="id_photo_1">
+                                {% if buyer_form.photo_1.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ buyer_form.photo_1.errors }}
+                                    </div>
+                                {% endif %}
+                                {{ buyer_form.photo_1.label_tag }}</label>
+                            <div class="photo-container">
+                                <img
+                                        id="photoPreview1"
+                                        src="{% static 'images/default products2.jpg' %}"
+                                        alt="Photo 1"
+                                        class="photo-preview"
+                                />
+                                {{ buyer_form.photo_1 }}
+                                <button
+                                        type="button"
+                                        class="btn btn-primary upload-button"
+                                        onclick="document.getElementById('id_photo_1').click();"
+                                >
+                                    Upload Photo 1
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="photo-framework">
+                            <label for="id_photo_2">
+                                {% if buyer_form.photo_2.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ buyer_form.photo_2.errors }}
+                                    </div>
+                                {% endif %}
+                                {{ buyer_form.photo_2.label_tag }}</label>
+                            <div class="photo-container">
+                                <img
+                                        id="photoPreview2"
+                                        src="{% static 'images/default products2.jpg' %}"
+                                        alt="Photo 2"
+                                        class="photo-preview"
+                                />
+                                {{ buyer_form.photo_2 }}
+                                <button
+                                        type="button"
+                                        class="btn btn-primary upload-button"
+                                        onclick="document.getElementById('id_photo_2').click();"
+                                >
+                                    Upload Photo 2
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="photo-framework">
+                            <label for="id_photo_3">
+                                {% if buyer_form.photo_3.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ buyer_form.photo_3.errors }}
+                                    </div>
+                                {% endif %}
+                                {{ buyer_form.photo_3.label_tag }}</label>
+                            <div class="photo-container">
+                                <img
+                                        id="photoPreview3"
+                                        src="{% static 'images/default products2.jpg' %}"
+                                        alt="Photo 3"
+                                        class="photo-preview"
+                                />
+                                {{ buyer_form.photo_3 }}
+                                <button
+                                        type="button"
+                                        class="btn btn-primary upload-button"
+                                        onclick="document.getElementById('id_photo_3').click();"
+                                >
+                                    Upload Photo 3
+                                </button>
+                            </div>
+                        </div>
+                        <div class="photo-framework">
+                            <label for="id_photo_4">
+                                {% if buyer_form.photo_4.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ buyer_form.photo_4.errors }}
+                                    </div>
+                                {% endif %}
+                                {{ buyer_form.photo_4.label_tag }}</label>
+                            <div class="photo-container">
+                                <img id="photoPreview4" src="{% static 'images/default products2.jpg' %}" alt="Photo 4"
+                                     class="photo-preview"/>
+                                {{ buyer_form.photo_4 }}
+                                <button type="button" class="btn btn-primary upload-button"
+                                        onclick="document.getElementById('id_photo_4').click();">
+                                    Upload Photo 4
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Phone for Contacts -->
+                        <div class="mb-3">
+                            {{ buyer_form.phone.label_tag }}
+                            {{ buyer_form.phone }}
+                            {% if buyer_form.phone.errors %}
+                                <div class="alert alert-danger">
+                                    {{ buyer_form.phone.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex">
+                            <div class="col-md-6">
+                                {{ buyer_form.quantity.label_tag }}
+                                {{ buyer_form.quantity }}
+                                {% if buyer_form.quantity.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ buyer_form.quantity.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ buyer_form.unit_of_measure.label_tag }}
+                                {{ buyer_form.unit_of_measure }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ buyer_form.price_type.label_tag }}
+                            {{ buyer_form.price_type }}
+                            {% if buyer_form.price_type.errors %}
+                                <div class="alert alert-danger">
+                                    {{ buyer_form.price_type.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div id="pricePerUnitContainer" class="form-group" style="display: none;">
+                            <div class="text-danger">
+                                {{ buyer_form.price_per_unit.errors }}
+                            </div>
+                            <div class="d-flex">
+                                <div class="col-md-6">
+                                    {{ buyer_form.price_per_unit.label_tag }}
+                                    {{ buyer_form.price_per_unit }}
+                                    {% if buyer_form.price_per_unit.errors %}
+                                        <div class="alert alert-danger">
+                                            {{ buyer_form.price_per_unit.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ buyer_form.currency.label_tag }}
+                                    {{ buyer_form.currency }}
+                                </div>
+                            </div>
+                        </div>
+                        <div id="priceAllQuantityContainer" class="form-group" style="display: none;">
+                            <div class="d-flex">
+                                <div class="col-md-6">
+                                    {{ buyer_form.price_all_quantity.label_tag }}
+                                    {{ buyer_form.price_all_quantity }}
+                                    {% if buyer_form.price_all_quantity.errors %}
+                                        <div class="alert alert-danger">
+                                            {{ buyer_form.price_all_quantity.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ buyer_form.currency.label_tag }}
+                                    {{ buyer_form.currency }}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                        </div>
+                        <a href="#" class="btn btn-secondary" onclick="goBack()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

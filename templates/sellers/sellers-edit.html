@@ -1,0 +1,235 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+
+    <main class="container my-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <h2 class="text-center mb-4">Edit sell in Agro Marketplace</h2>
+                    <form action="{% url 'edit-seller' form.instance.pk %}" method="POST" class="p-4 border rounded"
+                          enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <!-- Title Field -->
+                        <div class="mb-3">
+                            {{ form.title.label_tag }}
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.title.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                       
+                        <div class="mb-3">
+                            {{ form.category.label_tag }}
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.category.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <!-- Location Field with Icon -->
+                        {{ form.location.label_tag }}
+                        <div class="mb-3 d-flex align-items-center">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                {{ form.location }}
+                                {% if form.location.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ form.location.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- Description Field -->
+                        <div class="mb-3">
+                            {{ form.description.label_tag }}
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.description.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="photo-framework">
+                            <label for="id_photo_1">
+                                {% if form.photo_1.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ form.photo_1.errors }}
+                                    </div>
+                                {% endif %}
+                                {{ form.photo_1.label_tag }}</label>
+                            <div class="photo-container">
+                                <img
+                                        id="photoPreview1"
+                                        src="{% static 'images/default products2.jpg' %}"
+                                        alt="Photo 1"
+                                        class="photo-preview"
+                                />
+                                {{ form.photo_1 }}
+                                <button
+                                        type="button"
+                                        class="btn btn-primary upload-button"
+                                        onclick="document.getElementById('id_photo_1').click();"
+                                >
+                                    Upload Photo 1
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="photo-framework">
+                            <label for="id_photo_2">
+                                {% if form.photo_2.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ form.photo_2.errors }}
+                                    </div>
+                                {% endif %}
+                                {{ form.photo_2.label_tag }}</label>
+                            <div class="photo-container">
+                                <img
+                                        id="photoPreview2"
+                                        src="{% static 'images/default products2.jpg' %}"
+                                        alt="Photo 2"
+                                        class="photo-preview"
+                                />
+                                {{ form.photo_2 }}
+                                <button
+                                        type="button"
+                                        class="btn btn-primary upload-button"
+                                        onclick="document.getElementById('id_photo_2').click();"
+                                >
+                                    Upload Photo 2
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="photo-framework">
+                            <label for="id_photo_3">
+                                {% if form.photo_3.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ form.photo_3.errors }}
+                                    </div>
+                                {% endif %}
+                                {{ form.photo_3.label_tag }}</label>
+                            <div class="photo-container">
+                                <img
+                                        id="photoPreview3"
+                                        src="{% static 'images/default products2.jpg' %}"
+                                        alt="Photo 3"
+                                        class="photo-preview"
+                                />
+                                {{ form.photo_3 }}
+                                <button
+                                        type="button"
+                                        class="btn btn-primary upload-button"
+                                        onclick="document.getElementById('id_photo_3').click();"
+                                >
+                                    Upload Photo 3
+                                </button>
+                            </div>
+                        </div>
+                        <div class="photo-framework">
+                            <label for="id_photo_4">
+                                {% if form.photo_4.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ form.photo_4.errors }}
+                                    </div>
+                                {% endif %}
+                                {{ form.photo_4.label_tag }}</label>
+                            <div class="photo-container">
+                                <img id="photoPreview4" src="{% static 'images/default products2.jpg' %}" alt="Photo 4"
+                                     class="photo-preview"/>
+                                {{ form.photo_4 }}
+                                <button type="button" class="btn btn-primary upload-button"
+                                        onclick="document.getElementById('id_photo_4').click();">
+                                    Upload Photo 4
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Phone for Contacts -->
+                        <div class="mb-3">
+                            {{ form.phone.label_tag }}
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.phone.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex">
+                            <div class="col-md-6">
+                                {{ form.quantity.label_tag }}
+                                {{ form.quantity }}
+                                {% if form.quantity.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ form.quantity.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.unit_of_measure.label_tag }}
+                                {{ form.unit_of_measure }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.price_type.label_tag }}
+                            {{ form.price_type }}
+                            {% if form.price_type.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.price_type.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div id="pricePerUnitContainer" class="form-group" style="display: none;">
+                            <div class="d-flex">
+                                <div class="col-md-6">
+                                    {{ form.price_per_unit.label_tag }}
+                                    {{ form.price_per_unit }}
+                                    {% if form.price_per_unit.errors %}
+                                        <div class="alert alert-danger">
+                                            {{ form.price_per_unit.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.currency.label_tag }}
+                                    {{ form.currency }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="priceAllQuantityContainer" class="form-group" style="display: none;">
+                            <div class="d-flex">
+                                <div class="col-md-6">
+                                    {{ form.price_all_quantity.label_tag }}
+                                    {{ form.price_all_quantity }}
+                                    {% if form.price_all_quantity.errors %}
+                                        <div class="alert alert-danger">
+                                            {{ form.price_all_quantity.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.currency.label_tag }}
+                                    {{ form.currency }}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Submit Button -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success">Save Changes</button>
+                        </div>
+                        <a href="#" class="btn btn-secondary" onclick="goBack()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

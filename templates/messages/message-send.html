@@ -1,0 +1,90 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+    <main class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h2 class="text-center mb-4">Send Message</h2>
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Message Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Sender -->
+                            <div class="col-12 d-flex align-items-center mb-3">
+                                <span class="me-2">
+                                    <i class="fas fa-user-circle text-warning"></i>
+                                </span>
+                                <div class="d-flex flex-grow-1 justify-content-between">
+                                    <span class="detail-label">
+                                        <strong>Sender:</strong>
+                                    </span>
+                                    <span class="ms-3">{{ user.profile.username_in_marketplace }}</span>
+                                </div>
+                            </div>
+                            <!-- Recipient -->
+                            <div class="col-12 d-flex align-items-center mb-3">
+                                <span class="me-2">
+                                    <i class="fas fa-user text-primary"></i>
+                                </span>
+                                <div class="d-flex flex-grow-1 justify-content-between">
+                                    <span class="detail-label">
+                                         <strong>Recipient:</strong>
+                                    </span>
+                                    <span class="ms-3">{{ recipient.profile.username_in_marketplace }}</span>
+                                </div>
+                            </div>
+                            <!-- Product -->
+                            <div class="col-12 d-flex align-items-center mb-3">
+                                <span class="me-2">
+                                    <i class="fas fa-box text-success"></i>
+                                </span>
+                                <div class="d-flex flex-grow-1 justify-content-between">
+                                    <span class="detail-label">
+                                        <strong>Product:</strong>
+                                    </span>
+                                    <span class="ms-3">{{ product.title }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    <!-- Message Form -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Compose Your Message</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="" method="POST" class="p-3">
+                            {% csrf_token %}
+
+                            <!-- Title Field -->
+                            <div class="mb-3">
+                                <label for="id_title" class="form-label">Title</label>
+                                {{ form.title }} <!-- Render the title field -->
+                            </div>
+
+                            <!-- Message Field -->
+                            <div class="mb-3">
+                                <label for="id_message" class="form-label">Message</label>
+                                {{ form.body }}
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary mt-3 w-50">Send Message</button>
+                            </div>
+                            <div class="text-center mt-3">
+                                <button onclick="goBack()" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

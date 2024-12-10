@@ -1,0 +1,108 @@
+{% extends 'common/base.html' %}
+{% load static %}
+{% load message_tags_inbox %}
+
+{% block content %}
+    <!-- Main Content -->
+    <main class="container my-5">
+        <!-- Profile Info Section -->
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6 profile-container">
+                <h2 class="text-center mb-4"><i class="fas fa-user-circle"></i> Profile Information</h2>
+                <div class="card shadow-lg p-4 info-profile">
+                    <!-- Back Button -->
+                    <div class="text-center mb-4">
+                        <a href="{% url 'dash' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </div>
+
+                    <!-- Profile Picture -->
+                    <div class="col-12 mb-4 text-center">
+                        <div class="profile-photo-container">
+                            <img src="
+                                    
+                                    {% if form.profile_photo.value %}{{ form.profile_photo.value.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
+                                 class="img-fluid rounded-circle border border-3 border-secondary"
+                                 alt="Profile Picture">
+                        </div>
+                    </div>
+
+                    <!-- Profile Details -->
+                    <div class="mb-3 text-center">
+                        <h5><i class="fas fa-user"></i> Full Name:</h5>
+                        <p>{{ user.profile.full_name }}</p>
+                    </div>
+                    <div class="mb-3 text-center">
+                        <h5><i class="fas fa-tag"></i> Name in Agro Marketplace:</h5>
+                        <p>{{ user.profile.username_in_marketplace }}</p>
+                    </div>
+                    <div class="mb-3 text-center">
+                        <h5><i class="fas fa-pencil-alt"></i> Description:</h5>
+                        <p>{{ user.profile.description }}</p>
+                    </div>
+
+                    <div class="d-flex flex-wrap justify-content-around text-center mb-4">
+                        <!-- Email -->
+                        <div class="col-12 col-md-5 mb-3">
+                            <h5><i class="fas fa-envelope"></i> Email:</h5>
+                            <p>{{ user.email }}</p>
+                        </div>
+                        <!-- Country Code and Phone -->
+                        <div class="col-12 col-md-5 mb-3">
+                            <h5><i class="fas fa-phone"></i> Phone:</h5>
+                            <p>{{ user.profile.country_code }} {{ user.profile.phone }}</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap justify-content-around text-center mb-4">
+                        <!-- Location -->
+                        <div class="col-12 col-md-5 mb-3">
+                            <h5><i class="fas fa-map-marker-alt"></i> Location:</h5>
+                            <p>{{ user.profile.town }}</p>
+                        </div>
+                        <!-- Messages -->
+                        <div class="col-12 col-md-5 mb-3">
+                            <h5><i class="fas fa-comments"></i> Messages:</h5>
+                            {% message_counts request.user as message_counts %}
+                            <p>{{ message_counts.all_count }} Total Messages</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap justify-content-around text-center mb-4">
+                        <!-- Sell Ads -->
+                        <div class="col-12 col-md-5 mb-3">
+                            <h5><i class="fas fa-archive"></i> Sell Ads:</h5>
+                            <p>{{ active_seller_items.count }} Active Ads</p>
+                        </div>
+                        <!-- Buy Ads -->
+                        <div class="col-12 col-md-5 mb-3">
+                            <h5><i class="fas fa-shopping-cart"></i> Buy Ads:</h5>
+                            <p>{{ active_buyer_items.count }} Active Ads</p>
+                        </div>
+                    </div>
+                    <!-- Active and Inactive Listings -->
+                    <div class="d-flex justify-content-center text-center mt-4 gap-2">
+                        <div class="col-6">
+                            <a href="{% url 'active-listings' profile.pk %}" class="btn btn-primary w-100">
+                                <i class="fas fa-check-circle"></i> Active Listings
+                            </a>
+                        </div>
+                        <div class="col-6 ml-2">
+                            <a href="{% url 'inactive-listings' profile.pk %}" class="btn btn-secondary w-100">
+                                <i class="fas fa-times-circle"></i> Inactive Listings
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Delete Account Button -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'profile-delete' profile.pk %}" class="btn btn-danger w-100">
+                            <i class="fas fa-trash-alt"></i> Delete Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

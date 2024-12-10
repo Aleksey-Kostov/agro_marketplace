@@ -1,0 +1,127 @@
+{% extends 'common/base.html' %}
+{% load static %}
+{% load message_tags_inbox %}
+
+{% block content %}
+    <main class="container">
+        <div class="mailbox-container">
+            <!-- Back Button -->
+            <div class="col-12 text-center mb-3">
+                <a href="{% url 'dash' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+
+            <!-- Inbox Header with Filtering -->
+            <div class="mailbox-header d-flex justify-content-around mb-4">
+                <!-- Unread -->
+                <a href="{% url 'message-inbox' %}?filter=unread" class="text-decoration-none" title="Unread Messages">
+                    <i class="fas fa-envelope text-primary" style="font-size: 1.5rem;"></i>
+                    <p class="small text-muted mt-1">
+                        Unread
+                        <span class="badge bg-primary text-white">
+                            {% message_counts user as counts %}
+                            {{ counts.unread_count }}
+                        </span>
+                    </p>
+                </a>
+
+                <!-- Inbox -->
+                <a href="{% url 'message-inbox' %}?filter=inbox" class="text-decoration-none" title="Inbox">
+                    <i class="fas fa-inbox text-secondary" style="font-size: 1.5rem;"></i>
+                    <p class="small text-muted mt-1">
+                        Inbox
+                        <span class="badge bg-secondary text-white">
+                            {% message_counts user as counts %}
+                            {{ counts.inbox_count }}
+                        </span>
+                    </p>
+                </a>
+
+                <!-- Sent -->
+                <a href="{% url 'message-inbox' %}?filter=sent" class="text-decoration-none" title="Sent Messages">
+                    <i class="fas fa-paper-plane text-info" style="font-size: 1.5rem;"></i>
+                    <p class="small text-muted mt-1">
+                        Sent
+                        <span class="badge bg-info text-white">
+                            {% message_counts user as counts %}
+                            {{ counts.sent_count }}
+                        </span>
+                    </p>
+                </a>
+
+                <!-- All -->
+                <a href="{% url 'message-inbox' %}?filter=all" class="text-decoration-none" title="All Messages">
+                    <i class="fas fa-envelope-open-text text-success" style="font-size: 1.5rem;"></i>
+                    <p class="small text-muted mt-1">
+                        All
+                        <span class="badge bg-success text-white">
+                            {% message_counts user as counts %}
+                            {{ counts.all_count }}
+                        </span>
+                    </p>
+                </a>
+            </div>
+
+            <!-- Message List -->
+            <div class="message-box" id="inbox">
+                <h2>
+                    {% if filter_type == 'unread' %}
+                        <i class="fas fa-envelope"></i> Unread Messages
+                    {% elif filter_type == 'sent' %}
+                        <i class="fas fa-paper-plane"></i> Sent Messages
+                    {% elif filter_type == 'all' %}
+                        <i class="fas fa-envelope-open-text"></i> All Messages
+                    {% else %}
+                        <i class="fas fa-inbox"></i> Inbox
+                    {% endif %}
+                </h2>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="message-card {% message_read_status message request.user %}"
+                             data-status="{% message_read_status message request.user %}">
+                            <a href="{% url 'read-message' message.pk %}" class="message-content text-decoration-none">
+                                <div class="message-title">{{ message.title }}</div>
+                                <div class="message-meta">
+                                    <div><strong>From:</strong> {{ message.sender.profile.username_in_marketplace }}</div>
+                                    <div><strong>To:</strong> {{ message.recipient.profile.username_in_marketplace }}</div>
+                                    <div><strong>Date:</strong> {{ message.timestamp|date:"d F, Y H:i" }}</div>
+                                </div>
+                                <div class="message-excerpt">
+                                    {{ message.body|safe|linebreaksbr|truncatewords:20|default:"(No content available)" }}
+                                </div>
+                                <div class="custom-button d-flex">
+                                    <a href="{% url 'reply-message' message.pk %}" class="custom-button reply">
+                                        <i class="fas fa-reply"></i> Reply
+                                    </a>
+                                    <a href="{% url 'delete-message' message.pk %}" class="custom-button delete"
+                                       onclick="deleteMessage(this)">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </a>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+
+                    <!-- Pagination -->
+                    <div class="pagination mt-3 mb-3 d-flex justify-content-center">
+                        {% if messages.has_previous %}
+                            <a href="?page={{ messages.previous_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
+                               class="btn-outline-secondary">Previous</a>
+                        {% endif %}
+                        <span class="mx-2">Page {{ messages.number }} of {{ messages.paginator.num_pages }}</span>
+                        {% if messages.has_next %}
+                            <a href="?page={{ messages.next_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
+                               class="btn-outline-secondary">Next</a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning text-center" role="alert">
+                        <i class="fas fa-info-circle"></i> No messages in your inbox.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+{% endblock %}

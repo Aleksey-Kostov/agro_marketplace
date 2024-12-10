@@ -1,0 +1,65 @@
+form {
+    background-color: rgba(240, 230, 230, 0.5);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    font-weight: 500;
+}
+
+input, select, textarea {
+    border-radius: 8px;
+    border: 1px solid #9e1010;
+}
+
+.small-link {
+    font-size: 1.2rem;
+    padding: 5px 10px;
+    text-decoration: none;
+    color: #252927; 
+}
+
+.small-link:hover  {
+    color: #151516;
+}
+
+.container h2 {
+    margin-bottom: 50px;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(13,110,253,.25);
+}
+
+#contact-info {
+    background-color: rgba(140, 147, 156, 0.9);
+    border-radius: 8px;
+}
+
+.activate {
+        position: relative; /* Required for absolute positioning of tooltip */
+    }
+
+.tooltip-text {
+        display: none; /* Hide tooltip text initially */
+        position: absolute;
+        top: -30px; /* Position above the button */
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        color: #fff;
+        padding: 5px;
+        font-size: 12px;
+        border-radius: 4px;
+        white-space: nowrap;
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+.activate:hover .tooltip-text {
+        display: block; /* Show tooltip text on hover */
+        opacity: 1;
+    }

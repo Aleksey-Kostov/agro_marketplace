@@ -1,0 +1,113 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+    <main class="container my-5">
+        <h2>Join - Agro Marketplace</h2>
+        <form method="POST" action="{% url 'profile-registration' %}" enctype="multipart/form-data"
+              class="row g-4 justify-content-center">
+            {% csrf_token %}
+            <!-- Profile Photo Upload -->
+            <div class="col-md-6">
+                {% if form.profile_photo.errors %}
+                    <div class="alert alert-danger">
+                        {{ form.profile_photo.errors }}
+                    </div>
+                {% endif %}
+                <div class="col-md-4">
+                    <div class="profile-photo-container">
+                        <img
+                                id="profile-img-preview"
+                                src="
+                                        {% if form.profile_photo.value %}{{ form.profile_photo.value.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
+                                alt="Profile Preview"
+                                class="img-thumbnail rounded-circle profile-photo-preview">
+                    </div>
+                </div>
+
+                <div class="col-md-8 btn-profile">
+                    <!-- Upload Button -->
+                    <div class="mt-2">
+                        <button
+                                type="button"
+                                class="btn btn-primary"
+                                onclick="document.getElementById('id_profile_photo').click();">
+                            Upload Photo
+                        </button>
+                    </div>
+                    <div class="d-none">
+                        {{ form.profile_photo }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mt-5">
+                {{ form.full_name.label_tag }}
+                {{ form.full_name }}
+                {% if form.full_name.errors %}
+                    <div class="alert alert-danger">
+                        {{ form.full_name.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.username_in_marketplace.label_tag }}
+                {{ form.username_in_marketplace }}
+                {% if form.username_in_marketplace.errors %}
+                    <div class="alert alert-danger">
+                        {{ form.username_in_marketplace.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.email.label_tag }}
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="alert alert-danger">
+                        {{ form.email.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            <!-- Description -->
+            <div class="col-md-12">
+                {{ form.description.label_tag }}
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <div class="alert alert-danger">
+                        {{ form.description.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-2">
+                {{ form.country_code.label_tag }}
+                {{ form.country_code }}
+                {% if form.country_code.errors %}
+                    <div class="alert alert-danger">
+                        {{ form.country_code.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+                {{ form.phone.label_tag }}
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                    <div class="alert alert-danger">
+                        {{ form.phone.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.town.label_tag }}
+                {{ form.town }}
+                {% if form.town.errors %}
+                    <div class="alert alert-danger">
+                        {{ form.town.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-12 text-center mt-3">
+                <button type="submit" class="btn btn-primary">Register</button>
+            </div>
+        </form>
+    </main>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+    <main class="container">
+        <div class="modal-dialog mt-4">
+            <div class="modal-content shadow-lg rounded">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p class="fs-5">Are you sure you want to delete the item "{{ object.title }}"? This action cannot
+                            be
+                            undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary mr-5" id="cancelButton">Cancel</button>
+                        <button type="submit" class="btn btn-danger px-4 py-2 mx-2">Delete</button>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+        </div>
+    </main>
+{% endblock %}

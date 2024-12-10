@@ -1,0 +1,49 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+    <!-- Main Content -->
+    <main class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="text-center mb-4 text-danger">Delete Your Profile</h2>
+
+                <form method="POST" class="p-4 border rounded">
+                    {% csrf_token %}
+                    <div class="alert alert-warning text-center">
+                        <strong>Warning!</strong> This action is permanent and cannot be undone.
+                    </div>
+
+                    <!-- Username or Email Field -->
+                    <div class="mb-3">
+                        <label for="identifier" class="form-label">Username or Email</label>
+                        <input type="text" id="identifier" name="identifier" class="form-control"
+                               placeholder="Enter your username or email" required>
+                    </div>
+
+                    <!-- Password Confirmation Field -->
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Confirm Password</label>
+                        <input type="password" id="password" name="password" class="form-control"
+                               placeholder="Enter your password to confirm" required>
+                    </div>
+
+                    <!-- Confirm Delete Checkbox -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="confirmDelete" required>
+                        <label class="form-check-label" for="confirmDelete">I understand this action cannot be
+                            undone.</label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-danger mt-3">Delete Profile</button>
+                    </div>
+                    <button onclick="goBack()" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+{% endblock %}
