@@ -1,0 +1,568 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font: 18px/1.5 "Karla", sans-serif;
+}
+
+h1 {
+    font: 90px/1.5 "Cormorant Infant";
+    color: #fff;
+}
+
+img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+
+body {
+    background-color: #f5f5f5;
+    background-image: url('../images/texture.jpg');
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-size: cover;
+    color: #333;
+    min-height: 100vh;
+    margin: 0;
+    transition: background-image 1s ease;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #2e8b57;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.header {
+    background-color: #2e8b57;
+    color: white;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 2rem;
+    font-weight: 500;
+}
+
+.header img.logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.welcome-container {
+    position: absolute;
+    top: 80px;
+    right: 20px;
+    text-align: right;
+    font-size: 1rem;
+    color: #333;
+}
+
+.welcome-text {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.user-name {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+}
+
+.current-date-time {
+    font-weight: 400;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2e8b57;
+    text-align: center;
+    margin: 30px 0 20px;
+}
+
+.feed-card-wrapper {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.feed-card {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px; /* Adjust as needed */
+}
+
+.name {
+    font-size: 18px;
+    font-weight: bold;
+    font-family: "MerriweatherEmbed", Georgia, serif;
+} 
+
+
+.category-note {
+    font-size: 0.7rem;
+    background-color: #28a745;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 0;
+    width: fit-content;
+}
+
+.seller-name, .buyer-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.description, .quantity-info {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #777;
+}
+
+.vertical-line {
+    width: 2px;
+    height: 90%;
+    background-color: black;
+    margin: 0 auto;
+    border-radius: 1px;
+    position: relative;
+    top: 10%;
+}
+
+
+.divider {
+    border: 0;
+    border-top: 1px solid #ddd;
+    margin: 10px 0;
+}
+
+.btn-view {
+    background-color: #2e8b57;
+    color: rgb(212, 76, 76);
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 0.9rem;
+}
+
+footer {
+    padding: 20px;
+    background-color: #2e8b57;
+    color: white;
+    text-align: center;
+}
+
+footer ul.list-inline {
+    padding: 0;
+    margin: 0;
+}
+
+footer ul.list-inline li {
+    display: inline;
+    margin-right: 15px;
+}
+
+footer ul.list-inline a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.text-truncate {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.5rem;
+    margin-top: 0.5rem;
+    
+}
+
+.btn-sm {
+    width: 50px;
+}
+
+.text-muted {
+    font-size: 0.7rem;
+}
+
+.profile-picture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #bdc7d1;
+}
+.section-title {
+    margin: 20px 0;
+    color: #343a40;
+}
+
+.feed-card-wrapper:hover {
+    transform: scale(1.02);
+}
+.category-note {
+    border-radius: 5px;
+}
+
+
+.feed-card-wrapper {
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    overflow: visible;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.feed-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+
+.image-wrapper {
+    position: absolute;
+    right: 15px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    overflow: visible;
+}
+
+
+.btn-group .btn  {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.btn-outline-success {
+    margin-right: 5px;
+}
+
+
+.section-title {
+    position: relative;
+    font-size: 1.5em;
+    font-weight: 500;
+    margin: 20px 0;
+    color: #fcf6f6;
+    background-color: rgba(102, 161, 110, 0.4);
+    border-radius: 5px;
+}
+
+.section-title:before,
+.section-title:after {
+    content: "";
+    position: absolute;
+    width: 40%;
+    height: 1px;
+    background-color: #0a0a0a;
+    top: 50%;
+}
+
+.section-title:before {
+    left: 0;
+}
+
+.section-title:after {
+    right: 0;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center; 
+    margin-top: 20px;
+}
+
+.pagination {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pagination a:hover {
+    background-color: #28a745;
+}
+
+.pagination a {
+    display: inline-block;
+    padding: 10px 15px;
+    margin: 0 5px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.pagination a.disabled {
+    background-color: #ddd;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+.pagination span {
+    display: inline-block;
+    padding: 10px 15px;
+    font-size: 16px;
+    background-color: #f8f9fa;
+    color: #007bff;
+    border-radius: 5px;
+}
+
+.product-image-container {
+    margin-left: 15px;
+    flex-shrink: 0;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    border: 1px solid #5eac68;
+    overflow: hidden;
+}
+
+.product-picture {
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+}
+
+.text-truncate {
+    font-size: 0.7rem;
+    line-height: 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    white-space: normal;
+    word-wrap: break-word;
+    color: dimgray;
+}
+
+.quantity {
+    font: 15px/1.6 "MerriweatherEmbed",Georgia,serif;
+}
+
+
+.title {
+    font-size: 0.8rem; 
+    font-weight: 400;
+    color: #333;
+    text-align: left;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    font-family: 'Poppins', sans-serif;
+    position: relative;
+    border-bottom: solid 1px rgb(10, 10, 10, 0.3);
+    border-top: solid 1px rgb(10, 10, 10, 0.3);
+}
+
+.d-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.welcome-container {
+    background-color: rgba(230, 198, 198, 0.2);
+    color: #333;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.welcome-text {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.user-name {
+    font-weight: 400;
+    color: #2a332e;
+}
+
+.current-date-time {
+    font-size: 0.7rem;
+    color: #555;
+}
+
+@media (max-width: 768px) {
+
+    .welcome-container {
+        display: flex;
+        justify-content: space-between;
+        position: absolute;
+        top: 5px;
+        left: 52%;
+        transform: translateX(-40%);
+        width: 80%; 
+        background-color: rgba(113, 218, 65, 0.8);
+        font-size: 0.5rem;
+        text-align: center;
+    }
+
+    .header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .header .logo {
+        margin-bottom: 15px;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .header .lead {
+        font-size: 1rem;
+    }
+}
+
+main {
+    min-height: 500px;
+}
+
+
+.custom-category-note {
+    background-color: #d3506c
+}
+
+.product-photo {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+}
+
+.sell, .buy {
+    color: #c1e22c;
+}
+
+.text-danger {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+ .pagination-container {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+.pagination {
+        display: inline-flex;
+        justify-content: center;
+        list-style: none;
+        padding-left: 0;
+        margin-bottom: 0;
+    }
+
+.page-item {
+        margin: 0 4px;
+    }
+
+.page-link {
+        padding: 10px 18px;
+        color: #007bff;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 50px;
+        font-size: 16px;
+        transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        display: inline-block;
+    }
+
+    /* Hover effect */
+.page-link:hover {
+        color: #fff;
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    /* Active page styling */
+.page-item.active .page-link {
+        background-color: #6b6d70;
+        color: #fff;
+        border-color: #007bff;
+        font-weight: bold;
+    }
+
+    /* Disabled page button */
+.page-item.disabled .page-link {
+        color: #aaa;
+        background-color: #f8f9fa;
+        border-color: #ddd;
+        cursor: not-allowed;
+    }
+
+.page-item.disabled .page-link:hover {
+        background-color: #f8f9fa;
+        color: #aaa;
+    }
+
+    /* Previous and Next buttons style */
+.page-item .page-link {
+        border-radius: 50%;
+        padding: 10px 15px;
+        font-size: 18px;
+    }
+
+.page-item .page-link:hover {
+        border-color: #007bff;
+        background-color: #52914c;
+    }
+
+.page-item .page-link {
+        border-radius: 50%;
+    }
+
+.page-link:focus {
+        box-shadow: none;
+    }
+
+
+.text-truncate {
+    max-width: 332px;
+}
+

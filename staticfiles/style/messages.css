@@ -1,0 +1,447 @@
+/* General Styling for Message Box */
+.message-box {
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* Title Styling */
+.message-box h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Content Styling */
+.message-box p {
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    text-align: justify;
+}
+
+/* Sender Details */
+.message-box .sender-info {
+    font-size: 0.9rem;
+    color: #888;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+/* Button Styling */
+.message-box .btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #28a745;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.message-box .btn:hover {
+    background-color: #218838;
+}
+
+/* Unread Messages Notification Bar */
+.unread-bar {
+    background-color: rgba(40, 167, 69, 0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.unread-bar .icon {
+    font-size: 1.5rem;
+    margin-right: 10px;
+}
+
+.unread-bar .count {
+    font-weight: bold;
+}
+
+/* Top Header with Icons */
+.mailbox-header {
+    background-color: #28a745;
+    color: white;
+    display: flex;
+    justify-content: center;
+    padding: 8px 20px;
+    align-items: center;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 65%;
+    margin: 0 auto;
+}
+
+/* Container for Messages */
+.mailbox-container {
+    width: 100%;
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Status Count Styling */
+.status-count {
+    font-weight: bold;
+    font-size: 1rem;
+    margin-left: 7px;
+}
+
+/* Message Box Styling */
+.message-box {
+    background-color: rgba(249, 249, 249, 0.95);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    width: 90%;  /* Message box width */
+}
+
+/* Message Title Styling */
+.message-box h2 {
+    font-size: 1.4rem;
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Individual Message Styling */
+.message-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    height: 100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.message-item:hover {
+    background-color: #f1f1f1;
+}
+
+.message-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    flex-grow: 1;
+}
+
+.message-meta {
+    font-size: 0.8rem;
+    color: #888;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.message-excerpt {
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: 5px;
+    max-height: 35px;
+    overflow: hidden;
+}
+
+.read-more {
+    text-decoration: none;
+    font-size: 0.8rem;
+    color: #28a745;
+    margin-top: 5px;
+    display: block;
+}
+
+.read-more:hover {
+    color: #218838;
+}
+
+/* Delete Button Styling */
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 2px 6px;
+    font-size: 0.8rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+}
+
+/* Hide/Show Messages */
+.message-item.hidden {
+    display: none;
+}
+
+/* Message Status Styling */
+.read {
+    background-color: #f0f8ff;
+}
+
+.unread {
+    background-color: #ffebeb;
+}
+
+/* Status Icon Styling */
+.status-icon {
+    font-size: 1.5rem;
+    color: white;
+    position: relative;
+    cursor: pointer;
+    margin: 0 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-icon::after {
+    content: attr(data-count);
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: rgb(202, 84, 84, 0.9);
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: inline-block;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Back Button Styling */
+.back-btn {
+    color: white;
+    text-decoration: none;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.back-btn i {
+    font-size: 1.5rem;  /* Adjust icon size */
+}
+
+.back-btn:hover {
+    color: #218838;  /* Change color on hover */
+}
+
+/* Inbox Container */
+.mailbox-container {
+    max-width: 960px; /* Matches the Inbox Header width */
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.mailbox-header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Message List */
+.message-box {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Message Card */
+.message-card {
+    position: relative; /* For hover effects */
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 15px;
+    border: 1px solid #e0e4e8;
+    border-radius: 8px;
+    background: #fff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.message-card:hover {
+    transform: translateY(-5px); /* Slight lift effect */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Shadow effect */
+    cursor: pointer;
+}
+
+/* Unread Message Highlight */
+.message-card.unread {
+    border-left: 5px solid #007bff; /* Blue indicator for unread messages */
+}
+
+/* Message Content */
+.message-content {
+    flex-grow: 1;
+    max-width: 70%;
+}
+
+.message-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.message-meta {
+    font-size: 0.7rem;
+    color: #666;
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column; /* Arrange "From" and "Date" vertically */
+}
+
+.message-meta > div {
+    margin-bottom: 4px;
+}
+
+.message-excerpt {
+    font-size: 0.95rem;
+    color: #555;
+    margin: 0;
+}
+
+/* Action Buttons */
+.custom-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.reply {
+    background-color: #573c59;
+    color: #fff;
+    margin-right: 8px;
+}
+
+.reply:hover {
+    background-color: #0056b3;
+}
+
+.delete {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.delete:hover {
+    background-color: #a71d2a;
+}
+
+/* Empty Inbox */
+.alert-warning {
+    text-align: center;
+    color: #999;
+    font-size: 1.2rem;
+    padding: 30px 0;
+}
+
+.alert-warning i {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    color: #ccc;
+}
+
+.sender-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.sender-details {
+    display: flex;
+    gap: 20px;
+}
+
+.sender-info div {
+    margin-bottom: 8px;
+}
+
+.sender-info strong {
+    font-weight: bold;
+}
+
+
+
+.sender-info {
+    border: 1px solid #ddd; /* Optional border */
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #e1d5d5; /* Optional background */
+}
+
+.sender-info .info-group {
+    flex: 1; /* Allows equal space distribution between groups */
+    padding: 5px;
+}
+
+.sender-info strong {
+    color: #333;
+}
+
+.replay-button {
+    background-color: #28a745;
+    width: 200px;
+    text-align: center;
+    justify-content: center;
+    color: white;
+}
+
+.replay-button:hover {
+    background-color: #1f6b44;
+    color: #aaaaaa;
+}
+
+
+.detail-label {
+    margin-left: 230px;
+    min-width: 100px;
+    text-align: right;
+}
