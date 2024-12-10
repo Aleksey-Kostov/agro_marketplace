@@ -132,10 +132,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STORAGES = {
     "staticfiles": {
-        "BACKEND": config(
-            "STATICFILES_STORAGE_BACKEND",
-            default="whitenoise.storage.CompressedManifestStaticFilesStorage"
-        ),
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 # STORAGES = {
