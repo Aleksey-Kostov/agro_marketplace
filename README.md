@@ -1,1 +1,1 @@
-My-demo-projects
+This is my first demo project with Django. I managed to upload and also providing a link to the uploaded project (https://agromarketplace-dabdgufzg3gxe8ea.italynorth-01.azurewebsites.net/). The website is a place where buyers and sellers of agricultural products can connect with each other. There is also a messaging system for sending and receiving messages. Each profile has the ability to control the ads, which can be activated and removed. My profile can also be edited. I hope you like my project.
