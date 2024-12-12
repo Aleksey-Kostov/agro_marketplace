@@ -36,6 +36,7 @@ class UserAdmin(BaseUserAdmin):
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ('full_name', 'username_in_marketplace', 'email', 'phone', 'town', 'country_code')
     list_filter = ('country_code', 'town', 'created_at')
+    readonly_fields = ('created_at',)
 
     # Fields for profile details in the admin
     fieldsets = (
