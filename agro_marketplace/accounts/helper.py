@@ -5,8 +5,6 @@ from django.utils.timezone import now
 from agro_marketplace.buyers.models import BuyerItems
 from agro_marketplace.sellers.models import SellerItems
 
-current_time = now()
-
 
 def get_item_by_slug(slug, expiration_check=None):
     """
@@ -22,14 +20,15 @@ def get_item_by_slug(slug, expiration_check=None):
     """
     try:
         filters = {'slug': slug}
+        current_time = now()
         if expiration_check == 'active':
             filters['expiration_date__gte'] = current_time
         elif expiration_check == 'inactive':
             filters['expiration_date__lt'] = current_time
 
         return (
-            BuyerItems.objects.filter(**filters).first() or
-            SellerItems.objects.filter(**filters).first()
+                BuyerItems.objects.filter(**filters).first() or
+                SellerItems.objects.filter(**filters).first()
         )
     except ObjectDoesNotExist:
         return None
@@ -46,10 +45,13 @@ def get_combined_items(profile, expiration_check):
     Returns:
         list: Combined and sorted items.
     """
+
     if expiration_check == 'active':
+        current_time = now()
         sellers = profile.seller_products.filter(expiration_date__gte=current_time).order_by('-created_at')
         buyers = profile.buyer_products.filter(expiration_date__gte=current_time).order_by('-created_at')
     else:
+        current_time = now()
         sellers = profile.seller_products.filter(expiration_date__lt=current_time).order_by('-created_at')
         buyers = profile.buyer_products.filter(expiration_date__lt=current_time).order_by('-created_at')
 

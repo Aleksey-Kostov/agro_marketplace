@@ -124,7 +124,7 @@
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-top: 20px;
-    width: 90%;  /* Message box width */
+    width: 90%; /* Message box width */
 }
 
 /* Message Title Styling */
@@ -257,11 +257,11 @@
 }
 
 .back-btn i {
-    font-size: 1.5rem;  /* Adjust icon size */
+    font-size: 1.5rem; /* Adjust icon size */
 }
 
 .back-btn:hover {
-    color: #218838;  /* Change color on hover */
+    color: #218838; /* Change color on hover */
 }
 
 /* Inbox Container */
@@ -409,7 +409,6 @@
 }
 
 
-
 .sender-info {
     border: 1px solid #ddd; /* Optional border */
     padding: 10px;
@@ -444,4 +443,12 @@
     margin-left: 230px;
     min-width: 100px;
     text-align: right;
+}
+
+@media (max-width: 768px) {
+    .detail-label {
+        margin-left: 20px;
+        min-width: 80px;
+        text-align: left;
+    }
 }

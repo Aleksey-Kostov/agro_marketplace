@@ -566,3 +566,26 @@ main {
     max-width: 332px;
 }
 
+.back-button {
+    min-width: 80px;
+    max-width: 100px;
+    align-items: center;
+    justify-content: center;
+}
+
+.paginator-page {
+    min-width: 110px;
+    max-width: 130px;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-media {
+    min-width: 700px;
+}
+
+@media (max-width: 700px) {
+    .card-media {
+        min-width: 350px;
+    }
+}

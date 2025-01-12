@@ -65,7 +65,7 @@
                             <div class="photo-container">
                                 <img
                                         id="photoPreview1"
-                                        src="{% static 'images/default products2.jpg' %}"
+                                        src="{% if form.instance.photo_1 %}{{ form.instance.photo_1.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
                                         alt="Photo 1"
                                         class="photo-preview"
                                 />
@@ -91,7 +91,7 @@
                             <div class="photo-container">
                                 <img
                                         id="photoPreview2"
-                                        src="{% static 'images/default products2.jpg' %}"
+                                        src="{% if form.instance.photo_2 %}{{ form.instance.photo_2.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
                                         alt="Photo 2"
                                         class="photo-preview"
                                 />
@@ -117,7 +117,7 @@
                             <div class="photo-container">
                                 <img
                                         id="photoPreview3"
-                                        src="{% static 'images/default products2.jpg' %}"
+                                        src="{% if form.instance.photo_3 %}{{ form.instance.photo_3.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
                                         alt="Photo 3"
                                         class="photo-preview"
                                 />
@@ -140,7 +140,8 @@
                                 {% endif %}
                                 {{ form.photo_4.label_tag }}</label>
                             <div class="photo-container">
-                                <img id="photoPreview4" src="{% static 'images/default products2.jpg' %}" alt="Photo 4"
+                                <img id="photoPreview4" src="{% if form.instance.photo_4 %}{{ form.instance.photo_4.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}" 
+                                     alt="Photo 4"
                                      class="photo-preview"/>
                                 {{ form.photo_4 }}
                                 <button type="button" class="btn btn-primary upload-button"

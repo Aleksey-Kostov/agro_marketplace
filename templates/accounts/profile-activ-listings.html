@@ -5,172 +5,173 @@
     <main class="container">
         <!-- Advertisements Section -->
         <div class="row justify-content-center details">
-            <div class="mt-3 text-center">
-                <a href="{% url 'profile-details' profile_pk %}" class="btn btn-secondary">
+            <div class="mt-3 d-flex justify-content-center">
+                <a href="{% url 'profile-details' profile_pk %}" class="btn btn-secondary d-flex back-button">
                     <i class="fas fa-arrow-left"></i> Back
                 </a>
             </div>
-            <div class="mt-4 text-center">
-                <h3 class="text-center mb-4 text-details">Active Listings</h3>
+            <div class="mt-4 text-center d-flex flex-column">
+                <h3 class="text-center mb-4 text-details card-media">Active Listings</h3>
                 <!-- Advertisement Cards Section -->
                 <div class="mt-2">
                     {% for item in items_page %}
-                        <div class="feed-card-wrapper mb-2 p-2 details2">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="category-note text-white px-2 py-1">
-                                {% if item.category == 'vegetables' %}
-                                    <i class="fas fa-carrot"></i> Vegetables
-                                {% elif item.category == 'fruits' %}
-                                    <i class="fas fa-apple-alt"></i> Fruits
-                                {% elif item.category == 'grain' %}
-                                    <i class="fas fa-seedling"></i> Grains
-                                {% elif item.category == 'dairy-products' %}
-                                    <i class="fas fa-cheese"></i> Dairy Products
-                                {% elif item.category == 'mushrooms' %}
-                                    <i class="fa-solid fa-palette"></i> Mushrooms
-                                {% elif item.category == 'herbs-spices' %}
-                                    <i class="fas fa-leaf"></i> Herbs & Spices
-                                {% elif item.category == 'grapes' %}
-                                    <i class="fa-solid fa-wine-bottle"></i> Grapes
-                                {% elif item.category == 'bee-products' %}
-                                    <i class="fa-brands fa-forumbee"></i> Bee Products
-                                {% else %}
-                                    <i class="fa-brands fa-ethereum"></i> Other
-                                {% endif %}
-                            </div>
-                            {% if item.item_type == 'Seller' %}
-                                <div class="category-note text-white bg-primary px-2 py-1">
-                                <i class="fas fa-shopping-cart"></i> Sell
-                            {% elif item.item_type == 'Buyer' %}
-                                <div class="category-note custom-category-note text-white px-2 py-1">
-                                <i class="fas fa-shopping-bag"></i> Buy
-                            {% endif %}
-                            </div>
-                            <div class="btn-group" role="group">
-                                {% if item.item_type == 'Seller' %}
-                                    <a href="{% url 'card_info_sell' item.pk %}"
-                                       class="btn btn-outline-primary btn-sm activate">
-                                        <i class="fas fa-info-circle"></i>
-                                        <span class="tooltip-text">Info</span>
-                                    </a>
-                                {% elif item.item_type == 'Buyer' %}
-                                    <a href="{% url 'card-info-buy' item.pk %}"
-                                       class="btn btn-outline-primary btn-sm activate">
-                                        <i class="fas fa-info-circle"></i>
-                                        <span class="tooltip-text">Info</span>
-                                    </a>
-                                {% endif %}
-                                {% if item.item_type == 'Seller' %}
-                                    <a href="{% url 'edit-seller' item.pk %}"
-                                       class="btn btn-outline-primary btn-sm activate">
-                                        <i class="fas fa-edit"></i>
-                                        <span class="tooltip-text">Edit</span>
-                                    </a>
-                                {% elif item.item_type == 'Buyer' %}
-                                    <a href="{% url 'edit-buyer' item.pk %}"
-                                       class="btn btn-outline-primary btn-sm activate">
-                                        <i class="fas fa-edit"></i>
-                                        <span class="tooltip-text">Edit</span>
-                                    </a>
-                                {% endif %}
-                                <a href="{% url 'delete-item' item.slug %}"
-                                   class="btn btn-outline-danger btn-sm activate">
-                                    <i class="fas fa-trash-alt"></i>
-                                    <span class="tooltip-text">Delete</span>
-                                </a>
-                            </div>
-                            </div>
-                            <div class="feed-card d-flex align-items-center p-2">
-                                <div class="d-flex flex-column flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h5 class="m-0 name text-center mx-auto">{{ item.profile.username_in_marketplace }}</h5>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h5 class="m-0 title text-center mx-auto">{{ item.title|truncatechars:50 }}</h5>
-                                    </div>
-                                    <p class="m-0 text-truncate">{{ item.description|truncatechars:100 }}</p>
-                                    <p class="m-0 quantity">Quantity:
-                                        <strong>{{ item.quantity }}</strong>{{ item.unit_of_measure }}</p>
-                                    <p class="m-0 price">
-                                        Price:
-                                        <strong>
-                                            {% if item.price_type == 'negotiation' %}
-                                                Negotiable
-                                            {% elif item.price_type == 'per_quantity' %}
-                                                {% if item.currency == 'USD' %}
-                                                    {{ item.price_per_unit }} $
-                                                {% elif item.currency == 'EUR' %}
-                                                    {{ item.price_per_unit }} €
-                                                {% elif item.currency == 'BGN' %}
-                                                    {{ item.price_per_unit }} BGN
-                                                {% else %}
-                                                    {{ item.price_per_unit }} (Currency not defined)
-                                                {% endif %}
-                                            {% elif item.price_type == 'all_quantity' %}
-                                                {% if item.currency == 'USD' %}
-                                                    {{ item.price_all_quantity }} $
-                                                {% elif item.currency == 'EUR' %}
-                                                    {{ item.price_all_quantity }} €
-                                                {% elif item.currency == 'BGN' %}
-                                                    {{ item.price_all_quantity }} BGN
-                                                {% else %}
-                                                    {{ item.price_all_quantity }} (Currency not defined)
-                                                {% endif %}
-                                            {% else %}
-                                                N/A
-                                            {% endif %}
-                                        </strong>
-                                        {% if item.price_type == 'per_quantity' %}
-                                            per unit
-                                        {% elif item.price_type == 'all_quantity' %}
-                                            for all
-                                        {% endif %}
-                                    </p>
-                                </div>
-                                <div class="product-image-container">
-                                    {% if item.photo_1 %}
-                                        <img src="{{ item.photo_1.url }}" alt="Product Image"
-                                             class="product-picture img-fluid">
-                                    {% elif item.photo_2 %}
-                                        <img src="{{ item.photo_2.url }}" alt="Product Image"
-                                             class="product-picture img-fluid">
-                                    {% elif item.photo_3 %}
-                                        <img src="{{ item.photo_3.url }}" alt="Product Image"
-                                             class="product-picture img-fluid">
-                                    {% elif item.photo_4 %}
-                                        <img src="{{ item.photo_4.url }}" alt="Product Image"
-                                             class="product-picture img-fluid">
+                        <div class="feed-card-wrapper mb-2 p-2 details2 card-media">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="category-note text-white px-2 py-1">
+                                    {% if item.category == 'vegetables' %}
+                                        <i class="fas fa-carrot"></i> Vegetables
+                                    {% elif item.category == 'fruits' %}
+                                        <i class="fas fa-apple-alt"></i> Fruits
+                                    {% elif item.category == 'grain' %}
+                                        <i class="fas fa-seedling"></i> Grains
+                                    {% elif item.category == 'dairy-products' %}
+                                        <i class="fas fa-cheese"></i> Dairy Products
+                                    {% elif item.category == 'mushrooms' %}
+                                        <i class="fa-solid fa-palette"></i> Mushrooms
+                                    {% elif item.category == 'herbs-spices' %}
+                                        <i class="fas fa-leaf"></i> Herbs & Spices
+                                    {% elif item.category == 'grapes' %}
+                                        <i class="fa-solid fa-wine-bottle"></i> Grapes
+                                    {% elif item.category == 'bee-products' %}
+                                        <i class="fa-brands fa-forumbee"></i> Bee Products
                                     {% else %}
-                                        <img src="{% static 'images/default products2.jpg' %}"
-                                             alt="Default Product Image"
-                                             class="product-picture img-fluid">
+                                        <i class="fa-brands fa-ethereum"></i> Other
                                     {% endif %}
                                 </div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center p-2">
-                                <div class="text-muted">
-                                    <i class="fas fa-calendar-alt"></i> {{ item.created_at|date:"M d, Y" }}
-                                    - Expiry: {{ item.expiration_date|date:"M d, Y" }}
+                                {% if item.item_type == 'Seller' %}
+                                    <div class="category-note text-white bg-primary px-2 py-1 mr=2">
+                                    <i class="fas fa-shopping-cart"></i> Sell
+                                {% elif item.item_type == 'Buyer' %}
+                                    <div class="category-note custom-category-note text-white px-2 py-1 mr=2">
+                                    <i class="fas fa-shopping-bag"></i> Buy
+                                {% endif %}
                                 </div>
-                                <small class="text-muted ms-auto me-3"><i class="fas fa-map-marker-alt"></i>
-                                    {{ item.location }}</small>
-                            </div>
-                        </div> <!-- End of each item card -->
+                                <div class="btn-group" role="group">
+                                    {% if item.item_type == 'Seller' %}
+                                        <a href="{% url 'card_info_sell' item.pk %}"
+                                           class="btn btn-outline-primary btn-sm activate">
+                                            <i class="fas fa-info-circle"></i>
+                                            <span class="tooltip-text">Info</span>
+                                        </a>
+                                    {% elif item.item_type == 'Buyer' %}
+                                        <a href="{% url 'card-info-buy' item.pk %}"
+                                           class="btn btn-outline-primary btn-sm activate">
+                                            <i class="fas fa-info-circle"></i>
+                                            <span class="tooltip-text">Info</span>
+                                        </a>
+                                    {% endif %}
+                                    {% if item.item_type == 'Seller' %}
+                                        <a href="{% url 'edit-seller' item.pk %}"
+                                           class="btn btn-outline-primary btn-sm activate">
+                                            <i class="fas fa-edit"></i>
+                                            <span class="tooltip-text">Edit</span>
+                                        </a>
+                                    {% elif item.item_type == 'Buyer' %}
+                                        <a href="{% url 'edit-buyer' item.pk %}"
+                                           class="btn btn-outline-primary btn-sm activate">
+                                            <i class="fas fa-edit"></i>
+                                            <span class="tooltip-text">Edit</span>
+                                        </a>
+                                    {% endif %}
+                                    <a href="{% url 'delete-item' item.slug %}"
+                                       class="btn btn-outline-danger btn-sm activate">
+                                        <i class="fas fa-trash-alt"></i>
+                                        <span class="tooltip-text">Delete</span>
+                                    </a>
+                                </div>
+                                </div>
+                                <div class="feed-card d-flex align-items-center p-2">
+                                    <div class="d-flex flex-column flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="m-0 name text-center mx-auto">{{ item.profile.username_in_marketplace }}</h5>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="m-0 title text-center mx-auto">{{ item.title|truncatechars:50 }}</h5>
+                                        </div>
+                                        <p class="m-0 text-truncate">{{ item.description|truncatechars:100 }}</p>
+                                        <p class="m-0 quantity">Quantity:
+                                            <strong>{{ item.quantity }}</strong>{{ item.unit_of_measure }}</p>
+                                        <p class="m-0 price">
+                                            Price:
+                                            <strong>
+                                                {% if item.price_type == 'negotiation' %}
+                                                    Negotiable
+                                                {% elif item.price_type == 'per_quantity' %}
+                                                    {% if item.currency == 'USD' %}
+                                                        {{ item.price_per_unit }} $
+                                                    {% elif item.currency == 'EUR' %}
+                                                        {{ item.price_per_unit }} €
+                                                    {% elif item.currency == 'BGN' %}
+                                                        {{ item.price_per_unit }} BGN
+                                                    {% else %}
+                                                        {{ item.price_per_unit }} (Currency not defined)
+                                                    {% endif %}
+                                                {% elif item.price_type == 'all_quantity' %}
+                                                    {% if item.currency == 'USD' %}
+                                                        {{ item.price_all_quantity }} $
+                                                    {% elif item.currency == 'EUR' %}
+                                                        {{ item.price_all_quantity }} €
+                                                    {% elif item.currency == 'BGN' %}
+                                                        {{ item.price_all_quantity }} BGN
+                                                    {% else %}
+                                                        {{ item.price_all_quantity }} (Currency not defined)
+                                                    {% endif %}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </strong>
+                                            {% if item.price_type == 'per_quantity' %}
+                                                per unit
+                                            {% elif item.price_type == 'all_quantity' %}
+                                                for all
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="product-image-container">
+                                        {% if item.photo_1 %}
+                                            <img src="{{ item.photo_1.url }}" alt="Product Image"
+                                                 class="product-picture img-fluid">
+                                        {% elif item.photo_2 %}
+                                            <img src="{{ item.photo_2.url }}" alt="Product Image"
+                                                 class="product-picture img-fluid">
+                                        {% elif item.photo_3 %}
+                                            <img src="{{ item.photo_3.url }}" alt="Product Image"
+                                                 class="product-picture img-fluid">
+                                        {% elif item.photo_4 %}
+                                            <img src="{{ item.photo_4.url }}" alt="Product Image"
+                                                 class="product-picture img-fluid">
+                                        {% else %}
+                                            <img src="{% static 'images/default products2.jpg' %}"
+                                                 alt="Default Product Image"
+                                                 class="product-picture img-fluid">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center p-2">
+                                    <div class="text-muted">
+                                        <i class="fas fa-calendar-alt"></i> {{ item.created_at|date:"M d, Y" }}
+                                        - Expiry: {{ item.expiration_date|date:"M d, Y" }}
+                                    </div>
+                                    <small class="text-muted ms-auto me-3"><i class="fas fa-map-marker-alt"></i>
+                                        {{ item.location }}</small>
+                                </div>
+                            </div> <!-- End of each item card -->
+                        </div>
                     {% empty %}
                         <p class="text-muted">No active listings available.</p>
                     {% endfor %}
-                    </div>
+                </div>
 
-                    <!-- Pagination -->
-                    <div class="pagination mt-3 mb-3">
-                        {% if items_page.has_previous %}
-                            <a href="?page={{ items_page.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
-                        {% endif %}
-                        <span>Page {{ items_page.number }} of {{ items_page.paginator.num_pages }}</span>
-                        {% if items_page.has_next %}
-                            <a href="?page={{ items_page.next_page_number }}" class="btn btn-outline-primary">Next</a>
-                        {% endif %}
-                    </div>
+                <!-- Pagination -->
+                <div class="pagination mt-3 mb-3">
+                    {% if items_page.has_previous %}
+                        <a href="?page={{ items_page.previous_page_number }}"
+                           class="btn btn-outline-primary">Previous</a>
+                    {% endif %}
+                    <span class="d-flex paginator-page">Page {{ items_page.number }} of {{ items_page.paginator.num_pages }}</span>
+                    {% if items_page.has_next %}
+                        <a href="?page={{ items_page.next_page_number }}" class="btn btn-outline-primary">Next</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
