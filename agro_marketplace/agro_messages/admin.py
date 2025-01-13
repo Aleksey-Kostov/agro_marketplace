@@ -1,6 +1,5 @@
 from django.contrib import admin
 from .models import Message, MessageStatus
-from django.db.models import Case, When, Value, IntegerField, F
 
 
 @admin.register(Message)
@@ -26,15 +25,7 @@ class MessageStatusAdmin(admin.ModelAdmin):
     list_filter = ('is_read', 'is_deleted', 'read_at')
     search_fields = ('message__title', 'profile__username')
 
-    def get_ordering(self, request):
-        return [
-            Case(
-                When(read_at__isnull=True, then=Value(1)),
-                When(read_at__isnull=False, then=Value(0)),
-                output_field=IntegerField()
-            ),
-            F('read_at').desc(nulls_last=True)
-        ]
+    ordering = ('-id',)
 
     fieldsets = (
         (None, {
@@ -44,3 +35,7 @@ class MessageStatusAdmin(admin.ModelAdmin):
             'fields': ('is_read', 'is_deleted', 'read_at')
         }),
     )
+
+    class Meta:
+        verbose_name = "Messages Status"
+        verbose_name_plural = "Messages Status"

@@ -14,7 +14,7 @@
                     {{ form.username }}
                     {% if form.username.errors %}
                         <div class="alert alert-danger">
-                            {{ form.username.errors }}
+                            {{ form.username.errors|striptags }}
                         </div>
                     {% endif %}
                 </div>
@@ -25,7 +25,7 @@
                     {{ form.password }}
                     {% if form.password.errors %}
                         <div class="alert alert-danger">
-                            {{ form.password.errors }}
+                            {{ form.password.errors|striptags }}
                         </div>
                     {% endif %}
                 </div>

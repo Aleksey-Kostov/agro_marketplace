@@ -6,6 +6,10 @@ from django.utils.text import slugify
 
 @admin.register(SellerItems)
 class SellerItemsAdmin(admin.ModelAdmin):
+    class Meta:
+        verbose_name = "Sellers Item"
+        verbose_name_plural = "Sellers Items"
+
     list_display = (
         'id',
         'profile',
