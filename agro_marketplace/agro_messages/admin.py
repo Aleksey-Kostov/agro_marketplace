@@ -15,7 +15,7 @@ class MessageAdmin(admin.ModelAdmin):
             'fields': ('sender', 'recipient', 'title', 'body')
         }),
         (_('Additional Info'), {
-            'fields': ('timestamp', 'parent_message')
+            'fields': ('parent_message',)
         }),
     )
 
