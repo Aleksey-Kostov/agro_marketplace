@@ -1,0 +1,41 @@
+.photo-framework {
+    width: 150px;
+    height: 150px;
+    display: inline-block;
+}
+
+.photo-container {
+    position: relative;
+    display: inline-block;
+    width: 150px; /* Smaller width */
+    height: 150px; /* Smaller height */
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.photo-preview {
+    width: 100% !important; /* Force fit the image */
+    height: 100% !important; /* Force fit the image */
+    object-fit: cover;
+}
+
+.upload-button {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 5px 0;
+    cursor: pointer;
+    font-size: 10px; /* Smaller font size */
+    transition: background-color 0.3s ease;
+}
+
+.upload-button:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+
