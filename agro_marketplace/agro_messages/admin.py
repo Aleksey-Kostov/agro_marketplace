@@ -22,7 +22,7 @@ class MessageAdmin(admin.ModelAdmin):
 @admin.register(MessageStatus)
 class MessageStatusAdmin(admin.ModelAdmin):
     list_display = ('id', 'message', 'profile', 'is_read', 'is_deleted', 'read_at')
-    list_filter = ('is_read', 'is_deleted', 'read_at')
+    list_filter = ('is_read', 'is_deleted',)
     search_fields = ('message__title', 'profile__username')
 
     ordering = ('-id',)
@@ -36,6 +36,3 @@ class MessageStatusAdmin(admin.ModelAdmin):
         }),
     )
 
-    class Meta:
-        verbose_name = "Messages Status"
-        verbose_name_plural = "Messages Status"

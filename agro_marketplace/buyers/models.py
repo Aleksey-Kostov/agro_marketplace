@@ -9,6 +9,10 @@ from datetime import datetime
 
 
 class BuyerItems(models.Model):
+    class Meta:
+        verbose_name = "Buyers Item"
+        verbose_name_plural = "Buyers Items"
+
     profile = models.ForeignKey(
         Profile,
         on_delete=models.CASCADE,

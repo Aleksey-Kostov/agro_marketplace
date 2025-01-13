@@ -8,6 +8,10 @@ from datetime import datetime
 
 
 class SellerItems(models.Model):
+    class Meta:
+        verbose_name = "Sellers Item"
+        verbose_name_plural = "Sellers Items"
+
     profile = models.ForeignKey(
         Profile,
         on_delete=models.CASCADE,

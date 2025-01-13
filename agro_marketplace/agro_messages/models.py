@@ -19,6 +19,10 @@ class Message(models.Model):
 
 
 class MessageStatus(models.Model):
+    class Meta:
+        verbose_name = "Messages Status"
+        verbose_name_plural = "Messages Status"
+
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='statuses')
     profile = models.ForeignKey(User, on_delete=models.CASCADE, related_name='message_statuses')
     is_read = models.BooleanField(default=False)
