@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
 from .models import Message, MessageStatus
 
 
@@ -13,7 +14,7 @@ class MessageAdmin(admin.ModelAdmin):
         (None, {
             'fields': ('sender', 'recipient', 'title', 'body')
         }),
-        ('Additional Info', {
+        (_('Additional Info'), {
             'fields': ('timestamp', 'parent_message')
         }),
     )
@@ -22,7 +23,7 @@ class MessageAdmin(admin.ModelAdmin):
 @admin.register(MessageStatus)
 class MessageStatusAdmin(admin.ModelAdmin):
     list_display = ('id', 'message', 'profile', 'is_read', 'is_deleted', 'read_at')
-    list_filter = ('is_read', 'is_deleted',)
+    list_filter = ('is_read', 'is_deleted', 'read_at')
     search_fields = ('message__title', 'profile__username')
 
     ordering = ('-id',)
@@ -31,8 +32,7 @@ class MessageStatusAdmin(admin.ModelAdmin):
         (None, {
             'fields': ('message', 'profile')
         }),
-        ('Status Info', {
+        (_('Status Info'), {
             'fields': ('is_read', 'is_deleted', 'read_at')
         }),
     )
-
