@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Message, MessageStatus
-from django.db.models import Case, When, Value, IntegerField
+from django.db.models import Case, When, Value, IntegerField, F
 
 
 @admin.register(Message)
@@ -30,10 +30,10 @@ class MessageStatusAdmin(admin.ModelAdmin):
         return [
             Case(
                 When(read_at__isnull=True, then=Value(1)),
-                default=Value(0),
+                When(read_at__isnull=False, then=Value(0)),
                 output_field=IntegerField()
             ),
-            '-read_at'
+            F('read_at').desc(nulls_last=True)
         ]
 
     fieldsets = (
