@@ -475,6 +475,20 @@ main {
     object-fit: cover;
 }
 
+@media (max-width: 768px) {
+    .product-photo {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-photo {
+        width: 100px;
+        height: 100px;
+    }
+}
+
 .sell, .buy {
     color: #c1e22c;
 }
