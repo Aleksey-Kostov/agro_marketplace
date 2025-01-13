@@ -15,7 +15,10 @@ class Message(models.Model):
     parent_message = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies')
 
     def __str__(self):
-        return f"{self.sender} -> {self.recipient}: {self.title[:30]}"
+        sender_username = self.sender if self.sender else "Unknown Sender"
+        recipient_username = self.recipient if self.recipient else "Unknown Recipient"
+        title = self.title[:30] if self.title else "No Title"
+        return f"{sender_username} -> {recipient_username}: {title}"
 
 
 class MessageStatus(models.Model):
