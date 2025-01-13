@@ -8,6 +8,13 @@
             <h2 class="text-center mb-4">Login to Agro Marketplace</h2>
             <form method="POST" action="{% url 'login' %}" class="p-4 border rounded">
                 {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
                 <!-- Username field -->
                 <div class="mb-3">
                     {{ form.username.label_tag }}
