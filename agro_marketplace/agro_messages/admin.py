@@ -29,8 +29,8 @@ class MessageStatusAdmin(admin.ModelAdmin):
     def get_ordering(self, request):
         return [
             Case(
-                When(read_at__isnull=False, then=Value(0)),
                 When(read_at__isnull=True, then=Value(1)),
+                default=Value(0),
                 output_field=IntegerField()
             ),
             '-read_at'

@@ -4,13 +4,13 @@
 {% block content %}
     <main class="container">
         <!-- Advertisements Section -->
-        <div class="row justify-content-center details">
-            <div class="mt-3 d-flex justify-content-center">
+        <div class="row justify-content-center align-items-center details">
+            <div class="mt-3 d-flex justify-content-center align-items-center">
                 <a href="{% url 'profile-details' profile_pk %}" class="btn btn-secondary d-flex back-button">
                     <i class="fas fa-arrow-left"></i> Back
                 </a>
             </div>
-            <div class="mt-4 text-center d-flex flex-column">
+            <div class="mt-4 text-center d-flex flex-column justify-content-center align-items-center">
                 <h3 class="text-center mb-4 text-details card-media">Active Listings</h3>
                 <!-- Advertisement Cards Section -->
                 <div class="mt-2">
@@ -168,7 +168,7 @@
                         <a href="?page={{ items_page.previous_page_number }}"
                            class="btn btn-outline-primary">Previous</a>
                     {% endif %}
-                    <span class="d-flex paginator-page">Page {{ items_page.number }} of {{ items_page.paginator.num_pages }}</span>
+                    <span class="d-flex paginator-page justify-content-center align-items-center">Page {{ items_page.number }} of {{ items_page.paginator.num_pages }}</span>
                     {% if items_page.has_next %}
                         <a href="?page={{ items_page.next_page_number }}" class="btn btn-outline-primary">Next</a>
                     {% endif %}
