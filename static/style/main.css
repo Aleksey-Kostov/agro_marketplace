@@ -502,7 +502,7 @@ main {
 /* Media Query for Devices with Width <= 768px */
 @media (max-width: 768px) {
     .product-photo {
-        width: 170px;
+        width: 120px;
         height: 120px;
         transition: all 0.3s ease;
     }
@@ -515,7 +515,7 @@ main {
     .product-photo:hover, .product-photo:active {
         height: auto;
         width: auto;
-        transform: scale(3) translate(10%, -10%); /* Zoom and move */
+        transform: scale(2.5) translate(10%, -10%); /* Zoom and move */
     }
 }
 
@@ -525,6 +525,7 @@ main {
         width: 60px;
         height: 60px;
         transition: all 0.3s ease;
+        flex-grow: 1;
     }
 
     .photo-container {
@@ -535,7 +536,7 @@ main {
     .product-photo:hover, .product-photo:active {
         height: auto;
         width: auto;
-        transform: scale(3) translate(-10%, 10%); /* Zoom and move */
+        transform: scale(2.5) translate(-10%, 10%); /* Zoom and move */
     }
 }
 
