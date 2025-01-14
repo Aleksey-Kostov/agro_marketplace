@@ -3,359 +3,374 @@
 
 {% block content %}
     <main class="container my-4">
-        <section class="search-section my-4">
-            <form action="{% url 'search' %}" method="get" class="search-form">
-                <div class="row justify-content-center">
-                    <div class="col-md-6 mb-3">
-                        <label for="searchInput" class="form-label">Search</label>
-                        <input type="text" id="searchInput" name="query" class="form-control" placeholder="Search..."
-                               value="{{ query }}">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="categorySelect" class="form-label">Category</label>
-                        <select id="categorySelect" name="category" class="form-select">
-                            <option value="">Select category</option>
-                            <option value="vegetables" {% if category == 'vegetables' %}selected{% endif %}>Vegetables
-                            </option>
-                            <option value="fruits" {% if category == 'fruits' %}selected{% endif %}>Fruits</option>
-                            <option value="grain" {% if category == 'grain' %}selected{% endif %}>Grains</option>
-                            <option value="dairy-products" {% if category == 'dairy-products' %}selected{% endif %}>
-                                Dairy Products
-                            </option>
-                            <option value="mushrooms" {% if category == 'mushrooms' %}selected{% endif %}>Mushrooms
-                            </option>
-                            <option value="herbs-spices" {% if category == 'herbs-spices' %}selected{% endif %}>Herbs &
-                                Spices
-                            </option>
-                            <option value="grapes" {% if category == 'grapes' %}selected{% endif %}>Grapes</option>
-                            <option value="bee-products" {% if category == 'bee-products' %}selected{% endif %}>Bee
-                                Products
-                            </option>
-                            <option value="other" {% if category == 'other' %}selected{% endif %}>Other</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-2 d-grid mb-3">
-                        <label class="form-label">&nbsp;</label>
-                        <button type="submit" class="btn btn-primary">Search</button>
-                    </div>
-                </div>
-            </form>
-        </section>
-        <div class="row justify-content-center">
-            <!-- Sellers Section -->
-            <div class="col-md-5">
-                <h2 class="section-title text-center">Sellers</h2>
-                <div class="seller-list">
-                    {% for object in page_obj_sellers %}
-                        <div class="feed-card-wrapper mb-4 p-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="category-note text-white px-2 py-1">
-                                    {% if object.category == 'vegetables' %}
-                                        <i class="fas fa-carrot"></i> Vegetables
-                                    {% elif object.category == 'fruits' %}
-                                        <i class="fas fa-apple-alt"></i> Fruits
-                                    {% elif object.category == 'grain' %}
-                                        <i class="fas fa-seedling"></i> Grains
-                                    {% elif object.category == 'dairy-products' %}
-                                        <i class="fas fa-cheese"></i> Dairy Products
-                                    {% elif object.category == 'mushrooms' %}
-                                        <i class="fa-solid fa-palette"></i> Mushrooms
-                                    {% elif object.category == 'herbs-spices' %}
-                                        <i class="fas fa-leaf"></i> Herbs & Spices
-                                    {% elif object.category == 'grapes' %}
-                                        <i class="fa-solid fa-wine-bottle"></i> Grapes
-                                    {% elif object.category == 'bee-products' %}
-                                        <i class="fa-brands fa-forumbee"></i> Bee Products
-                                    {% else %}
-                                        <i class="fa-brands fa-ethereum"></i> Other
-                                    {% endif %}
-                                </div>
-                                <div class="btn-group" role="group">
-                                    <a href="{% url 'card_info_sell' object.pk %}" class="btn btn-outline-primary btn-sm activate">
-                                        <i class="fas fa-info-circle"></i>
-                                        <span class="tooltip-text">Info</span>
-                                    </a>
-                                    {% if user != object.profile.user %}
-                                        <a href="{% url 'send-message' object.profile.pk %}"
-                                           class="btn btn-outline-success btn-sm activate">
-                                            <i class="fas fa-envelope"></i>
-                                            <span class="tooltip-text">Send Message</span>
-                                        </a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="feed-card d-flex align-items-center p-2">
-                                <div class="d-flex flex-column flex-grow-1">
-                                    <h5 class="m-0 ms-2 name">{{ object.profile.username_in_marketplace }}</h5>
-                                    <h5 class="m-0 ms-0 title">{{ object.title|truncatechars:50 }}</h5>
-                                    <p class="m-0 text-truncate">{{ object.description|truncatechars:100 }}</p>
-                                    <p class="m-0 quantity">Quantity:
-                                        <strong>{{ object.quantity }}</strong> {{ object.unit_of_measure }}</p>
-                                    <p class="m-0 price">
-                                        Price:
-                                        <strong>
-                                            {% if object.price_type == 'negotiation' %}
-                                                Negotiable
-                                            {% elif object.price_type == 'per_quantity' %}
-                                                {% if object.currency == 'USD' %}
-                                                    {{ object.price_per_unit }} $
-                                                {% elif object.currency == 'EUR' %}
-                                                    {{ object.price_per_unit }} €
-                                                {% elif object.currency == 'BGN' %}
-                                                    {{ object.price_per_unit }} BGN
-                                                {% else %}
-                                                    {{ object.price_per_unit }} (Currency not defined)
-                                                {% endif %}
-                                            {% elif object.price_type == 'all_quantity' %}
-                                                {% if object.currency == 'USD' %}
-                                                    {{ object.price_all_quantity }} $
-                                                {% elif object.currency == 'EUR' %}
-                                                    {{ object.price_all_quantity }} €
-                                                {% elif object.currency == 'BGN' %}
-                                                    {{ object.price_all_quantity }} BGN
-                                                {% else %}
-                                                    {{ object.price_all_quantity }} (Currency not defined)
-                                                {% endif %}
-                                            {% else %}
-                                                N/A
-                                            {% endif %}
-                                        </strong>
-                                        {% if object.price_type == 'per_quantity' %}
-                                            per unit
-                                        {% elif object.price_type == 'all_quantity' %}
-                                            for all
-                                        {% endif %}
-                                    </p> 
-                                </div>
-                                <div class="product-image-container">
-                                    {% if object.photo_1 %}
-                                        <img src="{{ object.photo_1.url }}" alt="Product Image" class="product-picture">
-                                    {% elif object.photo_2 %}
-                                        <img src="{{ object.photo_2.url }}" alt="Product Image" class="product-picture">
-                                    {% elif object.photo_3 %}
-                                        <img src="{{ object.photo_3.url }}" alt="Product Image" class="product-picture">
-                                    {% elif object.photo_4 %}
-                                        <img src="{{ object.photo_4.url }}" alt="Product Image" class="product-picture">
-                                    {% else %}
-                                        <img src="{% static 'images/default products2.jpg' %}" alt="Product Image"
-                                             class="product-picture">
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center p-2">
-                                <div class="text-muted">
-                                    <i class="fas fa-calendar-alt"></i> {{ object.created_at|date:"M j, Y" }}
-                                </div>
-                                <small class="text-muted ms-auto">
-                                    <i class="fas fa-map-marker-alt"></i> {{ object.location }}
-                                </small>
-                            </div>
+        {% if user.is_authenticated %}
+            <section class="search-section my-4">
+                <form action="{% url 'search' %}" method="get" class="search-form">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6 mb-3">
+                            <label for="searchInput" class="form-label">Search</label>
+                            <input type="text" id="searchInput" name="query" class="form-control"
+                                   placeholder="Search..."
+                                   value="{{ query }}">
                         </div>
-                    {% empty %}
-                        <p class="text-center text-muted">No sellers available.</p>
-                    {% endfor %}
-                </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="categorySelect" class="form-label">Category</label>
+                            <select id="categorySelect" name="category" class="form-select">
+                                <option value="">Select category</option>
+                                <option value="vegetables" {% if category == 'vegetables' %}selected{% endif %}>
+                                    Vegetables
+                                </option>
+                                <option value="fruits" {% if category == 'fruits' %}selected{% endif %}>Fruits</option>
+                                <option value="grain" {% if category == 'grain' %}selected{% endif %}>Grains</option>
+                                <option value="dairy-products" {% if category == 'dairy-products' %}selected{% endif %}>
+                                    Dairy Products
+                                </option>
+                                <option value="mushrooms" {% if category == 'mushrooms' %}selected{% endif %}>Mushrooms
+                                </option>
+                                <option value="herbs-spices" {% if category == 'herbs-spices' %}selected{% endif %}>
+                                    Herbs &
+                                    Spices
+                                </option>
+                                <option value="grapes" {% if category == 'grapes' %}selected{% endif %}>Grapes</option>
+                                <option value="bee-products" {% if category == 'bee-products' %}selected{% endif %}>Bee
+                                    Products
+                                </option>
+                                <option value="other" {% if category == 'other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
 
-                <!-- Pagination for Sellers -->
-                <div class="pagination-container text-center mt-4">
-                    {% if page_obj_sellers.has_other_pages %}
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination">
-                                {% if page_obj_sellers.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="?page_sellers={{ page_obj_sellers.previous_page_number }}&page_buyers={{ page_obj_buyers.number }}">←
-                                            Prev</a>
-                                    </li>
-                                {% endif %}
-                                {% for num in page_obj_sellers.paginator.page_range %}
-                                    {% if num == page_obj_sellers.number %}
-                                        <li class="page-item active">
-                                            <span class="page-link">{{ num }}</span>
-                                        </li>
-                                    {% else %}
+                        <div class="col-md-2 d-grid mb-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <div class="row justify-content-center">
+                <!-- Sellers Section -->
+                <div class="col-md-5">
+                    <h2 class="section-title text-center">Sellers</h2>
+                    <div class="seller-list">
+                        {% for object in page_obj_sellers %}
+                            <div class="feed-card-wrapper mb-4 p-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="category-note text-white px-2 py-1">
+                                        {% if object.category == 'vegetables' %}
+                                            <i class="fas fa-carrot"></i> Vegetables
+                                        {% elif object.category == 'fruits' %}
+                                            <i class="fas fa-apple-alt"></i> Fruits
+                                        {% elif object.category == 'grain' %}
+                                            <i class="fas fa-seedling"></i> Grains
+                                        {% elif object.category == 'dairy-products' %}
+                                            <i class="fas fa-cheese"></i> Dairy Products
+                                        {% elif object.category == 'mushrooms' %}
+                                            <i class="fa-solid fa-palette"></i> Mushrooms
+                                        {% elif object.category == 'herbs-spices' %}
+                                            <i class="fas fa-leaf"></i> Herbs & Spices
+                                        {% elif object.category == 'grapes' %}
+                                            <i class="fa-solid fa-wine-bottle"></i> Grapes
+                                        {% elif object.category == 'bee-products' %}
+                                            <i class="fa-brands fa-forumbee"></i> Bee Products
+                                        {% else %}
+                                            <i class="fa-brands fa-ethereum"></i> Other
+                                        {% endif %}
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'card_info_sell' object.pk %}"
+                                           class="btn btn-outline-primary btn-sm activate">
+                                            <i class="fas fa-info-circle"></i>
+                                            <span class="tooltip-text">Info</span>
+                                        </a>
+                                        {% if user != object.profile.user %}
+                                            <a href="{% url 'send-message' object.profile.pk %}"
+                                               class="btn btn-outline-success btn-sm activate">
+                                                <i class="fas fa-envelope"></i>
+                                                <span class="tooltip-text">Send Message</span>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="feed-card d-flex align-items-center p-2">
+                                    <div class="d-flex flex-column flex-grow-1">
+                                        <h5 class="m-0 ms-2 name">{{ object.profile.username_in_marketplace }}</h5>
+                                        <h5 class="m-0 ms-0 title">{{ object.title|truncatechars:50 }}</h5>
+                                        <p class="m-0 text-truncate">{{ object.description|truncatechars:100 }}</p>
+                                        <p class="m-0 quantity">Quantity:
+                                            <strong>{{ object.quantity }}</strong> {{ object.unit_of_measure }}</p>
+                                        <p class="m-0 price">
+                                            Price:
+                                            <strong>
+                                                {% if object.price_type == 'negotiation' %}
+                                                    Negotiable
+                                                {% elif object.price_type == 'per_quantity' %}
+                                                    {% if object.currency == 'USD' %}
+                                                        {{ object.price_per_unit }} $
+                                                    {% elif object.currency == 'EUR' %}
+                                                        {{ object.price_per_unit }} €
+                                                    {% elif object.currency == 'BGN' %}
+                                                        {{ object.price_per_unit }} BGN
+                                                    {% else %}
+                                                        {{ object.price_per_unit }} (Currency not defined)
+                                                    {% endif %}
+                                                {% elif object.price_type == 'all_quantity' %}
+                                                    {% if object.currency == 'USD' %}
+                                                        {{ object.price_all_quantity }} $
+                                                    {% elif object.currency == 'EUR' %}
+                                                        {{ object.price_all_quantity }} €
+                                                    {% elif object.currency == 'BGN' %}
+                                                        {{ object.price_all_quantity }} BGN
+                                                    {% else %}
+                                                        {{ object.price_all_quantity }} (Currency not defined)
+                                                    {% endif %}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </strong>
+                                            {% if object.price_type == 'per_quantity' %}
+                                                per unit
+                                            {% elif object.price_type == 'all_quantity' %}
+                                                for all
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="product-image-container">
+                                        {% if object.photo_1 %}
+                                            <img src="{{ object.photo_1.url }}" alt="Product Image"
+                                                 class="product-picture">
+                                        {% elif object.photo_2 %}
+                                            <img src="{{ object.photo_2.url }}" alt="Product Image"
+                                                 class="product-picture">
+                                        {% elif object.photo_3 %}
+                                            <img src="{{ object.photo_3.url }}" alt="Product Image"
+                                                 class="product-picture">
+                                        {% elif object.photo_4 %}
+                                            <img src="{{ object.photo_4.url }}" alt="Product Image"
+                                                 class="product-picture">
+                                        {% else %}
+                                            <img src="{% static 'images/default products2.jpg' %}" alt="Product Image"
+                                                 class="product-picture">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center p-2">
+                                    <div class="text-muted">
+                                        <i class="fas fa-calendar-alt"></i> {{ object.created_at|date:"M j, Y" }}
+                                    </div>
+                                    <small class="text-muted ms-auto">
+                                        <i class="fas fa-map-marker-alt"></i> {{ object.location }}
+                                    </small>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="text-center text-muted">No sellers available.</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Pagination for Sellers -->
+                    <div class="pagination-container text-center mt-4">
+                        {% if page_obj_sellers.has_other_pages %}
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    {% if page_obj_sellers.has_previous %}
                                         <li class="page-item">
                                             <a class="page-link"
-                                               href="?page_sellers={{ num }}&page_buyers={{ page_obj_buyers.number }}">{{ num }}</a>
+                                               href="?page_sellers={{ page_obj_sellers.previous_page_number }}&page_buyers={{ page_obj_buyers.number }}">←
+                                                Prev</a>
                                         </li>
                                     {% endif %}
-                                {% endfor %}
-                                {% if page_obj_sellers.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="?page_sellers={{ page_obj_sellers.next_page_number }}&page_buyers={{ page_obj_buyers.number }}">Next
-                                            →</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Separator Line -->
-            <div class="col-md-1 text-center">
-                <div class="vertical-line"></div>
-            </div>
-
-            <!-- Buyers Section -->
-            <div class="col-md-5">
-                <h2 class="section-title text-center">Buyers</h2>
-                <div class="buyer-list">
-                    {% for object in page_obj_buyers %}
-                        <div class="feed-card-wrapper mb-4 p-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="category-note text-white px-2 py-1">
-                                    {% if object.category == 'vegetables' %}
-                                        <i class="fas fa-carrot"></i> Vegetables
-                                    {% elif object.category == 'fruits' %}
-                                        <i class="fas fa-apple-alt"></i> Fruits
-                                    {% elif object.category == 'grain' %}
-                                        <i class="fas fa-seedling"></i> Grains
-                                    {% elif object.category == 'dairy-products' %}
-                                        <i class="fas fa-cheese"></i> Dairy Products
-                                    {% elif object.category == 'mushrooms' %}
-                                        <i class="fa-solid fa-palette"></i> Mushrooms
-                                    {% elif object.category == 'herbs-spices' %}
-                                        <i class="fas fa-leaf"></i> Herbs & Spices
-                                    {% elif object.category == 'grapes' %}
-                                        <i class="fa-solid fa-wine-bottle"></i> Grapes
-                                    {% elif object.category == 'bee-products' %}
-                                        <i class="fa-brands fa-forumbee"></i> Bee Products
-                                    {% else %}
-                                        <i class="fa-brands fa-ethereum"></i> Other
-                                    {% endif %}
-                                </div>
-                                <div class="btn-group" role="group">
-                                    <a href="{% url 'card-info-buy' object.pk %}" class="btn btn-outline-primary btn-sm activate">
-                                        <i class="fas fa-info-circle"></i>
-                                        <span class="tooltip-text">Info</span>
-                                    </a>
-                                    {% if user != object.profile.user %}
-                                        <a href="{% url 'send-message' object.profile.pk %}"
-                                           class="btn btn-outline-success btn-sm activate">
-                                            <i class="fas fa-envelope"></i>
-                                            <span class="tooltip-text">Send Message</span>
-                                        </a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="feed-card d-flex align-items-center justify-content-between p-2">
-                                <div class="d-flex flex-column flex-grow-1">
-                                    <h5 class="m-0 ms-2 name">{{ object.profile.username_in_marketplace }}</h5>
-                                    <h5 class="m-0 ms-0 title">{{ object.title|truncatechars:50 }}</h5>
-                                    <p class="m-0 text-truncate">{{ object.description|truncatechars:100 }}</p>
-                                    <p class="m-0 quantity">Quantity:
-                                        <strong>{{ object.quantity }}</strong> {{ object.unit_of_measure }}</p>
-                                    <p class="m-0 price">
-                                        Price:
-                                        <strong>
-                                            {% if object.price_type == 'negotiation' %}
-                                                Negotiable
-                                            {% elif object.price_type == 'per_quantity' %}
-                                                {% if object.currency == 'USD' %}
-                                                    {{ object.price_per_unit }} $
-                                                {% elif object.currency == 'EUR' %}
-                                                    {{ object.price_per_unit }} €
-                                                {% elif object.currency == 'BGN' %}
-                                                    {{ object.price_per_unit }} BGN
-                                                {% else %}
-                                                    {{ object.price_per_unit }} (Currency not defined)
-                                                {% endif %}
-                                            {% elif object.price_type == 'all_quantity' %}
-                                                {% if object.currency == 'USD' %}
-                                                    {{ object.price_all_quantity }} $
-                                                {% elif object.currency == 'EUR' %}
-                                                    {{ object.price_all_quantity }} €
-                                                {% elif object.currency == 'BGN' %}
-                                                    {{ object.price_all_quantity }} BGN
-                                                {% else %}
-                                                    {{ object.price_all_quantity }} (Currency not defined)
-                                                {% endif %}
-                                            {% else %}
-                                                N/A
-                                            {% endif %}
-                                        </strong>
-                                        {% if object.price_type == 'per_quantity' %}
-                                            per unit
-                                        {% elif object.price_type == 'all_quantity' %}
-                                            for all
-                                        {% endif %}
-                                    </p>
-                                    <!-- Price Added Here -->
-                                </div>
-                                <div class="product-image-container">
-                                    {% if object.photo_1 %}
-                                        <img src="{{ object.photo_1.url }}" alt="Product Image" class="product-picture">
-                                    {% elif object.photo_2 %}
-                                        <img src="{{ object.photo_2.url }}" alt="Product Image" class="product-picture">
-                                    {% elif object.photo_3 %}
-                                        <img src="{{ object.photo_3.url }}" alt="Product Image" class="product-picture">
-                                    {% elif object.photo_4 %}
-                                        <img src="{{ object.photo_4.url }}" alt="Product Image" class="product-picture">
-                                    {% else %}
-                                        <img src="{% static 'images/default products2.jpg' %}" alt="Product Image"
-                                             class="product-picture">
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center p-2">
-                                <div class="text-muted">
-                                    <i class="fas fa-calendar-alt"></i> {{ object.created_at|date:"M j, Y" }}
-                                </div>
-                                <small class="text-muted ms-auto">
-                                    <i class="fas fa-map-marker-alt"></i> {{ object.location }}
-                                </small>
-                            </div>
-                        </div>
-                    {% empty %}
-                        <p class="text-center text-muted">No buyers available.</p>
-                    {% endfor %}
-                </div>
-                <!-- Pagination for Buyers -->
-                <div class="pagination-container text-center mt-4">
-                    {% if page_obj_buyers.has_other_pages %}
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination">
-                                <!-- Previous Button -->
-                                {% if page_obj_buyers.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="?page_buyers={{ page_obj_buyers.previous_page_number }}&page_sellers={{ page_obj_sellers.number }}">←
-                                            Prev</a>
-                                    </li>
-                                {% endif %}
-                                <!-- Limited Page Range -->
-                                {% with 2 as page_window %}
-                                    {% for num in page_obj_buyers.paginator.page_range %}
-                                        {% if num >= page_obj_buyers.number|add:"-2" and num <= page_obj_buyers.number|add:"2" %}
-                                            {% if num == page_obj_buyers.number %}
-                                                <li class="page-item active">
-                                                    <span class="page-link">{{ num }}</span>
-                                                </li>
-                                            {% else %}
-                                                <li class="page-item">
-                                                    <a class="page-link"
-                                                       href="?page_buyers={{ num }}&page_sellers={{ page_obj_sellers.number }}">{{ num }}</a>
-                                                </li>
-                                            {% endif %}
+                                    {% for num in page_obj_sellers.paginator.page_range %}
+                                        {% if num == page_obj_sellers.number %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item">
+                                                <a class="page-link"
+                                                   href="?page_sellers={{ num }}&page_buyers={{ page_obj_buyers.number }}">{{ num }}</a>
+                                            </li>
                                         {% endif %}
                                     {% endfor %}
-                                {% endwith %}
-                                <!-- Next Button -->
-                                {% if page_obj_buyers.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="?page_buyers={{ page_obj_buyers.next_page_number }}&page_sellers={{ page_obj_sellers.number }}">Next
-                                            →</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                    {% endif %}
+                                    {% if page_obj_sellers.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link"
+                                               href="?page_sellers={{ page_obj_sellers.next_page_number }}&page_buyers={{ page_obj_buyers.number }}">Next
+                                                →</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Separator Line -->
+                <div class="col-md-1 text-center">
+                    <div class="vertical-line"></div>
+                </div>
+
+                <!-- Buyers Section -->
+                <div class="col-md-5">
+                    <h2 class="section-title text-center">Buyers</h2>
+                    <div class="buyer-list">
+                        {% for object in page_obj_buyers %}
+                            <div class="feed-card-wrapper mb-4 p-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="category-note text-white px-2 py-1">
+                                        {% if object.category == 'vegetables' %}
+                                            <i class="fas fa-carrot"></i> Vegetables
+                                        {% elif object.category == 'fruits' %}
+                                            <i class="fas fa-apple-alt"></i> Fruits
+                                        {% elif object.category == 'grain' %}
+                                            <i class="fas fa-seedling"></i> Grains
+                                        {% elif object.category == 'dairy-products' %}
+                                            <i class="fas fa-cheese"></i> Dairy Products
+                                        {% elif object.category == 'mushrooms' %}
+                                            <i class="fa-solid fa-palette"></i> Mushrooms
+                                        {% elif object.category == 'herbs-spices' %}
+                                            <i class="fas fa-leaf"></i> Herbs & Spices
+                                        {% elif object.category == 'grapes' %}
+                                            <i class="fa-solid fa-wine-bottle"></i> Grapes
+                                        {% elif object.category == 'bee-products' %}
+                                            <i class="fa-brands fa-forumbee"></i> Bee Products
+                                        {% else %}
+                                            <i class="fa-brands fa-ethereum"></i> Other
+                                        {% endif %}
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'card-info-buy' object.pk %}"
+                                           class="btn btn-outline-primary btn-sm activate">
+                                            <i class="fas fa-info-circle"></i>
+                                            <span class="tooltip-text">Info</span>
+                                        </a>
+                                        {% if user != object.profile.user %}
+                                            <a href="{% url 'send-message' object.profile.pk %}"
+                                               class="btn btn-outline-success btn-sm activate">
+                                                <i class="fas fa-envelope"></i>
+                                                <span class="tooltip-text">Send Message</span>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="feed-card d-flex align-items-center justify-content-between p-2">
+                                    <div class="d-flex flex-column flex-grow-1">
+                                        <h5 class="m-0 ms-2 name">{{ object.profile.username_in_marketplace }}</h5>
+                                        <h5 class="m-0 ms-0 title">{{ object.title|truncatechars:50 }}</h5>
+                                        <p class="m-0 text-truncate">{{ object.description|truncatechars:100 }}</p>
+                                        <p class="m-0 quantity">Quantity:
+                                            <strong>{{ object.quantity }}</strong> {{ object.unit_of_measure }}</p>
+                                        <p class="m-0 price">
+                                            Price:
+                                            <strong>
+                                                {% if object.price_type == 'negotiation' %}
+                                                    Negotiable
+                                                {% elif object.price_type == 'per_quantity' %}
+                                                    {% if object.currency == 'USD' %}
+                                                        {{ object.price_per_unit }} $
+                                                    {% elif object.currency == 'EUR' %}
+                                                        {{ object.price_per_unit }} €
+                                                    {% elif object.currency == 'BGN' %}
+                                                        {{ object.price_per_unit }} BGN
+                                                    {% else %}
+                                                        {{ object.price_per_unit }} (Currency not defined)
+                                                    {% endif %}
+                                                {% elif object.price_type == 'all_quantity' %}
+                                                    {% if object.currency == 'USD' %}
+                                                        {{ object.price_all_quantity }} $
+                                                    {% elif object.currency == 'EUR' %}
+                                                        {{ object.price_all_quantity }} €
+                                                    {% elif object.currency == 'BGN' %}
+                                                        {{ object.price_all_quantity }} BGN
+                                                    {% else %}
+                                                        {{ object.price_all_quantity }} (Currency not defined)
+                                                    {% endif %}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </strong>
+                                            {% if object.price_type == 'per_quantity' %}
+                                                per unit
+                                            {% elif object.price_type == 'all_quantity' %}
+                                                for all
+                                            {% endif %}
+                                        </p>
+                                        <!-- Price Added Here -->
+                                    </div>
+                                    <div class="product-image-container">
+                                        {% if object.photo_1 %}
+                                            <img src="{{ object.photo_1.url }}" alt="Product Image"
+                                                 class="product-picture">
+                                        {% elif object.photo_2 %}
+                                            <img src="{{ object.photo_2.url }}" alt="Product Image"
+                                                 class="product-picture">
+                                        {% elif object.photo_3 %}
+                                            <img src="{{ object.photo_3.url }}" alt="Product Image"
+                                                 class="product-picture">
+                                        {% elif object.photo_4 %}
+                                            <img src="{{ object.photo_4.url }}" alt="Product Image"
+                                                 class="product-picture">
+                                        {% else %}
+                                            <img src="{% static 'images/default products2.jpg' %}" alt="Product Image"
+                                                 class="product-picture">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center p-2">
+                                    <div class="text-muted">
+                                        <i class="fas fa-calendar-alt"></i> {{ object.created_at|date:"M j, Y" }}
+                                    </div>
+                                    <small class="text-muted ms-auto">
+                                        <i class="fas fa-map-marker-alt"></i> {{ object.location }}
+                                    </small>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="text-center text-muted">No buyers available.</p>
+                        {% endfor %}
+                    </div>
+                    <!-- Pagination for Buyers -->
+                    <div class="pagination-container text-center mt-4">
+                        {% if page_obj_buyers.has_other_pages %}
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    <!-- Previous Button -->
+                                    {% if page_obj_buyers.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link"
+                                               href="?page_buyers={{ page_obj_buyers.previous_page_number }}&page_sellers={{ page_obj_sellers.number }}">←
+                                                Prev</a>
+                                        </li>
+                                    {% endif %}
+                                    <!-- Limited Page Range -->
+                                    {% with 2 as page_window %}
+                                        {% for num in page_obj_buyers.paginator.page_range %}
+                                            {% if num >= page_obj_buyers.number|add:"-2" and num <= page_obj_buyers.number|add:"2" %}
+                                                {% if num == page_obj_buyers.number %}
+                                                    <li class="page-item active">
+                                                        <span class="page-link">{{ num }}</span>
+                                                    </li>
+                                                {% else %}
+                                                    <li class="page-item">
+                                                        <a class="page-link"
+                                                           href="?page_buyers={{ num }}&page_sellers={{ page_obj_sellers.number }}">{{ num }}</a>
+                                                    </li>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                    <!-- Next Button -->
+                                    {% if page_obj_buyers.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link"
+                                               href="?page_buyers={{ page_obj_buyers.next_page_number }}&page_sellers={{ page_obj_sellers.number }}">Next
+                                                →</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
     </main>
 {% endblock %}
