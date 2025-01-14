@@ -492,11 +492,11 @@ main {
 
 .product-photo:hover {
     transform: scale(1.5);
-    z-index: 10; /* Bring the hovered image to the front */
+    z-index: 10;
 }
 
 .photo-container:hover .product-photo:not(:hover) {
-    opacity: 0.6; /* Dim non-hovered images */
+    opacity: 0.6;
 }
 
 @media (max-width: 768px) {
@@ -508,8 +508,8 @@ main {
 
     .product-photo:hover, .product-photo:active {
         height: auto;
-        width: 100%;  /* Make the image width 100% on hover or active */
-        transform: scale(2);  /* Zoom in on hover or click */
+        width: auto;
+        transform: scale(2.5);
     }
 }
 
@@ -523,8 +523,8 @@ main {
 
     .product-photo:hover, .product-photo:active {
         height: auto;
-        width: 100%;
-        transform: scale(2);  /* Zoom in on hover or click */
+        width: auto;
+        transform: scale(2.5);
     }
 }
 
