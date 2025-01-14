@@ -507,10 +507,6 @@ main {
         transition: all 0.3s ease;
     }
 
-    .photo-container {
-        position: relative;
-        overflow: hidden;
-    }
 
     .product-photo:hover, .product-photo:active {
         height: auto;
@@ -528,10 +524,6 @@ main {
         flex-grow: 1;
     }
 
-    .photo-container {
-        position: relative;
-        overflow: hidden;
-    }
 
     .product-photo:hover, .product-photo:active {
         height: auto;
