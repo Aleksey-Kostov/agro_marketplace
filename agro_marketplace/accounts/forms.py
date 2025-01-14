@@ -59,6 +59,21 @@ class AppUserCreationForm(EmailFormMixin, UserCreationForm):
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = field.widget.attrs.get('class', '') + ' form-control'
             field.widget.attrs['placeholder'] = f"Enter {self.Meta.labels.get(field_name, field_name).lower()}"
+        if 'password1' in self.fields:
+            password1_field = self.fields['password1']
+            password1_field.widget.attrs.update({
+                'autocomplete': 'password1',
+                'id': 'id_password1',
+                'data-target': '#id_password1'
+            })
+
+        if 'password2' in self.fields:
+            password2_field = self.fields['password2']
+            password2_field.widget.attrs.update({
+                'autocomplete': 'password2',
+                'id': 'id_password2',
+                'data-target': '#id_password2'
+            })
 
 
 class ProfileBaseForm(EmailFormMixin, forms.ModelForm):

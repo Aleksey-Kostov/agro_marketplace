@@ -35,7 +35,14 @@
                     <!-- Password Field -->
                     <div class="mb-3">
                         {{ form.password1.label_tag }}
-                        {{ form.password1 }}
+                        <div class="input-group">
+                            {{ form.password1}}
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-white toggle-password" data-target="#id_password1">
+                                    <i class="fa fa-eye" id="eye-icon"></i>
+                                </button>
+                            </div>
+                        </div>
                         {% if form.password1.errors %}
                             <div class="alert alert-danger">
                                 {{ form.password1.errors }}
@@ -46,7 +53,14 @@
                     <!-- Repeat Password Field -->
                     <div class="mb-3">
                         {{ form.password2.label_tag }}
-                        {{ form.password2 }}
+                        <div class="input-group">
+                            {{ form.password2 }}
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-white toggle-password" data-target="#id_password2">
+                                    <i class="fa fa-eye" id="eye-icon"></i>
+                                </button>
+                            </div>
+                        </div>
                         {% if form.password2.errors %}
                             <div class="alert alert-danger">
                                 {{ form.password2.errors }}

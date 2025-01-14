@@ -479,9 +479,24 @@ main {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
+
+.photo-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.product-photo {
+    transition: transform 0.3s ease, z-index 0.3s ease;
+    transform-origin: center center;
+}
+
 .product-photo:hover {
-    width: auto;
-    height: 400px;
+    transform: scale(1.5);
+    z-index: 10; /* Bring the hovered image to the front */
+}
+
+.photo-container:hover .product-photo:not(:hover) {
+    opacity: 0.6; /* Dim non-hovered images */
 }
 
 @media (max-width: 768px) {
@@ -492,11 +507,13 @@ main {
     }
 
     .product-photo:hover, .product-photo:active {
-        height: 300px;
-        width: 100%;
+        height: auto;
+        width: 100%;  /* Make the image width 100% on hover or active */
+        transform: scale(2);  /* Zoom in on hover or click */
     }
 }
 
+/* Media Query for Devices with Width <= 480px */
 @media (max-width: 480px) {
     .product-photo {
         width: 100px;
@@ -505,8 +522,9 @@ main {
     }
 
     .product-photo:hover, .product-photo:active {
-        height: 200px;
+        height: auto;
         width: 100%;
+        transform: scale(2);  /* Zoom in on hover or click */
     }
 }
 
@@ -635,3 +653,5 @@ main {
     background-color: #f8f9fa; /* Light gray on hover */
     border-color: #888;
 }
+
+
