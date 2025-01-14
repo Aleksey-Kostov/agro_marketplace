@@ -157,24 +157,23 @@
                                     {{ item.location }}</small>
                             </div>
                         </div> <!-- End of each item card -->
-                        </div>
                     {% empty %}
                         <p class="text-muted">No active listings available.</p>
                     {% endfor %}
-            </div>
+                </div>
 
-            <!-- Pagination -->
-            <div class="pagination mt-3 mb-3">
-                {% if items_page.has_previous %}
-                    <a href="?page={{ items_page.previous_page_number }}"
-                       class="btn btn-outline-primary">Previous</a>
-                {% endif %}
-                <span class="d-flex paginator-page justify-content-center align-items-center">Page {{ items_page.number }} of {{ items_page.paginator.num_pages }}</span>
-                {% if items_page.has_next %}
-                    <a href="?page={{ items_page.next_page_number }}" class="btn btn-outline-primary">Next</a>
-                {% endif %}
+                <!-- Pagination -->
+                <div class="pagination mt-3 mb-3">
+                    {% if items_page.has_previous %}
+                        <a href="?page={{ items_page.previous_page_number }}"
+                           class="btn btn-outline-primary">Previous</a>
+                    {% endif %}
+                    <span class="d-flex paginator-page justify-content-center align-items-center">Page {{ items_page.number }} of {{ items_page.paginator.num_pages }}</span>
+                    {% if items_page.has_next %}
+                        <a href="?page={{ items_page.next_page_number }}" class="btn btn-outline-primary">Next</a>
+                    {% endif %}
+                </div>
             </div>
-        </div>
         </div>
     </main>
 {% endblock %}
