@@ -2,42 +2,49 @@
 {% load static %}
 
 {% block content %}
-<main class="container my-4">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h2 class="text-center mb-4">Login to Agro Marketplace</h2>
-            <form method="POST" action="{% url 'login' %}" class="p-4 border rounded">
-                {% csrf_token %}
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {% for error in form.non_field_errors %}
-                            <p>{{ error }}</p>
-                        {% endfor %}
+    <main class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="text-center mb-4">Login to Agro Marketplace</h2>
+                <form method="POST" action="{% url 'login' %}" class="p-4 border rounded">
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <!-- Username field -->
+                    <div class="mb-3">
+                        {{ form.username.label_tag }}
+                        {{ form.username }}
                     </div>
-                {% endif %}
-                <!-- Username field -->
-                <div class="mb-3">
-                    {{ form.username.label_tag }}
-                    {{ form.username }}
-                </div>
 
-                <!-- Password field -->
-                <div class="mb-3">
-                    {{ form.password.label_tag }}
-                    {{ form.password }}
-                </div>
+                    <!-- Password field -->
+                    <div class="mb-3">
+                        {{ form.password.label_tag }}
+                        <div class="input-group">
+                            {{ form.password }}
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-white toggle-password" data-target="#id_login_password">
+                                    <i class="fa fa-eye" id="eye-icon"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary mt-3">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </button>
-                </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary mt-3">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                    </div>
 
-                <p class="text-center mt-3">
-                    Don't have an account? <a href="{% url 'register' %}" class="text-primary">Register here</a>
-                </p>
-            </form>
+                    <p class="text-center mt-3">
+                        Don't have an account? <a href="{% url 'register' %}" class="text-primary">Register here</a>
+                    </p>
+                </form>
+            </div>
         </div>
-    </div>
-</main>
+    </main>
 {% endblock %}

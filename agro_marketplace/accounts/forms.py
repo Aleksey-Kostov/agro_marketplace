@@ -24,6 +24,14 @@ class CustomAuthenticationForm(AuthenticationForm):
             field.widget.attrs['class'] = field.widget.attrs.get('class', '') + ' form-control'
             field.widget.attrs['placeholder'] = f"Enter {self.Meta.labels.get(field_name, field_name).lower()}"
 
+        password_field = self.fields.get('password')
+        if password_field:
+            password_field.widget.attrs.update({
+                'autocomplete': 'current-password',
+                'id': 'id_login_password',
+                'data-target': '#id_login_password'
+            })
+
 
 class AppUserChangeForm(UserChangeForm):
     class Meta(UserChangeForm.Meta):
@@ -187,3 +195,24 @@ class ProfileEditForm(ProfileBaseForm):
                 self.add_error('confirm_password', "Passwords do not match.")
 
         return cleaned_data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = field.widget.attrs.get('class', '') + ' form-control'
+            field.widget.attrs['placeholder'] = f"Enter {self.Meta.labels.get(field_name, field_name).lower()}"
+        if 'new_password' in self.fields:
+            new_password_field = self.fields['new_password']
+            new_password_field.widget.attrs.update({
+                'autocomplete': 'new-password',
+                'id': 'id_new_password',
+                'data-target': '#id_new_password'
+            })
+
+        if 'confirm_password' in self.fields:
+            confirm_password_field = self.fields['confirm_password']
+            confirm_password_field.widget.attrs.update({
+                'autocomplete': 'new-password',
+                'id': 'id_confirm_password',
+                'data-target': '#id_confirm_password'
+            })

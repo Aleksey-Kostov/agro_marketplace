@@ -112,7 +112,14 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         {{ form.new_password.label_tag }}
-                        {{ form.new_password }}
+                        <div class="input-group">
+                            {{ form.new_password }}
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-white toggle-password" data-target="#id_new_password">
+                                    <i class="fa fa-eye" id="eye-icon"></i>
+                                </button>
+                            </div>
+                        </div>
                         {% if form.new_password.errors %}
                             <div class="alert alert-danger">
                                 {{ form.new_password.errors }}
@@ -122,7 +129,14 @@
 
                     <div class="col-md-6">
                         {{ form.confirm_password.label_tag }}
-                        {{ form.confirm_password }}
+                        <div class="input-group">
+                            {{ form.confirm_password }}
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-white toggle-password" data-target="#id_confirm_password">
+                                    <i class="fa fa-eye" id="eye-icon"></i>
+                                </button>
+                            </div>
+                        </div>
                         {% if form.confirm_password.errors %}
                             <div class="alert alert-danger">
                                 {{ form.confirm_password.errors }}
@@ -136,7 +150,7 @@
                 </div>
 
                 <!-- Back Button -->
-                <div class="col-12">
+                <div class="col-12 mt-2">
                     <a href="{% url 'dash' %}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Back
                     </a>
