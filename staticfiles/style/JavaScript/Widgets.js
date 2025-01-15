@@ -1,6 +1,14 @@
-// Функция за рендиране на графики
+// Function to render a chart
 function renderChart(canvasId, type, labels, datasetLabel, data, backgroundColors, borderColors) {
-    var ctx = document.getElementById(canvasId).getContext('2d');
+    const canvasElement = document.getElementById(canvasId);
+
+    // Check if the canvas element exists
+    if (!canvasElement) {
+        console.warn(`Canvas with ID "${canvasId}" not found. Chart rendering skipped.`);
+        return;
+    }
+
+    const ctx = canvasElement.getContext('2d');
     return new Chart(ctx, {
         type: type,
         data: {
@@ -24,40 +32,47 @@ function renderChart(canvasId, type, labels, datasetLabel, data, backgroundColor
     });
 }
 
+// Fetch data and render charts
 fetch('/api/data/')
     .then(response => response.json())
     .then(data => {
         console.log('Fetched Data:', data);
 
-        // Активни продавачи
+        // Active Sellers Chart
         renderChart(
-            'activeSellersChart',
-            'bar',
-            data.months,
-            'Active Sellers',
-            data.activeSellersData,
-            '#007bff', '#007bff'
+            'activeSellersChart', // Canvas ID
+            'bar',                // Chart type
+            data.months,          // Labels
+            'Active Sellers',     // Dataset label
+            data.activeSellersData, // Data
+            '#007bff',            // Background color
+            '#007bff'             // Border color
         );
 
-        // Активни купувачи
+        // Active Buyers Chart
         renderChart(
             'activeBuyersChart',
             'line',
             data.months,
             'Active Buyers',
             data.activeBuyersData,
-            'rgba(40, 167, 69, 0.2)', '#28a745'
+            'rgba(40, 167, 69, 0.2)',
+            '#28a745'
         );
 
-        // Общи продукти
+        // Total Products Chart
         renderChart(
             'totalProductsChart',
             'pie',
             data.totalProductsLabels,
             'Total Products',
             data.totalProductsData,
-            ['#33c9ff', '#33ff57', '#3357ff', '#ff33a8', '#a833ff',
-                    '#ffc107', '#6f42c1', '#fd7e14', '#20c997'], '#fff'
+            [
+                '#33c9ff', '#33ff57', '#3357ff', '#ff33a8',
+                '#a833ff', '#ffc107', '#6f42c1', '#fd7e14',
+                '#20c997'
+            ],
+            '#fff'
         );
     })
     .catch(error => {
