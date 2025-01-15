@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from collections import defaultdict
 from django.http import JsonResponse
@@ -18,6 +19,7 @@ def home_page(request):
     return render(request, 'common/home-page2.html')
 
 
+@login_required
 def dashboard(request):
     current_time = timezone.now()
 
@@ -45,6 +47,7 @@ def info_contacts(request):
     return render(request, 'common/info-contacts.html')
 
 
+@login_required
 def search(request):
     query = request.GET.get('query', '')
     category = request.GET.get('category', '')

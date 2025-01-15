@@ -21,25 +21,25 @@
                 </div>
                 <div class="card-body">
                     <!-- Product Title -->
-                    <div class="mb-3">
+                    <div class="mb-3 ps-2">
                         <strong>Product Title:</strong>
                         <p class="mb-1">{{ item.title }}</p>
                     </div>
 
                     <!-- Category -->
-                    <div class="mb-3">
+                    <div class="mb-3 ps-2">
                         <strong>Category:</strong>
                         <p class="mb-1">{{ item.get_category_display }}</p>
                     </div>
 
                     <!-- Location -->
-                    <div class="mb-3">
+                    <div class="mb-3 ps-2">
                         <strong>Location:</strong>
                         <p class="mb-1">{{ item.location }}</p>
                     </div>
 
                     <!-- Product Photos (Up to 10 images) -->
-                    <div class="mb-3">
+                    <div class="mb-3 ps-2">
                         <strong>Product Photos:</strong>
                         <div class="row gx-1 gy-1">
                             {% if item.photo_1 or item.photo_2 or item.photo_3 or item.photo_4 %}
@@ -74,31 +74,31 @@
                     </div>
 
                     <!-- Product Description -->
-                    <div class="mb-3">
+                    <div class="mb-3 ps-2">
                         <strong>Description:</strong>
                         <p class="mb-1">{{ item.description }}</p>
                     </div>
 
                     <!-- Phone -->
-                    <div class="mb-3">
+                    <div class="mb-3 ps-2">
                         <strong>Phone:</strong>
                         <p class="mb-1">{{ item.phone }}</p>
                     </div>
 
                     <!-- Name (Non-editable) -->
-                    <div class="mb-3">
+                    <div class="mb-3 ps-2">
                         <strong>Name:</strong>
                         <p class="mb-1">{{ item.profile.username_in_marketplace }}</p>
                     </div>
 
                     <!-- Quantity -->
-                    <div class="mb-3">
+                    <div class="mb-3 ps-2">
                         <strong>Quantity:</strong>
                         <p class="mb-1">{{ item.quantity }} {{ item.get_unit_of_measure_display }}</p>
                     </div>
 
                     <!-- Price -->
-                    <div class="mb-3">
+                    <div class="mb-3 ps-2">
                         <strong>Price:</strong>
                         <p class="mb-1">
                             {% if item.price_type == "negotiation" %}
@@ -112,7 +112,7 @@
                     </div>
 
                     <!-- Expiration Date -->
-                    <div class="mb-3">
+                    <div class="mb-3 ps-2">
                         <strong>Expiration Date:</strong>
                         <p class="mb-1">
                             {% if item.expiration_date %}

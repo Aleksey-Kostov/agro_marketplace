@@ -9,6 +9,7 @@ from agro_marketplace.sellers.models import SellerItems
 from django.contrib import messages
 
 
+@login_required
 def card_info_sellers(request, pk):
     item = get_object_or_404(SellerItems, pk=pk)
     return render(request, 'sellers/card-info-sellers.html', {'item': item})
@@ -16,7 +17,6 @@ def card_info_sellers(request, pk):
 
 @login_required
 def create_seller(request):
-
     if request.method == 'POST':
         form = SellersForm(request.POST, request.FILES)
         if form.is_valid():

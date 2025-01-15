@@ -9,6 +9,7 @@ from agro_marketplace.buyers.models import BuyerItems
 from django.contrib import messages
 
 
+@login_required
 def card_info_buyer(request, pk):
     item = get_object_or_404(BuyerItems, pk=pk)
     return render(request, 'buyers/card-info-buyers.html', {'item': item})
@@ -16,7 +17,6 @@ def card_info_buyer(request, pk):
 
 @login_required
 def create_buyer(request):
-
     if request.method == 'POST':
         form = BuyersForm(request.POST, request.FILES)
         if form.is_valid():

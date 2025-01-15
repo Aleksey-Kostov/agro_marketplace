@@ -7,7 +7,7 @@ from django.views.static import serve
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('agro_marketplace.common.urls')),
-    path('accoutnts/', include('agro_marketplace.accounts.urls')),
+    path('accounts/', include('agro_marketplace.accounts.urls')),
     path('messages/', include('agro_marketplace.agro_messages.urls')),
     path('buyers/', include('agro_marketplace.buyers.urls')),
     path('sellers/', include('agro_marketplace.sellers.urls')),

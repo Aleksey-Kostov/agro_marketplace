@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
@@ -58,6 +59,7 @@ def custom_logout(request):
     return redirect('home')
 
 
+@login_required
 def profile_details(request, pk):
     profile = get_object_or_404(Profile, pk=pk)
     active_seller_items = profile.seller_products.filter(expiration_date__gte=now())
@@ -139,6 +141,7 @@ class ProfileDeleteView(LoginRequiredMixin, View):
         return redirect(reverse_lazy('home'))
 
 
+@login_required
 def delete_item(request, slug):
     item = get_item_by_slug(slug)
     if not item:
@@ -153,6 +156,7 @@ def delete_item(request, slug):
     return render(request, 'accounts/item-delete.html', {'object': item})
 
 
+@login_required
 def activ_listings(request, pk):
     profile = get_object_or_404(Profile, pk=pk)
     combined_items = get_combined_items(profile, expiration_check='active')
@@ -167,6 +171,7 @@ def activ_listings(request, pk):
     })
 
 
+@login_required
 def inactive_listings(request, pk):
     profile = get_object_or_404(Profile, pk=pk)
     combined_items = get_combined_items(profile, expiration_check='inactive')
@@ -181,6 +186,7 @@ def inactive_listings(request, pk):
     })
 
 
+@login_required
 def activate_item(request, slug):
     item = get_item_by_slug(slug, expiration_check='inactive')
     if not item:
