@@ -509,8 +509,8 @@ main {
 
 
     .product-photo:hover, .product-photo:active {
-        height: auto;
-        width: auto;
+        height: 100px;
+        width: 120px;
         transform: scale(2.5) translate(10%, -10%); /* Zoom and move */
     }
 }
@@ -526,9 +526,9 @@ main {
 
 
     .product-photo:hover, .product-photo:active {
-        height: auto;
-        width: auto;
-        transform: scale(2.5) translate(-10%, 10%); /* Zoom and move */
+        height: 60px;
+        width: 100px;
+        transform: scale(2.5) translate(-3%, 10%); /* Zoom and move */
     }
 }
 
