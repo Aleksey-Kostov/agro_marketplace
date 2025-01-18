@@ -2,8 +2,12 @@
 {% load static %}
 
 {% block content %}
-    <main class="container my-5">
-        <h2>Join - Agro Marketplace</h2>
+    <main class="container my-4 profile-registration">
+        <div class="d-flex align-items-center border rounded p-2 text-details mb-5">
+            <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
+                <i class="fas fa-user me-2"></i> Profile Registration
+            </h3>
+        </div>
         <form method="POST" action="{% url 'profile-registration' %}" enctype="multipart/form-data"
               class="row g-4 justify-content-center">
             {% csrf_token %}
@@ -78,7 +82,7 @@
                     </div>
                 {% endif %}
             </div>
-            <div class="col-md-2">
+            <div class="col-md-2 code-country">
                 {{ form.country_code.label_tag }}
                 {{ form.country_code }}
                 {% if form.country_code.errors %}
@@ -87,7 +91,7 @@
                     </div>
                 {% endif %}
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 phone">
                 {{ form.phone.label_tag }}
                 {{ form.phone }}
                 {% if form.phone.errors %}
@@ -96,7 +100,7 @@
                     </div>
                 {% endif %}
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 town">
                 {{ form.town.label_tag }}
                 {{ form.town }}
                 {% if form.town.errors %}
@@ -105,7 +109,7 @@
                     </div>
                 {% endif %}
             </div>
-            <div class="col-12 text-center mt-3">
+            <div class="col-12 text-center mt-4">
                 <button type="submit" class="btn btn-primary">Register</button>
             </div>
         </form>

@@ -293,7 +293,7 @@ footer ul.list-inline a {
 .section-title:after {
     content: "";
     position: absolute;
-    width: 40%;
+    width: 37%;
     height: 1px;
     background-color: #0a0a0a;
     top: 50%;
@@ -625,7 +625,7 @@ main {
 }
 
 .back-button {
-    min-width: 80px;
+    min-width: 90px;
     max-width: 100px;
     align-items: center;
     justify-content: center;
@@ -659,4 +659,39 @@ main {
     border-color: #888;
 }
 
+.profile-edit {
+    max-width: 1000px;
+}
+.submit-button {
+    min-width: 200px;
+}
 
+@media (max-width: 700px) {
+    .submit-button {
+        min-width: 150px
+    }
+
+    .unit-measure {
+        margin-top: 25px;
+    }
+}
+
+.edit-profile {
+    margin-bottom: 45px;
+}
+
+.profile-registration {
+    max-width: 900px;
+}
+
+.code-country {
+    min-width: 180px;
+}
+
+.phone {
+    max-width: 260px;
+}
+
+.town {
+    max-width: 380px;
+}

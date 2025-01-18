@@ -6,7 +6,16 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-8">
-                    <h2 class="text-center mb-4">Buy in Agro Marketplace</h2>
+                    <div class="col-12 mb-4 text-details">
+                        <div class="d-flex align-items-center border rounded p-2">
+                            <a href="#" class="btn btn-secondary me-3 back-button" onclick="goBack()">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </a>
+                            <h2 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
+                                <i class="fas fa-shopping-cart"></i> Buy in Agro Marketplace
+                            </h2>
+                        </div>
+                    </div>
                     <form action="{% url 'create-buyer' %}" method="POST" class="p-4 border rounded"
                           enctype="multipart/form-data">
                         {% csrf_token %}
@@ -160,7 +169,7 @@
                             {% endif %}
                         </div>
                         <div class="d-flex">
-                            <div class="col-md-6">
+                            <div class="col-md-6 unit-measure">
                                 {{ buyer_form.quantity.label_tag }}
                                 {{ buyer_form.quantity }}
                                 {% if buyer_form.quantity.errors %}
@@ -174,7 +183,7 @@
                                 {{ buyer_form.unit_of_measure }}
                             </div>
                         </div>
-                        <div class="mb-3">
+                        <div class="md-3 mt-3">
                             {{ buyer_form.price_type.label_tag }}
                             {{ buyer_form.price_type }}
                             {% if buyer_form.price_type.errors %}
@@ -189,7 +198,7 @@
                                 {{ buyer_form.price_per_unit.errors }}
                             </div>
                             <div class="d-flex">
-                                <div class="col-md-6">
+                                <div class="col-md-6 mt-3">
                                     {{ buyer_form.price_per_unit.label_tag }}
                                     {{ buyer_form.price_per_unit }}
                                     {% if buyer_form.price_per_unit.errors %}
@@ -198,7 +207,7 @@
                                         </div>
                                     {% endif %}
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md- mt-3">
                                     {{ buyer_form.currency.label_tag }}
                                     {{ buyer_form.currency }}
                                 </div>
@@ -206,7 +215,7 @@
                         </div>
                         <div id="priceAllQuantityContainer" class="form-group" style="display: none;">
                             <div class="d-flex">
-                                <div class="col-md-6">
+                                <div class="col-md-6 mt-3">
                                     {{ buyer_form.price_all_quantity.label_tag }}
                                     {{ buyer_form.price_all_quantity }}
                                     {% if buyer_form.price_all_quantity.errors %}
@@ -215,7 +224,7 @@
                                         </div>
                                     {% endif %}
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 mt-3">
                                     {{ buyer_form.currency.label_tag }}
                                     {{ buyer_form.currency }}
                                 </div>
@@ -223,11 +232,8 @@
                         </div>
                         <!-- Submit Button -->
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                            <button type="submit" class="btn btn-primary mt-4 submit-button">Submit</button>
                         </div>
-                        <a href="#" class="btn btn-secondary" onclick="goBack()">
-                            <i class="fas fa-arrow-left"></i> Back
-                        </a>
                     </form>
                 </div>
             </div>

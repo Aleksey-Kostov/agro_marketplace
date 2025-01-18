@@ -4,25 +4,27 @@
 
 {% block content %}
     <!-- Main Content -->
-    <main class="container my-5">
+    <main class="container my-4">
         <!-- Profile Info Section -->
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6 profile-container">
-                <h2 class="text-center mb-4"><i class="fas fa-user-circle"></i> Profile Information</h2>
-                <div class="card shadow-lg p-4 info-profile">
-                    <!-- Back Button -->
-                    <div class="text-center mb-4">
-                        <a href="{% url 'dash' %}" class="btn btn-secondary">
+                <div class="col-12 mb-4 text-details">
+                    <div class="d-flex align-items-center border rounded p-2">
+                        <a href="{% url 'dash' %}" class="btn btn-secondary me-3 back-button">
                             <i class="fas fa-arrow-left"></i> Back
                         </a>
+                        <h2 class="text-center bg-white text-dark m-0 flex-grow-1 rounded"><i
+                                class="fas fa-user-circle"></i> Profile Information</h2>
                     </div>
-
+                </div>
+                <div class="card shadow-lg p-4 info-profile">
                     <!-- Profile Picture -->
                     <div class="col-12 mb-4 text-center">
                         <div class="profile-photo-container">
                             <img src="
                                     
-                                    {% if form.profile_photo.value %}{{ form.profile_photo.value.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
+                                    
+                                    {% if profile.profile_photo %}{{ profile.profile_photo.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
                                  class="img-fluid rounded-circle border border-3 border-secondary"
                                  alt="Profile Picture">
                         </div>

@@ -5,7 +5,11 @@
     <main class="container my-4">
         <div class="row justify-content-center">
             <div class="col-md-6">
-                <h2 class="text-center mb-4">Login to Agro Marketplace</h2>
+                <div class="d-flex align-items-center border rounded p-2 text-details mb-4">
+                    <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
+                        <i class="fas fa-sign-in-alt me-2"></i> Login to Agro Marketplace
+                    </h3>
+                </div>
                 <form method="POST" action="{% url 'login' %}" class="p-4 border rounded">
                     {% csrf_token %}
                     {% if form.non_field_errors %}
@@ -27,7 +31,8 @@
                         <div class="input-group">
                             {{ form.password }}
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-white toggle-password" data-target="#id_login_password">
+                                <button type="button" class="btn btn-white toggle-password"
+                                        data-target="#id_login_password">
                                     <i class="fa fa-eye" id="eye-icon"></i>
                                 </button>
                             </div>

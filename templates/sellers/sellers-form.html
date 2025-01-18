@@ -7,7 +7,17 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-8">
-                    <h2 class="text-center mb-4">Sell in Agro Marketplace</h2>
+                     <div class="col-12 mb-4 text-details">
+                        <div class="d-flex align-items-center border rounded p-2">
+                            <a href="#" class="btn btn-secondary me-3 back-button" onclick="goBack()">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </a>
+                            <h2 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
+                                <i class="fas fa-dollar-sign"></i>
+                                Sell in Agro Marketplace
+                            </h2>
+                        </div>
+                    </div>
                     <form action="{% url 'create_seller' %}" method="POST" class="p-4 border rounded"
                           enctype="multipart/form-data">
                         {% csrf_token %}
@@ -21,7 +31,6 @@
                                 </div>
                             {% endif %}
                         </div>
-                       
                         <div class="mb-3">
                             {{ seller_form.category.label_tag }}
                             {{ seller_form.category }}
@@ -161,7 +170,7 @@
                             {% endif %}
                         </div>
                         <div class="d-flex">
-                            <div class="col-md-6">
+                            <div class="col-md-6 unit-measure">
                                 {{ seller_form.quantity.label_tag }}
                                 {{ seller_form.quantity }}
                                 {% if seller_form.quantity.errors %}
@@ -175,7 +184,7 @@
                                 {{ seller_form.unit_of_measure }}
                             </div>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3 mt-3">
                             {{ seller_form.price_type.label_tag }}
                             {{ seller_form.price_type }}
                             {% if seller_form.price_type.errors %}
@@ -187,7 +196,7 @@
 
                         <div id="pricePerUnitContainer" class="form-group" style="display: none;">
                             <div class="d-flex">
-                                <div class="col-md-6">
+                                <div class="col-md-6 mt-3">
                                     {{ seller_form.price_per_unit.label_tag }}
                                     {{ seller_form.price_per_unit }}
                                     {% if seller_form.price_per_unit.errors %}
@@ -196,7 +205,7 @@
                                         </div>
                                     {% endif %}
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 mt-3">
                                     {{ seller_form.currency.label_tag }}
                                     {{ seller_form.currency }}
                                 </div>
@@ -205,7 +214,7 @@
 
                         <div id="priceAllQuantityContainer" class="form-group" style="display: none;">
                             <div class="d-flex">
-                                <div class="col-md-6">
+                                <div class="col-md-6 mt-3">
                                     {{ seller_form.price_all_quantity.label_tag }}
                                     {{ seller_form.price_all_quantity }}
                                     {% if seller_form.price_all_quantity.errors %}
@@ -214,7 +223,7 @@
                                         </div>
                                     {% endif %}
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 mt-3">
                                     {{ seller_form.currency.label_tag }}
                                     {{ seller_form.currency }}
                                 </div>
@@ -222,11 +231,8 @@
                         </div>
                         <!-- Submit Button -->
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                            <button type="submit" class="btn btn-primary mt-3 submit-button">Submit</button>
                         </div>
-                        <a href="#" class="btn btn-secondary" onclick="goBack()">
-                            <i class="fas fa-arrow-left"></i> Back
-                        </a>
                     </form>
                 </div>
             </div>

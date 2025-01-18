@@ -5,13 +5,19 @@
     <main class="container text-center">
         <!-- Advertisements Section -->
         <div class="row justify-content-center align-items-center details">
-            <div class="mt-3 d-flex justify-content-center align-items-center">
-                <a href="{% url 'profile-details' profile_pk %}" class="btn btn-secondary d-flex back-button">
-                    <i class="fas fa-arrow-left"></i> Back
-                </a>
-            </div>
             <div class="mt-4 text-center d-flex flex-column justify-content-center align-items-center">
-                <h3 class="text-center mb-4 text-details card-media">Inactive Listings</h3>
+                <div class="col-12 edit-profile text-details card-media w-50 mb-2">
+                    <div class="d-flex align-items-center border rounded p-2">
+                        <a href="{% url 'profile-details' profile_pk %}" class="btn btn-secondary me-3 back-button">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                        <h2 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
+                            <i class="fas fa-times-circle me-2"></i> Inactive Listings
+                        </h2>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center d-flex flex-column justify-content-center align-items-center">
                 <!-- Advertisement Cards Section -->
                 <div class="mt-2">
                     {% for item in items_page %}
@@ -67,7 +73,8 @@
                                         <i class="fas fa-check-circle"></i>
                                         <span class="tooltip-text">Activate</span>
                                     </a>
-                                    <a href="{% url 'delete-item' item.slug %}" class="btn btn-outline-danger btn-sm activate">
+                                    <a href="{% url 'delete-item' item.slug %}"
+                                       class="btn btn-outline-danger btn-sm activate">
                                         <i class="fas fa-trash-alt"></i>
                                         <span class="tooltip-text">Delete</span>
                                     </a>
@@ -159,7 +166,7 @@
                         <a href="?page={{ items_page.previous_page_number }}"
                            class="btn btn-outline-primary">Previous</a>
                     {% endif %}
-                    <span class="d-flex paginator-page justify-content-center align-items-center" >Page {{ items_page.number }} of {{ items_page.paginator.num_pages }}</span>
+                    <span class="d-flex paginator-page justify-content-center align-items-center">Page {{ items_page.number }} of {{ items_page.paginator.num_pages }}</span>
                     {% if items_page.has_next %}
                         <a href="?page={{ items_page.next_page_number }}" class="btn btn-outline-primary">Next</a>
                     {% endif %}

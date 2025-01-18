@@ -2,13 +2,21 @@
 {% load static %}
 
 {% block content %}
-    <main class="container my-4">
+    <main class="container my-4 profile-edit">
         <section class="edit-profile">
-            <h2>Edit Profile</h2>
+            <div class="col-12 edit-profile text-details">
+                <div class="d-flex align-items-center border rounded p-2">
+                    <a href="{% url 'dash' %}" class="btn btn-secondary me-3">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                    <h2 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded">
+                        <i class="fas fa-user-edit me-2"></i> Edit Profile
+                    </h2>
+                </div>
+            </div>
             <form action="{% url 'profile-edit' request.user.pk %}" method="POST" enctype="multipart/form-data"
                   class="row g-3">
                 {% csrf_token %}
-
                 <!-- Profile Photo -->
                 <div class="col-md-12 mb-3 text-center">
                     {% if form.profile_photo.errors %}
@@ -17,7 +25,8 @@
                         </div>
                     {% endif %}
                     <div class="profile-photo-container">
-                        <img src="
+                        <img src=" 
+                                
                                 
                                 {% if form.profile_photo.value %}{{ form.profile_photo.value.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
                              alt="Profile Photo" id="profile-img-preview" class="profile-preview-img">
@@ -83,8 +92,7 @@
                         </div>
                     {% endif %}
                 </div>
-                       
-                
+
 
                 <!-- Town -->
                 <div class="col-md-6 mb-3">
@@ -96,10 +104,10 @@
                         </div>
                     {% endif %}
                 </div>
-                 <div class="col-md-6 mb-3">
+                <div class="col-md-6 mb-3">
                     {{ form.description.label_tag }}
                     {{ form.description }}
-                     {% if form.description.errors %}
+                    {% if form.description.errors %}
                         <div class="alert alert-danger">
                             {{ form.description.errors }}
                         </div>
@@ -115,7 +123,8 @@
                         <div class="input-group">
                             {{ form.new_password }}
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-white toggle-password" data-target="#id_new_password">
+                                <button type="button" class="btn btn-white toggle-password"
+                                        data-target="#id_new_password">
                                     <i class="fa fa-eye" id="eye-icon"></i>
                                 </button>
                             </div>
@@ -132,7 +141,8 @@
                         <div class="input-group">
                             {{ form.confirm_password }}
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-white toggle-password" data-target="#id_confirm_password">
+                                <button type="button" class="btn btn-white toggle-password"
+                                        data-target="#id_confirm_password">
                                     <i class="fa fa-eye" id="eye-icon"></i>
                                 </button>
                             </div>
@@ -147,13 +157,6 @@
                 <!-- Save Changes Button -->
                 <div class="col-12 text-center">
                     <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
-                </div>
-
-                <!-- Back Button -->
-                <div class="col-12 mt-2">
-                    <a href="{% url 'dash' %}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </a>
                 </div>
             </form>
         </section>
