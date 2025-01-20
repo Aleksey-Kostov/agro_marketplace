@@ -100,6 +100,20 @@
     margin: 0 auto;
 }
 
+@media (max-width: 768px) {
+    .mailbox-header {
+        width: 80%;
+        padding: 6px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mailbox-header {
+        width: 90%;
+        padding: 5px 10px;
+    }
+}
+
 /* Container for Messages */
 .mailbox-container {
     width: 100%;
