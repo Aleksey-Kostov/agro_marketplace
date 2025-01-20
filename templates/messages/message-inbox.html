@@ -4,14 +4,21 @@
 
 {% block content %}
     <main class="container">
-        <div class="mailbox-container">
+        <div class="mailbox-container d-flex display-column">
             <!-- Back Button -->
-            <div class="col-12 text-center mb-3">
-                <a href="{% url 'dash' %}" class="btn btn-secondary">
+
+            <div class="d-flex align-items-center border rounded p-2 message">
+                <!-- Back Button -->
+                <a href="{% url 'dash' %}" class="btn btn-secondary back-button me-3">
                     <i class="fas fa-arrow-left"></i> Back
                 </a>
-            </div>
 
+                <!-- Message Box Title with Icon -->
+                <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1 shadow">
+                    <i class="fas fa-comment-dots me-2"></i> Message Box
+                </h3>
+            </div>
+        
             <!-- Inbox Header with Filtering -->
             <div class="mailbox-header d-flex justify-content-around mb-4">
                 <!-- Unread -->
@@ -84,8 +91,10 @@
                             <a href="{% url 'read-message' message.pk %}" class="message-content text-decoration-none">
                                 <div class="message-title">{{ message.title }}</div>
                                 <div class="message-meta">
-                                    <div><strong>From:</strong> {{ message.sender.profile.username_in_marketplace }}</div>
-                                    <div><strong>To:</strong> {{ message.recipient.profile.username_in_marketplace }}</div>
+                                    <div><strong>From:</strong> {{ message.sender.profile.username_in_marketplace }}
+                                    </div>
+                                    <div><strong>To:</strong> {{ message.recipient.profile.username_in_marketplace }}
+                                    </div>
                                     <div><strong>Date:</strong> {{ message.timestamp|date:"d F, Y H:i" }}</div>
                                 </div>
                                 <div class="message-excerpt">
@@ -107,12 +116,14 @@
                     <!-- Pagination -->
                     <div class="pagination mt-3 mb-3 d-flex justify-content-center">
                         {% if messages.has_previous %}
-                            <a href="?page={{ messages.previous_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
+                            <a href="?page=
+                                    {{ messages.previous_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
                                class="btn-outline-secondary">Previous</a>
                         {% endif %}
                         <span class="mx-2">Page {{ messages.number }} of {{ messages.paginator.num_pages }}</span>
                         {% if messages.has_next %}
-                            <a href="?page={{ messages.next_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
+                            <a href="?page=
+                                    {{ messages.next_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
                                class="btn-outline-secondary">Next</a>
                         {% endif %}
                     </div>

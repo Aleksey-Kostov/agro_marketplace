@@ -625,8 +625,8 @@ main {
 }
 
 .back-button {
+    max-height: 45px;
     min-width: 90px;
-    max-width: 100px;
     align-items: center;
     justify-content: center;
 }
@@ -694,4 +694,15 @@ main {
 
 .town {
     max-width: 380px;
+}
+
+.message {
+    background-color: rgba(249, 249, 249, 0.95);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 600px;
+}
+
+.shadow {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
