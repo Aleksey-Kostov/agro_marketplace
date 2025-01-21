@@ -524,13 +524,14 @@ main {
         flex-grow: 1;
     }
 
-
     .product-photo:hover, .product-photo:active {
         height: 60px;
         width: 100px;
-        transform: scale(2.5) translate(-3%, 10%); /* Zoom and move */
+        transform: scale(2.5) translate(-3%, 10%);
     }
 }
+
+
 
 
 .sell, .buy {
@@ -629,6 +630,25 @@ main {
     min-width: 90px;
     align-items: center;
     justify-content: center;
+    font-size: 16px;
+}
+
+/* For screen sizes 768px and below (tablets and smaller devices) */
+@media (max-width: 768px) {
+    .back-button {
+        max-height: 40px;
+        min-width: 80px;
+        font-size: 14px;
+    }
+}
+
+/* For screen sizes 480px and below (mobile devices) */
+@media (max-width: 480px) {
+    .back-button {
+        max-height: 35px;
+        min-width: 70px;
+        font-size: 12px;
+    }
 }
 
 .paginator-page {
@@ -662,6 +682,7 @@ main {
 .profile-edit {
     max-width: 1000px;
 }
+
 .submit-button {
     min-width: 200px;
 }
@@ -706,3 +727,4 @@ main {
 .shadow {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
+

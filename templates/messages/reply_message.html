@@ -4,8 +4,16 @@
 {% block content %}
     <main class="container">
         <div class="mailbox-container">
-            <h2>Reply to Message</h2>
-
+            <div class="col-12 edit-profile text-details mb-2">
+                <div class="d-flex align-items-center border rounded p-2">
+                    <a href="{% url 'message-inbox' %}" class="btn btn-secondary me-3 back-button">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                    <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
+                        <i class="fas fa-reply"></i> Reply to Message
+                    </h3>
+                </div>
+            </div>
             <!-- Reply Form -->
             <form method="post">
                 {% csrf_token %}
@@ -29,10 +37,12 @@
                     <label for="message">Reply:</label>
                     {{ form.body }}
                 </div>
-                 <a href="{% url 'message-inbox' %}" class="btn btn-secondary mt-3">
-                    <i class="fas fa-arrow-left"></i> Back
-                </a>
-                <button type="submit" class="btn btn-primary mt-3">Send Reply</button>
+{#                <a href="{% url 'message-inbox' %}" class="btn btn-secondary mt-3">#}
+{#                    <i class="fas fa-arrow-left"></i> Back#}
+{#                </a>#}
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary mt-3">Send Reply</button>
+                </div>
             </form>
         </div>
     </main>
