@@ -1,15 +1,9 @@
 {% extends 'common/base.html' %}
 {% block content %}
-    <main class="container my-4">
+    <main class="container my-2">
         <div class="mailbox-container">
-            <div class="col-12 text-center">
-                <!-- Back Button -->
-                <a href="{% url 'message-inbox' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back
-                </a>
-            </div>
             <div class="col-12 edit-profile text-details mb-2 message-box">
-                <div class="d-flex align-items-center border rounded">
+                <div class="d-flex align-items-center p-0 rounded">
                     <a href="{% url 'message-inbox' %}" class="btn btn-secondary me-3 back-button">
                         <i class="fas fa-arrow-left"></i> Back
                     </a>
