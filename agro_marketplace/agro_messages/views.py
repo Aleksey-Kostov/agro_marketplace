@@ -79,8 +79,11 @@ def reply_message(request, pk):
         parent_message.sender if parent_message.recipient == request.user else parent_message.recipient
     )
     current_time = now()
-    parent_message.title = f"Re: {parent_message.title}" if not parent_message.title.startswith("Re:") \
-        else parent_message.title
+    if parent_message.title:
+        parent_message.title = f"Re: {parent_message.title}" if not parent_message.title.startswith("Re:") \
+            else parent_message.title
+    else:
+        parent_message.title = "Re: Message"
 
     if request.method == 'POST':
         form = MessageForm(request.POST)
