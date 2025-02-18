@@ -12,6 +12,20 @@
 html {
     font: 18px/1.5 "Karla", sans-serif;
 }
+/**/
+
+/*main {*/
+/*    flex: 1;*/
+/*}*/
+
+/* Navbar */
+.navbar {
+    background-color: #2e8b57;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/**/
+
 
 h1 {
     font: 90px/1.5 "Cormorant Infant";
@@ -31,9 +45,11 @@ body {
     background-repeat: no-repeat;
     background-position: top center;
     background-size: cover;
+    background-attachment: fixed;
     color: #333;
-    min-height: 100vh;
-    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
     transition: background-image 1s ease;
 }
 
@@ -731,3 +747,46 @@ main {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.code-count {
+    min-width: 150px;
+}
+
+html, body {
+    height: 100%; /* Задаваме 100% височина на html и body */
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column; /* Вертикално разположение */
+}
+
+main {
+    flex: 1 0 auto; /* Това позволява на main да заема всички налични вертикални пространства */
+}
+
+footer {
+    background-color: #2e8b57;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    width: 100%;
+}
+
+.latest-news-header {
+    background-color: rgb(196, 212, 196, 0.9);
+    color: #333;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    margin-top: 20px;
+    font-family: 'Arial', sans-serif;
+}
+
+.latest-news-header h2 {
+    font-size: 2rem;
+    margin: 0;
+    letter-spacing: 1px;
+}

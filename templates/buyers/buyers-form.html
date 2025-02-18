@@ -194,9 +194,6 @@
                         </div>
 
                         <div id="pricePerUnitContainer" class="form-group" style="display: none;">
-                            <div class="text-danger">
-                                {{ buyer_form.price_per_unit.errors }}
-                            </div>
                             <div class="d-flex">
                                 <div class="col-md-6 mt-3">
                                     {{ buyer_form.price_per_unit.label_tag }}
@@ -207,7 +204,7 @@
                                         </div>
                                     {% endif %}
                                 </div>
-                                <div class="col-md- mt-3">
+                                <div class="col-md-6 mt-3">
                                     {{ buyer_form.currency.label_tag }}
                                     {{ buyer_form.currency }}
                                 </div>

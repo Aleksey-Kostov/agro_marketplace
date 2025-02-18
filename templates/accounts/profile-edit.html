@@ -71,11 +71,11 @@
                 </div>
 
                 <!-- Country Code and Phone -->
-
-
                 <div class="col-md-2">
                     {{ form.country_code.label_tag }}
-                    {{ form.country_code }}
+                    <div class="code-count">
+                        {{ form.country_code }}
+                    </div>
                     {% if form.country_code.errors %}
                         <div class="alert alert-danger">
                             {{ form.country_code.errors }}
