@@ -15,7 +15,6 @@ from decouple import config
 
 from django.urls import reverse_lazy
 import os
-from agro_marketplace.core.storage_backends import StaticAzureStorage
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -147,6 +146,7 @@ if DEBUG:
     STATICFILES_DIRS = [BASE_DIR / "static"]
     STATIC_ROOT = BASE_DIR / 'staticfiles'
 else:
+    from agro_marketplace.core.storage_backends import StaticAzureStorage
     STATICFILES_STORAGE = 'agro_marketplace.storage_backends.StaticAzureStorage'
 
 # STORAGES = {
@@ -171,6 +171,6 @@ LOGOUT_REDIRECT_URL = 'home'
 
 INSTALLED_APPS += ['storages']
 
-AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')
-AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY')
-AZURE_CONTAINER = os.getenv('AZURE_CONTAINER')
+AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME', config('AZURE_ACCOUNT_NAME'))
+AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY', config('AZURE_ACCOUNT_KEY'))
+AZURE_CONTAINER = os.getenv('AZURE_CONTAINER', config('AZURE_CONTAINER'))
