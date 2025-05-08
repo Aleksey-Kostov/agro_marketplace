@@ -141,10 +141,13 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-
+if DEBUG:
+    STATIC_URL = '/static/'
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    STATICFILES_DIRS = [BASE_DIR / "static"]
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+else:
+    STATICFILES_STORAGE = 'agro_marketplace.storage_backends.StaticAzureStorage'
 
 # STORAGES = {
 #     # ...
@@ -166,9 +169,8 @@ AUTH_USER_MODEL = 'accounts.AppUser'
 LOGIN_REDIRECT_URL = 'dash'
 LOGOUT_REDIRECT_URL = 'home'
 
-AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME') or config('AZURE_ACCOUNT_NAME')
-AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY') or config('AZURE_ACCOUNT_KEY')
-AZURE_CONTAINER = os.getenv('AZURE_CONTAINER') or config('AZURE_CONTAINER')
+INSTALLED_APPS += ['storages']
 
-STATICFILES_STORAGE = 'agro_marketplace.core.storage_backends.StaticAzureStorage'
-STATIC_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/static/"
+AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')
+AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY')
+AZURE_CONTAINER = os.getenv('AZURE_CONTAINER')
