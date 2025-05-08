@@ -1,13 +1,16 @@
+# agro_marketplace/core/storage_backends.py
+
+from azure.storage.blob import BlobServiceClient
+from django.core.files.storage import Storage
+from django.conf import settings
 import os
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 
-class StaticAzureStorage:
-    account_name = os.getenv("AZURE_ACCOUNT_NAME")
-    account_key = os.getenv("AZURE_ACCOUNT_KEY")
-    azure_container = os.getenv("AZURE_CONTAINER")
-    expiration_secs = None
-    location = 'static'  # Ensures files are saved under 'static/' in the container
+class StaticAzureStorage(Storage):
+    account_name = settings.AZURE_ACCOUNT_NAME
+    account_key = settings.AZURE_ACCOUNT_KEY
+    azure_container = settings.AZURE_CONTAINER
+    location = 'static'  # Static files path in the container
 
     def __init__(self):
         self.blob_service_client = BlobServiceClient(
@@ -16,22 +19,32 @@ class StaticAzureStorage:
         )
         self.container_client = self.blob_service_client.get_container_client(self.azure_container)
 
-    def upload_blob(self, file_name, file_path):
-        # Uploads a file to Azure Blob Storage
-        blob_client = self.container_client.get_blob_client(f"{self.location}/{file_name}")
-        with open(file_path, "rb") as data:
-            blob_client.upload_blob(data, overwrite=True)
-        print(f"File {file_name} uploaded successfully.")
+    def _open(self, name, mode='rb'):
+        # Opens a blob for reading (static files)
+        blob_client = self.container_client.get_blob_client(f"{self.location}/{name}")
+        stream = blob_client.download_blob()
+        return stream
 
-    def download_blob(self, file_name, download_path):
-        # Downloads a file from Azure Blob Storage
-        blob_client = self.container_client.get_blob_client(f"{self.location}/{file_name}")
-        with open(download_path, "wb") as download_file:
-            download_file.write(blob_client.download_blob().readall())
-        print(f"File {file_name} downloaded successfully.")
+    def _save(self, name, content):
+        # Saves a blob to Azure Blob Storage
+        blob_client = self.container_client.get_blob_client(f"{self.location}/{name}")
+        blob_client.upload_blob(content, overwrite=True)
+        return name
+
+    def exists(self, name):
+        # Check if the blob exists in the container
+        blob_client = self.container_client.get_blob_client(f"{self.location}/{name}")
+        try:
+            blob_client.get_blob_properties()
+            return True
+        except:
+            return False
+
+    def url(self, name):
+        # Returns the public URL for a blob
+        return f"https://{self.account_name}.blob.core.windows.net/{self.azure_container}/{self.location}/{name}"
 
     def list_blobs(self):
-        # Lists all blobs in the container
+        # Lists all blobs in the static container
         blobs = self.container_client.list_blobs(name_starts_with=self.location)
-        for blob in blobs:
-            print(blob.name)
+        return [blob.name for blob in blobs]
