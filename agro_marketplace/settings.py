@@ -140,38 +140,26 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 
-if DEBUG:
-    STATIC_URL = '/static/'
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-    STATICFILES_DIRS = [BASE_DIR / "static"]
-    STATIC_ROOT = BASE_DIR / 'staticfiles'
-else:
-    from agro_marketplace.core.storage_backends import StaticAzureStorage
-    STATICFILES_STORAGE = 'agro_marketplace.storage_backends.StaticAzureStorage'
-
-# STORAGES = {
-#     # ...
-#     "staticfiles": {
-#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-#     },
-# }
-
-# MEDIA_ROOT = BASE_DIR / 'media/'
-
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media/'
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL = 'accounts.AppUser'
-LOGIN_REDIRECT_URL = 'dash'
-LOGOUT_REDIRECT_URL = 'home'
-
-INSTALLED_APPS += ['storages']
-
+# Azure Storage Credentials
 AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME', config('AZURE_ACCOUNT_NAME', default=None))
 AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY', config('AZURE_ACCOUNT_KEY', default=None))
-AZURE_CONTAINER = os.getenv('AZURE_CONTAINER', config('AZURE_CONTAINER', default=None))
+AZURE_CONTAINER = os.getenv('AZURE_CONTAINER', config('AZURE_CONTAINER', default=None))  # for static
+AZURE_MEDIA_CONTAINER = os.getenv('AZURE_MEDIA_CONTAINER', config('AZURE_MEDIA_CONTAINER', default=None))  # for media
 
+# Static and Media Files
+if DEBUG:
+    # Local development
+    STATIC_URL = '/static/'
+    STATICFILES_DIRS = [BASE_DIR / "static"]
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
+else:
+    # Azure production
+    STATICFILES_STORAGE = 'agro_marketplace.storage_backends.StaticAzureStorage'
+    DEFAULT_FILE_STORAGE = 'agro_marketplace.storage_backends.MediaAzureStorage'
+
+    MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_MEDIA_CONTAINER}/"
+    STATIC_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/"
