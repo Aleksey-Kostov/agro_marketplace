@@ -171,8 +171,5 @@ AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME', config('AZURE_ACCOUNT_NAME'
 AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY', config('AZURE_ACCOUNT_KEY'))
 AZURE_CONTAINER = os.getenv('AZURE_CONTAINER', config('AZURE_CONTAINER'))
 
-# Use Azure for both static and media files
-STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-
-# Static file URL
-STATIC_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/"
+STATICFILES_STORAGE = 'agro_marketplace.core.storage_backends.StaticAzureStorage'
+STATIC_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/static/"
