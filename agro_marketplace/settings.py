@@ -15,6 +15,7 @@ from decouple import config
 
 from django.urls import reverse_lazy
 import os
+from agro_marketplace.core.storage_backends import StaticAzureStorage
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
