@@ -172,7 +172,6 @@ AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY', config('AZURE_ACCOUNT_KEY'))
 AZURE_CONTAINER = os.getenv('AZURE_CONTAINER', config('AZURE_CONTAINER'))
 
 # Use Azure for both static and media files
-DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 
 # Static file URL
