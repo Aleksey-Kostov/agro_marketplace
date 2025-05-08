@@ -162,8 +162,8 @@ if DEBUG:
     STATIC_ROOT = BASE_DIR / 'staticfiles'
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = BASE_DIR / 'media'
+    MEDIA_URL = 'media/'
+    MEDIA_ROOT = BASE_DIR / 'media/'
 else:
     # Azure production
     STATICFILES_STORAGE = 'agro_marketplace.core.storage_backends.StaticAzureStorage'
