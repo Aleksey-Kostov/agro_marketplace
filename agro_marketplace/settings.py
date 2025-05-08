@@ -166,10 +166,9 @@ AUTH_USER_MODEL = 'accounts.AppUser'
 LOGIN_REDIRECT_URL = 'dash'
 LOGOUT_REDIRECT_URL = 'home'
 
-# Azure Storage Configuration
-AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME', config('AZURE_ACCOUNT_NAME'))
-AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY', config('AZURE_ACCOUNT_KEY'))
-AZURE_CONTAINER = os.getenv('AZURE_CONTAINER', config('AZURE_CONTAINER'))
+AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME') or config('AZURE_ACCOUNT_NAME')
+AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY') or config('AZURE_ACCOUNT_KEY')
+AZURE_CONTAINER = os.getenv('AZURE_CONTAINER') or config('AZURE_CONTAINER')
 
 STATICFILES_STORAGE = 'agro_marketplace.core.storage_backends.StaticAzureStorage'
 STATIC_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/static/"
