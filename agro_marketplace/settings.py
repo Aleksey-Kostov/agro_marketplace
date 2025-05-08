@@ -146,6 +146,14 @@ AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY', config('AZURE_ACCOUNT_KEY', d
 AZURE_CONTAINER = os.getenv('AZURE_CONTAINER', config('AZURE_CONTAINER', default=None))  # for static
 AZURE_MEDIA_CONTAINER = os.getenv('AZURE_MEDIA_CONTAINER', config('AZURE_MEDIA_CONTAINER', default=None))  # for media
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'accounts.AppUser'
+LOGIN_REDIRECT_URL = 'dash'
+LOGOUT_REDIRECT_URL = 'home'
+
+# Set this for both development and production
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 # Static and Media Files
 if DEBUG:
     # Local development
