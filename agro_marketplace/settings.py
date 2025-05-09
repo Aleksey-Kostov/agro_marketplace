@@ -153,15 +153,14 @@ AUTH_USER_MODEL = 'accounts.AppUser'
 LOGIN_REDIRECT_URL = 'dash'
 LOGOUT_REDIRECT_URL = 'home'
 
-# # Set this for both development and production
-# STATIC_ROOT = BASE_DIR / 'staticfiles'
+# Set this for both development and production
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Static and Media Files
 if DEBUG:
     # Local development
     STATIC_URL = '/static/'
     STATICFILES_DIRS = [BASE_DIR / "static"]
-    STATIC_ROOT = BASE_DIR / 'staticfiles'
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
     MEDIA_URL = '/media/'
