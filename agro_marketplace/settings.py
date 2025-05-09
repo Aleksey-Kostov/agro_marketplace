@@ -16,6 +16,8 @@ from decouple import config
 from django.urls import reverse_lazy
 import os
 
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -167,8 +169,8 @@ if DEBUG:
     MEDIA_ROOT = BASE_DIR / 'media/'
 else:
     # Azure production
-    # STATICFILES_STORAGE = 'agro_marketplace.core.storage_backends.StaticAzureStorage'
-    # DEFAULT_FILE_STORAGE = 'agro_marketplace.core.storage_backends.MediaAzureStorage'
+    STATICFILES_STORAGE = 'agro_marketplace.core.storage_backends.StaticAzureStorage'
+    DEFAULT_FILE_STORAGE = 'agro_marketplace.core.storage_backends.MediaAzureStorage'
 
     MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_MEDIA_CONTAINER}/"
     STATIC_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/"
