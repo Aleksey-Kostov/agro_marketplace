@@ -166,29 +166,9 @@ if DEBUG:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media/'
 else:
-    from storages.backends.azure_storage import AzureStorage
-
-
-    class StaticAzureStorage(AzureStorage):
-        account_name = os.environ['AZURE_ACCOUNT_NAME']
-        account_key = os.environ['AZURE_ACCOUNT_KEY']
-        azure_container = os.environ['AZURE_CONTAINER']
-        expiration_secs = None
-
-
-    class MediaAzureStorage(AzureStorage):
-        account_name = os.environ['AZURE_ACCOUNT_NAME']
-        account_key = os.environ['AZURE_ACCOUNT_KEY']
-        azure_container = os.environ['AZURE_MEDIA_CONTAINER']
-        expiration_secs = None
-        file_overwrite = False  # prevents overwriting media with same name
-
-
     # Azure production
-    STATICFILES_STORAGE = 'agro_marketplace.settings.StaticAzureStorage'
-    DEFAULT_FILE_STORAGE = 'agro_marketplace.settings.MediaAzureStorage'
+    STATICFILES_STORAGE = 'agro_marketplace.core.storage_backends.StaticAzureStorage'
+    DEFAULT_FILE_STORAGE = 'agro_marketplace.core.storage_backends.MediaAzureStorage'
 
-    MEDIA_URL = (f"https://{os.environ['AZURE_ACCOUNT_NAME']}."
-                 f"blob.core.windows.net/{os.environ['AZURE_MEDIA_CONTAINER']}/")
-    STATIC_URL = (f"https://{os.environ['AZURE_ACCOUNT_NAME']}."
-                  f"blob.core.windows.net/{os.environ['AZURE_CONTAINER']}/")
+    MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_MEDIA_CONTAINER}/"
+    STATIC_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/"
