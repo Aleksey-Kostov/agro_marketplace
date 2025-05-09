@@ -5,13 +5,13 @@ import os
 class StaticAzureStorage(AzureStorage):
     account_name = os.getenv('AZURE_ACCOUNT_NAME')
     account_key = os.getenv('AZURE_ACCOUNT_KEY')
-    azure_container = os.getenv('AZURE_CONTAINER')
+    azure_container = os.getenv('AZURE_CONTAINER', 'staticfiles')
     expiration_secs = None
 
 
 class MediaAzureStorage(AzureStorage):
     account_name = os.getenv('AZURE_ACCOUNT_NAME')
     account_key = os.getenv('AZURE_ACCOUNT_KEY')
-    azure_container = os.getenv('AZURE_MEDIA_CONTAINER')
+    azure_container = os.getenv('AZURE_MEDIA_CONTAINER', 'media')
     expiration_secs = None
-    file_overwrite = False  # prevents overwriting media with same name
+    file_overwrite = False
