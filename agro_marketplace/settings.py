@@ -173,3 +173,4 @@ else:
     DEFAULT_FILE_STORAGE = 'agro_marketplace.core.storage_backends.MediaAzureStorage'
 
     STATIC_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/"
+    MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_MEDIA_CONTAINER}/"
