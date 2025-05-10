@@ -4,20 +4,20 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Security
+# SECURITY
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 CSRF_TRUSTED_ORIGINS = list(filter(None, config('CSRF_TRUSTED_ORIGINS', default='').split(',')))
 
-# Azure Storage settings
+# AZURE STORAGE
+AZURE_CONNECTION_STRING = config('AZURE_CONNECTION_STRING')
 AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME')
-AZURE_ACCOUNT_KEY = config('AZURE_ACCOUNT_KEY')
 AZURE_CONTAINER = config('AZURE_CONTAINER', default='staticfiles')
 AZURE_MEDIA_CONTAINER = config('AZURE_MEDIA_CONTAINER', default='media')
 AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
 
-# Static and Media URLs
+# STATIC / MEDIA
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = f"https://{AZURE_CUSTOM_DOMAIN}/{AZURE_CONTAINER}/" if not DEBUG else '/static/'
 MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/{AZURE_MEDIA_CONTAINER}/" if not DEBUG else '/media/'
@@ -26,7 +26,17 @@ if DEBUG:
     STATICFILES_DIRS = [BASE_DIR / "static"]
     MEDIA_ROOT = BASE_DIR / 'media'
 
-# Application definition
+# STORAGES (Django 4.2+ style)
+STORAGES = {
+    "default": {
+        "BACKEND": "agro_marketplace.core.storage_backends.MediaAzureStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "agro_marketplace.core.storage_backends.StaticAzureStorage",
+    },
+}
+
+# DJANGO APPS
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,6 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'storages',
+
+    # Local apps
     "agro_marketplace.accounts",
     "agro_marketplace.buyers",
     "agro_marketplace.common",
@@ -42,6 +54,7 @@ INSTALLED_APPS = [
     "agro_marketplace.agro_messages",
 ]
 
+# MIDDLEWARE
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware' if DEBUG else None,
@@ -52,10 +65,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-MIDDLEWARE = [mw for mw in MIDDLEWARE if mw is not None]  # Clean up None if not in DEBUG
+MIDDLEWARE = [mw for mw in MIDDLEWARE if mw is not None]
 
+# URL & TEMPLATES
 ROOT_URLCONF = 'agro_marketplace.urls'
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -71,10 +84,9 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = 'agro_marketplace.wsgi.application'
 
-# Database
+# DATABASES
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -86,32 +98,21 @@ DATABASES = {
     }
 }
 
-# Password validation
+# AUTH & REDIRECTS
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
+AUTH_USER_MODEL = 'accounts.AppUser'
+LOGIN_REDIRECT_URL = 'dash'
+LOGOUT_REDIRECT_URL = 'home'
 
-# Internationalization
+# LOCALE
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Europe/Sofia'
 USE_I18N = True
 USE_TZ = False
 
-# Django 4.2+ storage settings
-STORAGES = {
-    "default": {
-        "BACKEND": "agro_marketplace.core.storage_backends.MediaAzureStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "agro_marketplace.core.storage_backends.StaticAzureStorage",
-    },
-}
-
-# Custom user model and redirects
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL = 'accounts.AppUser'
-LOGIN_REDIRECT_URL = 'dash'
-LOGOUT_REDIRECT_URL = 'home'
