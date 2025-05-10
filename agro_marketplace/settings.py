@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'storages',
+
     "agro_marketplace.accounts",
     "agro_marketplace.buyers",
     "agro_marketplace.common",
