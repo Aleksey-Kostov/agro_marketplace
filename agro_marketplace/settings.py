@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', config('SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', config('DEBUG')) == "True"
+DEBUG = str(os.getenv('DEBUG', config('DEBUG'))).lower() == "true"
 
 # ALLOWED_HOSTS = [config('DJANGO_HOST', default='agro_marketplace.azurewebsites.net')]
 
