@@ -142,23 +142,23 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 
-# Azure Storage Credentials
-AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME', config('AZURE_ACCOUNT_NAME', default=None))
-AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY', config('AZURE_ACCOUNT_KEY', default=None))
-AZURE_CONTAINER = os.getenv('AZURE_CONTAINER', config('AZURE_CONTAINER', default=None))  # for static
-AZURE_MEDIA_CONTAINER = os.getenv('AZURE_MEDIA_CONTAINER', config('AZURE_MEDIA_CONTAINER', default=None))  # for media
+# Azure Storage Credentials (read from environment)
+AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME', default=os.getenv('AZURE_ACCOUNT_NAME'))
+AZURE_ACCOUNT_KEY = config('AZURE_ACCOUNT_KEY', default=os.getenv('AZURE_ACCOUNT_KEY'))
+AZURE_CONTAINER = config('AZURE_CONTAINER', default=os.getenv('AZURE_CONTAINER'))  # for static
+AZURE_MEDIA_CONTAINER = config('AZURE_MEDIA_CONTAINER', default=os.getenv('AZURE_MEDIA_CONTAINER'))  # for media
 
+# Django settings
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.AppUser'
 LOGIN_REDIRECT_URL = 'dash'
 LOGOUT_REDIRECT_URL = 'home'
 
-# Set this for both development and production
+# File handling (Static/Media)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Static and Media Files
 if DEBUG:
-    # Local development
+    # Development
     STATIC_URL = '/static/'
     STATICFILES_DIRS = [BASE_DIR / "static"]
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -166,9 +166,8 @@ if DEBUG:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media/'
 else:
-    # Azure production
+    # Production with Azure Blob Storage
     STATICFILES_STORAGE = 'agro_marketplace.core.storage_backends.StaticAzureStorage'
     DEFAULT_FILE_STORAGE = 'agro_marketplace.core.storage_backends.MediaAzureStorage'
 
-    MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_MEDIA_CONTAINER}/"
     STATIC_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/"
