@@ -13,8 +13,8 @@ CSRF_TRUSTED_ORIGINS = list(filter(None, config('CSRF_TRUSTED_ORIGINS', default=
 # AZURE STORAGE
 AZURE_CONNECTION_STRING = config('AZURE_CONNECTION_STRING')
 AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME')
-AZURE_CONTAINER = config('AZURE_CONTAINER', default='staticfiles')
-AZURE_MEDIA_CONTAINER = config('AZURE_MEDIA_CONTAINER', default='media')
+AZURE_CONTAINER = config('AZURE_CONTAINER', default='static-content')
+AZURE_MEDIA_CONTAINER = config('AZURE_MEDIA_CONTAINER', default='media-content')
 AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
 
 # STATIC / MEDIA
