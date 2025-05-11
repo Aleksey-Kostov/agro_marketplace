@@ -1,9 +1,25 @@
+const isProduction = window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+
 const images = [
-    'url("/static/images/texture.jpg")',
-    'url("/static/images/pic1.jpg")',
-    'url("/static/images/pik2.jpg")',
-    'url("/static/images/pik3.jpg")',
-    'url("/static/images/pik4.jpg")'
+    isProduction
+        ? 'url("https://agromarket601d170f.blob.core.windows.net/static-content/images/texture.jpg")'
+        : 'url("/static/images/texture.jpg")',
+
+    isProduction
+        ? 'url("https://agromarket601d170f.blob.core.windows.net/static-content/images/pic1.jpg")'
+        : 'url("/static/images/pic1.jpg")',
+
+    isProduction
+        ? 'https://agromarket601d170f.blob.core.windows.net/static-content/images/pic2.jpg")'
+        : 'url("/static/images/pik2.jpg")',
+
+    isProduction
+        ? 'https://agromarket601d170f.blob.core.windows.net/static-content/images/pic3.jpg")'
+        : 'url("/static/images/pik3.jpg")',
+
+    isProduction
+        ? 'url("https://agromarket601d170f.blob.core.windows.net/static-content/images/pic4.jpg")'
+        : 'url("/static/images/pik4.jpg")'
 ];
 
 function setRandomBackground() {
