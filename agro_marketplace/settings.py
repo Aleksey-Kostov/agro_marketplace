@@ -1,5 +1,5 @@
 from pathlib import Path
-from decouple import config
+from decouple import config, UndefinedValueError
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,33 +10,37 @@ DEBUG = config('DEBUG', cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 CSRF_TRUSTED_ORIGINS = list(filter(None, config('CSRF_TRUSTED_ORIGINS', default='').split(',')))
 
-# AZURE STORAGE
-AZURE_CONNECTION_STRING = config('AZURE_CONNECTION_STRING')
-AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME')
-AZURE_CONTAINER = config('AZURE_CONTAINER', default='static-content')
-AZURE_MEDIA_CONTAINER = config('AZURE_MEDIA_CONTAINER', default='media-content')
-AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
-
-# STATIC / MEDIA
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATIC_URL = f"https://{AZURE_CUSTOM_DOMAIN}/{AZURE_CONTAINER}/" if not DEBUG else '/static/'
-MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/{AZURE_MEDIA_CONTAINER}/" if not DEBUG else '/media/'
-
+# STATIC & MEDIA
 if DEBUG:
+    STATIC_URL = '/static/'
+    MEDIA_URL = '/media/'
     STATICFILES_DIRS = [BASE_DIR / "static"]
     MEDIA_ROOT = BASE_DIR / 'media'
 else:
-    STATICFILES_DIRS = [BASE_DIR / "static"]  # Ensure this is set for production as well
+    try:
+        AZURE_CONNECTION_STRING = config('AZURE_CONNECTION_STRING')
+        AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME')
+        AZURE_CONTAINER = config('AZURE_CONTAINER', default='static-content')
+        AZURE_MEDIA_CONTAINER = config('AZURE_MEDIA_CONTAINER', default='media-content')
+        AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
 
-# STORAGES (Django 4.2+ style)
-STORAGES = {
-    "default": {
-        "BACKEND": "agro_marketplace.core.storage_backends.MediaAzureStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "agro_marketplace.core.storage_backends.StaticAzureStorage",
-    },
-}
+        STATIC_URL = f"https://{AZURE_CUSTOM_DOMAIN}/{AZURE_CONTAINER}/"
+        MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/{AZURE_MEDIA_CONTAINER}/"
+
+        STORAGES = {
+            "default": {
+                "BACKEND": "agro_marketplace.core.storage_backends.MediaAzureStorage",
+            },
+            "staticfiles": {
+                "BACKEND": "agro_marketplace.core.storage_backends.StaticAzureStorage",
+            },
+        }
+    except UndefinedValueError as e:
+        raise Exception("Missing Azure environment variables for production.") from e
+
+    STATICFILES_DIRS = [BASE_DIR / "static"]
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # DJANGO APPS
 INSTALLED_APPS = [
@@ -71,6 +75,7 @@ MIDDLEWARE = [mw for mw in MIDDLEWARE if mw is not None]
 
 # URL & TEMPLATES
 ROOT_URLCONF = 'agro_marketplace.urls'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -86,6 +91,7 @@ TEMPLATES = [
         },
     },
 ]
+
 WSGI_APPLICATION = 'agro_marketplace.wsgi.application'
 
 # DATABASES
@@ -100,16 +106,18 @@ DATABASES = {
     }
 }
 
-# AUTH & REDIRECTS
+# AUTH
+AUTH_USER_MODEL = 'accounts.AppUser'
+LOGIN_REDIRECT_URL = 'dash'
+LOGOUT_REDIRECT_URL = 'home'
+
+# PASSWORD VALIDATORS
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
-AUTH_USER_MODEL = 'accounts.AppUser'
-LOGIN_REDIRECT_URL = 'dash'
-LOGOUT_REDIRECT_URL = 'home'
 
 # LOCALE
 LANGUAGE_CODE = 'en-us'
