@@ -11,15 +11,15 @@ const imageUrls = [
 
     isProduction
         ? "https://agromarket601d170f.blob.core.windows.net/static-content/images/pic2.jpg"
-        : "/static/images/pik2.jpg",
+        : "/static/images/pic2.jpg",
 
     isProduction
         ? "https://agromarket601d170f.blob.core.windows.net/static-content/images/pic3.jpg"
-        : "/static/images/pik3.jpg",
+        : "/static/images/pic3.jpg",
 
     isProduction
         ? "https://agromarket601d170f.blob.core.windows.net/static-content/images/pic4.jpg"
-        : "/static/images/pik4.jpg"
+        : "/static/images/pic4.jpg"
 ];
 
 // Preload images

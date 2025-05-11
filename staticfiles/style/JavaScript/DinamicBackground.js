@@ -1,9 +1,9 @@
 const images = [
     'url("/static/images/texture.jpg")',
     'url("/static/images/pic1.jpg")',
-    'url("/static/images/pik2.jpg")',
-    'url("/static/images/pik3.jpg")',
-    'url("/static/images/pik4.jpg")'
+    'url("/static/images/pic2.jpg")',
+    'url("/static/images/pic3.jpg")',
+    'url("/static/images/pic4.jpg")'
 ];
 
 function setRandomBackground() {
