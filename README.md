@@ -54,7 +54,8 @@ I hope you enjoy reviewing it!
 - Git
 - Virtual Environment
 
-### Steps to Run Locally
+<details>
+<summary>Steps to Run Locally</summary>
 
 1. **Clone the repository**
 
@@ -107,9 +108,10 @@ I hope you enjoy reviewing it!
 
 Your application should now be running locally at `http://127.0.0.1:8000`.
 
----
+</details>
 
-## ☁️ Deployment to Azure
+<details>
+<summary>Deployment to Azure</summary>
 
 This project is deployed using **Terraform** to manage the infrastructure on Microsoft Azure.
 
@@ -126,6 +128,8 @@ This project is deployed using **Terraform** to manage the infrastructure on Mic
 
     - Connect your GitHub repository to Azure App Service for automatic deployment.
     - Ensure your environment variables (Azure Storage and PostgreSQL) are set in the Azure Portal.
+
+</details>
 
 ---
 
