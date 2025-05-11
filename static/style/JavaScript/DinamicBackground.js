@@ -10,11 +10,11 @@ const images = [
         : 'url("/static/images/pic1.jpg")',
 
     isProduction
-        ? 'https://agromarket601d170f.blob.core.windows.net/static-content/images/pic2.jpg")'
+        ? 'url("https://agromarket601d170f.blob.core.windows.net/static-content/images/pic2.jpg")'
         : 'url("/static/images/pik2.jpg")',
 
     isProduction
-        ? 'https://agromarket601d170f.blob.core.windows.net/static-content/images/pic3.jpg")'
+        ? 'url("https://agromarket601d170f.blob.core.windows.net/static-content/images/pic3.jpg")'
         : 'url("/static/images/pik3.jpg")',
 
     isProduction
