@@ -25,6 +25,8 @@ MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/{AZURE_MEDIA_CONTAINER}/" if not DEB
 if DEBUG:
     STATICFILES_DIRS = [BASE_DIR / "static"]
     MEDIA_ROOT = BASE_DIR / 'media'
+else:
+    STATICFILES_DIRS = [BASE_DIR / "static"]  # Ensure this is set for production as well
 
 # STORAGES (Django 4.2+ style)
 STORAGES = {
