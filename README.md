@@ -1,6 +1,6 @@
 # 🌾 Agro Marketplace — Demo Django Project
 
-**Live Demo:** [https://agro-marketplace-app.azurewebsites.net/](https://agro-marketplace-app.azurewebsites.net/)
+**Live Demo:** [https://agro-marketplace-yo35.onrender.com/](https://agro-marketplace-yo35.onrender.com/)
 
 ## 📋 Project Overview
 
