@@ -6,42 +6,72 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
-CSRF_TRUSTED_ORIGINS = list(filter(None, config('CSRF_TRUSTED_ORIGINS', default='').split(',')))
+DEBUG = config('DEBUG', cast=bool, default=False)
+ALLOWED_HOSTS = [ host.strip() for host in config('ALLOWED_HOSTS', default='').split(',') if host.strip() ]
+CSRF_TRUSTED_ORIGINS = [ origin.strip() for origin in config('CSRF_TRUSTED_ORIGINS', default='').split(',') if origin.strip() ]
 
 # STATIC & MEDIA
-if DEBUG:
-    STATIC_URL = '/static/'
-    MEDIA_URL = '/media/'
-    STATICFILES_DIRS = [BASE_DIR / "static"]
-    MEDIA_ROOT = BASE_DIR / 'media'
-else:
-    try:
-        AZURE_CONNECTION_STRING = config('AZURE_CONNECTION_STRING')
-        AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME')
-        AZURE_CONTAINER = config('AZURE_CONTAINER', default='static-content')
-        AZURE_MEDIA_CONTAINER = config('AZURE_MEDIA_CONTAINER', default='media-content')
-        AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
+# =========================================================
+# STATIC FILES
+# =========================================================
 
-        STATIC_URL = f"https://{AZURE_CUSTOM_DOMAIN}/{AZURE_CONTAINER}/"
-        MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/{AZURE_MEDIA_CONTAINER}/"
-
-        STORAGES = {
-            "default": {
-                "BACKEND": "agro_marketplace.core.storage_backends.MediaAzureStorage",
-            },
-            "staticfiles": {
-                "BACKEND": "agro_marketplace.core.storage_backends.StaticAzureStorage",
-            },
-        }
-    except UndefinedValueError as e:
-        raise Exception("Missing Azure environment variables for production.") from e
-
-    STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+STATICFILES_DIRS = [
+    BASE_DIR / 'static'
+]
+
+
+# =========================================================
+# CLOUDINARY MEDIA STORAGE
+# =========================================================
+
+CLOUDINARY_URL = config(
+    'CLOUDINARY_URL',
+    default=''
+)
+
+
+if CLOUDINARY_URL:
+    import cloudinary
+
+    cloudinary.config(
+        secure=True
+    )
+
+    MEDIA_URL = '/media/'
+
+    STORAGES = {
+        "default": {
+            "BACKEND":
+                "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+
+        "staticfiles": {
+            "BACKEND":
+                "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+
+else:
+    # Local fallback
+    MEDIA_URL = '/media/'
+
+    MEDIA_ROOT = BASE_DIR / 'media'
+
+    STORAGES = {
+        "default": {
+            "BACKEND":
+                "django.core.files.storage.FileSystemStorage",
+        },
+
+        "staticfiles": {
+            "BACKEND":
+                "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 # DJANGO APPS
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -50,7 +80,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'storages',
+
+    'cloudinary',
+    'cloudinary_storage',
 
     # Local apps
     "agro_marketplace.accounts",
@@ -63,7 +95,9 @@ INSTALLED_APPS = [
 # MIDDLEWARE
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware' if DEBUG else None,
+
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -71,16 +105,21 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-MIDDLEWARE = [mw for mw in MIDDLEWARE if mw is not None]
 
 # URL & TEMPLATES
 ROOT_URLCONF = 'agro_marketplace.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'BACKEND':
+            'django.template.backends.django.DjangoTemplates',
+
+        'DIRS': [
+            BASE_DIR / 'templates'
+        ],
+
         'APP_DIRS': True,
+
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -102,10 +141,9 @@ DATABASES = {
         "USER": config('DB_USER'),
         "PASSWORD": config('DB_PASSWORD'),
         "HOST": config('DB_HOST'),
-        "PORT": config('DB_PORT'),
+        "PORT": config('DB_PORT', default='5432'),
     }
 }
-
 # AUTH
 AUTH_USER_MODEL = 'accounts.AppUser'
 LOGIN_REDIRECT_URL = 'dash'
