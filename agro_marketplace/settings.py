@@ -144,6 +144,11 @@ DATABASES = {
         "PORT": config('DB_PORT', default='5432'),
     }
 }
+if config("DATABASE_URL", default=""):
+    import dj_database_url
+    DATABASES["default"] = dj_database_url.parse(
+        config("DATABASE_URL") 
+    )
 # AUTH
 AUTH_USER_MODEL = 'accounts.AppUser'
 LOGIN_REDIRECT_URL = 'dash'
