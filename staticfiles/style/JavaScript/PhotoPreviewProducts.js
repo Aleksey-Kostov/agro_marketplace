@@ -36,19 +36,24 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==============================
 
     const priceTypeField = document.getElementById("id_price_type");
-    const pricePerUnitContainer = document.getElementById("pricePerUnitContainer");
-    const priceAllQuantityContainer = document.getElementById("priceAllQuantityContainer");
+    const priceFieldsRow = document.getElementById("priceFieldsRow");
 
-    const currencyContainer = document.getElementById("currencyContainer");
-    const currencyPlaceholder = document.getElementById("currencyPlaceholder");
+    const pricePerUnitContainer =
+        document.getElementById("pricePerUnitContainer");
+
+    const priceAllQuantityContainer =
+        document.getElementById("priceAllQuantityContainer");
+
+    const currencyContainer =
+        document.getElementById("currencyContainer");
 
 
     if (
         priceTypeField &&
+        priceFieldsRow &&
         pricePerUnitContainer &&
         priceAllQuantityContainer &&
-        currencyContainer &&
-        currencyPlaceholder
+        currencyContainer
     ) {
 
         function togglePriceFields() {
@@ -62,14 +67,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (selectedValue === "per_quantity") {
 
+                priceFieldsRow.style.display = "flex";
+
                 pricePerUnitContainer.style.display = "block";
                 priceAllQuantityContainer.style.display = "none";
-
-                // Move Currency next to Price Per Unit
-                pricePerUnitContainer
-                    .querySelector(".d-flex")
-                    .appendChild(currencyContainer);
-
+                currencyContainer.style.display = "block";
             }
 
 
@@ -79,12 +81,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             else if (selectedValue === "all_quantity") {
 
+                priceFieldsRow.style.display = "flex";
+
                 pricePerUnitContainer.style.display = "none";
                 priceAllQuantityContainer.style.display = "block";
-
-                // Move Currency next to Price All Quantity
-                currencyPlaceholder.appendChild(currencyContainer);
-
+                currencyContainer.style.display = "block";
             }
 
 
@@ -94,17 +95,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
             else if (selectedValue === "negotiation") {
 
+                priceFieldsRow.style.display = "none";
+
                 pricePerUnitContainer.style.display = "none";
                 priceAllQuantityContainer.style.display = "none";
+                currencyContainer.style.display = "none";
             }
         }
 
 
         priceTypeField.addEventListener("change", togglePriceFields);
 
-        // Important for EDIT:
-        // This runs immediately and loads the correct
-        // price section + existing currency.
+        // Important for Edit
         togglePriceFields();
     }
 
