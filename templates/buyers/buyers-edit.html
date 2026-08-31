@@ -4,7 +4,6 @@
 {% block content %}
 
 <main class="container my-4">
-
     <div class="container">
         <div class="row justify-content-center">
 
@@ -301,17 +300,10 @@
 
                         </div>
 
-
                         <div class="col-md-6">
 
                             {{ form.unit_of_measure.label_tag }}
                             {{ form.unit_of_measure }}
-
-                            {% if form.unit_of_measure.errors %}
-                                <div class="alert alert-danger">
-                                    {{ form.unit_of_measure.errors }}
-                                </div>
-                            {% endif %}
 
                         </div>
 
@@ -333,64 +325,63 @@
                     </div>
 
 
-                    <!-- =================================================
-                         PRICE + CURRENCY
-                         ЕДИН ОБЩ ROW
-                    ================================================== -->
+                    <!-- =====================================================
+                         PRICE SECTION
+                    ====================================================== -->
 
-                    <div id="priceRow"
-                         class="d-flex"
-                         style="display: none !important;">
+                    <div id="priceSection" style="display: none;">
 
-
-                        <!-- PRICE PER UNIT -->
-
-                        <div id="pricePerUnitContainer"
-                             class="col-md-6">
-
-                            {{ form.price_per_unit.label_tag }}
-                            {{ form.price_per_unit }}
-
-                            {% if form.price_per_unit.errors %}
-                                <div class="alert alert-danger">
-                                    {{ form.price_per_unit.errors }}
-                                </div>
-                            {% endif %}
-
-                        </div>
+                        <div class="d-flex align-items-end">
 
 
-                        <!-- PRICE ALL QUANTITY -->
+                            <!-- PRICE PER UNIT -->
 
-                        <div id="priceAllQuantityContainer"
-                             class="col-md-6"
-                             style="display: none;">
+                            <div id="pricePerUnitWrapper" class="col-md-6">
 
-                            {{ form.price_all_quantity.label_tag }}
-                            {{ form.price_all_quantity }}
+                                {{ form.price_per_unit.label_tag }}
+                                {{ form.price_per_unit }}
 
-                            {% if form.price_all_quantity.errors %}
-                                <div class="alert alert-danger">
-                                    {{ form.price_all_quantity.errors }}
-                                </div>
-                            {% endif %}
+                                {% if form.price_per_unit.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ form.price_per_unit.errors }}
+                                    </div>
+                                {% endif %}
 
-                        </div>
+                            </div>
 
 
-                        <!-- CURRENCY -->
+                            <!-- PRICE ALL QUANTITY -->
 
-                        <div id="currencyContainer"
-                             class="col-md-6">
+                            <div id="priceAllQuantityWrapper"
+                                 class="col-md-6"
+                                 style="display: none;">
 
-                            {{ form.currency.label_tag }}
-                            {{ form.currency }}
+                                {{ form.price_all_quantity.label_tag }}
+                                {{ form.price_all_quantity }}
 
-                            {% if form.currency.errors %}
-                                <div class="alert alert-danger">
-                                    {{ form.currency.errors }}
-                                </div>
-                            {% endif %}
+                                {% if form.price_all_quantity.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ form.price_all_quantity.errors }}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- CURRENCY -->
+
+                            <div id="currencyWrapper" class="col-md-6">
+
+                                {{ form.currency.label_tag }}
+                                {{ form.currency }}
+
+                                {% if form.currency.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ form.currency.errors }}
+                                    </div>
+                                {% endif %}
+
+                            </div>
 
                         </div>
 
@@ -410,115 +401,97 @@
                 </form>
 
             </div>
-
         </div>
     </div>
-
 </main>
 
 
-<!--
-=========================================================
-PRICE TYPE JAVASCRIPT
-Това НЕ е във външния photo JS файл.
-Тук е само логиката за Price + Currency.
-=========================================================
--->
+<!-- =========================================================
+     PRICE TYPE SCRIPT
+     НЕ Е НУЖЕН ВЪНШЕН JS ФАЙЛ
+========================================================= -->
 
 <script>
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const priceType = document.getElementById("id_price_type");
+    const priceType =
+        document.getElementById("id_price_type");
 
-    const priceRow =
-        document.getElementById("priceRow");
+    const priceSection =
+        document.getElementById("priceSection");
 
-    const pricePerUnit =
-        document.getElementById("pricePerUnitContainer");
+    const pricePerUnitWrapper =
+        document.getElementById("pricePerUnitWrapper");
 
-    const priceAllQuantity =
-        document.getElementById("priceAllQuantityContainer");
+    const priceAllQuantityWrapper =
+        document.getElementById("priceAllQuantityWrapper");
 
-    const currency =
-        document.getElementById("currencyContainer");
+    const currencyWrapper =
+        document.getElementById("currencyWrapper");
 
 
-    if (
-        !priceType ||
-        !priceRow ||
-        !pricePerUnit ||
-        !priceAllQuantity ||
-        !currency
-    ) {
+    if (!priceType) {
         return;
     }
 
 
     function updatePriceFields() {
 
-        const value = priceType.value;
+        const selected =
+            priceType.value;
 
 
-        /*
-        =============================================
-        PRICE PER UNIT
-        =============================================
-        */
+        /* ==============================
+           PER UNIT
+        ============================== */
 
-        if (value === "per_quantity") {
+        if (selected === "per_quantity") {
 
-            priceRow.style.display = "flex";
+            priceSection.style.display = "block";
 
-            pricePerUnit.style.display = "block";
+            pricePerUnitWrapper.style.display = "block";
 
-            priceAllQuantity.style.display = "none";
+            priceAllQuantityWrapper.style.display = "none";
 
-            currency.style.display = "block";
+            currencyWrapper.style.display = "block";
         }
 
 
-        /*
-        =============================================
-        PRICE FOR ALL QUANTITY
-        =============================================
-        */
+        /* ==============================
+           ALL QUANTITY
+        ============================== */
 
-        else if (value === "all_quantity") {
+        else if (selected === "all_quantity") {
 
-            priceRow.style.display = "flex";
+            priceSection.style.display = "block";
 
-            pricePerUnit.style.display = "none";
+            pricePerUnitWrapper.style.display = "none";
 
-            priceAllQuantity.style.display = "block";
+            priceAllQuantityWrapper.style.display = "block";
 
-            currency.style.display = "block";
+            currencyWrapper.style.display = "block";
         }
 
 
-        /*
-        =============================================
-        PRICE BY NEGOTIATION
-        =============================================
-        */
+        /* ==============================
+           NEGOTIATION
+        ============================== */
 
         else {
 
-            priceRow.style.display = "none";
+            priceSection.style.display = "none";
 
-            pricePerUnit.style.display = "none";
+            pricePerUnitWrapper.style.display = "none";
 
-            priceAllQuantity.style.display = "none";
+            priceAllQuantityWrapper.style.display = "none";
 
-            currency.style.display = "none";
+            currencyWrapper.style.display = "none";
         }
 
     }
 
 
-    /*
-    При промяна на Price Type
-    */
     priceType.addEventListener(
         "change",
         updatePriceFields
@@ -526,10 +499,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /*
-    МНОГО ВАЖНО ЗА EDIT:
-    при зареждане на страницата
-    проверяваме вече записания Price Type.
-    */
+     * Това е важно за EDIT.
+     *
+     * Когато страницата се зареди,
+     * Django вече е сложил стария
+     * price_type в select-а.
+     *
+     * Тук го проверяваме веднага.
+     */
     updatePriceFields();
 
 });
@@ -537,12 +514,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
-<!--
-=========================================================
-PHOTO PREVIEW JS
-=========================================================
--->
-
+<!-- PHOTO PREVIEW ONLY -->
 <script src="{% static 'js/buyers-edit.js' %}"></script>
 
 
