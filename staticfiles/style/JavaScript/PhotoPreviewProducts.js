@@ -37,11 +37,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // ==============================
-    // PRICE TYPE
+    // PRICE FIELDS
     // ==============================
 
     const priceTypeField =
         document.getElementById("id_price_type");
+
+    const priceFieldsContainer =
+        document.getElementById("priceFieldsContainer");
 
     const pricePerUnitContainer =
         document.getElementById("pricePerUnitContainer");
@@ -52,103 +55,80 @@ document.addEventListener("DOMContentLoaded", function () {
     const currencyContainer =
         document.getElementById("currencyContainer");
 
-    const currencyPerUnitPlace =
-        document.getElementById("currencyPerUnitPlace");
 
-    const currencyAllQuantityPlace =
-        document.getElementById("currencyAllQuantityPlace");
-
-
-    // Check that all required elements exist
     if (
         priceTypeField &&
+        priceFieldsContainer &&
         pricePerUnitContainer &&
         priceAllQuantityContainer &&
-        currencyContainer &&
-        currencyPerUnitPlace &&
-        currencyAllQuantityPlace
+        currencyContainer
     ) {
-
-
-        // ==============================
-        // TOGGLE PRICE FIELDS
-        // ==============================
 
         function togglePriceFields() {
 
             const selectedValue = priceTypeField.value;
 
 
-            // ------------------------------
+            // ==============================
             // PRICE PER UNIT
-            // ------------------------------
+            // ==============================
 
             if (selectedValue === "per_quantity") {
+
+                priceFieldsContainer.style.display = "block";
 
                 pricePerUnitContainer.style.display = "block";
 
                 priceAllQuantityContainer.style.display = "none";
 
-
-                // Move currency into Price Per Unit row
-                currencyPerUnitPlace.appendChild(currencyContainer);
-
                 currencyContainer.style.display = "block";
             }
 
 
-            // ------------------------------
+            // ==============================
             // PRICE FOR ALL QUANTITY
-            // ------------------------------
+            // ==============================
 
             else if (selectedValue === "all_quantity") {
+
+                priceFieldsContainer.style.display = "block";
 
                 pricePerUnitContainer.style.display = "none";
 
                 priceAllQuantityContainer.style.display = "block";
 
-
-                // Move currency into Price All Quantity row
-                currencyAllQuantityPlace.appendChild(currencyContainer);
-
                 currencyContainer.style.display = "block";
             }
 
 
-            // ------------------------------
+            // ==============================
             // PRICE BY NEGOTIATION
-            // ------------------------------
+            // ==============================
 
-            else if (selectedValue === "negotiation") {
+            else {
+
+                priceFieldsContainer.style.display = "none";
 
                 pricePerUnitContainer.style.display = "none";
 
                 priceAllQuantityContainer.style.display = "none";
 
-                // Hide currency completely
                 currencyContainer.style.display = "none";
             }
         }
 
 
-        // ==============================
-        // CHANGE EVENT
-        // ==============================
-
+        // Change price type
         priceTypeField.addEventListener(
             "change",
             togglePriceFields
         );
 
 
-        // ==============================
         // IMPORTANT FOR EDIT
-        // ==============================
-
-        // Detect current saved price type
-        // when the edit page opens.
+        // Run once when page loads
+        // so existing saved values are displayed.
         togglePriceFields();
-
     }
 
 });
