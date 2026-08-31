@@ -84,7 +84,6 @@
                         <!-- Photo 1 -->
                         <div class="photo-framework">
                             <label for="id_photo_1">
-
                                 {% if form.photo_1.errors %}
                                     <div class="alert alert-danger">
                                         {{ form.photo_1.errors }}
@@ -95,7 +94,6 @@
                             </label>
 
                             <div class="photo-container">
-
                                 <img
                                     id="photoPreview1"
                                     src="{% if form.instance.photo_1 %}{{ form.instance.photo_1.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
@@ -112,14 +110,12 @@
                                 >
                                     Upload Photo 1
                                 </button>
-
                             </div>
                         </div>
 
                         <!-- Photo 2 -->
                         <div class="photo-framework">
                             <label for="id_photo_2">
-
                                 {% if form.photo_2.errors %}
                                     <div class="alert alert-danger">
                                         {{ form.photo_2.errors }}
@@ -130,7 +126,6 @@
                             </label>
 
                             <div class="photo-container">
-
                                 <img
                                     id="photoPreview2"
                                     src="{% if form.instance.photo_2 %}{{ form.instance.photo_2.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
@@ -147,14 +142,12 @@
                                 >
                                     Upload Photo 2
                                 </button>
-
                             </div>
                         </div>
 
                         <!-- Photo 3 -->
                         <div class="photo-framework">
                             <label for="id_photo_3">
-
                                 {% if form.photo_3.errors %}
                                     <div class="alert alert-danger">
                                         {{ form.photo_3.errors }}
@@ -165,7 +158,6 @@
                             </label>
 
                             <div class="photo-container">
-
                                 <img
                                     id="photoPreview3"
                                     src="{% if form.instance.photo_3 %}{{ form.instance.photo_3.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
@@ -182,14 +174,12 @@
                                 >
                                     Upload Photo 3
                                 </button>
-
                             </div>
                         </div>
 
                         <!-- Photo 4 -->
                         <div class="photo-framework">
                             <label for="id_photo_4">
-
                                 {% if form.photo_4.errors %}
                                     <div class="alert alert-danger">
                                         {{ form.photo_4.errors }}
@@ -200,7 +190,6 @@
                             </label>
 
                             <div class="photo-container">
-
                                 <img
                                     id="photoPreview4"
                                     src="{% if form.instance.photo_4 %}{{ form.instance.photo_4.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
@@ -217,7 +206,6 @@
                                 >
                                     Upload Photo 4
                                 </button>
-
                             </div>
                         </div>
 
@@ -266,7 +254,7 @@
                             {% endif %}
                         </div>
 
-                        <!-- Price Per Unit + Currency -->
+                        <!-- Price Per Unit -->
                         <div id="pricePerUnitContainer"
                              class="form-group"
                              style="display: none;">
@@ -284,15 +272,11 @@
                                     {% endif %}
                                 </div>
 
-                                <div class="col-md-6">
-                                    {{ form.currency.label_tag }}
-                                    {{ form.currency }}
-                                </div>
-
+                                <!-- Currency will be moved here by JavaScript -->
                             </div>
                         </div>
 
-                        <!-- Price All Quantity + Currency -->
+                        <!-- Price All Quantity -->
                         <div id="priceAllQuantityContainer"
                              class="form-group"
                              style="display: none;">
@@ -310,7 +294,21 @@
                                     {% endif %}
                                 </div>
 
+                                <!-- Currency will be moved here by JavaScript -->
+
                             </div>
+                        </div>
+
+                        <!-- Currency - only ONE real field -->
+                        <div id="currencyContainer" class="col-md-6">
+                            {{ form.currency.label_tag }}
+                            {{ form.currency }}
+
+                            {% if form.currency.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.currency.errors }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <!-- Submit Button -->
