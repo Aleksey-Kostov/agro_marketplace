@@ -30,25 +30,29 @@ jobs:
           cache: "pip"
 
       - name: Upgrade pip
-        run: python -m pip install --upgrade pip
+        run: |
+          python -m pip install --upgrade pip
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Django system check
         env:
           DEBUG: "False"
           SECRET_KEY: "github-actions-test-secret-key"
+
           ALLOWED_HOSTS: "localhost,127.0.0.1"
           CSRF_TRUSTED_ORIGINS: ""
+
           DB_NAME: "test"
           DB_USER: "test"
           DB_PASSWORD: "test"
           DB_HOST: "localhost"
           DB_PORT: "5432"
+
           CLOUDINARY_URL: "cloudinary://test:test@test"
+
         run: |
           python manage.py check
 
@@ -56,16 +60,21 @@ jobs:
         env:
           DEBUG: "False"
           SECRET_KEY: "github-actions-test-secret-key"
+
           ALLOWED_HOSTS: "localhost,127.0.0.1"
           CSRF_TRUSTED_ORIGINS: ""
+
           DB_NAME: "test"
           DB_USER: "test"
           DB_PASSWORD: "test"
           DB_HOST: "localhost"
           DB_PORT: "5432"
+
           CLOUDINARY_URL: "cloudinary://test:test@test"
+
         run: |
           python manage.py collectstatic --noinput
+
 
   deploy:
     name: Deploy to Render
@@ -73,19 +82,31 @@ jobs:
 
     needs: build
 
+    # Deploy only after a successful push to main.
+    # Pull requests will NOT deploy.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     permissions:
       contents: read
 
     steps:
+
+      # =====================================================
+      # TRIGGER RENDER DEPLOYMENT
+      # =====================================================
+
       - name: Trigger Render deployment
         id: render_deploy
+
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
           COMMIT_SHA: ${{ github.sha }}
+
         run: |
+          echo "Starting Render deployment..."
+          echo "Commit: $COMMIT_SHA"
+
           response=$(curl --fail-with-body --silent --show-error \
             -X POST \
             "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
@@ -96,7 +117,7 @@ jobs:
           echo "Render response:"
           echo "$response"
 
-          deploy_id=$(echo "$response" | jq -r '.deploy.id')
+          deploy_id=$(echo "$response" | jq -r '.id')
 
           if [ -z "$deploy_id" ] || [ "$deploy_id" = "null" ]; then
             echo "ERROR: Could not get Render deploy ID."
@@ -104,39 +125,62 @@ jobs:
           fi
 
           echo "deploy_id=$deploy_id" >> "$GITHUB_OUTPUT"
-          echo "Render deployment started: $deploy_id"
+
+          echo "========================================"
+          echo "Render deployment started"
+          echo "Deploy ID: $deploy_id"
+          echo "========================================"
+
+
+      # =====================================================
+      # WAIT FOR RENDER DEPLOYMENT
+      # =====================================================
 
       - name: Wait for Render deployment
+
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
           DEPLOY_ID: ${{ steps.render_deploy.outputs.deploy_id }}
+
         run: |
-          echo "Waiting for Render deployment: $DEPLOY_ID"
+          echo "Waiting for Render deployment..."
+          echo "Deploy ID: $DEPLOY_ID"
 
           for i in {1..60}; do
+
             response=$(curl --fail-with-body --silent --show-error \
               -H "Authorization: Bearer ${RENDER_API_KEY}" \
               "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys/${DEPLOY_ID}")
 
-            status=$(echo "$response" | jq -r '.deploy.status')
+            status=$(echo "$response" | jq -r '.status')
 
+            echo "----------------------------------------"
             echo "Render status: $status"
+            echo "Attempt: $i / 60"
+            echo "----------------------------------------"
 
             case "$status" in
+
               live)
+                echo ""
                 echo "========================================"
                 echo "Render deployment SUCCESSFUL"
                 echo "Status: LIVE"
+                echo "Deploy ID: $DEPLOY_ID"
                 echo "========================================"
                 exit 0
                 ;;
 
               build_failed|update_failed|pre_deploy_failed|canceled|deactivated)
+                echo ""
                 echo "========================================"
                 echo "Render deployment FAILED"
                 echo "Status: $status"
+                echo "Deploy ID: $DEPLOY_ID"
                 echo "========================================"
+                echo ""
+                echo "Full Render response:"
                 echo "$response"
                 exit 1
                 ;;
@@ -151,8 +195,14 @@ jobs:
                 echo "$response"
                 sleep 10
                 ;;
+
             esac
+
           done
 
+          echo ""
+          echo "========================================"
           echo "ERROR: Render deployment timed out."
+          echo "========================================"
+
           exit 1
