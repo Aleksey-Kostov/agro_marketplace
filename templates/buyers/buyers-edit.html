@@ -6,17 +6,12 @@
 <main class="container my-4">
 
     <div class="container">
-
         <div class="row justify-content-center">
 
             <div class="col-md-8">
 
-                <!-- ==============================
-                     HEADER
-                =============================== -->
-
+                <!-- HEADER -->
                 <div class="col-12 edit-profile">
-
                     <div class="d-flex align-items-center border rounded p-2 text-details">
 
                         <a href="#"
@@ -30,14 +25,10 @@
                         </h2>
 
                     </div>
-
                 </div>
 
 
-                <!-- ==============================
-                     FORM
-                =============================== -->
-
+                <!-- FORM -->
                 <form action="{% url 'edit-buyer' form.instance.pk %}"
                       method="POST"
                       class="p-4 border rounded"
@@ -46,10 +37,7 @@
                     {% csrf_token %}
 
 
-                    <!-- ==============================
-                         TITLE
-                    =============================== -->
-
+                    <!-- TITLE -->
                     <div class="mb-3">
 
                         {{ form.title.label_tag }}
@@ -64,10 +52,7 @@
                     </div>
 
 
-                    <!-- ==============================
-                         CATEGORY
-                    =============================== -->
-
+                    <!-- CATEGORY -->
                     <div class="mb-3">
 
                         {{ form.category.label_tag }}
@@ -82,13 +67,10 @@
                     </div>
 
 
-                    <!-- ==============================
-                         LOCATION
-                    =============================== -->
+                    <!-- LOCATION -->
+                    <div class="mb-3">
 
-                    {{ form.location.label_tag }}
-
-                    <div class="mb-3 d-flex align-items-center">
+                        {{ form.location.label_tag }}
 
                         <div class="input-group">
 
@@ -98,21 +80,18 @@
 
                             {{ form.location }}
 
-                            {% if form.location.errors %}
-                                <div class="alert alert-danger">
-                                    {{ form.location.errors }}
-                                </div>
-                            {% endif %}
-
                         </div>
+
+                        {% if form.location.errors %}
+                            <div class="alert alert-danger">
+                                {{ form.location.errors }}
+                            </div>
+                        {% endif %}
 
                     </div>
 
 
-                    <!-- ==============================
-                         DESCRIPTION
-                    =============================== -->
-
+                    <!-- DESCRIPTION -->
                     <div class="mb-3">
 
                         {{ form.description.label_tag }}
@@ -127,9 +106,9 @@
                     </div>
 
 
-                    <!-- ==============================
+                    <!-- =========================
                          PHOTO 1
-                    =============================== -->
+                    ========================== -->
 
                     <div class="photo-framework">
 
@@ -152,7 +131,7 @@
                                 src="{% if form.instance.photo_1 %}{{ form.instance.photo_1.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
                                 alt="Photo 1"
                                 class="photo-preview"
-                            />
+                            >
 
                             {{ form.photo_1 }}
 
@@ -168,9 +147,9 @@
                     </div>
 
 
-                    <!-- ==============================
+                    <!-- =========================
                          PHOTO 2
-                    =============================== -->
+                    ========================== -->
 
                     <div class="photo-framework">
 
@@ -193,7 +172,7 @@
                                 src="{% if form.instance.photo_2 %}{{ form.instance.photo_2.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
                                 alt="Photo 2"
                                 class="photo-preview"
-                            />
+                            >
 
                             {{ form.photo_2 }}
 
@@ -209,9 +188,9 @@
                     </div>
 
 
-                    <!-- ==============================
+                    <!-- =========================
                          PHOTO 3
-                    =============================== -->
+                    ========================== -->
 
                     <div class="photo-framework">
 
@@ -234,7 +213,7 @@
                                 src="{% if form.instance.photo_3 %}{{ form.instance.photo_3.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
                                 alt="Photo 3"
                                 class="photo-preview"
-                            />
+                            >
 
                             {{ form.photo_3 }}
 
@@ -250,9 +229,9 @@
                     </div>
 
 
-                    <!-- ==============================
+                    <!-- =========================
                          PHOTO 4
-                    =============================== -->
+                    ========================== -->
 
                     <div class="photo-framework">
 
@@ -275,7 +254,7 @@
                                 src="{% if form.instance.photo_4 %}{{ form.instance.photo_4.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
                                 alt="Photo 4"
                                 class="photo-preview"
-                            />
+                            >
 
                             {{ form.photo_4 }}
 
@@ -291,10 +270,7 @@
                     </div>
 
 
-                    <!-- ==============================
-                         PHONE
-                    =============================== -->
-
+                    <!-- PHONE -->
                     <div class="mb-3">
 
                         {{ form.phone.label_tag }}
@@ -309,10 +285,7 @@
                     </div>
 
 
-                    <!-- ==============================
-                         QUANTITY + UNIT
-                    =============================== -->
-
+                    <!-- QUANTITY + UNIT -->
                     <div class="d-flex">
 
                         <div class="col-md-6 unit-measure">
@@ -334,15 +307,18 @@
                             {{ form.unit_of_measure.label_tag }}
                             {{ form.unit_of_measure }}
 
+                            {% if form.unit_of_measure.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.unit_of_measure.errors }}
+                                </div>
+                            {% endif %}
+
                         </div>
 
                     </div>
 
 
-                    <!-- ==============================
-                         PRICE TYPE
-                    =============================== -->
-
+                    <!-- PRICE TYPE -->
                     <div class="mb-3 mt-3">
 
                         {{ form.price_type.label_tag }}
@@ -357,85 +333,71 @@
                     </div>
 
 
-                    <!-- ==================================================
+                    <!-- =================================================
                          PRICE + CURRENCY
-                         ONE ROW
-                    =================================================== -->
+                         ЕДИН ОБЩ ROW
+                    ================================================== -->
 
-                    <div id="priceFieldsContainer"
-                         class="form-group"
-                         style="display: none;">
-
-                        <div class="d-flex">
+                    <div id="priceRow"
+                         class="d-flex"
+                         style="display: none !important;">
 
 
-                            <!-- ==============================
-                                 PRICE PER UNIT
-                            =============================== -->
+                        <!-- PRICE PER UNIT -->
 
-                            <div id="pricePerUnitContainer"
-                                 class="col-md-6">
+                        <div id="pricePerUnitContainer"
+                             class="col-md-6">
 
-                                {{ form.price_per_unit.label_tag }}
-                                {{ form.price_per_unit }}
+                            {{ form.price_per_unit.label_tag }}
+                            {{ form.price_per_unit }}
 
-                                {% if form.price_per_unit.errors %}
-                                    <div class="alert alert-danger">
-                                        {{ form.price_per_unit.errors }}
-                                    </div>
-                                {% endif %}
+                            {% if form.price_per_unit.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.price_per_unit.errors }}
+                                </div>
+                            {% endif %}
 
-                            </div>
+                        </div>
 
 
-                            <!-- ==============================
-                                 PRICE FOR ALL QUANTITY
-                            =============================== -->
+                        <!-- PRICE ALL QUANTITY -->
 
-                            <div id="priceAllQuantityContainer"
-                                 class="col-md-6"
-                                 style="display: none;">
+                        <div id="priceAllQuantityContainer"
+                             class="col-md-6"
+                             style="display: none;">
 
-                                {{ form.price_all_quantity.label_tag }}
-                                {{ form.price_all_quantity }}
+                            {{ form.price_all_quantity.label_tag }}
+                            {{ form.price_all_quantity }}
 
-                                {% if form.price_all_quantity.errors %}
-                                    <div class="alert alert-danger">
-                                        {{ form.price_all_quantity.errors }}
-                                    </div>
-                                {% endif %}
+                            {% if form.price_all_quantity.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.price_all_quantity.errors }}
+                                </div>
+                            {% endif %}
 
-                            </div>
+                        </div>
 
 
-                            <!-- ==============================
-                                 CURRENCY
-                            =============================== -->
+                        <!-- CURRENCY -->
 
-                            <div id="currencyContainer"
-                                 class="col-md-6">
+                        <div id="currencyContainer"
+                             class="col-md-6">
 
-                                {{ form.currency.label_tag }}
-                                {{ form.currency }}
+                            {{ form.currency.label_tag }}
+                            {{ form.currency }}
 
-                                {% if form.currency.errors %}
-                                    <div class="alert alert-danger">
-                                        {{ form.currency.errors }}
-                                    </div>
-                                {% endif %}
-
-                            </div>
-
+                            {% if form.currency.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.currency.errors }}
+                                </div>
+                            {% endif %}
 
                         </div>
 
                     </div>
 
 
-                    <!-- ==============================
-                         SUBMIT
-                    =============================== -->
-
+                    <!-- SUBMIT -->
                     <div class="text-center mt-4">
 
                         <button type="submit"
@@ -450,9 +412,138 @@
             </div>
 
         </div>
-
     </div>
 
 </main>
+
+
+<!--
+=========================================================
+PRICE TYPE JAVASCRIPT
+Това НЕ е във външния photo JS файл.
+Тук е само логиката за Price + Currency.
+=========================================================
+-->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const priceType = document.getElementById("id_price_type");
+
+    const priceRow =
+        document.getElementById("priceRow");
+
+    const pricePerUnit =
+        document.getElementById("pricePerUnitContainer");
+
+    const priceAllQuantity =
+        document.getElementById("priceAllQuantityContainer");
+
+    const currency =
+        document.getElementById("currencyContainer");
+
+
+    if (
+        !priceType ||
+        !priceRow ||
+        !pricePerUnit ||
+        !priceAllQuantity ||
+        !currency
+    ) {
+        return;
+    }
+
+
+    function updatePriceFields() {
+
+        const value = priceType.value;
+
+
+        /*
+        =============================================
+        PRICE PER UNIT
+        =============================================
+        */
+
+        if (value === "per_quantity") {
+
+            priceRow.style.display = "flex";
+
+            pricePerUnit.style.display = "block";
+
+            priceAllQuantity.style.display = "none";
+
+            currency.style.display = "block";
+        }
+
+
+        /*
+        =============================================
+        PRICE FOR ALL QUANTITY
+        =============================================
+        */
+
+        else if (value === "all_quantity") {
+
+            priceRow.style.display = "flex";
+
+            pricePerUnit.style.display = "none";
+
+            priceAllQuantity.style.display = "block";
+
+            currency.style.display = "block";
+        }
+
+
+        /*
+        =============================================
+        PRICE BY NEGOTIATION
+        =============================================
+        */
+
+        else {
+
+            priceRow.style.display = "none";
+
+            pricePerUnit.style.display = "none";
+
+            priceAllQuantity.style.display = "none";
+
+            currency.style.display = "none";
+        }
+
+    }
+
+
+    /*
+    При промяна на Price Type
+    */
+    priceType.addEventListener(
+        "change",
+        updatePriceFields
+    );
+
+
+    /*
+    МНОГО ВАЖНО ЗА EDIT:
+    при зареждане на страницата
+    проверяваме вече записания Price Type.
+    */
+    updatePriceFields();
+
+});
+
+</script>
+
+
+<!--
+=========================================================
+PHOTO PREVIEW JS
+=========================================================
+-->
+
+<script src="{% static 'js/buyers-edit.js' %}"></script>
+
 
 {% endblock %}
