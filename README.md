@@ -2,6 +2,7 @@
 
 **Live Demo:** [https://agro-marketplace-yo35.onrender.com/](https://agro-marketplace-yo35.onrender.com/)
 
+
 ## 📋 Project Overview
 
 This is my first Django project — a demo application deployed to Azure. The goal of the project is to create an **online marketplace** for agricultural products, where **buyers and sellers can connect** directly.
