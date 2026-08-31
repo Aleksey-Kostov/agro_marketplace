@@ -15,61 +15,47 @@ CSRF_TRUSTED_ORIGINS = [ origin.strip() for origin in config('CSRF_TRUSTED_ORIGI
 # STATIC FILES
 # =========================================================
 
-STATIC_URL = '/static/'
-
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'static'
+    BASE_DIR / "static",
 ]
-
 
 # =========================================================
 # CLOUDINARY MEDIA STORAGE
 # =========================================================
 
-CLOUDINARY_URL = config(
-    'CLOUDINARY_URL',
-    default=''
-)
-
+CLOUDINARY_URL = config("CLOUDINARY_URL", default="")
 
 if CLOUDINARY_URL:
     import cloudinary
 
     cloudinary.config(
-        secure=True
+        cloudinary_url=CLOUDINARY_URL,
+        secure=True,
     )
-
-    MEDIA_URL = '/media/'
 
     STORAGES = {
         "default": {
-            "BACKEND":
-                "cloudinary_storage.storage.MediaCloudinaryStorage",
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
         },
-
         "staticfiles": {
-            "BACKEND":
-                "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
 
 else:
-    # Local fallback
-    MEDIA_URL = '/media/'
-
-    MEDIA_ROOT = BASE_DIR / 'media'
+    # Local development fallback
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
 
     STORAGES = {
         "default": {
-            "BACKEND":
-                "django.core.files.storage.FileSystemStorage",
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
         },
-
         "staticfiles": {
-            "BACKEND":
-                "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
 # DJANGO APPS
