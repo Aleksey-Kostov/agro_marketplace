@@ -10,22 +10,27 @@
                     <div class="col-12 edit-profile">
                         <div class="d-flex align-items-center border rounded p-2 text-details">
                             <a href="#" class="btn btn-secondary me-3 back-button" onclick="goBack()">
-                                 <i class="fas fa-arrow-left"></i> Back
+                                <i class="fas fa-arrow-left"></i> Back
                             </a>
+
                             <h2 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
                                 <i class="fas fa-edit me-2"></i> Edit a Buy
                             </h2>
                         </div>
                     </div>
 
-                    <form action="{% url 'edit-buyer' form.instance.pk %}" method="POST" class="p-4 border rounded"
+                    <form action="{% url 'edit-buyer' form.instance.pk %}"
+                          method="POST"
+                          class="p-4 border rounded"
                           enctype="multipart/form-data">
+
                         {% csrf_token %}
 
                         <!-- Title Field -->
                         <div class="mb-3">
                             {{ form.title.label_tag }}
                             {{ form.title }}
+
                             {% if form.title.errors %}
                                 <div class="alert alert-danger">
                                     {{ form.title.errors }}
@@ -33,9 +38,11 @@
                             {% endif %}
                         </div>
 
+                        <!-- Category Field -->
                         <div class="mb-3">
                             {{ form.category.label_tag }}
                             {{ form.category }}
+
                             {% if form.category.errors %}
                                 <div class="alert alert-danger">
                                     {{ form.category.errors }}
@@ -43,12 +50,17 @@
                             {% endif %}
                         </div>
 
-                        <!-- Location Field with Icon -->
+                        <!-- Location Field -->
                         {{ form.location.label_tag }}
+
                         <div class="mb-3 d-flex align-items-center">
                             <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                <span class="input-group-text">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </span>
+
                                 {{ form.location }}
+
                                 {% if form.location.errors %}
                                     <div class="alert alert-danger">
                                         {{ form.location.errors }}
@@ -61,6 +73,7 @@
                         <div class="mb-3">
                             {{ form.description.label_tag }}
                             {{ form.description }}
+
                             {% if form.description.errors %}
                                 <div class="alert alert-danger">
                                     {{ form.description.errors }}
@@ -68,123 +81,147 @@
                             {% endif %}
                         </div>
 
+                        <!-- Photo 1 -->
                         <div class="photo-framework">
                             <label for="id_photo_1">
+
                                 {% if form.photo_1.errors %}
                                     <div class="alert alert-danger">
                                         {{ form.photo_1.errors }}
                                     </div>
                                 {% endif %}
+
                                 {{ form.photo_1.label_tag }}
                             </label>
 
                             <div class="photo-container">
+
                                 <img
-                                        id="photoPreview1"
-                                        src="{% if form.instance.photo_1 %}{{ form.instance.photo_1.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
-                                        alt="Photo 1"
-                                        class="photo-preview"
+                                    id="photoPreview1"
+                                    src="{% if form.instance.photo_1 %}{{ form.instance.photo_1.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
+                                    alt="Photo 1"
+                                    class="photo-preview"
                                 />
+
                                 {{ form.photo_1 }}
 
                                 <button
-                                        type="button"
-                                        class="btn btn-primary upload-button"
-                                        onclick="document.getElementById('id_photo_1').click();"
+                                    type="button"
+                                    class="btn btn-primary upload-button"
+                                    onclick="document.getElementById('id_photo_1').click();"
                                 >
                                     Upload Photo 1
                                 </button>
+
                             </div>
                         </div>
 
+                        <!-- Photo 2 -->
                         <div class="photo-framework">
                             <label for="id_photo_2">
+
                                 {% if form.photo_2.errors %}
                                     <div class="alert alert-danger">
                                         {{ form.photo_2.errors }}
                                     </div>
                                 {% endif %}
+
                                 {{ form.photo_2.label_tag }}
                             </label>
 
                             <div class="photo-container">
+
                                 <img
-                                        id="photoPreview2"
-                                        src="{% if form.instance.photo_2 %}{{ form.instance.photo_2.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
-                                        alt="Photo 2"
-                                        class="photo-preview"
+                                    id="photoPreview2"
+                                    src="{% if form.instance.photo_2 %}{{ form.instance.photo_2.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
+                                    alt="Photo 2"
+                                    class="photo-preview"
                                 />
+
                                 {{ form.photo_2 }}
 
                                 <button
-                                        type="button"
-                                        class="btn btn-primary upload-button"
-                                        onclick="document.getElementById('id_photo_2').click();"
+                                    type="button"
+                                    class="btn btn-primary upload-button"
+                                    onclick="document.getElementById('id_photo_2').click();"
                                 >
                                     Upload Photo 2
                                 </button>
+
                             </div>
                         </div>
 
+                        <!-- Photo 3 -->
                         <div class="photo-framework">
                             <label for="id_photo_3">
+
                                 {% if form.photo_3.errors %}
                                     <div class="alert alert-danger">
                                         {{ form.photo_3.errors }}
                                     </div>
                                 {% endif %}
+
                                 {{ form.photo_3.label_tag }}
                             </label>
 
                             <div class="photo-container">
+
                                 <img
-                                        id="photoPreview3"
-                                        src="{% if form.instance.photo_3 %}{{ form.instance.photo_3.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
-                                        alt="Photo 3"
-                                        class="photo-preview"
+                                    id="photoPreview3"
+                                    src="{% if form.instance.photo_3 %}{{ form.instance.photo_3.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
+                                    alt="Photo 3"
+                                    class="photo-preview"
                                 />
+
                                 {{ form.photo_3 }}
 
                                 <button
-                                        type="button"
-                                        class="btn btn-primary upload-button"
-                                        onclick="document.getElementById('id_photo_3').click();"
+                                    type="button"
+                                    class="btn btn-primary upload-button"
+                                    onclick="document.getElementById('id_photo_3').click();"
                                 >
                                     Upload Photo 3
                                 </button>
+
                             </div>
                         </div>
 
+                        <!-- Photo 4 -->
                         <div class="photo-framework">
                             <label for="id_photo_4">
+
                                 {% if form.photo_4.errors %}
                                     <div class="alert alert-danger">
                                         {{ form.photo_4.errors }}
                                     </div>
                                 {% endif %}
+
                                 {{ form.photo_4.label_tag }}
                             </label>
 
                             <div class="photo-container">
+
                                 <img
-                                        id="photoPreview4"
-                                        src="{% if form.instance.photo_4 %}{{ form.instance.photo_4.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
-                                        alt="Photo 4"
-                                        class="photo-preview"
+                                    id="photoPreview4"
+                                    src="{% if form.instance.photo_4 %}{{ form.instance.photo_4.url }}{% else %}{% static 'images/default products2.jpg' %}{% endif %}"
+                                    alt="Photo 4"
+                                    class="photo-preview"
                                 />
+
                                 {{ form.photo_4 }}
 
                                 <button
-                                        type="button"
-                                        class="btn btn-primary upload-button"
-                                        onclick="document.getElementById('id_photo_4').click();"
+                                    type="button"
+                                    class="btn btn-primary upload-button"
+                                    onclick="document.getElementById('id_photo_4').click();"
                                 >
                                     Upload Photo 4
                                 </button>
+
                             </div>
                         </div>
 
-                        <!-- Phone for Contacts -->
+                        <!-- Phone -->
                         <div class="mb-3">
                             {{ form.phone.label_tag }}
                             {{ form.phone }}
@@ -196,7 +233,9 @@
                             {% endif %}
                         </div>
 
+                        <!-- Quantity + Unit -->
                         <div class="d-flex">
+
                             <div class="col-md-6 unit-measure">
                                 {{ form.quantity.label_tag }}
                                 {{ form.quantity }}
@@ -212,8 +251,10 @@
                                 {{ form.unit_of_measure.label_tag }}
                                 {{ form.unit_of_measure }}
                             </div>
+
                         </div>
 
+                        <!-- Price Type -->
                         <div class="mb-3 mt-3">
                             {{ form.price_type.label_tag }}
                             {{ form.price_type }}
@@ -225,20 +266,13 @@
                             {% endif %}
                         </div>
 
-                        <!-- Currency - ONLY ONCE -->
-                        <div class="mb-3">
-                            {{ form.currency.label_tag }}
-                            {{ form.currency }}
+                        <!-- Price Per Unit + Currency -->
+                        <div id="pricePerUnitContainer"
+                             class="form-group"
+                             style="display: none;">
 
-                            {% if form.currency.errors %}
-                                <div class="alert alert-danger">
-                                    {{ form.currency.errors }}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <div id="pricePerUnitContainer" class="form-group" style="display: none;">
                             <div class="d-flex">
+
                                 <div class="col-md-6">
                                     {{ form.price_per_unit.label_tag }}
                                     {{ form.price_per_unit }}
@@ -249,11 +283,22 @@
                                         </div>
                                     {% endif %}
                                 </div>
+
+                                <div class="col-md-6">
+                                    {{ form.currency.label_tag }}
+                                    {{ form.currency }}
+                                </div>
+
                             </div>
                         </div>
 
-                        <div id="priceAllQuantityContainer" class="form-group" style="display: none;">
+                        <!-- Price All Quantity + Currency -->
+                        <div id="priceAllQuantityContainer"
+                             class="form-group"
+                             style="display: none;">
+
                             <div class="d-flex">
+
                                 <div class="col-md-6">
                                     {{ form.price_all_quantity.label_tag }}
                                     {{ form.price_all_quantity }}
@@ -264,12 +309,15 @@
                                         </div>
                                     {% endif %}
                                 </div>
+
                             </div>
                         </div>
 
                         <!-- Submit Button -->
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-success">Save Changes</button>
+                            <button type="submit" class="btn btn-success">
+                                Save Changes
+                            </button>
                         </div>
 
                     </form>
