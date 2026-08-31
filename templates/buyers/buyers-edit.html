@@ -22,16 +22,11 @@
                         <a href="#"
                            class="btn btn-secondary me-3 back-button"
                            onclick="goBack()">
-
                             <i class="fas fa-arrow-left"></i> Back
-
                         </a>
 
                         <h2 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
-
-                            <i class="fas fa-edit me-2"></i>
-                            Edit a Buy
-
+                            <i class="fas fa-edit me-2"></i> Edit a Buy
                         </h2>
 
                     </div>
@@ -61,11 +56,9 @@
                         {{ form.title }}
 
                         {% if form.title.errors %}
-
                             <div class="alert alert-danger">
                                 {{ form.title.errors }}
                             </div>
-
                         {% endif %}
 
                     </div>
@@ -81,11 +74,9 @@
                         {{ form.category }}
 
                         {% if form.category.errors %}
-
                             <div class="alert alert-danger">
                                 {{ form.category.errors }}
                             </div>
-
                         {% endif %}
 
                     </div>
@@ -108,11 +99,9 @@
                             {{ form.location }}
 
                             {% if form.location.errors %}
-
                                 <div class="alert alert-danger">
                                     {{ form.location.errors }}
                                 </div>
-
                             {% endif %}
 
                         </div>
@@ -130,11 +119,9 @@
                         {{ form.description }}
 
                         {% if form.description.errors %}
-
                             <div class="alert alert-danger">
                                 {{ form.description.errors }}
                             </div>
-
                         {% endif %}
 
                     </div>
@@ -149,11 +136,9 @@
                         <label for="id_photo_1">
 
                             {% if form.photo_1.errors %}
-
                                 <div class="alert alert-danger">
                                     {{ form.photo_1.errors }}
                                 </div>
-
                             {% endif %}
 
                             {{ form.photo_1.label_tag }}
@@ -175,9 +160,7 @@
                                 type="button"
                                 class="btn btn-primary upload-button"
                                 onclick="document.getElementById('id_photo_1').click();">
-
                                 Upload Photo 1
-
                             </button>
 
                         </div>
@@ -194,11 +177,9 @@
                         <label for="id_photo_2">
 
                             {% if form.photo_2.errors %}
-
                                 <div class="alert alert-danger">
                                     {{ form.photo_2.errors }}
                                 </div>
-
                             {% endif %}
 
                             {{ form.photo_2.label_tag }}
@@ -220,9 +201,7 @@
                                 type="button"
                                 class="btn btn-primary upload-button"
                                 onclick="document.getElementById('id_photo_2').click();">
-
                                 Upload Photo 2
-
                             </button>
 
                         </div>
@@ -239,11 +218,9 @@
                         <label for="id_photo_3">
 
                             {% if form.photo_3.errors %}
-
                                 <div class="alert alert-danger">
                                     {{ form.photo_3.errors }}
                                 </div>
-
                             {% endif %}
 
                             {{ form.photo_3.label_tag }}
@@ -265,9 +242,7 @@
                                 type="button"
                                 class="btn btn-primary upload-button"
                                 onclick="document.getElementById('id_photo_3').click();">
-
                                 Upload Photo 3
-
                             </button>
 
                         </div>
@@ -284,11 +259,9 @@
                         <label for="id_photo_4">
 
                             {% if form.photo_4.errors %}
-
                                 <div class="alert alert-danger">
                                     {{ form.photo_4.errors }}
                                 </div>
-
                             {% endif %}
 
                             {{ form.photo_4.label_tag }}
@@ -310,9 +283,7 @@
                                 type="button"
                                 class="btn btn-primary upload-button"
                                 onclick="document.getElementById('id_photo_4').click();">
-
                                 Upload Photo 4
-
                             </button>
 
                         </div>
@@ -330,11 +301,9 @@
                         {{ form.phone }}
 
                         {% if form.phone.errors %}
-
                             <div class="alert alert-danger">
                                 {{ form.phone.errors }}
                             </div>
-
                         {% endif %}
 
                     </div>
@@ -352,11 +321,9 @@
                             {{ form.quantity }}
 
                             {% if form.quantity.errors %}
-
                                 <div class="alert alert-danger">
                                     {{ form.quantity.errors }}
                                 </div>
-
                             {% endif %}
 
                         </div>
@@ -382,114 +349,85 @@
                         {{ form.price_type }}
 
                         {% if form.price_type.errors %}
-
                             <div class="alert alert-danger">
                                 {{ form.price_type.errors }}
                             </div>
-
                         {% endif %}
 
                     </div>
 
 
                     <!-- ==================================================
-                         PRICE PER UNIT
+                         PRICE + CURRENCY
+                         ONE ROW
                     =================================================== -->
 
-                    <div id="pricePerUnitContainer"
+                    <div id="priceFieldsContainer"
                          class="form-group"
                          style="display: none;">
 
                         <div class="d-flex">
 
-                            <!-- PRICE -->
 
-                            <div class="col-md-6">
+                            <!-- ==============================
+                                 PRICE PER UNIT
+                            =============================== -->
+
+                            <div id="pricePerUnitContainer"
+                                 class="col-md-6">
 
                                 {{ form.price_per_unit.label_tag }}
                                 {{ form.price_per_unit }}
 
                                 {% if form.price_per_unit.errors %}
-
                                     <div class="alert alert-danger">
                                         {{ form.price_per_unit.errors }}
                                     </div>
-
                                 {% endif %}
 
                             </div>
 
 
-                            <!-- CURRENCY DESTINATION -->
+                            <!-- ==============================
+                                 PRICE FOR ALL QUANTITY
+                            =============================== -->
 
-                            <div class="col-md-6"
-                                 id="currencyPerUnitPlace">
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- ==================================================
-                         PRICE FOR ALL QUANTITY
-                    =================================================== -->
-
-                    <div id="priceAllQuantityContainer"
-                         class="form-group"
-                         style="display: none;">
-
-                        <div class="d-flex">
-
-                            <!-- PRICE -->
-
-                            <div class="col-md-6">
+                            <div id="priceAllQuantityContainer"
+                                 class="col-md-6"
+                                 style="display: none;">
 
                                 {{ form.price_all_quantity.label_tag }}
                                 {{ form.price_all_quantity }}
 
                                 {% if form.price_all_quantity.errors %}
-
                                     <div class="alert alert-danger">
                                         {{ form.price_all_quantity.errors }}
                                     </div>
-
                                 {% endif %}
 
                             </div>
 
 
-                            <!-- CURRENCY DESTINATION -->
+                            <!-- ==============================
+                                 CURRENCY
+                            =============================== -->
 
-                            <div class="col-md-6"
-                                 id="currencyAllQuantityPlace">
+                            <div id="currencyContainer"
+                                 class="col-md-6">
+
+                                {{ form.currency.label_tag }}
+                                {{ form.currency }}
+
+                                {% if form.currency.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ form.currency.errors }}
+                                    </div>
+                                {% endif %}
 
                             </div>
+
 
                         </div>
-
-                    </div>
-
-
-                    <!-- ==================================================
-                         CURRENCY
-                         ONE REAL DJANGO FIELD
-                    =================================================== -->
-
-                    <div id="currencyContainer"
-                         style="display: none;">
-
-                        {{ form.currency.label_tag }}
-                        {{ form.currency }}
-
-                        {% if form.currency.errors %}
-
-                            <div class="alert alert-danger">
-                                {{ form.currency.errors }}
-                            </div>
-
-                        {% endif %}
 
                     </div>
 
@@ -502,9 +440,7 @@
 
                         <button type="submit"
                                 class="btn btn-success">
-
                             Save Changes
-
                         </button>
 
                     </div>
