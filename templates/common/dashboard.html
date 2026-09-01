@@ -108,7 +108,8 @@
                             <h5 class="m-0 ms-0 title">{{ object.title|truncatechars:50 }}</h5>
                             <p class="m-0 text-truncate">{{ object.description|truncatechars:100 }}</p>
                             <p class="m-0 quantity">Quantity:
-                                <strong>{{ object.quantity }}</strong> {{ object.unit_of_measure }}</p>
+                                <strong>{{ object.quantity }}</strong> {{ object.unit_of_measure }}
+                            </p>
 
                             <p class="m-0 price">
                                 {% if object.price_type == 'negotiation' %}
@@ -128,7 +129,6 @@
                                     {{ object.price_per_unit }} (Currency not defined)
                                     {% endif %}
                                 </strong>
-
                                 {% elif object.price_type == 'all_quantity' %}
                                 Price for all:
                                 <strong>
@@ -142,7 +142,6 @@
                                     {{ object.price_all_quantity }} (Currency not defined)
                                     {% endif %}
                                 </strong>
-
                                 {% else %}
                                 Price:
                                 <strong>N/A</strong>
