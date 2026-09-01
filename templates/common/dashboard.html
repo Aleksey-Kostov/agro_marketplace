@@ -129,6 +129,7 @@
                                     {{ object.price_per_unit }} (Currency not defined)
                                     {% endif %}
                                 </strong>
+
                                 {% elif object.price_type == 'all_quantity' %}
                                 Price for all:
                                 <strong>
@@ -142,11 +143,13 @@
                                     {{ object.price_all_quantity }} (Currency not defined)
                                     {% endif %}
                                 </strong>
+
                                 {% else %}
                                 Price:
                                 <strong>N/A</strong>
                                 {% endif %}
                             </p>
+
 
                         </div>
                         <div class="product-image-container">
