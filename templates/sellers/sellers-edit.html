@@ -8,263 +8,227 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
 
-                <!-- ========================= -->
-                <!-- HEADER -->
-                <!-- ========================= -->
+            <!-- HEADER -->
 
-                <div class="col-12 edit-profile mb-3">
-                    <div class="d-flex align-items-center border rounded p-2 text-details">
+            <div class="col-12 edit-profile mb-3">
+                <div class="d-flex align-items-center border rounded p-2 text-details">
 
-                        <a href="#"
-                           class="btn btn-secondary me-3 back-button"
-                           onclick="goBack()">
-                            <i class="fas fa-arrow-left"></i> Back
-                        </a>
+                    <a href="#"
+                       class="btn btn-secondary me-3 back-button"
+                       onclick="goBack()">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
 
-                        <h2 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
-                            <i class="fas fa-dollar-sign me-2"></i> Product Information
-                        </h2>
+                    <h2 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
+                        <i class="fas fa-dollar-sign me-2"></i> Product Information
+                    </h2>
+
+                </div>
+            </div>
+
+            <!-- PRODUCT INFORMATION -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+
+                    <!-- TITLE -->
+                    <div class="mb-3">
+                        <strong>Product Title:</strong>
+                        <p class="mb-1">{{ item.title }}</p>
+                    </div>
+
+                    <!-- CATEGORY + LOCATION -->
+                    <div class="row mb-3">
+
+                        <div class="col-md-6">
+                            <strong>Category:</strong>
+                            <p class="mb-1">
+                                {{ item.get_category_display }}
+                            </p>
+                        </div>
+
+                        <div class="col-md-6">
+                            <strong>Location:</strong>
+                            <p class="mb-1">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ item.location }}
+                            </p>
+                        </div>
 
                     </div>
-                </div>
 
-                <!-- ========================= -->
-                <!-- PRODUCT INFORMATION -->
-                <!-- ========================= -->
+                    <!-- PHOTOS -->
+                    <div class="mb-4">
 
-                <div class="card shadow-sm">
-                    <div class="card-body">
+                        <strong>Product Photos:</strong>
 
-                        <!-- ========================= -->
-                        <!-- TITLE -->
-                        <!-- ========================= -->
+                        {% if item.photo_1 or item.photo_2 or item.photo_3 or item.photo_4 %}
 
-                        <div class="mb-3">
-                            <strong>Product Title:</strong>
-                            <p class="mb-1">{{ item.title }}</p>
-                        </div>
+                            <div class="row gx-3 mt-2 justify-content-center">
 
-                        <!-- ========================= -->
-                        <!-- CATEGORY + LOCATION -->
-                        <!-- ========================= -->
-
-                        <div class="row g-3 mb-3">
-
-                            <div class="col-md-6">
-                                <strong>Category:</strong>
-                                <p class="mb-1">
-                                    {{ item.get_category_display }}
-                                </p>
-                            </div>
-
-                            <div class="col-md-6">
-                                <strong>Location:</strong>
-                                <p class="mb-1">
-                                    <i class="fas fa-map-marker-alt me-1"></i>
-                                    {{ item.location }}
-                                </p>
-                            </div>
-
-                        </div>
-
-                        <!-- ========================= -->
-                        <!-- PHOTOS -->
-                        <!-- ========================= -->
-
-                        <div class="mb-4">
-
-                            <strong>Product Photos:</strong>
-
-                            {% if item.photo_1 or item.photo_2 or item.photo_3 or item.photo_4 %}
-
-                                <div class="row g-3 justify-content-center mt-1">
-
-                                    {% if item.photo_1 %}
-                                        <div class="col-6 col-md-3">
-                                            <img
-                                                src="{{ item.photo_1.url }}"
-                                                class="img-fluid product-photo w-100"
-                                                alt="Product Photo 1">
-                                        </div>
-                                    {% endif %}
-
-                                    {% if item.photo_2 %}
-                                        <div class="col-6 col-md-3">
-                                            <img
-                                                src="{{ item.photo_2.url }}"
-                                                class="img-fluid product-photo w-100"
-                                                alt="Product Photo 2">
-                                        </div>
-                                    {% endif %}
-
-                                    {% if item.photo_3 %}
-                                        <div class="col-6 col-md-3">
-                                            <img
-                                                src="{{ item.photo_3.url }}"
-                                                class="img-fluid product-photo w-100"
-                                                alt="Product Photo 3">
-                                        </div>
-                                    {% endif %}
-
-                                    {% if item.photo_4 %}
-                                        <div class="col-6 col-md-3">
-                                            <img
-                                                src="{{ item.photo_4.url }}"
-                                                class="img-fluid product-photo w-100"
-                                                alt="Product Photo 4">
-                                        </div>
-                                    {% endif %}
-
-                                </div>
-
-                            {% else %}
-
-                                <p class="text-muted mt-2">
-                                    No product photo here
-                                </p>
-
-                            {% endif %}
-
-                        </div>
-
-                        <!-- ========================= -->
-                        <!-- DESCRIPTION -->
-                        <!-- ========================= -->
-
-                        <div class="mb-3">
-                            <strong>Description:</strong>
-
-                            <p class="mb-1">
-                                {{ item.description }}
-                            </p>
-                        </div>
-
-                        <!-- ========================= -->
-                        <!-- PHONE + NAME -->
-                        <!-- ========================= -->
-
-                        <div class="row g-3 mb-3">
-
-                            <div class="col-md-6">
-                                <strong>Phone:</strong>
-
-                                <p class="mb-1">
-                                    {{ item.phone }}
-                                </p>
-                            </div>
-
-                            <div class="col-md-6">
-                                <strong>Name:</strong>
-
-                                <p class="mb-1">
-                                    {{ item.profile.username_in_marketplace }}
-                                </p>
-                            </div>
-
-                        </div>
-
-                        <!-- ========================= -->
-                        <!-- QUANTITY -->
-                        <!-- ========================= -->
-
-                        <div class="mb-3">
-
-                            <strong>Quantity:</strong>
-
-                            <p class="mb-1">
-                                {{ item.quantity }}
-                                {{ item.get_unit_of_measure_display }}
-                            </p>
-
-                        </div>
-
-                        <!-- ========================= -->
-                        <!-- PRICE -->
-                        <!-- ========================= -->
-
-                        <div class="mb-3">
-
-                            <strong>Price:</strong>
-
-                            <p class="mb-1">
-
-                                {% if item.price_type == "negotiation" %}
-
-                                    Negotiable
-
-                                {% elif item.price_type == "per_quantity" %}
-
-                                    {{ item.price_per_unit }}
-                                    {{ item.currency }}
-                                    per
-                                    {{ item.get_unit_of_measure_display }}
-
-                                {% elif item.price_type == "all_quantity" %}
-
-                                    {{ item.price_all_quantity }}
-                                    {{ item.currency }}
-                                    for all
-                                    {{ item.quantity }}
-                                    {{ item.get_unit_of_measure_display }}
-
+                                {% if item.photo_1 %}
+                                    <div class="col-6 col-md-3 text-center">
+                                        <img
+                                            src="{{ item.photo_1.url }}"
+                                            class="img-fluid product-photo"
+                                            alt="Product Photo 1">
+                                    </div>
                                 {% endif %}
 
-                            </p>
-
-                        </div>
-
-
-                        <!-- ========================= -->
-                        <!-- EXPIRATION DATE -->
-                        <!-- ========================= -->
-
-                        <div class="mb-4">
-
-                            <strong>Expiration Date:</strong>
-
-                            <p class="mb-1">
-
-                                {% if item.expiration_date %}
-
-                                    {{ item.expiration_date|date:"d-m-Y H:i" }}
-
-                                {% else %}
-
-                                    <span class="text-muted">
-                                        No expiration date set
-                                    </span>
-
+                                {% if item.photo_2 %}
+                                    <div class="col-6 col-md-3 text-center">
+                                        <img
+                                            src="{{ item.photo_2.url }}"
+                                            class="img-fluid product-photo"
+                                            alt="Product Photo 2">
+                                    </div>
                                 {% endif %}
 
-                            </p>
+                                {% if item.photo_3 %}
+                                    <div class="col-6 col-md-3 text-center">
+                                        <img
+                                            src="{{ item.photo_3.url }}"
+                                            class="img-fluid product-photo"
+                                            alt="Product Photo 3">
+                                    </div>
+                                {% endif %}
 
-                        </div>
-
-                        <!-- ========================= -->
-                        <!-- SEND MESSAGE -->
-                        <!-- ========================= -->
-
-                        {% if user != item.profile.user %}
-
-                            <div class="text-center">
-
-                                <a href="{% url 'send-message' item.profile.pk %}"
-                                   class="btn btn-success">
-
-                                    <i class="fas fa-paper-plane"></i>
-                                    Send Message
-
-                                </a>
+                                {% if item.photo_4 %}
+                                    <div class="col-6 col-md-3 text-center">
+                                        <img
+                                            src="{{ item.photo_4.url }}"
+                                            class="img-fluid product-photo"
+                                            alt="Product Photo 4">
+                                    </div>
+                                {% endif %}
 
                             </div>
+
+                        {% else %}
+
+                            <p class="text-muted mt-2">
+                                No product photo here
+                            </p>
 
                         {% endif %}
 
                     </div>
-                </div>
 
+                    <!-- DESCRIPTION -->
+                    <div class="mb-3">
+                        <strong>Description:</strong>
+
+                        <p class="mb-1">
+                            {{ item.description }}
+                        </p>
+                    </div>
+
+                    <!-- PHONE + NAME -->
+                    <div class="row mb-3">
+
+                        <div class="col-md-6">
+                            <strong>Phone:</strong>
+                            <p class="mb-1">
+                                {{ item.phone }}
+                            </p>
+                        </div>
+
+                        <div class="col-md-6">
+                            <strong>Name:</strong>
+                            <p class="mb-1">
+                                {{ item.profile.username_in_marketplace }}
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <!-- QUANTITY -->
+                    <div class="mb-3">
+                        <strong>Quantity:</strong>
+
+                        <p class="mb-1">
+                            {{ item.quantity }}
+                            {{ item.get_unit_of_measure_display }}
+                        </p>
+                    </div>
+
+                    <!-- PRICE -->
+                    <div class="mb-3">
+                        <strong>Price:</strong>
+
+                        <p class="mb-1">
+
+                            {% if item.price_type == "negotiation" %}
+
+                                Negotiable
+
+                            {% elif item.price_type == "per_quantity" %}
+
+                                {{ item.price_per_unit }}
+                                {{ item.currency }}
+                                per
+                                {{ item.get_unit_of_measure_display }}
+
+                            {% elif item.price_type == "all_quantity" %}
+
+                                {{ item.price_all_quantity }}
+                                {{ item.currency }}
+                                for all
+                                {{ item.quantity }}
+                                {{ item.get_unit_of_measure_display }}
+
+                            {% endif %}
+
+                        </p>
+                    </div>
+
+                    <!-- EXPIRATION DATE -->
+                    <div class="mb-4">
+
+                        <strong>Expiration Date:</strong>
+
+                        <p class="mb-1">
+
+                            {% if item.expiration_date %}
+
+                                {{ item.expiration_date|date:"d-m-Y H:i" }}
+
+                            {% else %}
+
+                                <span class="text-muted">
+                                    No expiration date set
+                                </span>
+
+                            {% endif %}
+
+                        </p>
+
+                    </div>
+
+                    <!-- SEND MESSAGE -->
+                    {% if user != item.profile.user %}
+
+                        <div class="text-center">
+
+                            <a href="{% url 'send-message' item.profile.pk %}"
+                               class="btn btn-success">
+
+                                <i class="fas fa-paper-plane"></i>
+                                Send Message
+
+                            </a>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
             </div>
+
         </div>
     </div>
+</div>
+```
+
 </main>
+
 {% endblock %}
