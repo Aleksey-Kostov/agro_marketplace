@@ -103,7 +103,7 @@
                                 <strong>Negotiable</strong>
 
                                 {% elif item.price_type == 'per_quantity' %}
-                                Price Per {{ item.unit }}:
+                                Price Per {{ item.quantity.unit }}:
                                 <strong>
                                     {% if item.currency == 'USD' %}
                                     {{ item.price_per_unit }} $
