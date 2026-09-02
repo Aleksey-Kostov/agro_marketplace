@@ -95,7 +95,7 @@
                             </div>
                             <p class="m-0 text-truncate">{{ item.description|truncatechars:100 }}</p>
                             <p class="m-0 quantity">Quantity:
-                                <strong>{{ item.quantity }}</strong>{{ item.unit_of_measure }}</p>
+                                <strong>{{ item.quantity }}</strong> {{ item.unit_of_measure }}</p>
 
                             <p class="m-0 price">
                                 {% if item.price_type == 'negotiation' %}
