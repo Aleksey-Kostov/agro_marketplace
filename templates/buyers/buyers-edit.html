@@ -321,38 +321,41 @@
 
                         <!-- PRICE ALL QUANTITY -->
 
-                        <div id="priceAllQuantityContainer"
-                             class="col-md-6"
-                             style="display: none;">
+                        <div class="row">
 
-                            {{ form.price_all_quantity.label_tag }}
-                            {{ form.price_all_quantity }}
+                            <!-- PRICE FOR ALL QUANTITY -->
+                            <div id="priceAllQuantityContainer"
+                                 class="col-md-6"
+                                 style="display: none;">
 
-                            {% if form.price_all_quantity.errors %}
-                            <div class="alert alert-danger">
-                                {{ form.price_all_quantity.errors }}
+                                {{ form.price_all_quantity.label_tag }}
+                                {{ form.price_all_quantity }}
+
+                                {% if form.price_all_quantity.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.price_all_quantity.errors }}
+                                </div>
+                                {% endif %}
+
                             </div>
-                            {% endif %}
+
+                            <!-- CURRENCY -->
+                            <div id="currencyContainer"
+                                 class="col-md-6 d-flex flex-column justify-content-end"
+                                 style="display: none;">
+
+                                {{ form.currency.label_tag }}
+                                {{ form.currency }}
+
+                                {% if form.currency.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.currency.errors }}
+                                </div>
+                                {% endif %}
+
+                            </div>
 
                         </div>
-
-                        <!-- CURRENCY -->
-
-                        <div id="currencyContainer"
-                             class="col-md-6"
-                             style="display: none;">
-
-                            {{ form.currency.label_tag }}
-                            {{ form.currency }}
-
-                            {% if form.currency.errors %}
-                            <div class="alert alert-danger">
-                                {{ form.currency.errors }}
-                            </div>
-                            {% endif %}
-
-                        </div>
-
                     </div>
 
                     <!-- ========================= -->
