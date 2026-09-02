@@ -103,7 +103,11 @@
                                     </p>
 
                                     <p class="m-0 price">
-                                        Price:
+                                        {% if object.price_type == 'per_quantity' %}
+                                            Price per {{ object.unit_of_measure }}:
+                                        {% elif object.price_type == 'all_quantity' %}
+                                            Price for all:
+                                        {% endif %}
                                         <strong>
                                             {% if object.price_type == 'negotiation' %}
                                                 Negotiable
@@ -131,11 +135,7 @@
                                                 N/A
                                             {% endif %}
                                         </strong>
-                                        {% if object.price_type == 'per_quantity' %}
-                                            per {{ object.unit_of_measure }}
-                                        {% elif object.price_type == 'all_quantity' %}
-                                            for all
-                                        {% endif %}
+
                                     </p>
 
                                 </div>
@@ -268,7 +268,11 @@
                                     <p class="m-0 quantity">Quantity:
                                         <strong>{{ object.quantity }}</strong> {{ object.unit_of_measure }}</p>
                                     <p class="m-0 price">
-                                        Price:
+                                        {% if object.price_type == 'per_quantity' %}
+                                            Price per {{ object.unit_of_measure }}:
+                                        {% elif object.price_type == 'all_quantity' %}
+                                            Price for all:
+                                        {% endif %}
                                         <strong>
                                             {% if object.price_type == 'negotiation' %}
                                                 Negotiable
@@ -296,11 +300,6 @@
                                                 N/A
                                             {% endif %}
                                         </strong>
-                                        {% if object.price_type == 'per_quantity' %}
-                                            per unit
-                                        {% elif object.price_type == 'all_quantity' %}
-                                            for all
-                                        {% endif %}
                                     </p>
                                     <!-- Price Added Here -->
                                 </div>

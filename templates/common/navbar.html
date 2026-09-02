@@ -10,78 +10,85 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
-                           aria-expanded="false">
-                            <i class="fas fa-plus-circle"></i> Add
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+                       aria-expanded="false">
+                        <i class="fas fa-plus-circle"></i> Add
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{% url 'create_seller' %}">
+                            <i class="fas fa-dollar-sign"></i> Sell
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="{% url 'create_seller' %}">
-                                <i class="fas fa-dollar-sign"></i> Sell
-                            </a>
-                            <a class="dropdown-item" href="{% url 'create-buyer' %}">
-                                <i class="fas fa-shopping-cart"></i> Buy
-                            </a>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'message-inbox' %}">
-                            <i class="fas fa-envelope"></i> Messages
-                            {% unread_message_count user as unread_count %}
-                            {% if unread_count > 0 %}
-                                <span class="badge bg-danger text-white">{{ unread_count }}</span>
-                            {% endif %}
+                        <a class="dropdown-item" href="{% url 'create-buyer' %}">
+                            <i class="fas fa-shopping-cart"></i> Buy
                         </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" id="profileDropdown" role="button" data-bs-toggle="dropdown"
-                           aria-expanded="false">
-                            <i class="fas fa-user-circle"></i> Profile
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'message-inbox' %}">
+                        <i class="fas fa-envelope"></i> Messages
+                        {% unread_message_count user as unread_count %}
+                        {% if unread_count > 0 %}
+                        <span class="badge bg-danger text-white">{{ unread_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="profileDropdown" role="button" data-bs-toggle="dropdown"
+                       aria-expanded="false">
+                        <i class="fas fa-user-circle"></i> Profile
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="profileDropdown">
+                        <a class="dropdown-item" href="{% url 'profile-edit' user.pk %}">
+                            <i class="fas fa-user-edit"></i> Edit Profile
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="profileDropdown">
-                            <a class="dropdown-item" href="{% url 'profile-edit' user.pk %}">
-                                <i class="fas fa-user-edit"></i> Edit Profile
-                            </a>
-                            <a class="dropdown-item" href="{% url 'profile-details' user.pk %}">
-                                <i class="fas fa-info-circle"></i> Info Profile
-                            </a>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">
-                            <i class="fas fa-sign-out-alt"></i> Logout
+                        <a class="dropdown-item" href="{% url 'profile-details' user.pk %}">
+                            <i class="fas fa-info-circle"></i> Info Profile
                         </a>
-                    </li>
-                    <li class="nav-item d-flex align-items-center ms-3">
-                        <div class="d-flex align-items-center gap-2 welcome">
-                            <span class="text-white small welcome-container">
-                                Welcome, <strong>{{ user.profile.full_name|default:user.username }}</strong><br>
-                                <span id="currentDateTime"></span>
-                            </span>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+
+                <li class="nav-item d-flex align-items-center ms-3">
+                    <div class="d-flex align-items-center gap-2 welcome">
+                        <span class="text-white small welcome-container">
+                            Welcome, <strong>{{ user.profile.full_name|default:user.username }}</strong><br>
+                            <span id="currentDateTime"></span>
+                        </span>
+
+                        <a href="{% url 'profile-details' pk=user.pk %}">
                             {% if user.profile.profile_photo %}
-                                <img src="{{ user.profile.profile_photo.url }}" alt="Profile Picture"
-                                     class="profile-picture">
+                            <img src="{{ user.profile.profile_photo.url }}"
+                                 alt="Profile Picture"
+                                 class="profile-picture">
                             {% else %}
-                                <img src="{% static 'images/profile_picture.webp' %}" alt="Profile Picture"
-                                     class="profile-picture">
+                            <img src="{% static 'images/profile_picture.webp' %}"
+                                 alt="Profile Picture"
+                                 class="profile-picture">
                             {% endif %}
-                        </div>
-                    </li>
+                        </a>
+                    </div>
+                </li>
+
                 {% else %}
-                    {% if not request.resolver_match.view_name == 'register' %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'register' %}">
-                                <i class="fas fa-user-plus"></i> Register
-                            </a>
-                        </li>
-                    {% endif %}
-                    {% if not request.resolver_match.view_name == 'login' %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">
-                                <i class="fas fa-sign-in-alt"></i> Login
-                            </a>
-                        </li>
-                    {% endif %}
+                {% if not request.resolver_match.view_name == 'register' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'register' %}">
+                        <i class="fas fa-user-plus"></i> Register
+                    </a>
+                </li>
+                {% endif %}
+                {% if not request.resolver_match.view_name == 'login' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                </li>
+                {% endif %}
                 {% endif %}
             </ul>
         </div>
