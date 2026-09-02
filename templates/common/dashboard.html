@@ -132,7 +132,7 @@
                                             {% endif %}
                                         </strong>
                                         {% if object.price_type == 'per_quantity' %}
-                                            per unit
+                                            per {{ object.unit_of_measure }}
                                         {% elif object.price_type == 'all_quantity' %}
                                             for all
                                         {% endif %}
