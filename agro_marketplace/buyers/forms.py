@@ -25,7 +25,7 @@ class BuyersForm(forms.ModelForm):
 
         labels = {
             'title': 'Product Title',
-            'category': 'Product Category',
+            'category': 'Category',
             'location': 'Location',
             'description': 'Product Description',
             'photo_1': 'Product Photo 1',
@@ -34,7 +34,7 @@ class BuyersForm(forms.ModelForm):
             'photo_4': 'Product Photo 4',
             'phone': 'Contact Phone',
             'quantity': 'Buy Quantity',
-            'unit_of_measure': 'Unit of Measure',
+            'unit_of_measure': 'Unit',
             'price_type': 'Price Type',
             'price_per_unit': 'Price Per Unit',
             'currency': 'Currency',
