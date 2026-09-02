@@ -38,7 +38,7 @@ class BuyersForm(forms.ModelForm):
             'price_type': 'Price Type',
             'price_per_unit': 'Price Per Unit',
             'currency': 'Currency',
-            'price_all_quantity': 'Total Price for All Quantity',
+            'price_all_quantity': 'Total Price',
         }
 
         widgets = {
