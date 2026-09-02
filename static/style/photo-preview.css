@@ -1,7 +1,7 @@
 .photo-framework {
-    width: 150px;
-    height: 150px;
-    display: inline-block;
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
 .photo-container {
