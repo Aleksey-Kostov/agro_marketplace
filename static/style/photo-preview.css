@@ -38,3 +38,22 @@
 .upload-button:hover {
     background-color: rgba(0, 0, 0, 0.8);
 }
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+@media (max-width: 576px) {
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .action-buttons .btn {
+        width: 100%;
+        max-width: 250px;
+    }
+}

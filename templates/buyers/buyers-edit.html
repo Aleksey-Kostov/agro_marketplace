@@ -371,12 +371,17 @@
                     <!-- SUBMIT -->
                     <!-- ========================= -->
 
-                    <div class="text-center mt-4">
+                    <div class="text-center mt-4 action-buttons">
 
                         <button type="submit"
                                 class="btn btn-success">
                             Save Changes
                         </button>
+
+                        <a href="{% url 'archive-item' form.instance.slug %}"
+                           class="btn btn-secondary">
+                            Archive Listing
+                        </a>
 
                     </div>
 
