@@ -195,3 +195,16 @@ def activate_item(request, slug):
     item.expiration_date = now() + timedelta(days=30)
     item.save()
     return redirect('inactive-listings', pk=request.user.pk)
+
+
+@login_required
+def archive_item(request, slug):
+    item = get_item_by_slug(slug, expiration_check='active')
+
+    if not item:
+        raise Http404("Item not found, expired, or does not belong to the user.")
+
+    item.expiration_date = now()
+    item.save()
+
+    return redirect('active-listings', pk=request.user.pk)
