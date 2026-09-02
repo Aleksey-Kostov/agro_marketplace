@@ -34,7 +34,7 @@ class BuyersForm(forms.ModelForm):
             'photo_4': 'Product Photo 4',
             'phone': 'Contact Phone',
             'quantity': 'Buy Quantity',
-            'unit_of_measure': 'Unit        ',
+            'unit_of_measure': 'Unit            ',
             'price_type': 'Price Type',
             'price_per_unit': 'Price Per Unit',
             'currency': 'Currency',
