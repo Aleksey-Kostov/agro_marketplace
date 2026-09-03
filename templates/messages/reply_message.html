@@ -2,48 +2,209 @@
 {% load static %}
 
 {% block content %}
-    <main class="container">
+
+    <main class="container my-2">
+
         <div class="mailbox-container">
-            <div class="col-12 edit-profile text-details mb-2">
-                <div class="d-flex align-items-center border rounded p-2">
-                    <a href="{% url 'message-inbox' %}" class="btn btn-secondary me-3 back-button">
-                        <i class="fas fa-arrow-left"></i> Back
+
+            <!-- ==========================================
+                 HEADER
+                 ========================================== -->
+
+            <div class="col-12 edit-profile text-details mb-2 message-box">
+
+                <div class="d-flex align-items-center p-0 rounded">
+
+                    <a
+                        href="{% url 'read-message' parent_message.pk %}"
+                        class="btn btn-secondary me-3 back-button"
+                    >
+
+                        <i class="fas fa-arrow-left"></i>
+                        Back
+
                     </a>
+
                     <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
-                        <i class="fas fa-reply"></i> Reply to Message
+
+                        <i class="fas fa-reply"></i>
+                        Reply
+
                     </h3>
-                </div>
-            </div>
-            <!-- Reply Form -->
-            <form method="post">
-                {% csrf_token %}
-                <!-- Original Message Details -->
-                <div class="sender-info mb-4">
-                    <div class="d-flex justify-content-between">
-                        <!-- Left Column: From and To -->
-                        <div class="info-group">
-                            <div><strong>From:</strong> {{ sender.profile.username_in_marketplace }}</div>
-                            <div><strong>To:</strong> {{ recipient.profile.username_in_marketplace }}</div>
-                        </div>
-                        <!-- Right Column: Title and Date -->
-                        <div class="info-group">
-                            <div><strong>Title:</strong> {{ parent_message.title }}</div>
-                            <div><strong>Date:</strong> {{ current_time|date:"d F, Y H:i" }}</div>
-                        </div>
-                    </div>
+
                 </div>
 
-                <div class="form-group">
-                    <label for="message">Reply:</label>
-                    {{ form.body }}
+            </div>
+
+
+            <!-- ==========================================
+                 REPLY BOX
+                 ========================================== -->
+
+            <div class="message-box reply-box">
+
+
+                <!-- Conversation title -->
+
+                <div class="conversation-title">
+
+                    <h3>
+                        {{ root_message.title|default:"Message" }}
+                    </h3>
+
                 </div>
-{#                <a href="{% url 'message-inbox' %}" class="btn btn-secondary mt-3">#}
-{#                    <i class="fas fa-arrow-left"></i> Back#}
-{#                </a>#}
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary mt-3">Send Reply</button>
+
+
+                <!-- ======================================
+                     MESSAGE BEING REPLIED TO
+                     ====================================== -->
+
+                <div class="reply-to-message">
+
+                    <div class="reply-to-header">
+
+
+                        <!-- Avatar -->
+
+                        <div class="conversation-avatar">
+
+                            {% if parent_message.sender == request.user %}
+
+                                <!-- YOUR AVATAR IS CLICKABLE -->
+
+                                <a href="{% url 'profile-details' pk=parent_message.sender.pk %}">
+
+                                    {% if parent_message.sender.profile.profile_photo %}
+
+                                        <img
+                                            src="{{ parent_message.sender.profile.profile_photo.url }}"
+                                            alt="{{ parent_message.sender.profile.username_in_marketplace }}"
+                                            class="message-avatar"
+                                        >
+
+                                    {% else %}
+
+                                        <img
+                                            src="{% static 'images/profile_picture.webp' %}"
+                                            alt="Profile Picture"
+                                            class="message-avatar"
+                                        >
+
+                                    {% endif %}
+
+                                </a>
+
+                            {% else %}
+
+                                <!-- OTHER USER AVATAR IS NOT CLICKABLE -->
+
+                                {% if parent_message.sender.profile.profile_photo %}
+
+                                    <img
+                                        src="{{ parent_message.sender.profile.profile_photo.url }}"
+                                        alt="{{ parent_message.sender.profile.username_in_marketplace }}"
+                                        class="message-avatar"
+                                    >
+
+                                {% else %}
+
+                                    <img
+                                        src="{% static 'images/profile_picture.webp' %}"
+                                        alt="Profile Picture"
+                                        class="message-avatar"
+                                    >
+
+                                {% endif %}
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Message -->
+
+                        <div class="conversation-message-body">
+
+                            <div class="conversation-meta">
+
+                                <span class="conversation-name">
+
+                                    {{ parent_message.sender.profile.username_in_marketplace|default:parent_message.sender.username }}
+
+                                </span>
+
+                                <span class="conversation-date">
+
+                                    {{ parent_message.timestamp|date:"j M. Y H:i" }}
+
+                                </span>
+
+                            </div>
+
+
+                            <div class="message-bubble">
+
+                                {{ parent_message.body|safe }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 </div>
-            </form>
+
+
+                <!-- ======================================
+                     REPLY FORM
+                     ====================================== -->
+
+                <form method="post" class="reply-form">
+
+                    {% csrf_token %}
+
+
+                    <div class="form-group">
+
+                        <label for="{{ form.body.id_for_label }}">
+                            Your Reply
+                        </label>
+
+                        {{ form.body }}
+
+                        {% if form.body.errors %}
+
+                            <div class="alert alert-danger mt-2">
+
+                                {{ form.body.errors }}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="text-center mt-3">
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+
+                            <i class="fas fa-paper-plane"></i>
+                            Send Reply
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
         </div>
+
     </main>
+
 {% endblock %}

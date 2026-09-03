@@ -869,19 +869,18 @@ footer {
     }
 }
 
-
-/* ==========================================
-   FACEBOOK STYLE MESSAGES
-   ========================================== */
+/* ==========================================================
+   FACEBOOK / MESSENGER STYLE CONVERSATION
+   ========================================================== */
 
 .conversation-box {
     padding: 20px;
 }
 
 
-/* ==========================================
+/* ==========================================================
    CONVERSATION TITLE
-   ========================================== */
+   ========================================================== */
 
 .conversation-title {
     text-align: center;
@@ -897,18 +896,18 @@ footer {
 }
 
 
-/* ==========================================
+/* ==========================================================
    CONVERSATION
-   ========================================== */
+   ========================================================== */
 
 .conversation {
     width: 100%;
 }
 
 
-/* ==========================================
-   MESSAGE
-   ========================================== */
+/* ==========================================================
+   MESSAGE ROW
+   ========================================================== */
 
 .conversation-message {
     display: flex;
@@ -929,17 +928,22 @@ footer {
     border-radius: 50%;
     border: 1px solid #ccc;
     display: block;
+}
+
+
+/* Only clickable avatar gets hover effect */
+.conversation-avatar a .message-avatar {
     transition: transform 0.2s ease;
 }
 
-.message-avatar:hover {
+.conversation-avatar a .message-avatar:hover {
     transform: scale(1.05);
 }
 
 
-/* ==========================================
+/* ==========================================================
    MESSAGE BODY
-   ========================================== */
+   ========================================================== */
 
 .conversation-message-body {
     max-width: 75%;
@@ -947,9 +951,9 @@ footer {
 }
 
 
-/* ==========================================
+/* ==========================================================
    NAME + DATE
-   ========================================== */
+   ========================================================== */
 
 .conversation-meta {
     display: flex;
@@ -962,11 +966,6 @@ footer {
     color: #222;
     font-size: 15px;
     font-weight: 600;
-    text-decoration: none;
-}
-
-.conversation-name:hover {
-    text-decoration: underline;
 }
 
 .conversation-date {
@@ -975,9 +974,9 @@ footer {
 }
 
 
-/* ==========================================
+/* ==========================================================
    MESSAGE BUBBLE
-   ========================================== */
+   ========================================================== */
 
 .message-bubble {
     position: relative;
@@ -994,6 +993,7 @@ footer {
 
 
 /* Bubble tail */
+
 .message-bubble::before {
     content: "";
     position: absolute;
@@ -1007,9 +1007,9 @@ footer {
 }
 
 
-/* ==========================================
+/* ==========================================================
    OWN MESSAGE
-   ========================================== */
+   ========================================================== */
 
 .own-message {
     flex-direction: row-reverse;
@@ -1042,42 +1042,44 @@ footer {
 }
 
 
-/* ==========================================
-   ACTIONS
-   ========================================== */
+/* ==========================================================
+   CONVERSATION FOOTER
+   ========================================================== */
 
-.message-actions {
+.conversation-footer {
     display: flex;
-    gap: 12px;
-    margin-top: 5px;
+    justify-content: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
 }
 
-.own-message .message-actions {
-    justify-content: flex-end;
-}
-
-.message-action {
-    font-size: 12px;
-    text-decoration: none;
-    color: #777;
-}
-
-.message-action:hover {
-    text-decoration: underline;
-}
-
-.reply-action:hover {
-    color: #0d6efd;
-}
-
-.delete-action:hover {
-    color: #dc3545;
+.conversation-reply-button {
+    min-width: 130px;
 }
 
 
-/* ==========================================
+/* ==========================================================
+   REPLY PAGE
+   ========================================================== */
+
+.reply-box {
+    padding: 20px;
+}
+
+.reply-to-message {
+    margin-bottom: 25px;
+}
+
+.reply-to-header {
+    display: flex;
+    align-items: flex-start;
+}
+
+
+/* ==========================================================
    INBOX PREVIEW
-   ========================================== */
+   ========================================================== */
 
 .message-preview {
     display: flex;
@@ -1096,6 +1098,34 @@ footer {
     border-radius: 50%;
     border: 1px solid #ccc;
 }
+
+
+/* Clickable own avatar */
+
+.message-avatar-link {
+    display: block;
+    cursor: pointer;
+}
+
+.message-avatar-link img {
+    transition: transform 0.2s ease;
+}
+
+.message-avatar-link:hover img {
+    transform: scale(1.05);
+}
+
+
+/* Other user's avatar */
+
+.message-preview-avatar > img {
+    cursor: default;
+}
+
+
+/* ==========================================================
+   INBOX INFO
+   ========================================================== */
 
 .message-preview-info {
     flex: 1;
@@ -1125,38 +1155,9 @@ footer {
 }
 
 
-/* ==========================================
-   INBOX ACTIONS
-   ========================================== */
-
-.message-card-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-
-/* ==========================================
-   REPLY PAGE
-   ========================================== */
-
-.reply-box {
-    padding: 20px;
-}
-
-.reply-to-message {
-    margin-bottom: 25px;
-}
-
-.reply-to-header {
-    display: flex;
-    align-items: flex-start;
-}
-
-
-/* ==========================================
+/* ==========================================================
    MOBILE
-   ========================================== */
+   ========================================================== */
 
 @media (max-width: 576px) {
 
@@ -1204,10 +1205,6 @@ footer {
         padding: 9px 12px;
     }
 
-    .message-actions {
-        gap: 8px;
-    }
-
     .message-preview-avatar img {
         width: 42px;
         height: 42px;
@@ -1221,10 +1218,6 @@ footer {
 
     .message-preview-date {
         font-size: 11px;
-    }
-
-    .message-card-actions {
-        flex-wrap: wrap;
     }
 
 }
