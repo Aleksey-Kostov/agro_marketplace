@@ -869,128 +869,362 @@ footer {
     }
 }
 
-/* ================================
-   Facebook-style Message
-   ================================ */
 
-.message-box {
+/* ==========================================
+   FACEBOOK STYLE MESSAGES
+   ========================================== */
+
+.conversation-box {
+    padding: 20px;
+}
+
+
+/* ==========================================
+   CONVERSATION TITLE
+   ========================================== */
+
+.conversation-title {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.conversation-title h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+
+/* ==========================================
+   CONVERSATION
+   ========================================== */
+
+.conversation {
     width: 100%;
 }
 
-/* Sender Header */
-.message-header {
+
+/* ==========================================
+   MESSAGE
+   ========================================== */
+
+.conversation-message {
+    display: flex;
+    align-items: flex-start;
     width: 100%;
+    margin-bottom: 25px;
+}
+
+.conversation-avatar {
+    flex-shrink: 0;
+    margin-right: 12px;
+}
+
+.message-avatar {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.message-avatar:hover {
+    transform: scale(1.05);
+}
+
+
+/* ==========================================
+   MESSAGE BODY
+   ========================================== */
+
+.conversation-message-body {
+    max-width: 75%;
+    min-width: 0;
+}
+
+
+/* ==========================================
+   NAME + DATE
+   ========================================== */
+
+.conversation-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.conversation-name {
+    color: #222;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.conversation-name:hover {
+    text-decoration: underline;
+}
+
+.conversation-date {
+    color: #777;
+    font-size: 12px;
+}
+
+
+/* ==========================================
+   MESSAGE BUBBLE
+   ========================================== */
+
+.message-bubble {
+    position: relative;
+    display: inline-block;
+    padding: 11px 15px;
+    background: #f0f2f5;
+    border-radius: 4px 18px 18px 18px;
+    font-size: 15px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+
+/* Bubble tail */
+.message-bubble::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 12px;
+    width: 0;
+    height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-right: 9px solid #f0f2f5;
+}
+
+
+/* ==========================================
+   OWN MESSAGE
+   ========================================== */
+
+.own-message {
+    flex-direction: row-reverse;
+}
+
+.own-message .conversation-avatar {
+    margin-right: 0;
+    margin-left: 12px;
+}
+
+.own-message .conversation-message-body {
+    text-align: right;
+}
+
+.own-message .conversation-meta {
+    justify-content: flex-end;
+}
+
+.own-message .message-bubble {
+    background: #d9fdd3;
+    border-radius: 18px 4px 18px 18px;
+    text-align: left;
+}
+
+.own-message .message-bubble::before {
+    left: auto;
+    right: -8px;
+    border-right: none;
+    border-left: 9px solid #d9fdd3;
+}
+
+
+/* ==========================================
+   ACTIONS
+   ========================================== */
+
+.message-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 5px;
+}
+
+.own-message .message-actions {
+    justify-content: flex-end;
+}
+
+.message-action {
+    font-size: 12px;
+    text-decoration: none;
+    color: #777;
+}
+
+.message-action:hover {
+    text-decoration: underline;
+}
+
+.reply-action:hover {
+    color: #0d6efd;
+}
+
+.delete-action:hover {
+    color: #dc3545;
+}
+
+
+/* ==========================================
+   INBOX PREVIEW
+   ========================================== */
+
+.message-preview {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.message-preview-avatar {
+    flex-shrink: 0;
+}
+
+.message-preview-avatar img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+}
+
+.message-preview-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.message-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.message-preview-name {
+    font-weight: 600;
+    color: #222;
+}
+
+.message-preview-date {
+    font-size: 12px;
+    color: #777;
+    white-space: nowrap;
+}
+
+.message-excerpt {
+    color: #666;
+}
+
+
+/* ==========================================
+   INBOX ACTIONS
+   ========================================== */
+
+.message-card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+
+/* ==========================================
+   REPLY PAGE
+   ========================================== */
+
+.reply-box {
+    padding: 20px;
+}
+
+.reply-to-message {
+    margin-bottom: 25px;
+}
+
+.reply-to-header {
     display: flex;
     align-items: flex-start;
 }
 
-/* Avatar */
-.message-avatar {
-    flex-shrink: 0;
-}
 
-.message-avatar img {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border: 1px solid #ccc;
-    transition: transform 0.2s ease;
-}
+/* ==========================================
+   MOBILE
+   ========================================== */
 
-/* Small hover effect for avatar */
-.message-avatar img:hover {
-    transform: scale(1.05);
-}
-
-/* Sender name and date */
-.message-user-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding-top: 3px;
-}
-
-.message-sender-name {
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 1.2;
-}
-
-.message-date {
-    font-size: 13px;
-    color: #777;
-    margin-top: 4px;
-}
-
-/* Message title */
-.message-title {
-    margin-top: 15px;
-}
-
-.message-title h3 {
-    margin: 0;
-    font-size: 21px;
-    font-weight: 600;
-}
-
-/* Recipient */
-.message-recipient {
-    font-size: 14px;
-    color: #666;
-    margin-top: 8px;
-    margin-bottom: 15px;
-}
-
-/* Message content */
-.message-content {
-    padding-top: 15px;
-    border-top: 1px solid #ddd;
-    font-size: 16px;
-    line-height: 1.6;
-    word-wrap: break-word;
-}
-
-/* Remove unnecessary paragraph margin */
-.message-content p {
-    margin-bottom: 0;
-}
-
-/* Buttons */
-.button-group {
-    margin-top: 20px;
-}
-
-/* Mobile */
 @media (max-width: 576px) {
 
-    .message-avatar img {
-        width: 45px;
-        height: 45px;
+    .conversation-box,
+    .reply-box {
+        padding: 12px;
     }
 
-    .message-sender-name {
-        font-size: 15px;
-    }
-
-    .message-date {
-        font-size: 12px;
-    }
-
-    .message-title h3 {
+    .conversation-title h3 {
         font-size: 19px;
     }
 
-    .message-content {
-        font-size: 15px;
-        line-height: 1.5;
+    .message-avatar {
+        width: 40px;
+        height: 40px;
     }
 
-    .button-group {
+    .conversation-avatar {
+        margin-right: 8px;
+    }
+
+    .own-message .conversation-avatar {
+        margin-left: 8px;
+    }
+
+    .conversation-message-body {
+        max-width: calc(100% - 48px);
+    }
+
+    .conversation-meta {
+        gap: 5px;
         flex-wrap: wrap;
+    }
+
+    .conversation-name {
+        font-size: 14px;
+    }
+
+    .conversation-date {
+        font-size: 11px;
+    }
+
+    .message-bubble {
+        font-size: 14px;
+        padding: 9px 12px;
+    }
+
+    .message-actions {
         gap: 8px;
     }
 
-    .button-group .me-2 {
-        margin-right: 0 !important;
+    .message-preview-avatar img {
+        width: 42px;
+        height: 42px;
     }
+
+    .message-preview-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .message-preview-date {
+        font-size: 11px;
+    }
+
+    .message-card-actions {
+        flex-wrap: wrap;
+    }
+
 }

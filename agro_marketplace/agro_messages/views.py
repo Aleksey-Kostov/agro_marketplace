@@ -4,13 +4,20 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
+
 import markdown
+
 from .forms import MessageForm
 from .models import Message, MessageStatus
+
 from ..accounts.models import AppUser
 from ..buyers.models import BuyerItems
 from ..sellers.models import SellerItems
 
+
+# ============================================================
+# SEND MESSAGE
+# ============================================================
 
 @login_required
 def send_message(request, pk=None):
@@ -18,183 +25,450 @@ def send_message(request, pk=None):
     product = None
 
     if pk:
-        product = SellerItems.objects.filter(profile__user=pk).first() or BuyerItems.objects.filter(
-            profile__user=pk).first()
+        product = (
+            SellerItems.objects.filter(profile__user=pk).first()
+            or BuyerItems.objects.filter(profile__user=pk).first()
+        )
 
     if request.method == 'POST':
         form = MessageForm(request.POST)
+
         if form.is_valid():
             message = form.save(commit=False)
+
             message.sender = request.user
             message.recipient = recipient
-            message.body = (
-                f"🛒 **Product Inquiry:** {product}\n"
-                f"📅 **Date:** {now():%d-%m-%Y %H:%M}\n"
-                f"📨 **From:** {message.sender.profile.username_in_marketplace}\n"
-                f"📩 **To:** {message.recipient.profile.username_in_marketplace}\n"
-                f"─────────────────────────\n"
-                f"💬 **Message Content:**\n"
-                f"{message.body}\n"
-                f"─────────────────────────"
-            )
-            html_content = markdown.markdown(message.body)
-            message.body = html_content
+
+            # Body contains ONLY the actual message
+            message.body = markdown.markdown(message.body)
 
             message.save()
 
-            MessageStatus.objects.create(message=message, profile=recipient)
+            # Status for recipient
+            MessageStatus.objects.create(
+                message=message,
+                profile=recipient
+            )
+
+            # Status for sender
             if message.recipient != message.sender:
-                status = MessageStatus.objects.create(message=message, profile=request.user)
+                status = MessageStatus.objects.create(
+                    message=message,
+                    profile=request.user
+                )
                 status.mark_as_read()
-            return redirect('message-inbox')
+
+            return redirect(
+                'read-message',
+                pk=message.pk
+            )
+
     else:
         form = MessageForm()
 
-    return render(request, 'messages/message-send.html', {'form': form, 'recipient': recipient, 'product': product})
+    context = {
+        'form': form,
+        'recipient': recipient,
+        'product': product,
+    }
 
+    return render(
+        request,
+        'messages/message-send.html',
+        context
+    )
+
+
+# ============================================================
+# READ MESSAGE / CONVERSATION
+# ============================================================
 
 @login_required
 def read_message(request, pk):
-    message = get_object_or_404(Message, pk=pk)
+    message = get_object_or_404(
+        Message.objects.select_related(
+            'sender__profile',
+            'recipient__profile',
+            'parent_message'
+        ),
+        pk=pk
+    )
+
     current_user = request.user
 
+    # User must be sender or recipient
     if current_user not in [message.sender, message.recipient]:
-        return HttpResponse("You are not authorized to view this message.", status=403)
+        return HttpResponse(
+            "You are not authorized to view this message.",
+            status=403
+        )
 
-    read_status = MessageStatus.objects.filter(message=message, profile=current_user)
-    if read_status:
-        read_status[0].mark_as_read()
+    # --------------------------------------------------------
+    # Find root/original message
+    # --------------------------------------------------------
 
-    return render(request, 'messages/message-read.html', {'message': message})
+    root_message = message
 
+    while root_message.parent_message_id:
+        root_message = root_message.parent_message
+
+    # --------------------------------------------------------
+    # Build complete conversation
+    # --------------------------------------------------------
+
+    conversation_messages = [root_message]
+    current_level = [root_message]
+
+    while current_level:
+
+        next_level = list(
+            Message.objects.filter(
+                parent_message__in=current_level
+            )
+            .select_related(
+                'sender__profile',
+                'recipient__profile'
+            )
+            .order_by('timestamp')
+        )
+
+        if not next_level:
+            break
+
+        conversation_messages.extend(next_level)
+        current_level = next_level
+
+    # --------------------------------------------------------
+    # Mark conversation messages as read
+    # --------------------------------------------------------
+
+    statuses = MessageStatus.objects.filter(
+        message__in=conversation_messages,
+        profile=current_user,
+        is_deleted=False
+    )
+
+    for status in statuses:
+        status.mark_as_read()
+
+    # --------------------------------------------------------
+    # Context
+    # --------------------------------------------------------
+
+    context = {
+        'message': message,
+        'root_message': root_message,
+        'conversation_messages': conversation_messages,
+    }
+
+    return render(
+        request,
+        'messages/message-read.html',
+        context
+    )
+
+
+# ============================================================
+# REPLY MESSAGE
+# ============================================================
 
 @login_required
 def reply_message(request, pk):
     parent_message = get_object_or_404(
-        Message,
-        Q(pk=pk) & (Q(sender=request.user) | Q(recipient=request.user))
+        Message.objects.select_related(
+            'sender__profile',
+            'recipient__profile',
+            'parent_message'
+        ),
+        Q(pk=pk) & (
+            Q(sender=request.user) |
+            Q(recipient=request.user)
+        )
     )
+
     sender = request.user
-    recipient = (
-        parent_message.sender if parent_message.recipient == request.user else parent_message.recipient
-    )
-    current_time = now()
-    if parent_message.title:
-        parent_message.title = f"Re: {parent_message.title}" if not parent_message.title.startswith("Re:") \
-            else parent_message.title
+
+    # --------------------------------------------------------
+    # Determine recipient
+    # --------------------------------------------------------
+
+    if parent_message.recipient == request.user:
+        recipient = parent_message.sender
     else:
-        parent_message.title = "Re: Message"
+        recipient = parent_message.recipient
+
+    # --------------------------------------------------------
+    # Find root/original message
+    # --------------------------------------------------------
+
+    root_message = parent_message
+
+    while root_message.parent_message_id:
+        root_message = root_message.parent_message
+
+    # --------------------------------------------------------
+    # Keep the original conversation title
+    # --------------------------------------------------------
+
+    reply_title = root_message.title or "Message"
+
+    # --------------------------------------------------------
+    # POST
+    # --------------------------------------------------------
 
     if request.method == 'POST':
+
         form = MessageForm(request.POST)
+
         if form.is_valid():
+
             reply = form.save(commit=False)
+
             reply.sender = sender
             reply.recipient = recipient
 
-            reply.title = f"Re: {parent_message.title}" if not parent_message.title.startswith("Re:") \
-                else parent_message.title
+            # Same title for the whole conversation
+            reply.title = reply_title
+
+            # Connect reply to the message being answered
             reply.parent_message = parent_message
-            reply.body = (
-                f"🔄 **Replied to** {recipient.profile.username_in_marketplace}\n"
-                f"📅**Date:** {current_time:%d-%m-%Y %H:%M}\n "
-                f"─────────────────────────\n"
-                f"💬 **Message Content:**\n"
-                f"{reply.body}\n"
-                f"─────────────────────────\n\n"
-                f"{parent_message.body}\n"
-            )
-            html_content = markdown.markdown(reply.body)
-            reply.body = html_content
+
+            # Body contains ONLY the actual reply
+            reply.body = markdown.markdown(reply.body)
+
             reply.save()
-            MessageStatus.objects.create(message=reply, profile=reply.recipient)
+
+            # ------------------------------------------------
+            # Status for recipient
+            # ------------------------------------------------
+
+            MessageStatus.objects.create(
+                message=reply,
+                profile=reply.recipient
+            )
+
+            # ------------------------------------------------
+            # Status for sender
+            # ------------------------------------------------
+
             if reply.recipient != reply.sender:
-                status = MessageStatus.objects.create(message=reply, profile=request.user)
+
+                status = MessageStatus.objects.create(
+                    message=reply,
+                    profile=request.user
+                )
+
                 status.mark_as_read()
 
-            return redirect('message-inbox')
+            # Go directly back to conversation
+            return redirect(
+                'read-message',
+                pk=reply.pk
+            )
+
     else:
         form = MessageForm()
 
+    # --------------------------------------------------------
+    # Context
+    # --------------------------------------------------------
+
     context = {
         'parent_message': parent_message,
+        'root_message': root_message,
         'form': form,
         'sender': sender,
         'recipient': recipient,
-        'current_time': current_time,
     }
 
-    return render(request, 'messages/reply_message.html', context)
+    return render(
+        request,
+        'messages/reply_message.html',
+        context
+    )
 
+
+# ============================================================
+# DELETE MESSAGE
+# ============================================================
 
 @login_required
 def delete_message(request, pk):
-    message = get_object_or_404(Message, pk=pk)
+    message = get_object_or_404(
+        Message,
+        pk=pk
+    )
+
     user_profile = request.user
 
     try:
-        status = message.statuses.get(profile=user_profile)
+        status = message.statuses.get(
+            profile=user_profile
+        )
+
     except MessageStatus.DoesNotExist:
-        return HttpResponse("You are not allowed to delete this message.", status=403)
+
+        return HttpResponse(
+            "You are not allowed to delete this message.",
+            status=403
+        )
 
     if request.method == 'POST':
+
         status.is_deleted = True
         status.save()
 
-        if not message.statuses.filter(is_deleted=False).exists():
+        # Delete physical message only if nobody has it anymore
+        if not message.statuses.filter(
+            is_deleted=False
+        ).exists():
+
             message.delete()
 
-        return redirect('message-inbox')
+        return redirect(
+            'message-inbox'
+        )
 
-    return render(request, 'messages/message-delete.html', {'message': message})
+    return render(
+        request,
+        'messages/message-delete.html',
+        {
+            'message': message
+        }
+    )
 
+
+# ============================================================
+# MESSAGE INBOX
+# ============================================================
 
 @login_required
 def message_inbox(request):
-    filter_type = request.GET.get('filter', 'inbox')
-    user = request.user
 
-    base_query = Message.objects.filter(
-        Q(sender=user) | Q(recipient=user)
-    ).select_related('sender', 'recipient').prefetch_related(
-        'statuses'
+    filter_type = request.GET.get(
+        'filter',
+        'inbox'
     )
 
+    user = request.user
+
+    # --------------------------------------------------------
+    # Base query
+    # --------------------------------------------------------
+
+    base_query = (
+        Message.objects
+        .filter(
+            Q(sender=user) |
+            Q(recipient=user)
+        )
+        .select_related(
+            'sender',
+            'sender__profile',
+            'recipient',
+            'recipient__profile'
+        )
+        .prefetch_related(
+            'statuses'
+        )
+    )
+
+    # --------------------------------------------------------
+    # UNREAD
+    # --------------------------------------------------------
+
     if filter_type == 'unread':
-        messages = base_query.filter(
-            recipient=user,
-            statuses__profile=user,
-            statuses__is_read=False,
-            statuses__is_deleted=False
-        ).distinct().order_by('-timestamp')
+
+        messages = (
+            base_query
+            .filter(
+                recipient=user,
+                statuses__profile=user,
+                statuses__is_read=False,
+                statuses__is_deleted=False
+            )
+            .distinct()
+            .order_by('-timestamp')
+        )
+
+    # --------------------------------------------------------
+    # SENT
+    # --------------------------------------------------------
 
     elif filter_type == 'sent':
-        messages = base_query.filter(
-            sender=user,
-            statuses__profile=user,
-            statuses__is_deleted=False
-        ).distinct().order_by('-timestamp')
+
+        messages = (
+            base_query
+            .filter(
+                sender=user,
+                statuses__profile=user,
+                statuses__is_deleted=False
+            )
+            .distinct()
+            .order_by('-timestamp')
+        )
+
+    # --------------------------------------------------------
+    # ALL
+    # --------------------------------------------------------
 
     elif filter_type == 'all':
-        messages = base_query.filter(
-            statuses__profile=user,
-            statuses__is_deleted=False
-        ).distinct().order_by('-timestamp')
+
+        messages = (
+            base_query
+            .filter(
+                statuses__profile=user,
+                statuses__is_deleted=False
+            )
+            .distinct()
+            .order_by('-timestamp')
+        )
+
+    # --------------------------------------------------------
+    # INBOX
+    # --------------------------------------------------------
 
     else:
-        messages = base_query.filter(
-            recipient=user,
-            statuses__profile=user,
-            statuses__is_deleted=False
-        ).distinct().order_by('-timestamp')
 
-    paginator = Paginator(messages, 5)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+        messages = (
+            base_query
+            .filter(
+                recipient=user,
+                statuses__profile=user,
+                statuses__is_deleted=False
+            )
+            .distinct()
+            .order_by('-timestamp')
+        )
+
+    # --------------------------------------------------------
+    # Pagination
+    # --------------------------------------------------------
+
+    paginator = Paginator(
+        messages,
+        5
+    )
+
+    page_number = request.GET.get(
+        'page'
+    )
+
+    page_obj = paginator.get_page(
+        page_number
+    )
+
+    # --------------------------------------------------------
+    # Context
+    # --------------------------------------------------------
 
     context = {
         'messages': page_obj,
-        'filter_type': filter_type
+        'filter_type': filter_type,
     }
 
-    return render(request, 'messages/message-inbox.html', context)
+    return render(
+        request,
+        'messages/message-inbox.html',
+        context
+    )
