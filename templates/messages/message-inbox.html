@@ -62,60 +62,63 @@
 
             <h2>
                 {% if filter_type == 'unread' %}
-                    <i class="fas fa-envelope"></i> Unread Messages
+                <i class="fas fa-envelope"></i> Unread Messages
                 {% elif filter_type == 'sent' %}
-                    <i class="fas fa-paper-plane"></i> Sent Messages
+                <i class="fas fa-paper-plane"></i> Sent Messages
                 {% elif filter_type == 'all' %}
-                    <i class="fas fa-envelope-open-text"></i> All Messages
+                <i class="fas fa-envelope-open-text"></i> All Messages
                 {% else %}
-                    <i class="fas fa-inbox"></i> Inbox
+                <i class="fas fa-inbox"></i> Inbox
                 {% endif %}
             </h2>
 
             {% if conversations %}
-                {% for item in conversations %}
-                    <div class="message-card position-relative {% conversation_read_status item.root request.user %}"
-                         data-status="{% conversation_read_status item.root request.user %}">
+            {% for item in conversations %}
+            <div class="message-card position-relative {% conversation_read_status item.root request.user %}"
+                 data-status="{% conversation_read_status item.root request.user %}">
 
-                        <!-- Само Delete бутон -->
-                        <div class="position-absolute top-0 end-0 p-2 d-flex gap-1" style="z-index: 10;">
-                            <a href="{% url 'delete-message' item.root.pk %}"
-                               class="btn btn-outline-danger btn-sm"
-                               title="Delete Conversation"
-                               onclick="event.stopPropagation();">
-                                <i class="fas fa-trash"></i>
-                            </a>
-                        </div>
+                <!-- Само Delete бутон -->
+                <div class="position-absolute top-0 end-0 p-2" style="z-index: 10;">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'delete-message' item.root.pk %}"
+                           class="btn btn-outline-danger btn-sm activate"
+                           onclick="event.stopPropagation();">
+                            <i class="fas fa-trash-alt"></i>
+                            <span class="tooltip-text">Delete</span>
+                        </a>
+                    </div>
+                </div>
 
-                        <!-- Кликаема зона -->
-                        <a href="{% url 'read-message' item.last_message.pk %}"
-                           class="message-content text-decoration-none d-block">
+                <!-- Кликаема зона -->
+                <a href="{% url 'read-message' item.last_message.pk %}"
+                   class="message-content text-decoration-none d-block">
 
-                            <div class="message-preview">
+                    <div class="message-preview">
 
-                                <div class="message-preview-avatar">
-                                    {% if item.last_message.sender == request.user %}
-                                        <span class="message-avatar-link"
-                                              onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{% url 'profile-details' pk=request.user.pk %}';">
+                        <div class="message-preview-avatar">
+                            {% if item.last_message.sender == request.user %}
+                            <span class="message-avatar-link"
+                                  onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{% url 'profile-details' pk=request.user.pk %}';">
                                             {% if item.last_message.sender.profile.profile_photo %}
                                                 <img src="{{ item.last_message.sender.profile.profile_photo.url }}"
                                                      alt="{{ item.last_message.sender.profile.username_in_marketplace }}">
                                             {% else %}
-                                                <img src="{% static 'images/profile_picture.webp' %}" alt="Profile Picture">
+                                                <img src="{% static 'images/profile_picture.webp' %}"
+                                                     alt="Profile Picture">
                                             {% endif %}
                                         </span>
-                                    {% else %}
-                                        {% if item.last_message.sender.profile.profile_photo %}
-                                            <img src="{{ item.last_message.sender.profile.profile_photo.url }}"
-                                                 alt="{{ item.last_message.sender.profile.username_in_marketplace }}">
-                                        {% else %}
-                                            <img src="{% static 'images/profile_picture.webp' %}" alt="Profile Picture">
-                                        {% endif %}
-                                    {% endif %}
-                                </div>
+                            {% else %}
+                            {% if item.last_message.sender.profile.profile_photo %}
+                            <img src="{{ item.last_message.sender.profile.profile_photo.url }}"
+                                 alt="{{ item.last_message.sender.profile.username_in_marketplace }}">
+                            {% else %}
+                            <img src="{% static 'images/profile_picture.webp' %}" alt="Profile Picture">
+                            {% endif %}
+                            {% endif %}
+                        </div>
 
-                                <div class="message-preview-info">
-                                    <div class="message-preview-header">
+                        <div class="message-preview-info">
+                            <div class="message-preview-header">
                                         <span class="message-preview-name">
                                             {% if item.last_message.sender == request.user %}
                                                 You
@@ -123,47 +126,48 @@
                                                 {{ item.last_message.sender.profile.username_in_marketplace|default:item.last_message.sender.username }}
                                             {% endif %}
                                         </span>
-                                        <span class="message-preview-date">
+                                <span class="message-preview-date">
                                             {{ item.last_message.timestamp|date:"j M. Y H:i" }}
                                         </span>
-                                    </div>
-
-                                    <div class="message-title">
-                                        {{ item.root.title|default:"Message" }}
-                                        <small class="text-muted ms-2">({{ item.messages_count }} msg)</small>
-                                    </div>
-
-                                    <div class="message-excerpt">
-                                        {{ item.last_message.body|safe|striptags|truncatewords:20|default:"(No content available)" }}
-                                    </div>
-                                </div>
                             </div>
-                        </a>
+
+                            <div class="message-title">
+                                {{ item.root.title|default:"Message" }}
+                                <small class="text-muted ms-2">({{ item.messages_count }} msg)</small>
+                            </div>
+
+                            <div class="message-excerpt">
+                                {{ item.last_message.body|safe|striptags|truncatewords:20|default:"(No content
+                                available)" }}
+                            </div>
+                        </div>
                     </div>
-                {% endfor %}
+                </a>
+            </div>
+            {% endfor %}
 
-                <!-- PAGINATION -->
-                <div class="pagination mt-3 mb-3 d-flex justify-content-center">
-                    {% if conversations.has_previous %}
-                        <a href="?page={{ conversations.previous_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
-                           class="btn-outline-secondary">Previous</a>
-                    {% endif %}
+            <!-- PAGINATION -->
+            <div class="pagination mt-3 mb-3 d-flex justify-content-center">
+                {% if conversations.has_previous %}
+                <a href="?page={{ conversations.previous_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
+                   class="btn-outline-secondary">Previous</a>
+                {% endif %}
 
-                    <span class="mx-2">
+                <span class="mx-2">
                         Page {{ conversations.number }} of {{ conversations.paginator.num_pages }}
                     </span>
 
-                    {% if conversations.has_next %}
-                        <a href="?page={{ conversations.next_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
-                           class="btn-outline-secondary">Next</a>
-                    {% endif %}
-                </div>
+                {% if conversations.has_next %}
+                <a href="?page={{ conversations.next_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
+                   class="btn-outline-secondary">Next</a>
+                {% endif %}
+            </div>
 
             {% else %}
-                <div class="alert alert-warning text-center" role="alert">
-                    <i class="fas fa-info-circle"></i>
-                    No messages in your inbox.
-                </div>
+            <div class="alert alert-warning text-center" role="alert">
+                <i class="fas fa-info-circle"></i>
+                No messages in your inbox.
+            </div>
             {% endif %}
         </div>
     </div>
