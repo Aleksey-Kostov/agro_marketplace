@@ -1222,12 +1222,37 @@ footer {
 
 }
 
+/* ==========================================================
+   CONVERSATION TITLE BUTTONS - FIX
+   ========================================================== */
+
+.conversation-title {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100%;
+}
+
+.conversation-title h3 {
+    margin: 0;
+    flex: 1;
+}
+
 .conversation-title .d-flex.gap-2 {
     display: flex !important;
-    gap: 0.5rem;
-    align-items: center;
+    width: auto !important;           /* най-важното */
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    flex-shrink: 0;
+}
+
+.conversation-title .d-flex.gap-2 .btn,
+.conversation-title .d-flex.gap-2 form {
+    margin: 0 !important;
+    width: auto !important;
 }
 
 .conversation-title .d-flex.gap-2 .btn {
-    margin: 0;
+    padding: 0.35rem 0.65rem;
 }
