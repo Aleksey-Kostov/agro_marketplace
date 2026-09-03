@@ -8,7 +8,7 @@ from django.utils.timezone import now
 import markdown
 
 from .forms import MessageForm
-from .models import Message, MessageStatus
+from .models import Message, MessageStatus, MessageReport
 
 from ..accounts.models import AppUser
 from ..buyers.models import BuyerItems
@@ -93,9 +93,9 @@ def send_message(request, pk=None):
 # READ MESSAGE / CONVERSATION
 # ============================================================
 
+
 @login_required
 def read_message(request, pk):
-
     message = get_object_or_404(
         Message.objects.select_related(
             'sender__profile',
@@ -107,7 +107,6 @@ def read_message(request, pk):
 
     current_user = request.user
 
-    # User must be sender or recipient
     if current_user not in [
         message.sender,
         message.recipient
@@ -117,19 +116,10 @@ def read_message(request, pk):
             status=403
         )
 
-    # --------------------------------------------------------
-    # Find root message
-    # --------------------------------------------------------
-
     root_message = message
 
     while root_message.parent_message_id:
-
         root_message = root_message.parent_message
-
-    # --------------------------------------------------------
-    # Build complete conversation
-    # --------------------------------------------------------
 
     conversation_messages = [
         root_message
@@ -140,7 +130,6 @@ def read_message(request, pk):
     ]
 
     while current_level:
-
         next_level = list(
             Message.objects.filter(
                 parent_message__in=current_level
@@ -155,15 +144,8 @@ def read_message(request, pk):
         if not next_level:
             break
 
-        conversation_messages.extend(
-            next_level
-        )
-
+        conversation_messages.extend(next_level)
         current_level = next_level
-
-    # --------------------------------------------------------
-    # Mark conversation as read
-    # --------------------------------------------------------
 
     statuses = MessageStatus.objects.filter(
         message__in=conversation_messages,
@@ -174,10 +156,18 @@ def read_message(request, pk):
     for status in statuses:
         status.mark_as_read()
 
+
+    last_message = (
+        conversation_messages[-1]
+        if conversation_messages
+        else None
+    )
+
     context = {
         'message': message,
         'root_message': root_message,
         'conversation_messages': conversation_messages,
+        'last_message': last_message,
     }
 
     return render(
@@ -500,4 +490,44 @@ def message_inbox(request):
         request,
         'messages/message-inbox.html',
         context
+    )
+
+@login_required
+def report_message(request, pk):
+    message = get_object_or_404(
+        Message,
+        pk=pk
+    )
+
+    if request.user not in [
+        message.sender,
+        message.recipient
+    ]:
+        return HttpResponse(
+            "You are not authorized to report this message.",
+            status=403
+        )
+
+    if request.method == 'POST':
+
+        reason = request.POST.get(
+            'reason',
+            ''
+        ).strip()
+
+        MessageReport.objects.get_or_create(
+            message=message,
+            reported_by=request.user,
+            defaults={
+                'reason': reason
+            }
+        )
+
+        return redirect(
+            'message-inbox'
+        )
+
+    return redirect(
+        'read-message',
+        pk=message.pk
     )

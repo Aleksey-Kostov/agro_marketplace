@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
+from django.contrib import admin
+from agro_marketplace.agro_messages.models import MessageReport
 
 from .models import AppUser, Profile
 
@@ -48,3 +50,33 @@ class ProfileAdmin(admin.ModelAdmin):
 
     search_fields = ('full_name', 'username_in_marketplace', 'email', 'phone', 'town')
     ordering = ('created_at',)
+
+
+@admin.register(MessageReport)
+class MessageReportAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'message',
+        'reported_by',
+        'created_at',
+        'is_resolved',
+    )
+
+    list_filter = (
+        'is_resolved',
+        'created_at',
+    )
+
+    search_fields = (
+        'message__body',
+        'reported_by__username',
+        'message__sender__username',
+        'message__recipient__username',
+    )
+
+    readonly_fields = (
+        'message',
+        'reported_by',
+        'reason',
+        'created_at',
+    )

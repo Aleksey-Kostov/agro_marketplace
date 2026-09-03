@@ -2,213 +2,185 @@
 {% load static %}
 
 {% block content %}
+<main class="container my-2">
 
-    <main class="container my-2">
+    <div class="mailbox-container">
 
-        <div class="mailbox-container">
+        <div class="col-12 edit-profile text-details mb-2 message-box">
+            <div class="d-flex align-items-center p-0 rounded">
 
-            <!-- ==========================================
-                 HEADER
-                 ========================================== -->
+                <a href="{% url 'message-inbox' %}"
+                   class="btn btn-secondary me-3 back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Back
+                </a>
 
-            <div class="col-12 edit-profile text-details mb-2 message-box">
+                <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
+                    <i class="fas fa-comments"></i>
+                    Conversation
+                </h3>
 
-                <div class="d-flex align-items-center p-0 rounded">
+            </div>
+        </div>
 
-                    <a href="{% url 'message-inbox' %}"
-                       class="btn btn-secondary me-3 back-button">
 
-                        <i class="fas fa-arrow-left"></i>
-                        Back
+        <div class="message-box conversation-box">
 
-                    </a>
-
-                    <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
-
-                        <i class="fas fa-comments"></i>
-                        Conversation
-
-                    </h3>
-
-                </div>
-
+            <!-- Conversation title -->
+            <div class="conversation-title">
+                <h3>
+                    {{ root_message.title|default:"Message" }}
+                </h3>
             </div>
 
 
-            <!-- ==========================================
-                 CONVERSATION BOX
-                 ========================================== -->
+            <!-- Messages -->
+            <div class="conversation">
 
-            <div class="message-box conversation-box">
+                {% for item in conversation_messages %}
 
+                    <div class="conversation-message
+                        {% if item.sender == request.user %}
+                            own-message
+                        {% else %}
+                            received-message
+                        {% endif %}
+                    ">
 
-                <!-- Conversation title -->
+                        <!-- Avatar -->
+                        <div class="conversation-avatar">
 
-                <div class="conversation-title">
-
-                    <h3>
-                        {{ root_message.title|default:"Message" }}
-                    </h3>
-
-                </div>
-
-
-                <!-- ======================================
-                     MESSAGES
-                     ====================================== -->
-
-                <div class="conversation">
-
-                    {% for item in conversation_messages %}
-
-                        <div class="
-                            conversation-message
                             {% if item.sender == request.user %}
-                                own-message
-                            {% else %}
-                                received-message
-                            {% endif %}
-                        ">
 
-
-                            <!-- ==================================
-                                 AVATAR
-                                 ================================== -->
-
-                            <div class="conversation-avatar">
-
-                                {% if item.sender == request.user %}
-
-                                    <!-- YOUR AVATAR IS CLICKABLE -->
-
-                                    <a href="{% url 'profile-details' pk=item.sender.pk %}">
-
-                                        {% if item.sender.profile.profile_photo %}
-
-                                            <img
-                                                src="{{ item.sender.profile.profile_photo.url }}"
-                                                alt="{{ item.sender.profile.username_in_marketplace }}"
-                                                class="message-avatar"
-                                            >
-
-                                        {% else %}
-
-                                            <img
-                                                src="{% static 'images/profile_picture.webp' %}"
-                                                alt="Profile Picture"
-                                                class="message-avatar"
-                                            >
-
-                                        {% endif %}
-
-                                    </a>
-
-                                {% else %}
-
-                                    <!-- OTHER USER AVATAR IS NOT CLICKABLE -->
+                                <a href="{% url 'profile-details' pk=item.sender.pk %}">
 
                                     {% if item.sender.profile.profile_photo %}
-
                                         <img
                                             src="{{ item.sender.profile.profile_photo.url }}"
                                             alt="{{ item.sender.profile.username_in_marketplace }}"
                                             class="message-avatar"
                                         >
-
                                     {% else %}
-
                                         <img
                                             src="{% static 'images/profile_picture.webp' %}"
                                             alt="Profile Picture"
                                             class="message-avatar"
                                         >
-
                                     {% endif %}
 
+                                </a>
+
+                            {% else %}
+
+                                {% if item.sender.profile.profile_photo %}
+                                    <img
+                                        src="{{ item.sender.profile.profile_photo.url }}"
+                                        alt="{{ item.sender.profile.username_in_marketplace }}"
+                                        class="message-avatar"
+                                    >
+                                {% else %}
+                                    <img
+                                        src="{% static 'images/profile_picture.webp' %}"
+                                        alt="Profile Picture"
+                                        class="message-avatar"
+                                    >
                                 {% endif %}
 
-                            </div>
-
-
-                            <!-- ==================================
-                                 MESSAGE BODY
-                                 ================================== -->
-
-                            <div class="conversation-message-body">
-
-
-                                <!-- NAME + DATE -->
-
-                                <div class="conversation-meta">
-
-                                    <span class="conversation-name">
-
-                                        {{ item.sender.profile.username_in_marketplace|default:item.sender.username }}
-
-                                    </span>
-
-                                    <span class="conversation-date">
-
-                                        {{ item.timestamp|date:"j M. Y H:i" }}
-
-                                    </span>
-
-                                </div>
-
-
-                                <!-- MESSAGE BUBBLE -->
-
-                                <div class="message-bubble">
-
-                                    {{ item.body|safe }}
-
-                                </div>
-
-                            </div>
+                            {% endif %}
 
                         </div>
 
-                    {% empty %}
 
-                        <div class="alert alert-warning text-center">
+                        <!-- Message -->
+                        <div class="conversation-message-body">
 
-                            <i class="fas fa-info-circle"></i>
+                            <div class="conversation-meta">
 
-                            No messages in this conversation.
+                                <span class="conversation-name">
+                                    {{ item.sender.profile.username_in_marketplace|default:item.sender.username }}
+                                </span>
+
+                                <span class="conversation-date">
+                                    {{ item.timestamp|date:"j M. Y H:i" }}
+                                </span>
+
+                            </div>
+
+                            <div class="message-bubble">
+                                {{ item.body|safe }}
+                            </div>
 
                         </div>
-
-                    {% endfor %}
-
-                </div>
-
-
-                <!-- ==========================================
-                     REPLY
-                     ========================================== -->
-
-                {% if conversation_messages %}
-
-                    <div class="conversation-footer">
-
-                        <a
-                            href="{% url 'reply-message' conversation_messages|last.pk %}"
-                            class="btn btn-primary conversation-reply-button"
-                        >
-
-                            <i class="fas fa-reply"></i>
-                            Reply
-
-                        </a>
 
                     </div>
 
-                {% endif %}
+                {% empty %}
+
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-info-circle"></i>
+                        No messages in this conversation.
+                    </div>
+
+                {% endfor %}
 
             </div>
 
+
+            <!-- Conversation actions -->
+            {% if last_message %}
+
+                <div class="conversation-footer">
+
+                    <div class="conversation-actions">
+
+                        <!-- Reply -->
+                        <a
+                            href="{% url 'reply-message' last_message.pk %}"
+                            class="btn btn-primary"
+                        >
+                            <i class="fas fa-reply"></i>
+                            Reply
+                        </a>
+
+
+                        <!-- Delete -->
+                        <a
+                            href="{% url 'delete-message' last_message.pk %}"
+                            class="btn btn-danger"
+                        >
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </a>
+
+
+                        <!-- Report -->
+                        <form
+                            method="post"
+                            action="{% url 'report-message' last_message.pk %}"
+                            class="d-inline"
+                        >
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="btn btn-warning"
+                                onclick="return confirm('Are you sure you want to report this message?');"
+                            >
+                                <i class="fas fa-flag"></i>
+                                Report
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
         </div>
 
-    </main>
+    </div>
 
+</main>
 {% endblock %}

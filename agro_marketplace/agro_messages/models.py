@@ -39,3 +39,40 @@ class MessageStatus(models.Model):
             current_time = datetime.now(timezone)
             self.read_at = current_time
             self.save()
+
+
+class MessageReport(models.Model):
+    message = models.ForeignKey(
+        Message,
+        on_delete=models.CASCADE,
+        related_name='reports'
+    )
+
+    reported_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='message_reports'
+    )
+
+    reason = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    is_resolved = models.BooleanField(
+        default=False
+    )
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return (
+            f"Report #{self.pk} - "
+            f"Message #{self.message.pk} - "
+            f"by {self.reported_by}"
+        )
