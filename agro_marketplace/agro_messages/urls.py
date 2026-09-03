@@ -7,7 +7,7 @@ urlpatterns = [
     path('<int:pk>/', include([
         path('send/', views.send_message, name='send-message'),
         path('read/', views.read_message, name='read-message'),
-        path('reply/', views.reply_message, name='reply-message'),
+        # path('reply/', views.reply_message, name='reply-message'),  #,
         path('delete/', views.delete_message, name='delete-message'),
         path('report/', views.report_message, name='report-message')
     ]))
