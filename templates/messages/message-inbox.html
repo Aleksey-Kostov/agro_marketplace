@@ -77,26 +77,22 @@
                     <div class="message-card position-relative {% conversation_read_status item.root request.user %}"
                          data-status="{% conversation_read_status item.root request.user %}">
 
-                        <!-- Бутони горе вдясно -->
+                        <!-- Само Delete бутон -->
                         <div class="position-absolute top-0 end-0 p-2 d-flex gap-1" style="z-index: 10;">
-                            <a href="{% url 'read-message' item.last_message.pk %}"
-                               class="btn btn-outline-primary btn-sm"
-                               title="Open / Reply">
-                                <i class="fas fa-reply"></i>
-                            </a>
                             <a href="{% url 'delete-message' item.root.pk %}"
                                class="btn btn-outline-danger btn-sm"
-                               title="Delete Conversation">
+                               title="Delete Conversation"
+                               onclick="event.stopPropagation();">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>
 
+                        <!-- Кликаема зона -->
                         <a href="{% url 'read-message' item.last_message.pk %}"
-                           class="message-content text-decoration-none">
+                           class="message-content text-decoration-none d-block">
 
                             <div class="message-preview">
 
-                                <!-- AVATAR -->
                                 <div class="message-preview-avatar">
                                     {% if item.last_message.sender == request.user %}
                                         <span class="message-avatar-link"
@@ -118,7 +114,6 @@
                                     {% endif %}
                                 </div>
 
-                                <!-- PREVIEW INFO -->
                                 <div class="message-preview-info">
                                     <div class="message-preview-header">
                                         <span class="message-preview-name">

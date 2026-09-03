@@ -47,25 +47,14 @@ class MessageReport(models.Model):
         on_delete=models.CASCADE,
         related_name='reports'
     )
-
     reported_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='message_reports'
     )
-
-    reason = models.TextField(
-        blank=True,
-        null=True
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    is_resolved = models.BooleanField(
-        default=False
-    )
+    reason = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_resolved = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-created_at']
@@ -76,3 +65,25 @@ class MessageReport(models.Model):
             f"Message #{self.message.pk} - "
             f"by {self.reported_by}"
         )
+
+
+class BlockedUser(models.Model):
+    blocker = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='blocked_users'
+    )
+    blocked = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='blocked_by'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blocker', 'blocked')
+        verbose_name = "Blocked User"
+        verbose_name_plural = "Blocked Users"
+
+    def __str__(self):
+        return f"{self.blocker} blocked {self.blocked}"

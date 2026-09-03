@@ -3,14 +3,12 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.utils import timezone
+from django.contrib import messages as django_messages
 
 import markdown
-import pytz
-from datetime import datetime
 
 from .forms import MessageForm
-from .models import Message, MessageStatus, MessageReport
+from .models import Message, MessageStatus, MessageReport, BlockedUser
 from .templatetags.message_tags_inbox import get_root, get_user_conversations
 from ..accounts.models import AppUser
 from ..buyers.models import BuyerItems
@@ -18,7 +16,7 @@ from ..sellers.models import SellerItems
 
 
 def get_conversation_messages(root_message):
-    """Връща всички съобщения в conversation-а подредени хронологично."""
+    """Връща всички съобщения в conversation-а подредени хронологично (стари → нови)."""
     messages = [root_message]
     current_level = [root_message]
 
@@ -54,6 +52,11 @@ def send_message(request, pk=None):
     if request.method == 'POST':
         form = MessageForm(request.POST)
         if form.is_valid():
+            # Проверка за block
+            if recipient and BlockedUser.objects.filter(blocker=recipient, blocked=request.user).exists():
+                django_messages.error(request, "You cannot send messages to this user.")
+                return redirect('message-inbox')
+
             message = form.save(commit=False)
             message.sender = request.user
             message.recipient = recipient
@@ -99,7 +102,10 @@ def read_message(request, pk):
     root_message = get_root(message)
     conversation_messages = get_conversation_messages(root_message)
 
-    # Маркираме всички съобщения в conversation-а като прочетени
+    # Най-новите горе
+    conversation_messages = list(reversed(conversation_messages))
+
+    # Маркираме като прочетени
     statuses = MessageStatus.objects.filter(
         message__in=conversation_messages,
         profile=current_user,
@@ -117,7 +123,14 @@ def read_message(request, pk):
             else:
                 recipient = root_message.sender
 
-            last_msg = conversation_messages[-1]
+            # Проверка за block
+            if BlockedUser.objects.filter(blocker=recipient, blocked=current_user).exists():
+                django_messages.error(request, "You cannot send messages to this user.")
+                return redirect('read-message', pk=pk)
+
+            # Взимаме реалния последен (хронологичен)
+            chronological = get_conversation_messages(root_message)
+            last_msg = chronological[-1]
 
             reply = form.save(commit=False)
             reply.sender = current_user
@@ -137,12 +150,15 @@ def read_message(request, pk):
     else:
         form = MessageForm()
 
-    # Pagination – 5 съобщения на страница
+    # Pagination
     paginator = Paginator(conversation_messages, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    last_message = conversation_messages[-1] if conversation_messages else None
+    chronological = get_conversation_messages(root_message)
+    last_message = chronological[-1] if chronological else None
+
+    other_user = root_message.recipient if root_message.sender == current_user else root_message.sender
 
     context = {
         'message': message,
@@ -151,6 +167,7 @@ def read_message(request, pk):
         'last_message': last_message,
         'form': form,
         'page_obj': page_obj,
+        'other_user': other_user,
     }
     return render(request, 'messages/message-read.html', context)
 
@@ -190,7 +207,27 @@ def delete_message(request, pk):
 
 
 # ============================================================
-# MESSAGE INBOX – Conversations
+# BLOCK USER
+# ============================================================
+
+@login_required
+def block_user(request, pk):
+    user_to_block = get_object_or_404(AppUser, pk=pk)
+
+    if user_to_block == request.user:
+        return HttpResponse("Cannot block yourself.", status=400)
+
+    BlockedUser.objects.get_or_create(
+        blocker=request.user,
+        blocked=user_to_block
+    )
+
+    django_messages.success(request, f"You have blocked {user_to_block.username}.")
+    return redirect('message-inbox')
+
+
+# ============================================================
+# MESSAGE INBOX
 # ============================================================
 
 @login_required

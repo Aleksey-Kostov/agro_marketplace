@@ -21,19 +21,29 @@
 
         <div class="message-box conversation-box">
 
-            <!-- Conversation title -->
-            <div class="conversation-title d-flex justify-content-between align-items-center">
+            <!-- Title + бутони -->
+            <div class="conversation-title d-flex justify-content-between align-items-center mb-3">
                 <h3 class="m-0">
                     {{ root_message.title|default:"Message" }}
                 </h3>
 
-                <!-- Бутони горе вдясно -->
                 <div class="d-flex gap-2">
+                    <!-- Block -->
+                    <a href="{% url 'block-user' other_user.pk %}"
+                       class="btn btn-outline-dark btn-sm"
+                       title="Block User"
+                       onclick="return confirm('Are you sure you want to block this user?');">
+                        <i class="fas fa-ban"></i>
+                    </a>
+
+                    <!-- Delete -->
                     <a href="{% url 'delete-message' root_message.pk %}"
                        class="btn btn-outline-danger btn-sm"
                        title="Delete Conversation">
                         <i class="fas fa-trash"></i>
                     </a>
+
+                    <!-- Report -->
                     <form method="post" action="{% url 'report-message' last_message.pk %}" class="d-inline">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-outline-warning btn-sm"
@@ -45,7 +55,7 @@
                 </div>
             </div>
 
-            <!-- Messages -->
+            <!-- Messages (newest first) -->
             <div class="conversation">
                 {% for item in conversation_messages %}
                     <div class="conversation-message
@@ -55,7 +65,6 @@
                             received-message
                         {% endif %}
                     ">
-                        <!-- Avatar -->
                         <div class="conversation-avatar">
                             {% if item.sender == request.user %}
                                 <a href="{% url 'profile-details' pk=item.sender.pk %}">
@@ -82,7 +91,6 @@
                             {% endif %}
                         </div>
 
-                        <!-- Message -->
                         <div class="conversation-message-body">
                             <div class="conversation-meta">
                                 <span class="conversation-name">
@@ -120,17 +128,12 @@
             </div>
             {% endif %}
 
-            <!-- Reply form -->
+            <!-- Reply form (само body) -->
             <div class="reply-form mt-4 p-3 border rounded bg-light">
                 <h5 class="mb-3"><i class="fas fa-reply"></i> Reply</h5>
                 <form method="post">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label class="form-label">Title</label>
-                        {{ form.title }}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Message</label>
                         {{ form.body }}
                     </div>
                     <button type="submit" class="btn btn-primary">
