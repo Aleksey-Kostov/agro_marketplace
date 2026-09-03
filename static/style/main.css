@@ -1221,3 +1221,13 @@ footer {
     }
 
 }
+
+.conversation-title .d-flex.gap-2 {
+    display: flex !important;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.conversation-title .d-flex.gap-2 .btn {
+    margin: 0;
+}
