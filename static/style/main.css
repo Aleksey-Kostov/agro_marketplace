@@ -868,3 +868,129 @@ footer {
         max-width: 1200px;
     }
 }
+
+/* ================================
+   Facebook-style Message
+   ================================ */
+
+.message-box {
+    width: 100%;
+}
+
+/* Sender Header */
+.message-header {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+}
+
+/* Avatar */
+.message-avatar {
+    flex-shrink: 0;
+}
+
+.message-avatar img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border: 1px solid #ccc;
+    transition: transform 0.2s ease;
+}
+
+/* Small hover effect for avatar */
+.message-avatar img:hover {
+    transform: scale(1.05);
+}
+
+/* Sender name and date */
+.message-user-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 3px;
+}
+
+.message-sender-name {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.message-date {
+    font-size: 13px;
+    color: #777;
+    margin-top: 4px;
+}
+
+/* Message title */
+.message-title {
+    margin-top: 15px;
+}
+
+.message-title h3 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 600;
+}
+
+/* Recipient */
+.message-recipient {
+    font-size: 14px;
+    color: #666;
+    margin-top: 8px;
+    margin-bottom: 15px;
+}
+
+/* Message content */
+.message-content {
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+    font-size: 16px;
+    line-height: 1.6;
+    word-wrap: break-word;
+}
+
+/* Remove unnecessary paragraph margin */
+.message-content p {
+    margin-bottom: 0;
+}
+
+/* Buttons */
+.button-group {
+    margin-top: 20px;
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+
+    .message-avatar img {
+        width: 45px;
+        height: 45px;
+    }
+
+    .message-sender-name {
+        font-size: 15px;
+    }
+
+    .message-date {
+        font-size: 12px;
+    }
+
+    .message-title h3 {
+        font-size: 19px;
+    }
+
+    .message-content {
+        font-size: 15px;
+        line-height: 1.5;
+    }
+
+    .button-group {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .button-group .me-2 {
+        margin-right: 0 !important;
+    }
+}
