@@ -70,8 +70,8 @@ def send_message(request, pk=None):
 
     if pk:
         product = (
-            SellerItems.objects.filter(profile__user=pk).first()
-            or BuyerItems.objects.filter(profile__user=pk).first()
+                SellerItems.objects.filter(profile__user=pk).first()
+                or BuyerItems.objects.filter(profile__user=pk).first()
         )
 
     if request.method == 'POST':
@@ -291,6 +291,7 @@ def unblock_user(request, pk):
 
     return redirect('message-inbox')
 
+
 # ============================================================
 # MESSAGE INBOX
 # ============================================================
@@ -300,17 +301,25 @@ def message_inbox(request):
     filter_type = request.GET.get('filter', 'inbox')
     user = request.user
 
-    roots = get_user_conversations(user, filter_type)
+    try:
+        roots = get_user_conversations(user, filter_type)
+    except Exception:
+        roots = []
 
     conversation_list = []
     for root in roots:
-        all_msgs = get_conversation_messages(root)
-        last_msg = all_msgs[-1]
-        conversation_list.append({
-            'root': root,
-            'last_message': last_msg,
-            'messages_count': len(all_msgs),
-        })
+        try:
+            all_msgs = get_conversation_messages(root)
+            if not all_msgs:
+                continue
+            last_msg = all_msgs[-1]
+            conversation_list.append({
+                'root': root,
+                'last_message': last_msg,
+                'messages_count': len(all_msgs),
+            })
+        except Exception:
+            continue
 
     paginator = Paginator(conversation_list, 5)
     page_number = request.GET.get('page')
