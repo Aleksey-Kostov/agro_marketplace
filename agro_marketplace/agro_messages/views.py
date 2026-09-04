@@ -137,10 +137,8 @@ def read_message(request, pk):
     root_message = get_root(message)
     conversation_messages = get_conversation_messages(root_message)
 
-    # Най-новите горе
     conversation_messages = list(reversed(conversation_messages))
 
-    # Маркираме като прочетени
     statuses = MessageStatus.objects.filter(
         message__in=conversation_messages,
         profile=current_user,
@@ -258,32 +256,40 @@ def delete_message(request, pk):
 
 @login_required
 def block_user(request, pk):
-    user_to_block = get_object_or_404(AppUser, pk=pk)
+    user_to_block = get_object_or_404(User, pk=pk)
 
     if user_to_block == request.user:
-        return HttpResponse("Cannot block yourself.", status=400)
+        django_messages.error(request, "You cannot block yourself.")
+        return redirect('message-inbox')
 
-    BlockedUser.objects.get_or_create(
+    obj, created = BlockedUser.objects.get_or_create(
         blocker=request.user,
         blocked=user_to_block
     )
 
-    django_messages.success(request, f"You have successfully blocked {user_to_block.username}.")
+    if created:
+        django_messages.success(request, f"You have successfully blocked {user_to_block.username}.")
+    else:
+        django_messages.info(request, "This user is already blocked.")
+
     return redirect('message-inbox')
 
 
 @login_required
 def unblock_user(request, pk):
-    user_to_unblock = get_object_or_404(AppUser, pk=pk)
+    user_to_unblock = get_object_or_404(User, pk=pk)
 
-    BlockedUser.objects.filter(
+    deleted, _ = BlockedUser.objects.filter(
         blocker=request.user,
         blocked=user_to_unblock
     ).delete()
 
-    django_messages.success(request, f"You have successfully unblocked {user_to_unblock.username}.")
-    return redirect('message-inbox')
+    if deleted:
+        django_messages.success(request, f"You have successfully unblocked {user_to_unblock.username}.")
+    else:
+        django_messages.info(request, "This user was not blocked.")
 
+    return redirect('message-inbox')
 
 # ============================================================
 # MESSAGE INBOX
