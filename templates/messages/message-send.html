@@ -2,95 +2,112 @@
 {% load static %}
 
 {% block content %}
-    <main class="container my-4">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
+<main class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
 
-                <div class="card-header bg-primary rounded text-white text-center d-flex justify-content-center align-items-center mb-2">
-                    <div class="d-flex align-items-center border rounded p-2">
-                        <a href="#" class="btn btn-secondary me-3 back-button" onclick="goBack()">
-                            <i class="fas fa-arrow-left"></i> Back
-                        </a>
-                        <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
-                            <i class="fas fa-paper-plane me-2"></i>
-                            Send Message
-                        </h3>
-                    </div>
+            <div class="card-header bg-primary rounded text-white text-center d-flex justify-content-center align-items-center mb-2">
+                <div class="d-flex align-items-center border rounded p-2">
+                    <a href="#" class="btn btn-secondary me-3 back-button" onclick="goBack()">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                    <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        Send Message
+                    </h3>
                 </div>
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Message Details</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <!-- Sender -->
-                            <div class="col-12 d-flex align-items-center mb-3">
-                                <span class="me-2">
-                                    <i class="fas fa-user-circle text-warning"></i>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Message Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Sender -->
+                        <div class="col-12 d-flex align-items-center mb-3">
+                            <span class="me-2">
+                                <i class="fas fa-user-circle text-warning"></i>
+                            </span>
+                            <div class="d-flex flex-grow-1 justify-content-between">
+                                <span class="detail-label">
+                                    <strong>Sender:</strong>
                                 </span>
-                                <div class="d-flex flex-grow-1 justify-content-between">
-                                    <span class="detail-label">
-                                        <strong>Sender:</strong>
-                                    </span>
-                                    <span class="ms-3">{{ user.profile.username_in_marketplace }}</span>
-                                </div>
-                            </div>
-                            <!-- Recipient -->
-                            <div class="col-12 d-flex align-items-center mb-3">
-                                <span class="me-2">
-                                    <i class="fas fa-user text-primary"></i>
-                                </span>
-                                <div class="d-flex flex-grow-1 justify-content-between">
-                                    <span class="detail-label">
-                                         <strong>Recipient:</strong>
-                                    </span>
-                                    <span class="ms-3">{{ recipient.profile.username_in_marketplace }}</span>
-                                </div>
-                            </div>
-                            <!-- Product -->
-                            <div class="col-12 d-flex align-items-center mb-3">
-                                <span class="me-2">
-                                    <i class="fas fa-box text-success"></i>
-                                </span>
-                                <div class="d-flex flex-grow-1 justify-content-between">
-                                    <span class="detail-label">
-                                        <strong>Product:</strong>
-                                    </span>
-                                    <span class="ms-3">{{ product.title }}</span>
-                                </div>
+                                <span class="ms-3">{{ user.profile.username_in_marketplace }}</span>
                             </div>
                         </div>
+                        <!-- Recipient -->
+                        <div class="col-12 d-flex align-items-center mb-3">
+                            <span class="me-2">
+                                <i class="fas fa-user text-primary"></i>
+                            </span>
+                            <div class="d-flex flex-grow-1 justify-content-between">
+                                <span class="detail-label">
+                                    <strong>Recipient:</strong>
+                                </span>
+                                <span class="ms-3">{{ recipient.profile.username_in_marketplace }}</span>
+                            </div>
+                        </div>
+                        <!-- Product -->
+                        {% if product %}
+                        <div class="col-12 d-flex align-items-center mb-3">
+                            <span class="me-2">
+                                <i class="fas fa-box text-success"></i>
+                            </span>
+                            <div class="d-flex flex-grow-1 justify-content-between">
+                                <span class="detail-label">
+                                    <strong>Product:</strong>
+                                </span>
+                                <span class="ms-3">{{ product.title }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
-                <!-- Message Form -->
-                <div class="card shadow-sm">
-                    <div class="card-header bg-secondary text-white">
-                        <h5 class="mb-0">Compose Your Message</h5>
-                    </div>
-                    <div class="card-body">
+            </div>
+
+            <!-- Message Form или съобщение за блокиране -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Compose Your Message</h5>
+                </div>
+                <div class="card-body">
+
+                    {% if is_blocked or is_blocked_by_other %}
+                        <div class="alert alert-warning text-center mb-0">
+                            <i class="fas fa-ban me-2"></i>
+                            {% if is_blocked_by_other %}
+                                <strong>You cannot send messages to this user because you have been blocked.</strong>
+                            {% else %}
+                                <strong>You cannot send messages to this user because you have blocked them. Unblock first to send a message.</strong>
+                            {% endif %}
+                        </div>
+                    {% else %}
                         <form action="" method="POST" class="p-3">
                             {% csrf_token %}
 
-                            <!-- Title Field -->
                             <div class="mb-3">
                                 <label for="id_title" class="form-label">Title</label>
-                                {{ form.title }} <!-- Render the title field -->
+                                {{ form.title }}
                             </div>
 
-                            <!-- Message Field -->
                             <div class="mb-3">
                                 <label for="id_message" class="form-label">Message</label>
                                 {{ form.body }}
                             </div>
 
-                            <!-- Submit Button -->
                             <div class="text-center">
-                                <button type="submit" class="btn btn-primary mt-3 w-25 submit-button">Send Message</button>
+                                <button type="submit" class="btn btn-primary mt-3 w-25 submit-button">
+                                    Send Message
+                                </button>
                             </div>
                         </form>
-                    </div>
+                    {% endif %}
+
                 </div>
             </div>
+
         </div>
-    </main>
+    </div>
+</main>
 {% endblock %}

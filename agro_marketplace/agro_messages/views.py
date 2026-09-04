@@ -70,22 +70,36 @@ def send_message(request, pk=None):
 
     if pk:
         product = (
-                SellerItems.objects.filter(profile__user=pk).first()
-                or BuyerItems.objects.filter(profile__user=pk).first()
+            SellerItems.objects.filter(profile__user=pk).first()
+            or BuyerItems.objects.filter(profile__user=pk).first()
         )
+
+    is_blocked = False
+    is_blocked_by_other = False
+
+    if recipient:
+        is_blocked = BlockedUser.objects.filter(
+            blocker=request.user,
+            blocked=recipient
+        ).exists()
+
+        is_blocked_by_other = BlockedUser.objects.filter(
+            blocker=recipient,
+            blocked=request.user
+        ).exists()
 
     if request.method == 'POST':
         form = MessageForm(request.POST)
         if form.is_valid():
             if recipient:
-                if BlockedUser.objects.filter(blocker=recipient, blocked=request.user).exists():
+                if is_blocked_by_other:
                     django_messages.error(
                         request,
                         "You cannot send messages to this user because you have been blocked."
                     )
                     return redirect('message-inbox')
 
-                if BlockedUser.objects.filter(blocker=request.user, blocked=recipient).exists():
+                if is_blocked:
                     django_messages.error(
                         request,
                         "You cannot send messages to a blocked user. Please unblock them first."
@@ -112,9 +126,10 @@ def send_message(request, pk=None):
         'form': form,
         'recipient': recipient,
         'product': product,
+        'is_blocked': is_blocked,
+        'is_blocked_by_other': is_blocked_by_other,
     }
     return render(request, 'messages/message-send.html', context)
-
 
 # ============================================================
 # READ MESSAGE + REPLY
