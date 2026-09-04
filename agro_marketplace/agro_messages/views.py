@@ -304,6 +304,10 @@ def unblock_user(request, pk):
     else:
         django_messages.info(request, "This user was not blocked.")
 
+    next_url = request.GET.get('next') or request.META.get('HTTP_REFERER')
+    if next_url:
+        return redirect(next_url)
+
     return redirect('message-inbox')
 
 
