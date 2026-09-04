@@ -5,6 +5,7 @@ from agro_marketplace.agro_messages import views
 urlpatterns = [
     path('inbox/', views.message_inbox, name='message-inbox'),
     path('block/<int:pk>/', views.block_user, name='block-user'),
+    path('unblock/<int:pk>/', views.unblock_user, name='unblock-user'),
     path('<int:pk>/', include([
         path('send/', views.send_message, name='send-message'),
         path('read/', views.read_message, name='read-message'),
