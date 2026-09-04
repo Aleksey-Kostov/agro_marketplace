@@ -24,6 +24,9 @@
                 <h3 class="m-0">
                     {{ root_message.title|default:"Message" }}
                 </h3>
+                <div class="my-4">
+                    <div class="border-top border-dark opacity-25"></div>
+                </div>
 
                 <div class="btn-group" role="group">
                     {% if is_blocked %}
@@ -66,9 +69,7 @@
                         <span class="tooltip-text">Report</span>
                     </a>
                 </div>
-                <div class="my-4">
-                    <div class="border-top border-dark opacity-25"></div>
-                </div>
+
                 <!-- Messages -->
                 <div class="conversation">
                     {% for item in conversation_messages %}
