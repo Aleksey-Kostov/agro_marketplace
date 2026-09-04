@@ -29,7 +29,7 @@
 
                 <div class="btn-group" role="group">
                     {% if is_blocked %}
-                    <a href="{% url 'unblock-user' other_user.pk %}"
+                    <a href="{% url 'unblock-user' other_user.pk %}?next={{ request.path }}"
                        class="btn btn-outline-success btn-sm activate"
                        onclick="return confirm('Are you sure you want to unblock this user?');">
                         <i class="fas fa-unlock"></i>
