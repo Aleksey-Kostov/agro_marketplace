@@ -70,8 +70,8 @@ def send_message(request, pk=None):
 
     if pk:
         product = (
-            SellerItems.objects.filter(profile__user=pk).first()
-            or BuyerItems.objects.filter(profile__user=pk).first()
+                SellerItems.objects.filter(profile__user=pk).first()
+                or BuyerItems.objects.filter(profile__user=pk).first()
         )
 
     is_blocked = False
@@ -130,6 +130,7 @@ def send_message(request, pk=None):
         'is_blocked_by_other': is_blocked_by_other,
     }
     return render(request, 'messages/message-send.html', context)
+
 
 # ============================================================
 # READ MESSAGE + REPLY
@@ -275,6 +276,9 @@ def block_user(request, pk):
 
     if user_to_block == request.user:
         django_messages.error(request, "You cannot block yourself.")
+        next_url = request.GET.get('next') or request.META.get('HTTP_REFERER')
+        if next_url:
+            return redirect(next_url)
         return redirect('message-inbox')
 
     obj, created = BlockedUser.objects.get_or_create(
@@ -286,6 +290,10 @@ def block_user(request, pk):
         django_messages.success(request, f"You have successfully blocked {user_to_block.username}.")
     else:
         django_messages.info(request, "This user is already blocked.")
+
+    next_url = request.GET.get('next') or request.META.get('HTTP_REFERER')
+    if next_url:
+        return redirect(next_url)
 
     return redirect('message-inbox')
 

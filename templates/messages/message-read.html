@@ -36,7 +36,7 @@
                         <span class="tooltip-text">Unblock</span>
                     </a>
                     {% else %}
-                    <a href="{% url 'block-user' other_user.pk %}"
+                    <a href="{% url 'block-user' other_user.pk %}?next={{ request.path }}"
                        class="btn btn-outline-dark btn-sm activate"
                        onclick="return confirm('Are you sure you want to block this user?');">
                         <i class="fas fa-ban"></i>
