@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from .models import Message, MessageStatus
+from .models import Message, MessageStatus, BlockedUser
 
 
 @admin.register(Message)
@@ -35,4 +35,31 @@ class MessageStatusAdmin(admin.ModelAdmin):
         (_('Status Info'), {
             'fields': ('is_read', 'is_deleted', 'read_at')
         }),
+    )
+
+
+@admin.register(BlockedUser)
+class BlockedUserAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'blocker',
+        'blocked',
+        'created_at',
+    )
+
+    list_filter = (
+        'created_at',
+    )
+
+    search_fields = (
+        'blocker__username',
+        'blocked__username',
+    )
+
+    readonly_fields = (
+        'created_at',
+    )
+
+    ordering = (
+        '-created_at',
     )
