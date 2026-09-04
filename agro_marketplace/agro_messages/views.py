@@ -37,7 +37,6 @@ def get_conversation_messages(root_message):
 
 
 def get_admin_user():
-    """Връща първия superuser или staff потребител за системни съобщения."""
     admin = User.objects.filter(is_superuser=True).first()
     if not admin:
         admin = User.objects.filter(is_staff=True).first()
@@ -45,7 +44,6 @@ def get_admin_user():
 
 
 def send_system_message(recipient, title, body):
-    """Изпраща автоматично съобщение от Admin."""
     admin = get_admin_user()
     if not admin or admin == recipient:
         return
@@ -57,7 +55,6 @@ def send_system_message(recipient, title, body):
         body=markdown.markdown(body)
     )
     MessageStatus.objects.create(message=message, profile=recipient)
-    # Admin-ът го маркира като прочетено
     status = MessageStatus.objects.create(message=message, profile=admin)
     status.mark_as_read()
 
@@ -73,27 +70,25 @@ def send_message(request, pk=None):
 
     if pk:
         product = (
-                SellerItems.objects.filter(profile__user=pk).first()
-                or BuyerItems.objects.filter(profile__user=pk).first()
+            SellerItems.objects.filter(profile__user=pk).first()
+            or BuyerItems.objects.filter(profile__user=pk).first()
         )
 
     if request.method == 'POST':
         form = MessageForm(request.POST)
         if form.is_valid():
             if recipient:
-                # Проверка: дали получателят е блокирал изпращача
                 if BlockedUser.objects.filter(blocker=recipient, blocked=request.user).exists():
                     django_messages.error(
                         request,
-                        "Не можете да изпратите съобщение, защото сте блокиран от този потребител."
+                        "You cannot send messages to this user because you have been blocked."
                     )
                     return redirect('message-inbox')
 
-                # Проверка: дали изпращачът е блокирал получателя (по желание)
                 if BlockedUser.objects.filter(blocker=request.user, blocked=recipient).exists():
                     django_messages.error(
                         request,
-                        "Не можете да изпратите съобщение на блокиран потребител. Първо го разблокирайте."
+                        "You cannot send messages to a blocked user. Please unblock them first."
                     )
                     return redirect('message-inbox')
 
@@ -156,6 +151,7 @@ def read_message(request, pk):
 
     other_user = root_message.recipient if root_message.sender == current_user else root_message.sender
     is_blocked = BlockedUser.objects.filter(blocker=current_user, blocked=other_user).exists()
+    is_blocked_by_other = BlockedUser.objects.filter(blocker=other_user, blocked=current_user).exists()
 
     # ---------- REPLY ----------
     if request.method == 'POST':
@@ -166,18 +162,17 @@ def read_message(request, pk):
             else:
                 recipient = root_message.sender
 
-            # Проверка за block
             if BlockedUser.objects.filter(blocker=recipient, blocked=current_user).exists():
                 django_messages.error(
                     request,
-                    "Не можете да изпратите съобщение, защото сте блокиран от този потребител."
+                    "You cannot send messages to this user because you have been blocked."
                 )
                 return redirect('read-message', pk=pk)
 
             if BlockedUser.objects.filter(blocker=current_user, blocked=recipient).exists():
                 django_messages.error(
                     request,
-                    "Не можете да изпратите съобщение на блокиран потребител. Първо го разблокирайте."
+                    "You cannot send messages to a blocked user. Please unblock them first."
                 )
                 return redirect('read-message', pk=pk)
 
@@ -218,6 +213,7 @@ def read_message(request, pk):
         'page_obj': page_obj,
         'other_user': other_user,
         'is_blocked': is_blocked,
+        'is_blocked_by_other': is_blocked_by_other,
     }
     return render(request, 'messages/message-read.html', context)
 
@@ -272,7 +268,7 @@ def block_user(request, pk):
         blocked=user_to_block
     )
 
-    django_messages.success(request, f"Успешно блокирахте {user_to_block.username}.")
+    django_messages.success(request, f"You have successfully blocked {user_to_block.username}.")
     return redirect('message-inbox')
 
 
@@ -285,7 +281,7 @@ def unblock_user(request, pk):
         blocked=user_to_unblock
     ).delete()
 
-    django_messages.success(request, f"Успешно разблокирахте {user_to_unblock.username}.")
+    django_messages.success(request, f"You have successfully unblocked {user_to_unblock.username}.")
     return redirect('message-inbox')
 
 
@@ -322,7 +318,7 @@ def message_inbox(request):
 
 
 # ============================================================
-# REPORT MESSAGE + автоматично съобщение от Admin
+# REPORT MESSAGE
 # ============================================================
 
 @login_required
@@ -342,18 +338,17 @@ def report_message(request, pk):
         )
 
         if created:
-            # Автоматично съобщение към докладващия
             send_system_message(
                 recipient=request.user,
-                title="Your Report Has Been Received",
+                title="Your report has been received",
                 body=(
                     "Thank you for reporting the message.\n\n"
                     "Our team will review the content for appropriateness "
-                    "and take the necessary action if needed.\n\n"
+                    "and take the necessary actions if needed.\n\n"
                     "This is an automated message. Please do not reply."
                 )
             )
-            django_messages.success(request, "The report was sent successfully.")
+            django_messages.success(request, "Your report has been submitted successfully.")
         else:
             django_messages.info(request, "You have already reported this message.")
 
