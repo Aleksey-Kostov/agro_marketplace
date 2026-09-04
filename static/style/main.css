@@ -1221,3 +1221,56 @@ footer {
     }
 
 }
+
+/* Conversation action buttons */
+.conversation-actions {
+    display: flex !important;
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+}
+
+.conversation-actions .btn,
+.conversation-actions form .btn {
+    width: 38px;
+    height: 34px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    margin: 0 !important;
+}
+
+.conversation-actions form {
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
+}
+
+/* Reply form */
+.reply-form textarea,
+.reply-form .form-control {
+    min-height: 110px;
+    border-radius: 10px;
+    resize: vertical;
+}
+
+.reply-form .btn-primary {
+    border-radius: 8px;
+    min-width: 110px;
+}
+
+@media (max-width: 576px) {
+    .conversation-title {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .conversation-actions {
+        margin-top: 0.5rem;
+    }
+
+    .reply-form .btn-primary {
+        width: 100%;
+    }
+}
