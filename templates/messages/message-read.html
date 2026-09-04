@@ -126,15 +126,15 @@
 
             <!-- Pagination -->
             {% if page_obj.has_other_pages %}
-            <div class="pagination mt-3 mb-3 d-flex justify-content-center">
+            <div class="pagination mt-3 mb-3">
                 {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-secondary me-2">Previous</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-secondary btn-sm">‹</a>
                 {% endif %}
-                <span class="mx-2 align-self-center">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                </span>
+
+                <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+
                 {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-secondary ms-2">Next</a>
+                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-secondary btn-sm">›</a>
                 {% endif %}
             </div>
             {% endif %}
@@ -153,7 +153,7 @@
                 </div>
             </div>
             {% else %}
-            <div class="reply-form mt-4 p-3 border rounded bg-white shadow-sm">
+            <div>
                 <form method="post">
                     {% csrf_token %}
                     <div class="mb-3">

@@ -877,37 +877,63 @@ footer {
     padding: 20px;
 }
 
-
 /* ==========================================================
-   CONVERSATION TITLE
+   CONVERSATION TITLE + ACTION BUTTONS
    ========================================================== */
 
 .conversation-title {
-    text-align: center;
-    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 25px;
     padding-bottom: 15px;
     border-bottom: 1px solid #ddd;
+    text-align: left; /* важно: премахваме старото text-align: center */
 }
 
 .conversation-title h3 {
     margin: 0;
-    font-size: 22px;
+    font-size: 1.15rem;
     font-weight: 600;
+    line-height: 1.3;
+    word-break: break-word;
+    flex: 1;
+    min-width: 0;
 }
 
+.conversation-actions {
+    display: flex !important;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.conversation-actions .btn,
+.conversation-actions form .btn {
+    width: 36px !important;
+    height: 34px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    margin: 0 !important;
+}
+
+.conversation-actions form {
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
+}
 
 /* ==========================================================
-   CONVERSATION
+   CONVERSATION MESSAGES
    ========================================================== */
 
 .conversation {
     width: 100%;
 }
-
-
-/* ==========================================================
-   MESSAGE ROW
-   ========================================================== */
 
 .conversation-message {
     display: flex;
@@ -930,8 +956,6 @@ footer {
     display: block;
 }
 
-
-/* Only clickable avatar gets hover effect */
 .conversation-avatar a .message-avatar {
     transition: transform 0.2s ease;
 }
@@ -940,20 +964,10 @@ footer {
     transform: scale(1.05);
 }
 
-
-/* ==========================================================
-   MESSAGE BODY
-   ========================================================== */
-
 .conversation-message-body {
     max-width: 75%;
     min-width: 0;
 }
-
-
-/* ==========================================================
-   NAME + DATE
-   ========================================================== */
 
 .conversation-meta {
     display: flex;
@@ -973,11 +987,6 @@ footer {
     font-size: 12px;
 }
 
-
-/* ==========================================================
-   MESSAGE BUBBLE
-   ========================================================== */
-
 .message-bubble {
     position: relative;
     display: inline-block;
@@ -991,9 +1000,6 @@ footer {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-
-/* Bubble tail */
-
 .message-bubble::before {
     content: "";
     position: absolute;
@@ -1005,11 +1011,6 @@ footer {
     border-bottom: 7px solid transparent;
     border-right: 9px solid #f0f2f5;
 }
-
-
-/* ==========================================================
-   OWN MESSAGE
-   ========================================================== */
 
 .own-message {
     flex-direction: row-reverse;
@@ -1041,44 +1042,49 @@ footer {
     border-left: 9px solid #d9fdd3;
 }
 
-
 /* ==========================================================
-   CONVERSATION FOOTER
+   REPLY FORM
    ========================================================== */
 
-.conversation-footer {
+.reply-form {
+    width: 100%;
+}
+
+.reply-form textarea,
+.reply-form .form-control {
+    width: 100%;
+    min-height: 120px;
+    border-radius: 10px;
+    resize: vertical;
+    font-size: 0.95rem;
+}
+
+.reply-form .btn-primary {
+    border-radius: 8px;
+    min-width: 120px;
+}
+
+/* ==========================================================
+   PAGINATION
+   ========================================================== */
+
+.pagination {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #ddd;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
 }
 
-.conversation-reply-button {
-    min-width: 130px;
+.pagination a,
+.pagination span {
+    padding: 0.35rem 0.7rem;
+    white-space: nowrap;
 }
-
 
 /* ==========================================================
-   REPLY PAGE
-   ========================================================== */
-
-.reply-box {
-    padding: 20px;
-}
-
-.reply-to-message {
-    margin-bottom: 25px;
-}
-
-.reply-to-header {
-    display: flex;
-    align-items: flex-start;
-}
-
-
-/* ==========================================================
-   INBOX PREVIEW
+   INBOX PREVIEW (остава както е)
    ========================================================== */
 
 .message-preview {
@@ -1099,9 +1105,6 @@ footer {
     border: 1px solid #ccc;
 }
 
-
-/* Clickable own avatar */
-
 .message-avatar-link {
     display: block;
     cursor: pointer;
@@ -1115,17 +1118,9 @@ footer {
     transform: scale(1.05);
 }
 
-
-/* Other user's avatar */
-
 .message-preview-avatar > img {
     cursor: default;
 }
-
-
-/* ==========================================================
-   INBOX INFO
-   ========================================================== */
 
 .message-preview-info {
     flex: 1;
@@ -1154,20 +1149,30 @@ footer {
     color: #666;
 }
 
-
 /* ==========================================================
    MOBILE
    ========================================================== */
 
 @media (max-width: 576px) {
 
-    .conversation-box,
-    .reply-box {
+    .conversation-box {
         padding: 12px;
     }
 
+    .conversation-title {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
     .conversation-title h3 {
-        font-size: 19px;
+        font-size: 1.05rem;
+        width: 100%;
+    }
+
+    .conversation-actions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 0.25rem;
     }
 
     .message-avatar {
@@ -1205,181 +1210,10 @@ footer {
         padding: 9px 12px;
     }
 
-    .message-preview-avatar img {
-        width: 42px;
-        height: 42px;
-    }
-
-    .message-preview-header {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .message-preview-date {
-        font-size: 11px;
-    }
-
-}
-
-/* Conversation action buttons */
-.conversation-actions {
-    display: flex !important;
-    flex-wrap: nowrap;
-    gap: 0.35rem;
-}
-
-.conversation-actions .btn,
-.conversation-actions form .btn {
-    width: 38px;
-    height: 34px;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-    margin: 0 !important;
-}
-
-.conversation-actions form {
-    display: inline-flex;
-    margin: 0;
-    padding: 0;
-}
-
-/* Reply form */
-.reply-form textarea,
-.reply-form .form-control {
-    min-height: 110px;
-    border-radius: 10px;
-    resize: vertical;
-}
-
-.reply-form .btn-primary {
-    border-radius: 8px;
-    min-width: 110px;
-}
-
-@media (max-width: 576px) {
-    .conversation-title {
-        flex-direction: column;
-        align-items: flex-start !important;
-    }
-
-    .conversation-actions {
-        margin-top: 0.5rem;
-    }
-
     .reply-form .btn-primary {
         width: 100%;
     }
-}
 
-/* ===== Conversation header responsive ===== */
-.conversation-header-title {
-    font-size: 1.25rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-@media (max-width: 576px) {
-    .conversation-header-title {
-        font-size: 1.05rem;
-    }
-
-    .back-button {
-        min-width: auto;
-        padding-left: 0.6rem;
-        padding-right: 0.6rem;
-    }
-}
-
-/* ===== Conversation title + action buttons ===== */
-.conversation-title {
-    gap: 0.75rem;
-}
-
-.conversation-title h3 {
-    font-size: 1.15rem;
-    line-height: 1.3;
-    word-break: break-word;
-}
-
-@media (max-width: 576px) {
-    .conversation-title {
-        flex-direction: column;
-        align-items: flex-start !important;
-    }
-
-    .conversation-title h3 {
-        font-size: 1.05rem;
-        width: 100%;
-    }
-
-    .conversation-actions {
-        width: 100%;
-        justify-content: flex-end;
-    }
-}
-
-/* ===== Action buttons size ===== */
-.conversation-actions .btn,
-.conversation-actions form .btn {
-    width: 36px;
-    height: 34px;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-}
-
-.conversation-actions form {
-    display: inline-flex;
-    margin: 0;
-    padding: 0;
-}
-
-/* ===== Reply form wider & nicer ===== */
-.reply-form {
-    width: 100%;
-}
-
-.reply-form textarea,
-.reply-form .form-control {
-    width: 100%;
-    min-height: 120px;
-    border-radius: 10px;
-    resize: vertical;
-    font-size: 0.95rem;
-}
-
-.reply-form .btn-primary {
-    border-radius: 8px;
-    min-width: 120px;
-}
-
-@media (max-width: 576px) {
-    .reply-form .btn-primary {
-        width: 100%;
-    }
-}
-
-/* ===== Pagination responsive ===== */
-.pagination {
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    font-size: 0.9rem;
-}
-
-.pagination a,
-.pagination span {
-    padding: 0.35rem 0.7rem;
-    white-space: nowrap;
-}
-
-@media (max-width: 576px) {
     .pagination {
         font-size: 0.8rem;
     }
@@ -1388,5 +1222,19 @@ footer {
     .pagination span {
         padding: 0.3rem 0.55rem;
     }
-}
 
+    .message-preview-avatar img {
+        width: 42px;
+        height: 42px;
+    }
+
+    .message-preview-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    .message-preview-date {
+        font-size: 11px;
+    }
+}
