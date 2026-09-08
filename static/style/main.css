@@ -1238,3 +1238,55 @@ footer {
         font-size: 11px;
     }
 }
+
+.message-box.conversation-box > .conv-separator {
+    display: block !important;
+    width: 100% !important;
+    height: 1px !important;
+    margin: 12px 0 18px !important;
+    background-color: rgba(0,0,0,0.15) !important;
+    flex-shrink: 0 !important;
+}
+
+.message-mini-actions {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.mini-btn {
+    text-decoration: none;
+    color: #666;
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+.mini-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.emoji-bar .emoji-btn {
+    padding: 2px 6px;
+    line-height: 1.2;
+}
+
+@media (max-width: 576px) {
+    .emoji-bar { display: flex; flex-wrap: wrap; }
+}
+
+.message-image {
+    max-width: 100%;
+    width: auto;
+    max-height: 280px;
+    border-radius: 10px;
+    object-fit: contain;
+    display: block;
+    cursor: pointer;
+}
+
+@media (max-width: 576px) {
+    .message-image {
+        max-height: 220px;
+    }
+}

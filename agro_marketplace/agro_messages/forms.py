@@ -5,12 +5,20 @@ from .models import Message
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
-        fields = ['title', 'body']
+        fields = ['body', 'image']  # title се маха — идва от обявата
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'body': forms.Textarea(attrs={'rows': 5, 'class': 'form-control'}),
+            'body': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'form-control',
+                'placeholder': 'Write your message...',
+                'id': 'message-body-input',
+            }),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*',
+            }),
         }
         labels = {
-            'title': 'title',
-            'body': 'body',
+            'body': '',
+            'image': '',
         }

@@ -7,7 +7,6 @@ register = template.Library()
 
 
 def get_root(message):
-    """Намира root съобщението на conversation-а."""
     root = message
     visited = set()
     while root.parent_message_id and root.id not in visited:
@@ -56,7 +55,6 @@ def get_user_conversations(user, filter_type='all'):
         'parent_message'
     )
 
-    # 3. Намираме уникалните root-ове
     roots_dict = {}
     for msg in messages:
         try:
@@ -160,3 +158,13 @@ def conversation_read_status(root_message, user):
         return 'unread' if has_unread else 'read'
     except Exception:
         return 'read'
+
+
+@register.simple_tag
+def reaction_count(message, reaction_type):
+    return message.reactions.filter(reaction=reaction_type).count()
+
+
+@register.simple_tag
+def user_reacted(message, user, reaction_type):
+    return message.reactions.filter(user=user, reaction=reaction_type).exists()

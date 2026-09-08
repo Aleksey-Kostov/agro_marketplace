@@ -11,14 +11,15 @@ class Message(models.Model):
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
     title = models.CharField(max_length=255, blank=True, null=True)
     body = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='message_images/', blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    parent_message = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies')
+    parent_message = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies'
+    )
+    is_system = models.BooleanField(default=False)
 
     def __str__(self):
-        sender_username = self.sender if self.sender else "Unknown Sender"
-        recipient_username = self.recipient if self.recipient else "Unknown Recipient"
-        title = self.title[:30] if self.title else "No Title"
-        return f"{sender_username} -> {recipient_username}: {title}"
+        return f"{self.sender} -> {self.recipient}: {(self.title or 'No Title')[:30]}"
 
 
 class MessageStatus(models.Model):
@@ -35,22 +36,15 @@ class MessageStatus(models.Model):
     def mark_as_read(self):
         if not self.is_read:
             self.is_read = True
-            timezone = pytz.timezone("Europe/Sofia")
-            current_time = datetime.now(timezone)
-            self.read_at = current_time
+            tz = pytz.timezone("Europe/Sofia")
+            self.read_at = datetime.now(tz)
             self.save()
 
 
 class MessageReport(models.Model):
-    message = models.ForeignKey(
-        Message,
-        on_delete=models.CASCADE,
-        related_name='reports'
-    )
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='reports')
     reported_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='message_reports'
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='message_reports'
     )
     reason = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -59,31 +53,32 @@ class MessageReport(models.Model):
     class Meta:
         ordering = ['-created_at']
 
-    def __str__(self):
-        return (
-            f"Report #{self.pk} - "
-            f"Message #{self.message.pk} - "
-            f"by {self.reported_by}"
-        )
-
 
 class BlockedUser(models.Model):
     blocker = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='blocked_users'
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blocked_users'
     )
     blocked = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='blocked_by'
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blocked_by'
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('blocker', 'blocked')
-        verbose_name = "Blocked User"
-        verbose_name_plural = "Blocked Users"
 
-    def __str__(self):
-        return f"{self.blocker} blocked {self.blocked}"
+
+class MessageReaction(models.Model):
+    LIKE = 'like'
+    HEART = 'heart'
+    REACTION_CHOICES = (
+        (LIKE, 'Like'),
+        (HEART, 'Heart'),
+    )
+
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='reactions')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='message_reactions')
+    reaction = models.CharField(max_length=10, choices=REACTION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('message', 'user', 'reaction')
