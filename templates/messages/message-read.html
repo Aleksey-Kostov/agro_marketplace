@@ -183,11 +183,9 @@
 
                     <!-- Preview на прикачената снимка -->
                     <div id="image-preview-wrap" class="mb-2 d-none">
-                        <div class="d-flex align-items-center gap-2">
-                            <img id="image-preview" src="" alt="Preview"
-                                 style="max-height: 80px; border-radius: 8px;">
-                            <button type="button" id="remove-image-btn"
-                                    class="btn btn-sm btn-outline-danger">
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <img id="image-preview" src="" alt="Preview" class="attach-preview">
+                            <button type="button" id="remove-image-btn" class="btn btn-sm btn-outline-danger">
                                 Remove
                             </button>
                         </div>
@@ -278,44 +276,44 @@
 </main>
 
 <script>
-// Emoji insert
-document.querySelectorAll('.emoji-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const input = document.getElementById('message-body-input') || document.querySelector('textarea[name="body"]');
-        if (!input) return;
-        input.value += btn.dataset.emoji;
-        input.focus();
+    // Emoji insert
+    document.querySelectorAll('.emoji-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const input = document.getElementById('message-body-input') || document.querySelector('textarea[name="body"]');
+            if (!input) return;
+            input.value += btn.dataset.emoji;
+            input.focus();
+        });
     });
-});
 
-// Image preview
-const imageInput = document.getElementById('id_image');
-const previewWrap = document.getElementById('image-preview-wrap');
-const previewImg = document.getElementById('image-preview');
-const removeBtn = document.getElementById('remove-image-btn');
+    // Image preview
+    const imageInput = document.getElementById('id_image');
+    const previewWrap = document.getElementById('image-preview-wrap');
+    const previewImg = document.getElementById('image-preview');
+    const removeBtn = document.getElementById('remove-image-btn');
 
-if (imageInput) {
-    imageInput.addEventListener('change', function () {
-        const file = this.files && this.files[0];
-        if (!file) {
-            previewWrap.classList.add('d-none');
+    if (imageInput) {
+        imageInput.addEventListener('change', function () {
+            const file = this.files && this.files[0];
+            if (!file) {
+                previewWrap.classList.add('d-none');
+                previewImg.src = '';
+                return;
+            }
+            const url = URL.createObjectURL(file);
+            previewImg.src = url;
+            previewWrap.classList.remove('d-none');
+        });
+    }
+
+    if (removeBtn) {
+        removeBtn.addEventListener('click', function () {
+            if (imageInput) imageInput.value = '';
             previewImg.src = '';
-            return;
-        }
-        const url = URL.createObjectURL(file);
-        previewImg.src = url;
-        previewWrap.classList.remove('d-none');
-    });
-}
-
-if (removeBtn) {
-    removeBtn.addEventListener('click', function () {
-        if (imageInput) imageInput.value = '';
-        previewImg.src = '';
-        previewWrap.classList.add('d-none');
-    });
-}
+            previewWrap.classList.add('d-none');
+        });
+    }
 </script>
 {% endblock %}
