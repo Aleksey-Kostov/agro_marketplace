@@ -74,7 +74,9 @@
             <!-- Messages -->
             <div class="conversation">
                 {% for item in conversation_messages %}
-                <div class="conversation-message {% if item.sender == request.user %}own-message{% else %}received-message{% endif %}">
+                <div id="msg-{{ item.pk }}"
+                     class="conversation-message {% if item.sender == request.user %}own-message{% else %}received-message{% endif %}">
+
                     <div class="conversation-avatar">
                         {% if item.sender == request.user %}
                         <a href="{% url 'profile-details' pk=item.sender.pk %}">
@@ -95,12 +97,12 @@
 
                     <div class="conversation-message-body">
                         <div class="conversation-meta">
-                                <span class="conversation-name">
-                                    {{ item.sender.profile.username_in_marketplace|default:item.sender.username }}
-                                </span>
+                    <span class="conversation-name">
+                        {{ item.sender.profile.username_in_marketplace|default:item.sender.username }}
+                    </span>
                             <span class="conversation-date">
-                                    {{ item.timestamp|date:"j M. Y H:i" }}
-                                </span>
+                        {{ item.timestamp|date:"j M. Y H:i" }}
+                    </span>
                         </div>
 
                         <div class="message-bubble">
@@ -125,27 +127,22 @@
                         <div class="message-mini-actions mt-1">
                             <a href="{% url 'react-message' item.pk 'like' %}"
                                class="mini-btn react-btn {% if liked %}active-like{% endif %}"
-                               title="Like">
-                                👍
-                            </a>
+                               title="Like">👍</a>
 
                             <a href="{% url 'react-message' item.pk 'heart' %}"
                                class="mini-btn react-btn {% if hearted %}active-heart{% endif %}"
-                               title="Heart">
-                                ❤️
-                            </a>
+                               title="Heart">❤️</a>
 
                             {% if item.sender == request.user %}
                             <a href="{% url 'delete-one-message' item.pk %}"
                                class="mini-btn text-danger"
                                onclick="return confirm('Delete this message?');"
-                               title="Delete">
-                                🗑️
-                            </a>
+                               title="Delete">🗑️</a>
                             {% endif %}
                         </div>
                         {% endif %}
                     </div>
+
                 </div>
                 {% empty %}
                 <div class="alert alert-warning text-center">
@@ -334,5 +331,13 @@
             removeBtn.classList.add('d-none');
         });
     }
+    document.addEventListener('DOMContentLoaded', function () {
+    if (window.location.hash) {
+        const el = document.querySelector(window.location.hash);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+});
 </script>
 {% endblock %}

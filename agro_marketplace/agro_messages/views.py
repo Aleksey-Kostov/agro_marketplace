@@ -381,9 +381,11 @@ def react_message(request, pk, reaction):
             message=msg, user=request.user, reaction=reaction
         )
 
-    referer = request.META.get('HTTP_REFERER')
+    referer = request.META.get('HTTP_REFERER', '')
     if referer:
-        return redirect(referer)
+        referer = referer.split('#')[0]
+        return redirect(f"{referer}#msg-{pk}")
+
     return redirect('message-inbox')
 
 
