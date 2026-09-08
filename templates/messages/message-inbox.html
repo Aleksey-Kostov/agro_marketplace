@@ -78,7 +78,7 @@
 
                 <div class="position-absolute top-0 end-0 p-2" style="z-index: 10;">
                     <div class="btn-group" role="group">
-                        <a href="{% url 'delete-message' item.root.pk %}"
+                        <a href="{% url 'delete-message' item.root.pk %}?filter={{ filter_type }}"
                            class="btn btn-outline-danger btn-sm activate shadow-none"
                            onclick="event.stopPropagation();"
                            title="Delete">

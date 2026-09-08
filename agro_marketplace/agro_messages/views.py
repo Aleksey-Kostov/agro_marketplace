@@ -17,6 +17,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Message, MessageReaction
+from django.urls import reverse
 
 User = get_user_model()
 
@@ -332,8 +333,6 @@ def delete_one_message(request, pk):
 # DELETE CONVERSATION
 # ============================================================
 
-from django.urls import reverse
-
 
 @login_required
 def delete_message(request, pk):
@@ -346,9 +345,9 @@ def delete_message(request, pk):
     root = get_root(message)
     conversation = get_conversation_messages(root)
 
-    filter_type = request.GET.get('filter') or request.POST.get('filter') or 'inbox'
-
     if request.method == 'POST':
+        filter_type = request.POST.get('filter') or 'inbox'
+
         MessageStatus.objects.filter(
             message__in=conversation,
             profile=user
@@ -358,7 +357,11 @@ def delete_message(request, pk):
             if not msg.statuses.filter(is_deleted=False).exists():
                 msg.delete()
 
-        return redirect(f"{reverse('message-inbox')}?filter={filter_type}")
+        return redirect(
+            f"{reverse('message-inbox')}?filter={filter_type}"
+        )
+
+    filter_type = request.GET.get('filter') or 'inbox'
 
     return render(request, 'messages/message-delete.html', {
         'message': message,

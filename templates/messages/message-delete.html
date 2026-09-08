@@ -7,6 +7,7 @@
         <div class="modal-content shadow-lg rounded">
             <form method="post">
                 {% csrf_token %}
+                <input type="hidden" name="filter" value="{{ filter_type }}">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">Confirm Deletion</h5>
                 </div>
