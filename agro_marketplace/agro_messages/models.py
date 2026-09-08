@@ -17,6 +17,7 @@ class Message(models.Model):
         'self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies'
     )
     is_system = models.BooleanField(default=False)
+    is_removed = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.sender} -> {self.recipient}: {(self.title or 'No Title')[:30]}"

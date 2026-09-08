@@ -44,7 +44,7 @@ def get_conversation_messages_for_user(root_message, user):
     all_msgs = []
 
     if MessageStatus.objects.filter(
-        message=root_message, profile=user, is_deleted=False
+            message=root_message, profile=user, is_deleted=False
     ).exists():
         all_msgs.append(root_message)
 
@@ -60,7 +60,7 @@ def get_conversation_messages_for_user(root_message, user):
 
         for msg in next_level:
             if MessageStatus.objects.filter(
-                message=msg, profile=user, is_deleted=False
+                    message=msg, profile=user, is_deleted=False
             ).exists():
                 all_msgs.append(msg)
 
@@ -71,8 +71,8 @@ def get_conversation_messages_for_user(root_message, user):
 
 def get_admin_user():
     return (
-        User.objects.filter(is_superuser=True).first()
-        or User.objects.filter(is_staff=True).first()
+            User.objects.filter(is_superuser=True).first()
+            or User.objects.filter(is_staff=True).first()
     )
 
 
@@ -104,8 +104,8 @@ def send_message(request, pk=None):
 
     if pk:
         product = (
-            SellerItems.objects.filter(profile__user=pk).first()
-            or BuyerItems.objects.filter(profile__user=pk).first()
+                SellerItems.objects.filter(profile__user=pk).first()
+                or BuyerItems.objects.filter(profile__user=pk).first()
         )
 
     is_blocked = False
@@ -197,9 +197,9 @@ def read_message(request, pk):
     conversation_messages = list(reversed(conversation_messages))
 
     for status in MessageStatus.objects.filter(
-        message__in=conversation_messages,
-        profile=current_user,
-        is_deleted=False
+            message__in=conversation_messages,
+            profile=current_user,
+            is_deleted=False
     ):
         status.mark_as_read()
 
@@ -226,7 +226,7 @@ def read_message(request, pk):
             )
 
             if BlockedUser.objects.filter(
-                blocker=recipient, blocked=current_user
+                    blocker=recipient, blocked=current_user
             ).exists():
                 django_messages.error(
                     request,
@@ -235,7 +235,7 @@ def read_message(request, pk):
                 return redirect('read-message', pk=pk)
 
             if BlockedUser.objects.filter(
-                blocker=current_user, blocked=recipient
+                    blocker=current_user, blocked=recipient
             ).exists():
                 django_messages.error(
                     request,
@@ -301,20 +301,14 @@ def read_message(request, pk):
 def delete_one_message(request, pk):
     msg = get_object_or_404(Message, pk=pk)
 
-    if request.user not in [msg.sender, msg.recipient]:
-        return HttpResponse("Not allowed", status=403)
-
     if msg.sender != request.user:
         return HttpResponse("Not allowed", status=403)
 
-    MessageStatus.objects.filter(
-        message=msg, profile=request.user
-    ).update(is_deleted=True)
+    msg.is_removed = True
+    msg.save(update_fields=['is_removed'])
 
     referer = request.META.get('HTTP_REFERER')
-    if referer:
-        return redirect(referer)
-    return redirect('message-inbox')
+    return redirect(referer or 'message-inbox')
 
 
 # ============================================================
@@ -436,9 +430,7 @@ def block_user(request, pk):
     if user_to_block == request.user:
         django_messages.error(request, "You cannot block yourself.")
         next_url = request.GET.get('next') or request.META.get('HTTP_REFERER')
-        if next_url:
-            return redirect(next_url)
-        return redirect('message-inbox')
+        return redirect(next_url or 'message-inbox')
 
     obj, created = BlockedUser.objects.get_or_create(
         blocker=request.user,
@@ -449,14 +441,21 @@ def block_user(request, pk):
         django_messages.success(
             request, f"You have successfully blocked {user_to_block.username}."
         )
+
+        send_system_message(
+            recipient=request.user,
+            title="User blocked",
+            body=(
+                f"You have blocked <strong>{user_to_block.username}</strong>.<br><br>"
+                "They can no longer send you messages until you unblock them.<br><br>"
+                "<em>This is an automated message. Replies are disabled.</em>"
+            )
+        )
     else:
         django_messages.info(request, "This user is already blocked.")
 
     next_url = request.GET.get('next') or request.META.get('HTTP_REFERER')
-    if next_url:
-        return redirect(next_url)
-
-    return redirect('message-inbox')
+    return redirect(next_url or 'message-inbox')
 
 
 @login_required

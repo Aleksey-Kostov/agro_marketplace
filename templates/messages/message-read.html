@@ -101,15 +101,17 @@
                         </div>
 
                         <div class="message-bubble">
+                            {% if item.is_removed %}
+                            <em class="text-muted">This message was deleted.</em>
+                            {% else %}
                             {% if item.body %}{{ item.body|safe }}{% endif %}
                             {% if item.image %}
                             <div class="mt-2">
                                 <a href="{{ item.image.url }}" target="_blank" rel="noopener">
-                                    <img src="{{ item.image.url }}"
-                                         alt="Attachment"
-                                         class="message-image">
+                                    <img src="{{ item.image.url }}" alt="Attachment" class="message-image">
                                 </a>
                             </div>
+                            {% endif %}
                             {% endif %}
                         </div>
 
@@ -172,27 +174,94 @@
             </div>
             {% else %}
             <div class="reply-form mt-4 p-3 border rounded bg-white shadow-sm">
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data" id="reply-form">
                     {% csrf_token %}
+
                     <div class="mb-2">
                         {{ form.body }}
                     </div>
 
+                    <!-- Preview на прикачената снимка -->
+                    <div id="image-preview-wrap" class="mb-2 d-none">
+                        <div class="d-flex align-items-center gap-2">
+                            <img id="image-preview" src="" alt="Preview"
+                                 style="max-height: 80px; border-radius: 8px;">
+                            <button type="button" id="remove-image-btn"
+                                    class="btn btn-sm btn-outline-danger">
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
                         <div class="d-flex align-items-center gap-2">
-                            <!-- Image attach -->
+
+                            <!-- Attach image -->
                             <label class="btn btn-outline-secondary btn-sm mb-0" title="Attach image">
                                 <i class="fas fa-image"></i>
-                                {{ form.image }}
+                                <input type="file" name="image" id="id_image" accept="image/*" hidden>
                             </label>
 
-                            <!-- Simple emoji bar -->
-                            <div class="emoji-bar">
-                                <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😊">😊</button>
-                                <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👍">👍</button>
-                                <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❤️">❤️</button>
-                                <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🙏">🙏</button>
-                                <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😂">😂</button>
+                            <!-- Emoji picker -->
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    😊
+                                </button>
+                                <div class="dropdown-menu p-2 emoji-picker"
+                                     style="min-width: 220px; max-width: 260px;">
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😊">😊
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😂">😂
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😍">😍
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😘">😘
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😉">😉
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😎">😎
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😢">😢
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😡">😡
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👍">👍
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👎">👎
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👏">👏
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🙏">🙏
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❤️">
+                                            ❤️
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🔥">🔥
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="⭐">⭐
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🎉">🎉
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="✅">✅
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❌">❌
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍎">🍎
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍐">🍐
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍇">🍇
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🥕">🥕
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="📦">📦
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="💰">💰
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -209,18 +278,44 @@
 </main>
 
 <script>
-    document.querySelectorAll('.emoji-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const input = document.getElementById('message-body-input');
-            if (!input) return;
-            input.value += btn.dataset.emoji;
-            input.focus();
-        });
+// Emoji insert
+document.querySelectorAll('.emoji-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const input = document.getElementById('message-body-input') || document.querySelector('textarea[name="body"]');
+        if (!input) return;
+        input.value += btn.dataset.emoji;
+        input.focus();
     });
+});
 
-    const imgInput = document.querySelector('input[type="file"][name="image"]');
-    if (imgInput) {
-        imgInput.style.display = 'none';
-    }
+// Image preview
+const imageInput = document.getElementById('id_image');
+const previewWrap = document.getElementById('image-preview-wrap');
+const previewImg = document.getElementById('image-preview');
+const removeBtn = document.getElementById('remove-image-btn');
+
+if (imageInput) {
+    imageInput.addEventListener('change', function () {
+        const file = this.files && this.files[0];
+        if (!file) {
+            previewWrap.classList.add('d-none');
+            previewImg.src = '';
+            return;
+        }
+        const url = URL.createObjectURL(file);
+        previewImg.src = url;
+        previewWrap.classList.remove('d-none');
+    });
+}
+
+if (removeBtn) {
+    removeBtn.addEventListener('click', function () {
+        if (imageInput) imageInput.value = '';
+        previewImg.src = '';
+        previewWrap.classList.add('d-none');
+    });
+}
 </script>
 {% endblock %}
