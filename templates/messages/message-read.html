@@ -332,12 +332,24 @@
         });
     }
     document.addEventListener('DOMContentLoaded', function () {
-    if (window.location.hash) {
-        const el = document.querySelector(window.location.hash);
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+    if (!window.location.hash) return;
+
+    const el = document.querySelector(window.location.hash);
+    if (!el) return;
+
+    // спираме браузъра да скача грубо най-горе/към hash
+    if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
     }
+
+    // малко забавяне, за да се рендерира layout-а
+    setTimeout(function () {
+        el.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest'
+        });
+    }, 50);
 });
 </script>
 {% endblock %}
