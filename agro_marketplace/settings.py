@@ -7,8 +7,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool, default=False)
-ALLOWED_HOSTS = [ host.strip() for host in config('ALLOWED_HOSTS', default='').split(',') if host.strip() ]
-CSRF_TRUSTED_ORIGINS = [ origin.strip() for origin in config('CSRF_TRUSTED_ORIGINS', default='').split(',') if origin.strip() ]
+ALLOWED_HOSTS = [host.strip() for host in config('ALLOWED_HOSTS', default='').split(',') if host.strip()]
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in config('CSRF_TRUSTED_ORIGINS', default='').split(',') if
+                        origin.strip()]
 
 # STATIC & MEDIA
 # =========================================================
@@ -67,15 +68,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'cloudinary',
-    'cloudinary_storage',
-
     # Local apps
     "agro_marketplace.accounts",
     "agro_marketplace.buyers",
     "agro_marketplace.common",
     "agro_marketplace.sellers",
     "agro_marketplace.agro_messages",
+
+    # Third-party apps
+    "channels",
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 # MIDDLEWARE
@@ -118,6 +121,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'agro_marketplace.wsgi.application'
+ASGI_APPLICATION = "agro_marketplace.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 # DATABASES
 DATABASES = {
@@ -132,8 +145,9 @@ DATABASES = {
 }
 if config("DATABASE_URL", default=""):
     import dj_database_url
+
     DATABASES["default"] = dj_database_url.parse(
-        config("DATABASE_URL") 
+        config("DATABASE_URL")
     )
 # AUTH
 AUTH_USER_MODEL = 'accounts.AppUser'

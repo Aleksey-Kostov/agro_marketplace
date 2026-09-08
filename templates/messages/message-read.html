@@ -3,6 +3,10 @@
 {% load message_tags_inbox %}
 
 {% block content %}
+<div style="background:red; color:white; padding:20px; font-size:30px;">
+    TEST MESSAGE READ TEMPLATE
+</div>
+
 <main class="container my-2">
     <div class="mailbox-container">
 
@@ -328,5 +332,30 @@ document.addEventListener('click', async function (e) {
         console.error(err);
     }
 });
+const conversationId = "{{ root_message.pk }}";
+
+const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+const chatSocket = new WebSocket(
+    `${wsProtocol}://${window.location.host}/ws/messages/${conversationId}/`
+);
+
+chatSocket.onopen = function () {
+    console.log("WebSocket connected.");
+};
+
+chatSocket.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+
+    console.log("WebSocket message received:", data);
+};
+
+chatSocket.onclose = function () {
+    console.log("WebSocket disconnected.");
+};
+
+chatSocket.onerror = function (error) {
+    console.error("WebSocket error:", error);
+};
+console.log("CHAT SCRIPT LOADED");
 </script>
 {% endblock %}
