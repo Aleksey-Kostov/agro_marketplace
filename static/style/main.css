@@ -416,7 +416,7 @@ footer ul.list-inline a {
 .d-flex {
     display: flex;
     justify-content: space-between;
-
+    align-items: center;
     width: 100%;
 }
 
