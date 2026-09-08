@@ -1317,3 +1317,20 @@ footer {
         width: 100%;
     }
 }
+
+.react-btn {
+    opacity: 0.25;
+    filter: grayscale(100%);
+    text-decoration: none;
+    transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+.react-btn:hover {
+    opacity: 0.55;
+}
+
+.react-btn.active-like,
+.react-btn.active-heart {
+    opacity: 1;
+    filter: none;
+}
