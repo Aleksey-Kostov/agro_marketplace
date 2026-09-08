@@ -21,45 +21,41 @@
         </div>
 
         <!-- FILTERS -->
-        <div class="mailbox-header d-flex justify-content-around mb-3">
+        <div class="mailbox-header d-flex justify-content-around mb-4">
             {% message_counts user as counts %}
-
-            <a href="{% url 'message-inbox' %}?filter=unread" class="text-decoration-none text-center"
+            <a href="{% url 'message-inbox' %}?filter=unread" class="text-decoration-none"
                title="Unread Messages">
-                <i class="fas fa-envelope text-primary" style="font-size: 1.4rem;"></i>
-                <p class="small text-muted mt-1 mb-0">
+                <i class="fas fa-envelope text-primary" style="font-size: 1.5rem;"></i>
+                <p class="small text-muted mt-1">
                     Unread
                     <span class="badge bg-primary text-white">{{ counts.unread_count }}</span>
                 </p>
             </a>
-
-            <a href="{% url 'message-inbox' %}?filter=inbox" class="text-decoration-none text-center" title="Inbox">
-                <i class="fas fa-inbox text-secondary" style="font-size: 1.4rem;"></i>
-                <p class="small text-muted mt-1 mb-0">
+            <a href="{% url 'message-inbox' %}?filter=inbox" class="text-decoration-none" title="Inbox">
+                <i class="fas fa-inbox text-secondary" style="font-size: 1.5rem;"></i>
+                <p class="small text-muted mt-1">
                     Inbox
                     <span class="badge bg-secondary text-white">{{ counts.inbox_count }}</span>
                 </p>
             </a>
-
-            <a href="{% url 'message-inbox' %}?filter=sent" class="text-decoration-none text-center"
+            <a href="{% url 'message-inbox' %}?filter=sent" class="text-decoration-none"
                title="Sent Messages">
-                <i class="fas fa-paper-plane text-info" style="font-size: 1.4rem;"></i>
-                <p class="small text-muted mt-1 mb-0">
-                    Sent Messages
+                <i class="fas fa-paper-plane text-info" style="font-size: 1.5rem;"></i>
+                <p class="small text-muted mt-1">
+                    Sent
                     <span class="badge bg-info text-white">{{ counts.sent_count }}</span>
                 </p>
             </a>
-
-            <a href="{% url 'message-inbox' %}?filter=all" class="text-decoration-none text-center"
+            <a href="{% url 'message-inbox' %}?filter=all" class="text-decoration-none"
                title="All Messages">
-                <i class="fas fa-envelope-open-text text-success" style="font-size: 1.4rem;"></i>
-                <p class="small text-muted mt-1 mb-0">
+                <i class="fas fa-envelope-open-text text-success" style="font-size: 1.5rem;"></i>
+                <p class="small text-muted mt-1">
                     All
                     <span class="badge bg-success text-white">{{ counts.all_count }}</span>
                 </p>
             </a>
-        </div>
 
+        </div>
         <!-- LIST -->
         <div class="message-box conversation-box" id="inbox">
 
