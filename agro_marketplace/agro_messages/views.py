@@ -332,6 +332,9 @@ def delete_one_message(request, pk):
 # DELETE CONVERSATION
 # ============================================================
 
+from django.urls import reverse
+
+
 @login_required
 def delete_message(request, pk):
     message = get_object_or_404(Message, pk=pk)
@@ -343,17 +346,7 @@ def delete_message(request, pk):
     root = get_root(message)
     conversation = get_conversation_messages(root)
 
-    # Which mailbox did the user come from?
-    box = request.GET.get('box', 'inbox')
-
-    allowed_boxes = {
-        'unread': 'message-unread',
-        'inbox': 'message-inbox',
-        'sent': 'message-sent',
-        'all': 'message-all',
-    }
-
-    redirect_view = allowed_boxes.get(box, 'message-inbox')
+    filter_type = request.GET.get('filter') or request.POST.get('filter') or 'inbox'
 
     if request.method == 'POST':
         MessageStatus.objects.filter(
@@ -365,13 +358,13 @@ def delete_message(request, pk):
             if not msg.statuses.filter(is_deleted=False).exists():
                 msg.delete()
 
-        return redirect(redirect_view)
+        return redirect(f"{reverse('message-inbox')}?filter={filter_type}")
 
     return render(request, 'messages/message-delete.html', {
         'message': message,
         'root_message': root,
         'messages_count': len(conversation),
-        'redirect_view': redirect_view,
+        'filter_type': filter_type,
     })
 
 # ============================================================

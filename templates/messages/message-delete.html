@@ -22,10 +22,14 @@
                     </p>
                 </div>
                 <div class="modal-footer justify-content-center">
-                    <a href="{% url redirect_view %}" class="btn btn-secondary me-3">
+                    <a href="{% url 'message-inbox' %}?filter={{ filter_type }}"
+                       class="btn btn-secondary me-3">
                         Cancel
                     </a>
-                    <button type="submit" class="btn btn-danger px-4 py-2">Delete</button>
+
+                    <button type="submit" class="btn btn-danger px-4 py-2">
+                        Delete
+                    </button>
                 </div>
             </form>
         </div>
