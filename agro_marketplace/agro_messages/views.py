@@ -13,6 +13,11 @@ from ..accounts.models import AppUser
 from ..buyers.models import BuyerItems
 from ..sellers.models import SellerItems
 
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Message, MessageReaction
+
 User = get_user_model()
 
 
@@ -37,6 +42,7 @@ def get_conversation_messages(root_message):
         current_level = next_level
 
     return messages
+
 
 def is_message_visible_for_user(message, user):
     """
@@ -360,33 +366,40 @@ def delete_message(request, pk):
 # REACT
 # ============================================================
 
+
 @login_required
 def react_message(request, pk, reaction):
     msg = get_object_or_404(Message, pk=pk)
 
     if request.user not in [msg.sender, msg.recipient]:
-        return HttpResponse("Not allowed", status=403)
+        return JsonResponse({'ok': False, 'error': 'Not allowed'}, status=403)
 
     if reaction not in (MessageReaction.LIKE, MessageReaction.HEART):
-        return HttpResponse("Invalid", status=400)
+        return JsonResponse({'ok': False, 'error': 'Invalid'}, status=400)
 
     existing = MessageReaction.objects.filter(
-        message=msg, user=request.user, reaction=reaction
+        message=msg,
+        user=request.user,
+        reaction=reaction
     ).first()
 
     if existing:
         existing.delete()
+        active = False
     else:
         MessageReaction.objects.create(
-            message=msg, user=request.user, reaction=reaction
+            message=msg,
+            user=request.user,
+            reaction=reaction
         )
+        active = True
 
-    referer = request.META.get('HTTP_REFERER', '')
-    if referer:
-        referer = referer.split('#')[0]
-        return redirect(f"{referer}#msg-{pk}")
-
-    return redirect('message-inbox')
+    return JsonResponse({
+        'ok': True,
+        'reaction': reaction,
+        'active': active,
+        'message_id': pk,
+    })
 
 
 # ============================================================

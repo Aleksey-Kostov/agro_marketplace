@@ -905,7 +905,7 @@ footer {
 .conversation-actions {
     display: flex !important;
     align-items: center;
-    gap: 0.35rem;
+
     flex-shrink: 0;
 }
 
