@@ -38,14 +38,27 @@ def get_conversation_messages(root_message):
 
     return messages
 
+def is_message_visible_for_user(message, user):
+    """
+    Видимо ако:
+    - user е sender или recipient
+    - и няма status със is_deleted=True
+    (ако status липсва → считаме го за видимо)
+    """
+    if user not in [message.sender, message.recipient]:
+        return False
+
+    status = MessageStatus.objects.filter(message=message, profile=user).first()
+    if status is None:
+        return True
+    return not status.is_deleted
+
 
 def get_conversation_messages_for_user(root_message, user):
-    """Само съобщения, които НЕ са soft-deleted за този user."""
+    """Само съобщения, видими за user."""
     all_msgs = []
 
-    if MessageStatus.objects.filter(
-            message=root_message, profile=user, is_deleted=False
-    ).exists():
+    if is_message_visible_for_user(root_message, user):
         all_msgs.append(root_message)
 
     current_level = [root_message]
@@ -59,9 +72,7 @@ def get_conversation_messages_for_user(root_message, user):
             break
 
         for msg in next_level:
-            if MessageStatus.objects.filter(
-                    message=msg, profile=user, is_deleted=False
-            ).exists():
+            if is_message_visible_for_user(msg, user):
                 all_msgs.append(msg)
 
         current_level = next_level
@@ -501,7 +512,12 @@ def message_inbox(request):
         try:
             all_msgs = get_conversation_messages_for_user(root, user)
             if not all_msgs:
+                # fallback: ако for_user е празно, но user е участник
+                raw = get_conversation_messages(root)
+                all_msgs = [m for m in raw if user in [m.sender, m.recipient]]
+            if not all_msgs:
                 continue
+
             last_msg = all_msgs[-1]
             conversation_list.append({
                 'root': root,

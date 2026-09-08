@@ -34,31 +34,27 @@ def get_conversation_ids(root):
 
 
 def get_user_conversations(user, filter_type='all'):
-    """
-    Връща list от root съобщения (Conversations).
-    """
-    user_message_ids = list(
-        MessageStatus.objects.filter(
-            profile=user,
-            is_deleted=False
-        ).values_list('message_id', flat=True)
+    # Всички съобщения, в които user участва
+    messages = Message.objects.filter(
+        models.Q(sender=user) | models.Q(recipient=user)
+    ).select_related(
+        'sender', 'recipient', 'sender__profile', 'recipient__profile', 'parent_message'
     )
 
-    if not user_message_ids:
-        return []
-
-    messages = Message.objects.filter(
-        id__in=user_message_ids
-    ).select_related(
-        'sender', 'recipient',
-        'sender__profile', 'recipient__profile',
-        'parent_message'
+    # Махаме soft-deleted за този user (ако има status)
+    deleted_ids = set(
+        MessageStatus.objects.filter(
+            profile=user, is_deleted=True
+        ).values_list('message_id', flat=True)
     )
 
     roots_dict = {}
     for msg in messages:
+        if msg.id in deleted_ids:
+            continue
         try:
             root = get_root(msg)
+            # ако root е изтрит за user — пропускаме целия conversation само ако ВСИЧКИ са изтрити
             roots_dict[root.id] = root
         except Exception:
             continue
@@ -68,35 +64,43 @@ def get_user_conversations(user, filter_type='all'):
 
     root_ids = list(roots_dict.keys())
 
+    # филтри inbox/sent/unread...
     if filter_type == 'inbox':
-
         valid = []
         for rid in root_ids:
             root = roots_dict[rid]
-            if root.recipient_id == user.id:
+            if root.recipient_id == user.id or Message.objects.filter(
+                    parent_message_id=rid, recipient=user
+            ).exclude(id__in=deleted_ids).exists():
                 valid.append(rid)
-            elif Message.objects.filter(parent_message_id=rid, recipient=user).exists():
+            elif root.recipient_id == user.id:
                 valid.append(rid)
-        root_ids = valid
+        root_ids = list(set(valid)) or root_ids
 
     elif filter_type == 'sent':
         valid = []
         for rid in root_ids:
             root = roots_dict[rid]
-            if root.sender_id == user.id:
+            if root.sender_id == user.id or Message.objects.filter(
+                    parent_message_id=rid, sender=user
+            ).exclude(id__in=deleted_ids).exists():
                 valid.append(rid)
-            elif Message.objects.filter(parent_message_id=rid, sender=user).exists():
-                valid.append(rid)
-        root_ids = valid
+        root_ids = list(set(valid)) or root_ids
 
     elif filter_type == 'unread':
         unread_ids = set(
             MessageStatus.objects.filter(
-                profile=user,
-                is_read=False,
-                is_deleted=False
+                profile=user, is_read=False, is_deleted=False
             ).values_list('message_id', flat=True)
         )
+        # също съобщения без status, където user е recipient
+        no_status_unread = Message.objects.filter(
+            recipient=user
+        ).exclude(
+            id__in=MessageStatus.objects.filter(profile=user).values_list('message_id', flat=True)
+        ).values_list('id', flat=True)
+        unread_ids |= set(no_status_unread)
+
         valid = set()
         for mid in unread_ids:
             try:
@@ -115,7 +119,6 @@ def get_user_conversations(user, filter_type='all'):
         .annotate(last_activity=Max('replies__timestamp'))
         .order_by('-last_activity', '-timestamp')
     )
-
     return roots
 
 
