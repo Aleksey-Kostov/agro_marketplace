@@ -452,16 +452,6 @@ def block_user(request, pk):
         django_messages.success(
             request, f"You have successfully blocked {user_to_block.username}."
         )
-
-        send_system_message(
-            recipient=request.user,
-            title="User blocked",
-            body=(
-                f"You have blocked <strong>{user_to_block.username}</strong>.<br><br>"
-                "They can no longer send you messages until you unblock them.<br><br>"
-                "<em>This is an automated message. Replies are disabled.</em>"
-            )
-        )
     else:
         django_messages.info(request, "This user is already blocked.")
 
