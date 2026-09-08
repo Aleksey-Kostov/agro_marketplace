@@ -66,7 +66,6 @@
                 </div>
             </div>
 
-            <div class="conv-separator"></div>
 
             <!-- Messages -->
             <div class="conversation">
@@ -116,7 +115,7 @@
                         </div>
 
                         <!-- Mini actions -->
-                        {% if not item.is_system %}
+                        {% if not item.is_system|default:False and not item.is_removed|default:False %}
                         <div class="message-mini-actions mt-1">
                             <a href="{% url 'react-message' item.pk 'like' %}" class="mini-btn" title="Like">
                                 👍 <small>{% reaction_count item 'like' %}</small>
@@ -181,14 +180,9 @@
                         {{ form.body }}
                     </div>
 
-                    <!-- Preview на прикачената снимка -->
+                    <!-- Само preview на снимката -->
                     <div id="image-preview-wrap" class="mb-2 d-none">
-                        <div class="d-flex flex-wrap align-items-center gap-2">
-                            <img id="image-preview" src="" alt="Preview" class="attach-preview">
-                            <button type="button" id="remove-image-btn" class="btn btn-sm btn-outline-danger">
-                                Remove
-                            </button>
-                        </div>
+                        <img id="image-preview" src="" alt="Preview" class="attach-preview">
                     </div>
 
                     <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
@@ -199,6 +193,14 @@
                                 <i class="fas fa-image"></i>
                                 <input type="file" name="image" id="id_image" accept="image/*" hidden>
                             </label>
+
+                            <!-- Remove attachment (icon) -->
+                            <button type="button"
+                                    id="remove-image-btn"
+                                    class="btn btn-outline-danger btn-sm d-none"
+                                    title="Remove image">
+                                <i class="fas fa-times"></i>
+                            </button>
 
                             <!-- Emoji picker -->
                             <div class="dropdown">
@@ -276,7 +278,6 @@
 </main>
 
 <script>
-    // Emoji insert
     document.querySelectorAll('.emoji-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -288,7 +289,6 @@
         });
     });
 
-    // Image preview
     const imageInput = document.getElementById('id_image');
     const previewWrap = document.getElementById('image-preview-wrap');
     const previewImg = document.getElementById('image-preview');
@@ -299,12 +299,13 @@
             const file = this.files && this.files[0];
             if (!file) {
                 previewWrap.classList.add('d-none');
+                removeBtn.classList.add('d-none');
                 previewImg.src = '';
                 return;
             }
-            const url = URL.createObjectURL(file);
-            previewImg.src = url;
+            previewImg.src = URL.createObjectURL(file);
             previewWrap.classList.remove('d-none');
+            removeBtn.classList.remove('d-none');
         });
     }
 
@@ -313,6 +314,7 @@
             if (imageInput) imageInput.value = '';
             previewImg.src = '';
             previewWrap.classList.add('d-none');
+            removeBtn.classList.add('d-none');
         });
     }
 </script>
