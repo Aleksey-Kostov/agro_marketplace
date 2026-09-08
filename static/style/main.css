@@ -905,7 +905,6 @@ footer {
 .conversation-actions {
     display: flex !important;
     align-items: center;
-
     flex-shrink: 0;
 }
 
@@ -1170,7 +1169,6 @@ footer {
     }
 
     .conversation-actions {
-        width: 100%;
         justify-content: flex-end;
         margin-top: 0.25rem;
     }
