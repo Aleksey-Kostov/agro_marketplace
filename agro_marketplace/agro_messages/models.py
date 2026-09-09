@@ -2,22 +2,21 @@ import pytz
 from django.db import models
 from django.conf import settings
 from datetime import datetime
-from decouple import config
 
 User = settings.AUTH_USER_MODEL
 
 
 def _image_storage():
-    if config('CLOUDINARY_URL', default=''):
+    if getattr(settings, 'CLOUDINARY_URL', ''):
         from cloudinary_storage.storage import MediaCloudinaryStorage
         return MediaCloudinaryStorage()
     return None
 
 
 def _video_storage():
-    if config('CLOUDINARY_URL', default=''):
-        from cloudinary_storage.storage import VideoCloudinaryStorage
-        return VideoCloudinaryStorage()
+    if getattr(settings, 'CLOUDINARY_URL', ''):
+        from cloudinary_storage.storage import RawMediaCloudinaryStorage
+        return RawMediaCloudinaryStorage()
     return None
 
 
