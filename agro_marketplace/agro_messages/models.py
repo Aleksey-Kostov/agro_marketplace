@@ -2,22 +2,26 @@ import pytz
 from django.db import models
 from django.conf import settings
 from datetime import datetime
+from cloudinary.models import CloudinaryField
 
 User = settings.AUTH_USER_MODEL
 
 
-def _image_storage():
-    if getattr(settings, 'CLOUDINARY_URL', ''):
-        from cloudinary_storage.storage import MediaCloudinaryStorage
-        return MediaCloudinaryStorage()
-    return None
-
-
-def _video_storage():
-    if getattr(settings, 'CLOUDINARY_URL', ''):
-        from cloudinary_storage.storage import RawMediaCloudinaryStorage
-        return RawMediaCloudinaryStorage()
-    return None
+@property
+def video_url(self):
+    if not self.video:
+        return ''
+    name = str(self.video)
+    if name.startswith('http'):
+        return name
+    # cloud name от CLOUDINARY_URL
+    from django.conf import settings
+    cloud_name = ''
+    url = getattr(settings, 'CLOUDINARY_URL', '') or ''
+    # cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+    if '@' in url:
+        cloud_name = url.split('@')[-1].strip()
+    return f'https://res.cloudinary.com/{cloud_name}/video/upload/{name}'
 
 
 class Message(models.Model):
@@ -25,17 +29,13 @@ class Message(models.Model):
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
     title = models.CharField(max_length=255, blank=True, null=True)
     body = models.TextField(blank=True, null=True)
-    image = models.ImageField(
-        upload_to='message_images/',
+    image = CloudinaryField('image', folder='message_images', blank=True, null=True)
+    video = CloudinaryField(
+        'video',
+        resource_type='video',
+        folder='message_videos',
         blank=True,
-        null=True,
-        storage=_image_storage()
-    )
-    video = models.FileField(
-        upload_to='message_videos/',
-        blank=True,
-        null=True,
-        storage=_video_storage()
+        null=True
     )
     timestamp = models.DateTimeField(auto_now_add=True)
     parent_message = models.ForeignKey(

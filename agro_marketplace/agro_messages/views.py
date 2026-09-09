@@ -274,6 +274,26 @@ def read_message(request, pk):
             if reply.body:
                 reply.body = markdown.markdown(reply.body)
 
+            reply.video = None
+
+            video_file = request.FILES.get('video')
+            if video_file:
+                try:
+                    import cloudinary.uploader
+                    result = cloudinary.uploader.upload(
+                        video_file,
+                        resource_type='video',
+                        folder='message_videos'
+                    )
+
+                    reply.video = result.get('public_id')
+                except Exception as e:
+                    django_messages.error(
+                        request,
+                        f"Video upload failed: {e}"
+                    )
+                    return redirect('read-message', pk=pk)
+
             reply.save()
 
             MessageStatus.objects.create(message=reply, profile=recipient)
