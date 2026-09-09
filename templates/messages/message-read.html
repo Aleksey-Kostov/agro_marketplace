@@ -4,7 +4,7 @@
 
 {% block content %}
 <main class="container my-2">
-    <div class="mailbox-container">
+    <div class="mailbox-container chat-page">
 
         <div class="col-12 edit-profile text-details mb-2 message-box">
             <div class="d-flex align-items-center p-0 rounded flex-wrap gap-2">
@@ -168,14 +168,15 @@
                             </div>
                         </div>
                     {% empty %}
-                        <div class="alert alert-warning text-center">
+                        <div class="alert alert-warning text-center mb-0">
                             No messages in this conversation.
                         </div>
                     {% endfor %}
                 </div>
 
+                <!-- WhatsApp-like scroll button -->
                 <button type="button" id="scroll-bottom-btn" class="scroll-bottom-btn d-none" title="Latest message">
-                    <i class="fas fa-arrow-down"></i>
+                    <i class="fas fa-chevron-down"></i>
                 </button>
             </div>
 
@@ -197,7 +198,7 @@
                     </div>
                 </div>
             {% else %}
-                <div class="chat-input-bar mt-3">
+                <div class="chat-input-bar">
                     <form method="post" enctype="multipart/form-data" id="reply-form">
                         {% csrf_token %}
 
@@ -291,11 +292,11 @@ document.querySelectorAll('.emoji-btn').forEach(btn => {
     });
 });
 
-/* Chat scroll */
+/* Chat scroll + WhatsApp arrow */
 const chatWindow = document.getElementById('chat-window');
 const scrollBtn = document.getElementById('scroll-bottom-btn');
 
-function scrollToBottom(smooth=false) {
+function scrollToBottom(smooth = false) {
     if (!chatWindow) return;
     chatWindow.scrollTo({
         top: chatWindow.scrollHeight,
@@ -303,14 +304,25 @@ function scrollToBottom(smooth=false) {
     });
 }
 
-window.addEventListener('load', () => scrollToBottom(false));
+window.addEventListener('load', function () {
+    scrollToBottom(false);
+});
 
 if (chatWindow && scrollBtn) {
-    chatWindow.addEventListener('scroll', () => {
-        const nearBottom = chatWindow.scrollHeight - chatWindow.scrollTop - chatWindow.clientHeight < 80;
-        scrollBtn.classList.toggle('d-none', nearBottom);
+    chatWindow.addEventListener('scroll', function () {
+        const distanceFromBottom =
+            chatWindow.scrollHeight - chatWindow.scrollTop - chatWindow.clientHeight;
+
+        if (distanceFromBottom > 120) {
+            scrollBtn.classList.remove('d-none');
+        } else {
+            scrollBtn.classList.add('d-none');
+        }
     });
-    scrollBtn.addEventListener('click', () => scrollToBottom(true));
+
+    scrollBtn.addEventListener('click', function () {
+        scrollToBottom(true);
+    });
 }
 
 /* Media attach */
@@ -351,7 +363,10 @@ removeMediaBtn?.addEventListener('click', function () {
     if (imageInput) imageInput.value = '';
     if (videoInput) videoInput.value = '';
     if (imagePreview) imagePreview.src = '';
-    if (videoPreview) videoPreview.removeAttribute('src');
+    if (videoPreview) {
+        videoPreview.removeAttribute('src');
+        videoPreview.load();
+    }
     imagePreviewWrap?.classList.add('d-none');
     videoPreviewWrap?.classList.add('d-none');
     removeMediaBtn.classList.add('d-none');
@@ -361,22 +376,23 @@ removeMediaBtn?.addEventListener('click', function () {
 document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.share-btn');
     if (!btn) return;
+
     const url = btn.dataset.url;
     if (!url) return;
 
     if (navigator.share) {
         try {
-            await navigator.share({ title: 'Shared media', url });
+            await navigator.share({ title: 'Shared media', url: url });
             return;
         } catch (err) {}
     }
 
     const text = encodeURIComponent(url);
     const choice = prompt('Share via:\n1 WhatsApp\n2 Viber\n3 Telegram\n4 Facebook\n5 Copy link\nEnter 1-5');
-    if (choice === '1') window.open(`https://wa.me/?text=${text}`, '_blank');
-    else if (choice === '2') window.location.href = `viber://forward?text=${text}`;
-    else if (choice === '3') window.open(`https://t.me/share/url?url=${text}`, '_blank');
-    else if (choice === '4') window.open(`https://www.facebook.com/sharer/sharer.php?u=${text}`, '_blank');
+    if (choice === '1') window.open('https://wa.me/?text=' + text, '_blank');
+    else if (choice === '2') window.location.href = 'viber://forward?text=' + text;
+    else if (choice === '3') window.open('https://t.me/share/url?url=' + text, '_blank');
+    else if (choice === '4') window.open('https://www.facebook.com/sharer/sharer.php?u=' + text, '_blank');
     else if (choice === '5') navigator.clipboard.writeText(url);
 });
 
@@ -384,19 +400,28 @@ document.addEventListener('click', async function (e) {
 document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.js-react');
     if (!btn) return;
+
     e.preventDefault();
 
     try {
         const response = await fetch(btn.href, {
             method: 'GET',
-            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
             credentials: 'same-origin'
         });
+
         const data = await response.json();
         if (!data.ok) return;
 
-        if (data.reaction === 'like') btn.classList.toggle('active-like', data.active);
-        if (data.reaction === 'heart') btn.classList.toggle('active-heart', data.active);
+        if (data.reaction === 'like') {
+            btn.classList.toggle('active-like', data.active);
+        }
+        if (data.reaction === 'heart') {
+            btn.classList.toggle('active-heart', data.active);
+        }
     } catch (err) {
         console.error(err);
     }

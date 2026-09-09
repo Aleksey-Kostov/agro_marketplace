@@ -478,24 +478,66 @@
     border-bottom: 1px solid rgba(0, 0, 0, 0.15) !important;
 }
 
+
+.chat-page {
+    padding-bottom: 100px;
+}
+
 .chat-shell {
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 160px);
+    height: calc(100vh - 240px);
+    max-height: calc(100vh - 240px);
 }
 
 .chat-window {
     position: relative;
-    flex: 1;
+    flex: 1 1 auto;
     overflow-y: auto;
     background: #ece5dd;
     border-radius: 10px;
     padding: 12px;
-    min-height: 320px;
+    min-height: 0;
 }
 
-.own-message .message-bubble { background: #dcf8c6; }
-.received-message .message-bubble { background: #fff; }
+.chat-input-bar {
+    flex: 0 0 auto;
+    background: #f0f0f0;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 10px;
+    z-index: 2;
+}
+
+.scroll-bottom-btn {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: #fff;
+    color: #333;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.scroll-bottom-btn.d-none {
+    display: none !important;
+}
+
+.own-message .message-bubble {
+    background: #dcf8c6;
+}
+
+.received-message .message-bubble {
+    background: #fff;
+}
 
 .message-image,
 .message-video {
@@ -516,26 +558,25 @@
     right: 6px;
 }
 
-.scroll-bottom-btn {
-    position: sticky;
-    bottom: 12px;
-    float: right;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,.2);
-}
-
-.chat-input-bar {
-    background: #f0f0f0;
-    border-radius: 10px;
-    padding: 10px;
-}
-
 .attach-preview {
     max-width: 140px;
     max-height: 100px;
     border-radius: 8px;
+}
+
+.react-btn {
+    opacity: 0.25;
+    filter: grayscale(100%);
+    text-decoration: none;
+    transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+.react-btn:hover {
+    opacity: 0.55;
+}
+
+.react-btn.active-like,
+.react-btn.active-heart {
+    opacity: 1;
+    filter: none;
 }
