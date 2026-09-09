@@ -5,7 +5,7 @@ from .models import Message
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
-        fields = ['body', 'image']
+        fields = ['body', 'image', 'video']
         widgets = {
             'body': forms.Textarea(attrs={
                 'rows': 4,
@@ -17,8 +17,13 @@ class MessageForm(forms.ModelForm):
                 'class': 'form-control',
                 'accept': 'image/*',
             }),
+            'video': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'video/*',
+            }),
         }
         labels = {
             'body': '',
             'image': '',
+            'video': '',
         }
