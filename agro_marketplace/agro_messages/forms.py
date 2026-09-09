@@ -5,7 +5,7 @@ from .models import Message
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
-        fields = ['body', 'image']  # title се маха — идва от обявата
+        fields = ['body', 'image']
         widgets = {
             'body': forms.Textarea(attrs={
                 'rows': 4,

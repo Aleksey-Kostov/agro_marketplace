@@ -212,12 +212,11 @@ def read_message(request, pk):
     conversation_messages = get_conversation_messages_for_user(
         root_message, current_user
     )
-    conversation_messages = list(reversed(conversation_messages))
 
     for status in MessageStatus.objects.filter(
-            message__in=conversation_messages,
-            profile=current_user,
-            is_deleted=False
+        message__in=conversation_messages,
+        profile=current_user,
+        is_deleted=False
     ):
         status.mark_as_read()
 
@@ -244,7 +243,7 @@ def read_message(request, pk):
             )
 
             if BlockedUser.objects.filter(
-                    blocker=recipient, blocked=current_user
+                blocker=recipient, blocked=current_user
             ).exists():
                 django_messages.error(
                     request,
@@ -253,7 +252,7 @@ def read_message(request, pk):
                 return redirect('read-message', pk=pk)
 
             if BlockedUser.objects.filter(
-                    blocker=current_user, blocked=recipient
+                blocker=current_user, blocked=recipient
             ).exists():
                 django_messages.error(
                     request,
@@ -289,27 +288,19 @@ def read_message(request, pk):
     else:
         form = MessageForm()
 
-    paginator = Paginator(conversation_messages, 5)
-    page_obj = paginator.get_page(request.GET.get('page'))
-
-    chronological = get_conversation_messages_for_user(
-        root_message, current_user
-    )
-    last_message = chronological[-1] if chronological else root_message
+    last_message = conversation_messages[-1] if conversation_messages else root_message
 
     return render(request, 'messages/message-read.html', {
         'message': message,
         'root_message': root_message,
-        'conversation_messages': page_obj,
+        'conversation_messages': conversation_messages,
         'last_message': last_message,
         'form': form,
-        'page_obj': page_obj,
         'other_user': other_user,
         'is_blocked': is_blocked,
         'is_blocked_by_other': is_blocked_by_other,
         'is_system': is_system,
     })
-
 
 # ============================================================
 # DELETE ONE MESSAGE

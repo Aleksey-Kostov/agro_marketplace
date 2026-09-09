@@ -12,6 +12,7 @@ class Message(models.Model):
     title = models.CharField(max_length=255, blank=True, null=True)
     body = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='message_images/', blank=True, null=True)
+    video = models.FileField(upload_to='message_videos/', blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     parent_message = models.ForeignKey(
         'self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies'
