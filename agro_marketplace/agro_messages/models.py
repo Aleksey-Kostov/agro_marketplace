@@ -7,23 +7,6 @@ from cloudinary.models import CloudinaryField
 User = settings.AUTH_USER_MODEL
 
 
-@property
-def video_url(self):
-    if not self.video:
-        return ''
-    name = str(self.video)
-    if name.startswith('http'):
-        return name
-    # cloud name от CLOUDINARY_URL
-    from django.conf import settings
-    cloud_name = ''
-    url = getattr(settings, 'CLOUDINARY_URL', '') or ''
-    # cloudinary://API_KEY:API_SECRET@CLOUD_NAME
-    if '@' in url:
-        cloud_name = url.split('@')[-1].strip()
-    return f'https://res.cloudinary.com/{cloud_name}/video/upload/{name}'
-
-
 class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
@@ -46,6 +29,29 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.sender} -> {self.recipient}: {(self.title or 'No Title')[:30]}"
+
+    @property
+    def video_url(self):
+        if not self.video:
+            return ''
+        name = str(self.video)
+        if name.startswith('http'):
+            return name
+
+        from django.conf import settings
+        url = getattr(settings, 'CLOUDINARY_URL', '') or ''
+        cloud_name = ''
+        if '@' in url:
+            cloud_name = url.split('@')[-1].strip()
+
+        if not cloud_name:
+            # локален fallback
+            try:
+                return self.video.url
+            except Exception:
+                return ''
+
+        return f'https://res.cloudinary.com/{cloud_name}/video/upload/{name}'
 
 
 class MessageStatus(models.Model):
