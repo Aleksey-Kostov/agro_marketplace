@@ -632,58 +632,140 @@
 }
 
 /* =========================================================
-   ATTACHMENT DROP ZONE
+   MODERN CHAT DRAG & DROP
 ========================================================= */
 
-.attachment-drop-zone {
-    border: 2px dashed #cfcfcf;
-    border-radius: 10px;
-    padding: 16px;
-    text-align: center;
-    background: #fafafa;
-    cursor: pointer;
+.conversation-scroll {
+    position: relative;
+}
+
+
+/* =========================================================
+   DROP OVERLAY
+========================================================= */
+
+.chat-drop-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 3px dashed #8e44ad;
+    border-radius: 12px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(0.98);
     transition:
-        border-color 0.2s ease,
-        background-color 0.2s ease,
-        transform 0.2s ease;
+        opacity 0.15s ease,
+        visibility 0.15s ease,
+        transform 0.15s ease;
 }
 
-.attachment-drop-zone:hover {
-    border-color: #999;
-    background: #f5f5f5;
+
+.chat-drop-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
 }
 
-.attachment-drop-zone.drag-over {
-    border-color: #8e44ad;
-    background: #f7effa;
-    transform: scale(1.01);
-}
 
-.attachment-drop-content {
+/* =========================================================
+   DROP CONTENT
+========================================================= */
+
+.chat-drop-overlay-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    color: #777;
+    justify-content: center;
+    text-align: center;
+    gap: 5px;
+    color: #555;
 }
 
-.attachment-drop-content i {
-    font-size: 24px;
-    margin-bottom: 4px;
+
+.chat-drop-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 8px;
+    border-radius: 50%;
+    background: #f1e6f5;
+    color: #8e44ad;
+    font-size: 28px;
 }
 
-.attachment-drop-content span {
-    font-size: 14px;
+
+.chat-drop-overlay-content strong {
+    font-size: 18px;
     font-weight: 600;
 }
 
-.attachment-drop-content small {
+.chat-drop-overlay-content small {
+    font-size: 13px;
+    color: #888;
+}
+
+
+/* =========================================================
+   UPLOAD PROGRESS
+========================================================= */
+
+.upload-progress-wrap {
+    width: 100%;
+}
+
+
+.upload-progress-wrap .progress {
+    height: 7px;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+
+.upload-progress-wrap .progress-bar {
+    transition:
+        width 0.15s ease;
+}
+
+
+#upload-progress-text,
+#upload-progress-percent {
+    color: #777;
     font-size: 12px;
 }
 
-.attachment-size-info {
-    margin-top: 4px;
-    color: #999;
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 576px) {
+
+    .chat-drop-overlay {
+        border-width: 2px;
+        border-radius: 10px;
+    }
+
+    .chat-drop-icon {
+        width: 54px;
+        height: 54px;
+
+        font-size: 23px;
+    }
+
+    .chat-drop-overlay-content strong {
+        font-size: 16px;
+    }
+
 }
 
 
