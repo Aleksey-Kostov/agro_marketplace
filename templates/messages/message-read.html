@@ -447,52 +447,65 @@
     }
 });
 
-    /* Reactions */
-    document.addEventListener('click', async function (e) {
-        const btn = e.target.closest('.js-react');
-        if (!btn) return;
-        e.preventDefault();
+   /* Reactions */
+document.addEventListener('click', async function (e) {
+    const btn = e.target.closest('.js-react');
+    if (!btn) return;
 
-        try {
-            const response = await fetch(btn.href, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                },
-                credentials: 'same-origin'
-            });
-            const data = await response.json();
-            if (!data.ok) return;
+    e.preventDefault();
 
-            if (data.reaction === 'like') {
-                btn.classList.toggle('active-like', data.active);
-                if (!data.active) btn.classList.remove('active-like');
-            }
-            if (data.reaction === 'heart') {
-                btn.classList.toggle('active-heart', data.active);
-                if (!data.active) btn.classList.remove('active-heart');
-            }
+    try {
+        const response = await fetch(btn.href, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        });
 
-            const box = btn.querySelector('[data-react-avatars]') ||
-                document.querySelector('[data-react-avatars="' + data.reaction + '-' + data.message_id + '"]');
-            if (box) {
-                box.innerHTML = (data.reactors || []).map(r =>
-                    '<img src="' + r.photo + '" class="react-avatar" alt="">'
-                ).join('');
-            }
-        } catch (err) {
-            console.error(err);
+        const data = await response.json();
+
+        if (!data.ok) return;
+
+        // Активно състояние
+        if (data.reaction === 'like') {
+            btn.classList.toggle('active-like', data.active);
         }
-    });
-    if (box) {
-    box.innerHTML = (data.reactors || []).map(r =>
-        '<img src="' + r.photo + '" class="react-avatar" alt="">'
-    ).join('');
-}
 
-// имена при hover
-const names = (data.reactors || []).map(r => r.name).filter(Boolean);
-btn.title = names.length ? names.join(', ') : (data.reaction === 'like' ? 'Like' : 'Heart');
+        if (data.reaction === 'heart') {
+            btn.classList.toggle('active-heart', data.active);
+        }
+
+        // Аватари
+        const box =
+            btn.querySelector('[data-react-avatars]') ||
+            document.querySelector(
+                '[data-react-avatars="' +
+                data.reaction +
+                '-' +
+                data.message_id +
+                '"]'
+            );
+
+        if (box) {
+            box.innerHTML = (data.reactors || []).map(r =>
+                '<img src="' + r.photo + '" class="react-avatar" alt="">'
+            ).join('');
+        }
+
+        // Имена при hover
+        const names = (data.reactors || [])
+            .map(r => r.name)
+            .filter(Boolean);
+
+        btn.title = names.length
+            ? names.join(', ')
+            : (data.reaction === 'like' ? 'Like' : 'Heart');
+
+    } catch (err) {
+        console.error(err);
+    }
+});
 </script>
 {% endblock %}
