@@ -513,20 +513,40 @@
     display: block;
 }
 
+.tg-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+}
+.tg-reaction {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px 2px 4px;
+    border-radius: 12px;
+    background: rgba(0,0,0,.06);
+    text-decoration: none;
+    line-height: 1;
+}
+.tg-emoji {
+    opacity: .35;
+    filter: grayscale(1);
+}
+.tg-reaction.active-like .tg-emoji,
+.tg-reaction.active-heart .tg-emoji {
+    opacity: 1;
+    filter: none;
+}
+.tg-avatars { display: inline-flex; }
 .react-avatar {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid #fff;
-    box-shadow: 0 0 0 1px rgba(0,0,0,.1);
-    margin-left: -4px;
+    margin-left: -3px;
 }
+.tg-avatars .react-avatar:first-child { margin-left: 0; }
 
-.react-avatars .react-avatar:first-child {
-    margin-left: 0;
-}
-
-.react-group {
-    min-height: 20px;
-}

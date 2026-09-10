@@ -71,7 +71,7 @@
                 </div>
             </div>
 
-            <!-- Messages + scroll area -->
+            <!-- Messages -->
             <div class="conversation-scroll" id="chat-window">
                 <div class="conversation" id="chat-messages">
                     {% for item in conversation_messages %}
@@ -110,91 +110,83 @@
                                 {% if item.is_removed %}
                                 <em class="text-muted">This message was deleted.</em>
                                 {% else %}
-                                {% if item.body %}{{ item.body|safe }}{% endif %}
+                                {% if item.body %}
+                                <div class="mb-1">{{ item.body|safe }}</div>
+                                {% endif %}
 
                                 {% if item.image %}
-                                <div class="media-wrap mt-2">
+                                <div class="media-wrap mt-1">
                                     <a href="{{ item.image.url }}" target="_blank" rel="noopener">
                                         <img src="{{ item.image.url }}" alt="Attachment" class="message-image">
                                     </a>
                                     <button type="button"
                                             class="btn btn-sm btn-light share-btn"
-                                            data-url="{{ request.scheme }}://{{ request.get_host }}{{ item.image.url }}"
-                                            title="Share">
+                                            data-url="{{ item.image.url }}"
+                                            title="Copy link">
                                         <i class="fas fa-share-alt"></i>
                                     </button>
                                 </div>
                                 {% endif %}
 
                                 {% if item.video %}
-                                <div class="media-wrap mt-2">
+                                <div class="media-wrap mt-1">
                                     <video class="message-video" controls preload="metadata">
                                         <source src="{{ item.video_url|default:item.video.url }}">
                                     </video>
                                     <button type="button"
                                             class="btn btn-sm btn-light share-btn"
                                             data-url="{{ item.video_url|default:item.video.url }}"
-                                            title="Share">
+                                            title="Copy link">
                                         <i class="fas fa-share-alt"></i>
                                     </button>
                                 </div>
                                 {% endif %}
-                                {% endif %}
-                            </div>
 
-                            {% if not item.is_system|default:False and not item.is_removed|default:False %}
-                            {% user_reacted item request.user 'like' as liked %}
-                            {% user_reacted item request.user 'heart' as hearted %}
-                            {% reaction_users item 'like' as like_users %}
-                            {% reaction_users item 'heart' as heart_users %}
+                                {% if not item.is_system|default:False and not item.is_removed|default:False %}
+                                {% user_reacted item request.user 'like' as liked %}
+                                {% user_reacted item request.user 'heart' as hearted %}
+                                {% reaction_users item 'like' as like_users %}
+                                {% reaction_users item 'heart' as heart_users %}
 
-                            <div class="message-mini-actions mt-1 d-flex align-items-center flex-wrap gap-2">
-                                <div class="react-group d-flex align-items-center gap-1">
+                                <div class="tg-reactions mt-1">
                                     <a href="{% url 'react-message' item.pk 'like' %}"
-                                       class="mini-btn react-btn js-react {% if liked %}active-like{% endif %}"
+                                       class="tg-reaction js-react {% if liked %}active-like{% endif %}"
                                        data-reaction="like"
                                        data-msg="{{ item.pk }}"
-                                       title="Like">👍</a>
-                                    <span class="react-avatars" data-react-avatars="like-{{ item.pk }}">
-                                                {% for u in like_users %}
-                                                    {% if u.profile.profile_photo %}
-                                                        <img src="{{ u.profile.profile_photo.url }}"
-                                                             class="react-avatar" alt="">
-                                                    {% else %}
-                                                        <img src="{% static 'images/profile_picture.webp' %}"
-                                                             class="react-avatar" alt="">
-                                                    {% endif %}
-                                                {% endfor %}
-                                            </span>
-                                </div>
+                                       title="Like">
+                                        <span class="tg-emoji">👍</span>
+                                        <span class="tg-avatars" data-react-avatars="like-{{ item.pk }}">
+                                                        {% for u in like_users %}
+                                                            <img src="{% if u.profile.profile_photo %}{{ u.profile.profile_photo.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
+                                                                 class="react-avatar" alt="">
+                                                        {% endfor %}
+                                                    </span>
+                                    </a>
 
-                                <div class="react-group d-flex align-items-center gap-1">
                                     <a href="{% url 'react-message' item.pk 'heart' %}"
-                                       class="mini-btn react-btn js-react {% if hearted %}active-heart{% endif %}"
+                                       class="tg-reaction js-react {% if hearted %}active-heart{% endif %}"
                                        data-reaction="heart"
                                        data-msg="{{ item.pk }}"
-                                       title="Heart">❤️</a>
-                                    <span class="react-avatars" data-react-avatars="heart-{{ item.pk }}">
-                                                {% for u in heart_users %}
-                                                    {% if u.profile.profile_photo %}
-                                                        <img src="{{ u.profile.profile_photo.url }}"
-                                                             class="react-avatar" alt="">
-                                                    {% else %}
-                                                        <img src="{% static 'images/profile_picture.webp' %}"
-                                                             class="react-avatar" alt="">
-                                                    {% endif %}
-                                                {% endfor %}
-                                            </span>
-                                </div>
+                                       title="Heart">
+                                        <span class="tg-emoji">❤️</span>
+                                        <span class="tg-avatars" data-react-avatars="heart-{{ item.pk }}">
+                                                        {% for u in heart_users %}
+                                                            <img src="{% if u.profile.profile_photo %}{{ u.profile.profile_photo.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
+                                                                 class="react-avatar" alt="">
+                                                        {% endfor %}
+                                                    </span>
+                                    </a>
 
-                                {% if item.sender == request.user %}
-                                <a href="{% url 'delete-one-message' item.pk %}"
-                                   class="mini-btn text-danger"
-                                   onclick="return confirm('Delete this message?');"
-                                   title="Delete">🗑️</a>
+                                    {% if item.sender == request.user %}
+                                    <a href="{% url 'delete-one-message' item.pk %}"
+                                       class="tg-reaction text-danger"
+                                       onclick="return confirm('Delete this message?');"
+                                       title="Delete">🗑️</a>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
                                 {% endif %}
                             </div>
-                            {% endif %}
                         </div>
                     </div>
                     {% empty %}
@@ -209,6 +201,7 @@
                 </button>
             </div>
 
+            <!-- Reply -->
             {% if is_system %}
             <div class="alert alert-info mt-4 mb-0 text-center">
                 <i class="fas fa-info-circle me-1"></i>
@@ -354,18 +347,14 @@
         });
     }
 
-    window.addEventListener('load', function () {
-        scrollToBottom(false);
-    });
+    window.addEventListener('load', () => scrollToBottom(false));
 
     if (chatWindow && scrollBtn) {
         chatWindow.addEventListener('scroll', function () {
             const distance = chatWindow.scrollHeight - chatWindow.scrollTop - chatWindow.clientHeight;
             scrollBtn.classList.toggle('d-none', distance <= 120);
         });
-        scrollBtn.addEventListener('click', function () {
-            scrollToBottom(true);
-        });
+        scrollBtn.addEventListener('click', () => scrollToBottom(true));
     }
 
     const imageInput = document.getElementById('id_image');
@@ -414,7 +403,7 @@
         removeMediaBtn.classList.add('d-none');
     });
 
-    /* Native share */
+    /* Share = only copy link */
     document.addEventListener('click', async function (e) {
         const btn = e.target.closest('.share-btn');
         if (!btn) return;
@@ -424,29 +413,22 @@
         const url = btn.dataset.url;
         if (!url) return;
 
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: document.title || 'Shared media',
-                    text: 'Check this out',
-                    url: url
-                });
-                return;
-            } catch (err) {
-                if (err && err.name === 'AbortError') return;
-            }
-        }
-
         try {
             await navigator.clipboard.writeText(url);
-            btn.title = 'Link copied!';
-            setTimeout(() => { btn.title = 'Share'; }, 1500);
+            const old = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => { btn.innerHTML = old; }, 1200);
         } catch (err) {
-            window.prompt('Copy this link:', url);
+            const input = document.createElement('input');
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
         }
     });
 
-    /* Reactions + mini avatars */
+    /* Reactions */
     document.addEventListener('click', async function (e) {
         const btn = e.target.closest('.js-react');
         if (!btn) return;
@@ -464,15 +446,21 @@
             const data = await response.json();
             if (!data.ok) return;
 
-            if (data.reaction === 'like') btn.classList.toggle('active-like', data.active);
-            if (data.reaction === 'heart') btn.classList.toggle('active-heart', data.active);
+            if (data.reaction === 'like') {
+                btn.classList.toggle('active-like', data.active);
+                if (!data.active) btn.classList.remove('active-like');
+            }
+            if (data.reaction === 'heart') {
+                btn.classList.toggle('active-heart', data.active);
+                if (!data.active) btn.classList.remove('active-heart');
+            }
 
-            const key = data.reaction + '-' + data.message_id;
-            const box = document.querySelector('[data-react-avatars="' + key + '"]');
-            if (box && data.reactors) {
-                box.innerHTML = data.reactors.map(function (r) {
-                    return '<img src="' + r.photo + '" class="react-avatar" alt="">';
-                }).join('');
+            const box = btn.querySelector('[data-react-avatars]') ||
+                document.querySelector('[data-react-avatars="' + data.reaction + '-' + data.message_id + '"]');
+            if (box) {
+                box.innerHTML = (data.reactors || []).map(r =>
+                    '<img src="' + r.photo + '" class="react-avatar" alt="">'
+                ).join('');
             }
         } catch (err) {
             console.error(err);
