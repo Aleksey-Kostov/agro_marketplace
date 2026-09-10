@@ -153,7 +153,7 @@
                                        class="tg-reaction js-react {% if liked %}active-like{% endif %}"
                                        data-reaction="like"
                                        data-msg="{{ item.pk }}"
-                                       title="Like">
+                                       title="{% for u in like_users %}{{ u.profile.username_in_marketplace|default:u.username }}{% if not forloop.last %}, {% endif %}{% empty %}Like{% endfor %}">
                                         <span class="tg-emoji">👍</span>
                                         <span class="tg-avatars" data-react-avatars="like-{{ item.pk }}">
                                                         {% for u in like_users %}
@@ -167,7 +167,7 @@
                                        class="tg-reaction js-react {% if hearted %}active-heart{% endif %}"
                                        data-reaction="heart"
                                        data-msg="{{ item.pk }}"
-                                       title="Heart">
+                                       title="{% for u in like_users %}{{ u.profile.username_in_marketplace|default:u.username }}{% if not forloop.last %}, {% endif %}{% empty %}Like{% endfor %}">
                                         <span class="tg-emoji">❤️</span>
                                         <span class="tg-avatars" data-react-avatars="heart-{{ item.pk }}">
                                                         {% for u in heart_users %}
@@ -485,5 +485,14 @@
             console.error(err);
         }
     });
+    if (box) {
+    box.innerHTML = (data.reactors || []).map(r =>
+        '<img src="' + r.photo + '" class="react-avatar" alt="">'
+    ).join('');
+}
+
+// имена при hover
+const names = (data.reactors || []).map(r => r.name).filter(Boolean);
+btn.title = names.length ? names.join(', ') : (data.reaction === 'like' ? 'Like' : 'Heart');
 </script>
 {% endblock %}

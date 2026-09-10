@@ -412,14 +412,17 @@ def react_message(request, pk, reaction):
     reactors = []
     for r in msg.reactions.filter(reaction=reaction).select_related('user__profile'):
         photo = ''
+        name = r.user.username
         try:
             if r.user.profile.profile_photo:
                 photo = r.user.profile.profile_photo.url
+            name = r.user.profile.username_in_marketplace or r.user.username
         except Exception:
-            photo = ''
+            pass
         reactors.append({
             'id': r.user_id,
             'photo': photo or '/static/images/profile_picture.webp',
+            'name': name,
         })
 
     return JsonResponse({
@@ -429,7 +432,6 @@ def react_message(request, pk, reaction):
         'message_id': pk,
         'reactors': reactors,
     })
-
 # ============================================================
 # REPORT
 # ============================================================
