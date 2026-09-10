@@ -3,42 +3,74 @@
 {% load message_tags_inbox %}
 
 {% block content %}
+
 <main class="container my-2">
+
     <div class="mailbox-container">
 
+        <!-- =====================================================
+             HEADER
+        ====================================================== -->
+
         <div class="col-12 edit-profile text-details mb-2 message-box">
+
             <div class="d-flex align-items-center p-0 rounded flex-wrap gap-2">
-                <a href="{% url 'message-inbox' %}" class="btn btn-secondary back-button">
+
+                <a href="{% url 'message-inbox' %}"
+                   class="btn btn-secondary back-button">
+
                     <i class="fas fa-arrow-left"></i>
-                    <span class="d-none d-sm-inline">Back</span>
+
+                    <span class="d-none d-sm-inline">
+                        Back
+                    </span>
+
                 </a>
 
+
                 <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
+
                     <i class="fas fa-comments"></i>
+
                     Conversation
+
                 </h3>
+
             </div>
+
         </div>
 
 
+        <!-- =====================================================
+             CONVERSATION
+        ====================================================== -->
+
         <div class="message-box conversation-box">
 
-            <!-- =====================================================
+
+            <!-- =================================================
                  TITLE + ACTIONS
-            ====================================================== -->
+            ================================================== -->
 
             <div class="conversation-title d-flex justify-content-between align-items-center flex-wrap gap-2">
 
                 <h3 class="m-0">
+
                     {{ root_message.title|default:"Direct conversation" }}
+
                 </h3>
 
 
-                <div class="btn-group conversation-actions" role="group">
+                <div class="btn-group conversation-actions"
+                     role="group">
+
 
                     {% if not is_system %}
 
-                    <!-- BLOCK / UNBLOCK -->
+
+                    <!-- =================================================
+                         BLOCK / UNBLOCK
+                    ================================================== -->
 
                     {% if is_blocked %}
 
@@ -53,6 +85,7 @@
                                name="next"
                                value="{{ request.path }}">
 
+
                         <button type="submit"
                                 class="btn btn-outline-success btn-sm activate shadow-none"
                                 title="Unblock">
@@ -60,8 +93,8 @@
                             <i class="fas fa-unlock"></i>
 
                             <span class="tooltip-text">
-                                    Unblock
-                                </span>
+                                Unblock
+                            </span>
 
                         </button>
 
@@ -80,6 +113,7 @@
                                name="next"
                                value="{{ request.path }}">
 
+
                         <button type="submit"
                                 class="btn btn-outline-dark btn-sm activate shadow-none"
                                 title="Block">
@@ -87,8 +121,8 @@
                             <i class="fas fa-ban"></i>
 
                             <span class="tooltip-text">
-                                    Block
-                                </span>
+                                Block
+                            </span>
 
                         </button>
 
@@ -97,35 +131,39 @@
                     {% endif %}
 
 
-                    <!-- REPORT -->
+                    <!-- =================================================
+                         REPORT
+                    ================================================== -->
 
-                    <form id="report-form-{{ last_message.pk }}"
-                          method="post"
+                    <form method="post"
                           action="{% url 'report-message' last_message.pk %}"
-                          class="d-none">
+                          class="d-inline"
+                          onsubmit="return confirm('Report this message?');">
 
                         {% csrf_token %}
+
+
+                        <button type="submit"
+                                class="btn btn-outline-primary btn-sm activate shadow-none"
+                                title="Report">
+
+                            <i class="fas fa-flag"></i>
+
+                            <span class="tooltip-text">
+                                Report
+                            </span>
+
+                        </button>
 
                     </form>
 
 
-                    <button type="submit"
-                            class="btn btn-outline-primary btn-sm activate shadow-none"
-                            title="Report"
-                            onclick="if(confirm('Report this message?')){document.getElementById('report-form-{{ last_message.pk }}').submit();}">
-
-                        <i class="fas fa-flag"></i>
-
-                        <span class="tooltip-text">
-                                Report
-                            </span>
-
-                    </button>
-
                     {% endif %}
 
 
-                    <!-- DELETE CONVERSATION -->
+                    <!-- =================================================
+                         DELETE CONVERSATION
+                    ================================================== -->
 
                     <a href="{% url 'delete-message' root_message.pk %}"
                        class="btn btn-outline-danger btn-sm activate shadow-none"
@@ -145,11 +183,12 @@
 
 
             <!-- =====================================================
-                 MESSAGES
+                 CHAT WINDOW
             ====================================================== -->
 
             <div class="conversation-scroll"
                  id="chat-window">
+
 
                 <div class="conversation"
                      id="chat-messages">
@@ -157,14 +196,17 @@
 
                     {% for item in conversation_messages %}
 
+
                     <div id="msg-{{ item.pk }}"
                          class="conversation-message {% if item.sender == request.user %}own-message{% else %}received-message{% endif %}">
+
 
                         <!-- =================================================
                              AVATAR
                         ================================================== -->
 
                         <div class="conversation-avatar">
+
 
                             {% if item.sender == request.user %}
 
@@ -188,19 +230,19 @@
 
                             {% else %}
 
-                            {% if item.sender.profile.profile_photo %}
+                                {% if item.sender.profile.profile_photo %}
 
-                            <img src="{{ item.sender.profile.profile_photo.url }}"
-                                 class="message-avatar"
-                                 alt="">
+                                <img src="{{ item.sender.profile.profile_photo.url }}"
+                                     class="message-avatar"
+                                     alt="">
 
-                            {% else %}
+                                {% else %}
 
-                            <img src="{% static 'images/profile_picture.webp' %}"
-                                 class="message-avatar"
-                                 alt="">
+                                <img src="{% static 'images/profile_picture.webp' %}"
+                                     class="message-avatar"
+                                     alt="">
 
-                            {% endif %}
+                                {% endif %}
 
                             {% endif %}
 
@@ -213,14 +255,20 @@
 
                         <div class="conversation-message-body">
 
+
                             <div class="conversation-meta">
 
                                 <span class="conversation-name">
+
                                     {{ item.sender.profile.username_in_marketplace|default:item.sender.username }}
+
                                 </span>
 
+
                                 <span class="conversation-date">
+
                                     {{ item.timestamp|date:"j M. Y H:i" }}
+
                                 </span>
 
                             </div>
@@ -229,30 +277,40 @@
                             <div class="message-bubble">
 
 
-                                <!-- DELETED MESSAGE -->
+                                <!-- =================================================
+                                     DELETED MESSAGE
+                                ================================================== -->
 
                                 {% if item.is_removed %}
 
                                 <em class="text-muted">
+
                                     This message was deleted.
+
                                 </em>
 
 
                                 {% else %}
 
 
-                                <!-- TEXT -->
+                                <!-- =================================================
+                                     TEXT
+                                ================================================== -->
 
                                 {% if item.body %}
 
                                 <div class="mb-1">
+
                                     {{ item.body|safe }}
+
                                 </div>
 
                                 {% endif %}
 
 
-                                <!-- IMAGE -->
+                                <!-- =================================================
+                                     IMAGE
+                                ================================================== -->
 
                                 {% if item.image %}
 
@@ -283,7 +341,9 @@
                                 {% endif %}
 
 
-                                <!-- VIDEO -->
+                                <!-- =================================================
+                                     VIDEO
+                                ================================================== -->
 
                                 {% if item.video %}
 
@@ -318,17 +378,22 @@
 
                                 {% if not item.is_system|default:False and not item.is_removed|default:False %}
 
+
                                 {% user_reacted item request.user 'like' as liked %}
+
                                 {% user_reacted item request.user 'heart' as hearted %}
 
                                 {% reaction_users item 'like' as like_users %}
+
                                 {% reaction_users item 'heart' as heart_users %}
 
 
                                 <div class="tg-reactions mt-1">
 
 
-                                    <!-- LIKE -->
+                                    <!-- =================================================
+                                         LIKE
+                                    ================================================== -->
 
                                     <a href="{% url 'react-message' item.pk 'like' %}"
                                        class="tg-reaction js-react {% if liked %}active-like{% endif %}"
@@ -336,29 +401,31 @@
                                        data-msg="{{ item.pk }}"
                                        title="{% for u in like_users %}{{ u.profile.username_in_marketplace|default:u.username }}{% if not forloop.last %}, {% endif %}{% empty %}Like{% endfor %}">
 
-                                                <span class="tg-emoji">
-                                                    👍
-                                                </span>
+                                        <span class="tg-emoji">
+                                            👍
+                                        </span>
 
 
                                         <span class="tg-avatars"
                                               data-react-avatars="like-{{ item.pk }}">
 
-                                                    {% for u in like_users %}
+                                            {% for u in like_users %}
 
-                                                        <img src="{% if u.profile.profile_photo %}{{ u.profile.profile_photo.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
-                                                             class="react-avatar"
-                                                             alt="{{ u.profile.username_in_marketplace|default:u.username }}"
-                                                             loading="lazy">
+                                            <img src="{% if u.profile.profile_photo %}{{ u.profile.profile_photo.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
+                                                 class="react-avatar"
+                                                 alt="{{ u.profile.username_in_marketplace|default:u.username }}"
+                                                 loading="lazy">
 
-                                                    {% endfor %}
+                                            {% endfor %}
 
-                                                </span>
+                                        </span>
 
                                     </a>
 
 
-                                    <!-- HEART -->
+                                    <!-- =================================================
+                                         HEART
+                                    ================================================== -->
 
                                     <a href="{% url 'react-message' item.pk 'heart' %}"
                                        class="tg-reaction js-react {% if hearted %}active-heart{% endif %}"
@@ -366,29 +433,31 @@
                                        data-msg="{{ item.pk }}"
                                        title="{% for u in heart_users %}{{ u.profile.username_in_marketplace|default:u.username }}{% if not forloop.last %}, {% endif %}{% empty %}Heart{% endfor %}">
 
-                                                <span class="tg-emoji">
-                                                    ❤️
-                                                </span>
+                                        <span class="tg-emoji">
+                                            ❤️
+                                        </span>
 
 
                                         <span class="tg-avatars"
                                               data-react-avatars="heart-{{ item.pk }}">
 
-                                                    {% for u in heart_users %}
+                                            {% for u in heart_users %}
 
-                                                        <img src="{% if u.profile.profile_photo %}{{ u.profile.profile_photo.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
-                                                             class="react-avatar"
-                                                             alt="{{ u.profile.username_in_marketplace|default:u.username }}"
-                                                             loading="lazy">
+                                            <img src="{% if u.profile.profile_photo %}{{ u.profile.profile_photo.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
+                                                 class="react-avatar"
+                                                 alt="{{ u.profile.username_in_marketplace|default:u.username }}"
+                                                 loading="lazy">
 
-                                                    {% endfor %}
+                                            {% endfor %}
 
-                                                </span>
+                                        </span>
 
                                     </a>
 
 
-                                    <!-- DELETE OWN MESSAGE -->
+                                    <!-- =================================================
+                                         DELETE OWN MESSAGE
+                                    ================================================== -->
 
                                     {% if item.sender == request.user %}
 
@@ -399,12 +468,15 @@
 
                                         {% csrf_token %}
 
+
                                         <button type="submit"
                                                 class="tg-reaction delete-message-reaction"
                                                 title="Delete"
                                                 aria-label="Delete message">
 
-                                            <span class="tg-emoji">🗑️</span>
+                                            <span class="tg-emoji">
+                                                🗑️
+                                            </span>
 
                                         </button>
 
@@ -412,9 +484,11 @@
 
                                     {% endif %}
 
+
                                 </div>
 
                                 {% endif %}
+
 
                                 {% endif %}
 
@@ -428,16 +502,25 @@
                     {% empty %}
 
                     <div class="alert alert-warning text-center">
+
                         No messages in this conversation.
+
                     </div>
 
                     {% endfor %}
 
+
                 </div>
+
+
+                <!-- =====================================================
+                     SCROLL BUTTONS
+                ====================================================== -->
 
                 <div class="conversation-scroll-buttons">
 
-                    <!-- GO TO TOP -->
+
+                    <!-- UP -->
 
                     <button type="button"
                             id="scroll-top-btn"
@@ -450,7 +533,7 @@
                     </button>
 
 
-                    <!-- GO TO BOTTOM -->
+                    <!-- DOWN -->
 
                     <button type="button"
                             id="scroll-bottom-btn"
@@ -461,6 +544,7 @@
                         <i class="fas fa-chevron-down"></i>
 
                     </button>
+
 
                 </div>
 
@@ -491,6 +575,7 @@
 
                     <i class="fas fa-ban me-2"></i>
 
+
                     {% if is_blocked_by_other %}
 
                     <strong>
@@ -514,9 +599,9 @@
             {% else %}
 
 
-            <!-- =================================================
+            <!-- =====================================================
                  REPLY FORM
-            ================================================== -->
+            ====================================================== -->
 
             <div>
 
@@ -570,6 +655,7 @@
                            accept="image/*"
                            hidden>
 
+
                     <input type="file"
                            name="video"
                            id="id_video"
@@ -610,7 +696,7 @@
                             </button>
 
 
-                            <!-- REMOVE MEDIA -->
+                            <!-- REMOVE -->
 
                             <button type="button"
                                     id="remove-media-btn"
@@ -640,54 +726,55 @@
 
                                 <div class="d-flex flex-wrap gap-1">
 
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😊">😊
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😂">😂
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😍">😍
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😘">😘
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😉">😉
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😎">😎
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😢">😢
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😡">😡
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👍">👍
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👎">👎
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👏">👏
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🙏">🙏
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❤️">❤️
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🔥">🔥
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="⭐">⭐
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🎉">🎉
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="✅">✅
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❌">❌
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍎">🍎
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍐">🍐
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍇">🍇
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🥕">🥕
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="📦">📦
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="💰">💰
-                                    </button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😊">😊</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😂">😂</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😍">😍</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😘">😘</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😉">😉</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😎">😎</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😢">😢</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😡">😡</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👍">👍</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👎">👎</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👏">👏</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🙏">🙏</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❤️">❤️</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🔥">🔥</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="⭐">⭐</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🎉">🎉</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="✅">✅</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❌">❌</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍎">🍎</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍐">🍐</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍇">🍇</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🥕">🥕</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="📦">📦</button>
+
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="💰">💰</button>
+
 
                                 </div>
 
@@ -702,9 +789,11 @@
                                 class="btn btn-primary px-4">
 
                             <i class="fas fa-paper-plane me-1"></i>
+
                             Send
 
                         </button>
+
 
                     </div>
 
@@ -714,1190 +803,1230 @@
 
             {% endif %}
 
+
         </div>
 
     </div>
+
 </main>
 
 
+<!-- =========================================================
+     JAVASCRIPT
+========================================================== -->
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
 
-        /* =========================================================
-           EMOJI
-        ========================================================== */
 
-        document.querySelectorAll('.emoji-btn').forEach(function (btn) {
+    /* =========================================================
+       EMOJI
+    ========================================================== */
 
-            btn.addEventListener('click', function (e) {
+    document.querySelectorAll('.emoji-btn').forEach(function (btn) {
 
-                e.preventDefault();
-                e.stopPropagation();
+        btn.addEventListener('click', function (e) {
 
-                const input =
-                    document.getElementById('message-body-input') ||
-                    document.querySelector('textarea[name="body"]') ||
-                    document.querySelector('input[name="body"]');
+            e.preventDefault();
+            e.stopPropagation();
 
-                if (!input) {
-                    return;
-                }
+            const input =
+                document.getElementById('message-body-input') ||
+                document.querySelector('textarea[name="body"]') ||
+                document.querySelector('input[name="body"]');
 
-                input.value += btn.dataset.emoji || '';
+            if (!input) {
+                return;
+            }
 
-                input.focus();
+            input.value += btn.dataset.emoji || '';
 
-            });
+            input.focus();
 
         });
 
-
-        /* =========================================================
-           CHAT SCROLL
-        ========================================================= */
-
-const chatWindow =
-    document.getElementById('chat-window');
-
-const scrollTopBtn =
-    document.getElementById('scroll-top-btn');
-
-const scrollBottomBtn =
-    document.getElementById('scroll-bottom-btn');
+    });
 
 
-function updateScrollButtons() {
+    /* =========================================================
+       CHAT SCROLL
+    ========================================================== */
 
-    if (!chatWindow) {
-        return;
-    }
+    const chatWindow =
+        document.getElementById('chat-window');
+
+    const scrollTopBtn =
+        document.getElementById('scroll-top-btn');
+
+    const scrollBottomBtn =
+        document.getElementById('scroll-bottom-btn');
 
 
-    const scrollTop =
-        chatWindow.scrollTop;
+    /*
+     * Вече няма 60px праг.
+     *
+     * Достатъчен е дори 1px scroll.
+     */
 
-    const maxScrollTop =
-        Math.max(
+    const SCROLL_EPSILON = 1;
+
+
+    function getMaxScrollTop() {
+
+        if (!chatWindow) {
+            return 0;
+        }
+
+        return Math.max(
             0,
             chatWindow.scrollHeight -
             chatWindow.clientHeight
         );
 
-
-    /*
-     * На самия връх:
-     * няма UP.
-     *
-     * Веднага щом има дори 1px scroll:
-     * UP се показва.
-     */
-
-    if (scrollTopBtn) {
-
-        scrollTopBtn.classList.toggle(
-            'd-none',
-            scrollTop <= 0
-        );
-
     }
 
 
-    /*
-     * На самия край:
-     * няма DOWN.
-     *
-     * Веднага щом не сме на края:
-     * DOWN се показва.
-     */
+    function updateScrollButtons() {
 
-    if (scrollBottomBtn) {
-
-        scrollBottomBtn.classList.toggle(
-            'd-none',
-            scrollTop >= maxScrollTop
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   SCROLL TO TOP
-========================================================= */
-
-function scrollToTop() {
-
-    if (!chatWindow) {
-        return;
-    }
-
-    chatWindow.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-
-}
-
-
-/* =========================================================
-   SCROLL TO BOTTOM
-========================================================= */
-
-function scrollToBottom() {
-
-    if (!chatWindow) {
-        return;
-    }
-
-    chatWindow.scrollTo({
-        top: chatWindow.scrollHeight,
-        behavior: 'smooth'
-    });
-
-}
-
-
-/* =========================================================
-   SCROLL EVENT
-========================================================= */
-
-if (chatWindow) {
-
-    /*
-     * Изчисляваме веднага.
-     */
-    updateScrollButtons();
-
-
-    /*
-     * Изчисляваме при ВСЯКО движение.
-     */
-    chatWindow.addEventListener(
-        'scroll',
-        updateScrollButtons,
-        {
-            passive: true
+        if (!chatWindow) {
+            return;
         }
-    );
 
 
-    /*
-     * Понякога scrollHeight се променя след
-     * зареждането на изображения/видеа.
-     *
-     * Затова проверяваме отново.
-     */
-
-    window.addEventListener(
-        'resize',
-        updateScrollButtons
-    );
-
-}
+        const currentScrollTop =
+            chatWindow.scrollTop;
 
 
-/* =========================================================
-   UP BUTTON
-========================================================= */
-
-if (scrollTopBtn) {
-
-    scrollTopBtn.addEventListener(
-        'click',
-        function (e) {
-
-            e.preventDefault();
-
-            scrollToTop();
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   DOWN BUTTON
-========================================================= */
-
-if (scrollBottomBtn) {
-
-    scrollBottomBtn.addEventListener(
-        'click',
-        function (e) {
-
-            e.preventDefault();
-
-            scrollToBottom();
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   INITIAL CHAT POSITION
-========================================================= */
-
-function initializeChatPosition() {
-
-    if (!chatWindow) {
-        return;
-    }
-
-
-    /*
-     * Изчакваме браузъра да изчисли
-     * реалната височина на съобщенията.
-     */
-
-    requestAnimationFrame(function () {
-
-        chatWindow.scrollTop =
-            chatWindow.scrollHeight;
+        const maxScrollTop =
+            getMaxScrollTop();
 
 
         /*
-         * След първото позициониране
-         * преизчисляваме бутоните.
+         * UP
+         *
+         * Показва се веднага щом сме
+         * мръднали надолу от началото.
+         */
+
+        const atTop =
+            currentScrollTop <= SCROLL_EPSILON;
+
+
+        /*
+         * DOWN
+         *
+         * Показва се веднага щом не сме
+         * на самия край.
+         */
+
+        const atBottom =
+            currentScrollTop >=
+            maxScrollTop - SCROLL_EPSILON;
+
+
+        if (scrollTopBtn) {
+
+            scrollTopBtn.classList.toggle(
+                'd-none',
+                atTop
+            );
+
+        }
+
+
+        if (scrollBottomBtn) {
+
+            scrollBottomBtn.classList.toggle(
+                'd-none',
+                atBottom
+            );
+
+        }
+
+    }
+
+
+    /* =========================================================
+       SCROLL TOP
+    ========================================================== */
+
+    function scrollToTop() {
+
+        if (!chatWindow) {
+            return;
+        }
+
+        chatWindow.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+
+    }
+
+
+    /* =========================================================
+       SCROLL BOTTOM
+    ========================================================== */
+
+    function scrollToBottom() {
+
+        if (!chatWindow) {
+            return;
+        }
+
+        chatWindow.scrollTo({
+            top: chatWindow.scrollHeight,
+            behavior: 'smooth'
+        });
+
+    }
+
+
+    /* =========================================================
+       SCROLL EVENTS
+    ========================================================== */
+
+    if (chatWindow) {
+
+        /*
+         * Първоначална проверка.
+         */
+
+        updateScrollButtons();
+
+
+        /*
+         * Проверка при всяко движение.
+         */
+
+        chatWindow.addEventListener(
+            'scroll',
+            updateScrollButtons,
+            {
+                passive: true
+            }
+        );
+
+
+        /*
+         * Проверка при resize.
+         */
+
+        window.addEventListener(
+            'resize',
+            updateScrollButtons
+        );
+
+
+        /*
+         * Много важно:
+         *
+         * Ако снимка/видео промени височината
+         * на разговора, преизчисляваме бутоните.
+         */
+
+        if ('ResizeObserver' in window) {
+
+            const resizeObserver =
+                new ResizeObserver(function () {
+
+                    updateScrollButtons();
+
+                });
+
+
+            resizeObserver.observe(
+                chatWindow
+            );
+
+
+            const messages =
+                document.getElementById(
+                    'chat-messages'
+                );
+
+
+            if (messages) {
+
+                resizeObserver.observe(
+                    messages
+                );
+
+            }
+
+        }
+
+    }
+
+
+    /* =========================================================
+       UP BUTTON
+    ========================================================== */
+
+    if (scrollTopBtn) {
+
+        scrollTopBtn.addEventListener(
+            'click',
+            function (e) {
+
+                e.preventDefault();
+
+                scrollToTop();
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       DOWN BUTTON
+    ========================================================== */
+
+    if (scrollBottomBtn) {
+
+        scrollBottomBtn.addEventListener(
+            'click',
+            function (e) {
+
+                e.preventDefault();
+
+                scrollToBottom();
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       INITIAL CHAT POSITION
+    ========================================================== */
+
+    function initializeChatPosition() {
+
+        if (!chatWindow) {
+            return;
+        }
+
+
+        /*
+         * Изчакваме браузъра да изчисли
+         * цялото съдържание.
          */
 
         requestAnimationFrame(function () {
 
+            const maxScrollTop =
+                Math.max(
+                    0,
+                    chatWindow.scrollHeight -
+                    chatWindow.clientHeight
+                );
+
+
+            /*
+             * Отиваме директно на края.
+             */
+
+            chatWindow.scrollTop =
+                maxScrollTop;
+
+
+            /*
+             * Проверяваме веднага.
+             */
+
             updateScrollButtons();
+
+
+            /*
+             * Втори кадър — важно за images/videos.
+             */
+
+            requestAnimationFrame(function () {
+
+                const finalMaxScrollTop =
+                    Math.max(
+                        0,
+                        chatWindow.scrollHeight -
+                        chatWindow.clientHeight
+                    );
+
+
+                chatWindow.scrollTop =
+                    finalMaxScrollTop;
+
+
+                updateScrollButtons();
+
+            });
 
         });
 
-    });
-
-}
+    }
 
 
-if (document.readyState === 'complete') {
+    /*
+     * Стартираме след зареждането.
+     */
 
-    initializeChatPosition();
+    if (document.readyState === 'complete') {
 
-} else {
+        initializeChatPosition();
 
-    window.addEventListener(
-        'load',
-        initializeChatPosition,
-        {
-            once: true
-        }
-    );
+    } else {
 
-}
-
-        /* =========================================================
-           MEDIA ELEMENTS
-        ========================================================== */
-
-        const imageInput =
-            document.getElementById('id_image');
-
-        const videoInput =
-            document.getElementById('id_video');
-
-
-        const imagePreview =
-            document.getElementById('image-preview');
-
-        const videoPreview =
-            document.getElementById('video-preview');
-
-
-        const imagePreviewWrapper =
-            document.getElementById('image-preview-wrap');
-
-        const videoPreviewWrapper =
-            document.getElementById('video-preview-wrap');
-
-
-        const attachImageBtn =
-            document.getElementById('attach-image-btn');
-
-        const attachVideoBtn =
-            document.getElementById('attach-video-btn');
-
-        const removeMediaBtn =
-            document.getElementById('remove-media-btn');
-
-
-        let imageObjectUrl = null;
-        let videoObjectUrl = null;
-
-
-        /* =========================================================
-           FILE PICKERS
-        ========================================================== */
-
-        if (attachImageBtn && imageInput) {
-
-            attachImageBtn.addEventListener(
-                'click',
-                function (e) {
-
-                    e.preventDefault();
-
-                    imageInput.click();
-
-                }
-            );
-
-        }
-
-
-        if (attachVideoBtn && videoInput) {
-
-            attachVideoBtn.addEventListener(
-                'click',
-                function (e) {
-
-                    e.preventDefault();
-
-                    videoInput.click();
-
-                }
-            );
-
-        }
-
-
-        /* =========================================================
-           OBJECT URL CLEANUP
-        ========================================================== */
-
-        function revokeImageUrl() {
-
-            if (!imageObjectUrl) {
-                return;
+        window.addEventListener(
+            'load',
+            initializeChatPosition,
+            {
+                once: true
             }
+        );
 
-            URL.revokeObjectURL(
-                imageObjectUrl
-            );
-
-            imageObjectUrl = null;
-
-        }
+    }
 
 
-        function revokeVideoUrl() {
+    /* =========================================================
+       MEDIA ELEMENTS
+    ========================================================== */
 
-            if (!videoObjectUrl) {
-                return;
-            }
+    const imageInput =
+        document.getElementById('id_image');
 
-            URL.revokeObjectURL(
-                videoObjectUrl
-            );
+    const videoInput =
+        document.getElementById('id_video');
 
-            videoObjectUrl = null;
+    const imagePreview =
+        document.getElementById('image-preview');
 
-        }
+    const videoPreview =
+        document.getElementById('video-preview');
+
+    const imagePreviewWrapper =
+        document.getElementById('image-preview-wrap');
+
+    const videoPreviewWrapper =
+        document.getElementById('video-preview-wrap');
+
+    const attachImageBtn =
+        document.getElementById('attach-image-btn');
+
+    const attachVideoBtn =
+        document.getElementById('attach-video-btn');
+
+    const removeMediaBtn =
+        document.getElementById('remove-media-btn');
 
 
-        function hideMediaPreviews() {
+    let imageObjectUrl = null;
+    let videoObjectUrl = null;
 
-            if (imagePreviewWrapper) {
 
-                imagePreviewWrapper.classList.add(
-                    'd-none'
-                );
+    /* =========================================================
+       FILE PICKERS
+    ========================================================== */
+
+    if (attachImageBtn && imageInput) {
+
+        attachImageBtn.addEventListener(
+            'click',
+            function (e) {
+
+                e.preventDefault();
+
+                imageInput.click();
 
             }
+        );
+
+    }
 
 
-            if (videoPreviewWrapper) {
+    if (attachVideoBtn && videoInput) {
 
-                videoPreviewWrapper.classList.add(
-                    'd-none'
-                );
+        attachVideoBtn.addEventListener(
+            'click',
+            function (e) {
 
-            }
+                e.preventDefault();
 
-
-            if (removeMediaBtn) {
-
-                removeMediaBtn.classList.add(
-                    'd-none'
-                );
+                videoInput.click();
 
             }
+        );
 
+    }
+
+
+    /* =========================================================
+       OBJECT URL CLEANUP
+    ========================================================== */
+
+    function revokeImageUrl() {
+
+        if (!imageObjectUrl) {
+            return;
         }
 
+        URL.revokeObjectURL(
+            imageObjectUrl
+        );
 
-        /* =========================================================
-           IMAGE SELECT
-        ========================================================== */
+        imageObjectUrl = null;
 
-        if (imageInput) {
-
-            imageInput.addEventListener(
-                'change',
-                function () {
-
-                    const file =
-                        imageInput.files &&
-                        imageInput.files[0];
+    }
 
 
-                    if (!file) {
-                        return;
-                    }
+    function revokeVideoUrl() {
+
+        if (!videoObjectUrl) {
+            return;
+        }
+
+        URL.revokeObjectURL(
+            videoObjectUrl
+        );
+
+        videoObjectUrl = null;
+
+    }
 
 
-                    /*
-                     * Ако изберем снимка,
-                     * премахваме избраното видео.
-                     */
+    function hideMediaPreviews() {
 
-                    if (videoInput) {
+        if (imagePreviewWrapper) {
 
-                        videoInput.value = '';
-
-                    }
-
-
-                    revokeVideoUrl();
-
-
-                    if (videoPreview) {
-
-                        videoPreview.pause();
-
-                        videoPreview.removeAttribute(
-                            'src'
-                        );
-
-                        videoPreview.load();
-
-                    }
-
-
-                    if (!imagePreview) {
-                        return;
-                    }
-
-
-                    revokeImageUrl();
-
-
-                    imageObjectUrl =
-                        URL.createObjectURL(file);
-
-
-                    imagePreview.src =
-                        imageObjectUrl;
-
-
-                    if (imagePreviewWrapper) {
-
-                        imagePreviewWrapper.classList.remove(
-                            'd-none'
-                        );
-
-                    }
-
-
-                    if (videoPreviewWrapper) {
-
-                        videoPreviewWrapper.classList.add(
-                            'd-none'
-                        );
-
-                    }
-
-
-                    if (removeMediaBtn) {
-
-                        removeMediaBtn.classList.remove(
-                            'd-none'
-                        );
-
-                    }
-
-                }
+            imagePreviewWrapper.classList.add(
+                'd-none'
             );
 
         }
 
+        if (videoPreviewWrapper) {
 
-        /* =========================================================
-           VIDEO SELECT
-        ========================================================== */
-
-        if (videoInput) {
-
-            videoInput.addEventListener(
-                'change',
-                function () {
-
-                    const file =
-                        videoInput.files &&
-                        videoInput.files[0];
-
-
-                    if (!file) {
-                        return;
-                    }
-
-
-                    /*
-                     * Ако изберем видео,
-                     * премахваме избраната снимка.
-                     */
-
-                    if (imageInput) {
-
-                        imageInput.value = '';
-
-                    }
-
-
-                    revokeImageUrl();
-
-
-                    if (imagePreview) {
-
-                        imagePreview.removeAttribute(
-                            'src'
-                        );
-
-                    }
-
-
-                    if (!videoPreview) {
-                        return;
-                    }
-
-
-                    revokeVideoUrl();
-
-
-                    videoObjectUrl =
-                        URL.createObjectURL(file);
-
-
-                    videoPreview.src =
-                        videoObjectUrl;
-
-
-                    videoPreview.load();
-
-
-                    if (videoPreviewWrapper) {
-
-                        videoPreviewWrapper.classList.remove(
-                            'd-none'
-                        );
-
-                    }
-
-
-                    if (imagePreviewWrapper) {
-
-                        imagePreviewWrapper.classList.add(
-                            'd-none'
-                        );
-
-                    }
-
-
-                    if (removeMediaBtn) {
-
-                        removeMediaBtn.classList.remove(
-                            'd-none'
-                        );
-
-                    }
-
-                }
+            videoPreviewWrapper.classList.add(
+                'd-none'
             );
 
         }
-
-
-        /* =========================================================
-           REMOVE MEDIA
-        ========================================================== */
 
         if (removeMediaBtn) {
 
-            removeMediaBtn.addEventListener(
-                'click',
-                function (e) {
-
-                    e.preventDefault();
-
-                    /*
-                     * Изчистваме input-ите.
-                     */
-
-                    if (imageInput) {
-
-                        imageInput.value = '';
-
-                    }
-
-
-                    if (videoInput) {
-
-                        videoInput.value = '';
-
-                    }
-
-
-                    /*
-                     * Изчистваме object URLs.
-                     */
-
-                    revokeImageUrl();
-
-                    revokeVideoUrl();
-
-
-                    /*
-                     * Изчистваме image preview.
-                     */
-
-                    if (imagePreview) {
-
-                        imagePreview.removeAttribute(
-                            'src'
-                        );
-
-                    }
-
-
-                    /*
-                     * Изчистваме video preview.
-                     */
-
-                    if (videoPreview) {
-
-                        videoPreview.pause();
-
-                        videoPreview.removeAttribute(
-                            'src'
-                        );
-
-                        videoPreview.load();
-
-                    }
-
-
-                    hideMediaPreviews();
-
-                }
+            removeMediaBtn.classList.add(
+                'd-none'
             );
 
         }
 
+    }
 
-        /* =========================================================
-           CLEANUP ON PAGE EXIT
-        ========================================================== */
 
-        window.addEventListener(
-            'beforeunload',
+    /* =========================================================
+       IMAGE SELECT
+    ========================================================== */
+
+    if (imageInput) {
+
+        imageInput.addEventListener(
+            'change',
             function () {
+
+                const file =
+                    imageInput.files &&
+                    imageInput.files[0];
+
+
+                if (!file) {
+                    return;
+                }
+
+
+                if (videoInput) {
+
+                    videoInput.value = '';
+
+                }
+
+
+                revokeVideoUrl();
+
+
+                if (videoPreview) {
+
+                    videoPreview.pause();
+
+                    videoPreview.removeAttribute(
+                        'src'
+                    );
+
+                    videoPreview.load();
+
+                }
+
+
+                if (!imagePreview) {
+                    return;
+                }
+
+
+                revokeImageUrl();
+
+
+                imageObjectUrl =
+                    URL.createObjectURL(file);
+
+
+                imagePreview.src =
+                    imageObjectUrl;
+
+
+                if (imagePreviewWrapper) {
+
+                    imagePreviewWrapper.classList.remove(
+                        'd-none'
+                    );
+
+                }
+
+
+                if (videoPreviewWrapper) {
+
+                    videoPreviewWrapper.classList.add(
+                        'd-none'
+                    );
+
+                }
+
+
+                if (removeMediaBtn) {
+
+                    removeMediaBtn.classList.remove(
+                        'd-none'
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       VIDEO SELECT
+    ========================================================== */
+
+    if (videoInput) {
+
+        videoInput.addEventListener(
+            'change',
+            function () {
+
+                const file =
+                    videoInput.files &&
+                    videoInput.files[0];
+
+
+                if (!file) {
+                    return;
+                }
+
+
+                if (imageInput) {
+
+                    imageInput.value = '';
+
+                }
+
+
+                revokeImageUrl();
+
+
+                if (imagePreview) {
+
+                    imagePreview.removeAttribute(
+                        'src'
+                    );
+
+                }
+
+
+                if (!videoPreview) {
+                    return;
+                }
+
+
+                revokeVideoUrl();
+
+
+                videoObjectUrl =
+                    URL.createObjectURL(file);
+
+
+                videoPreview.src =
+                    videoObjectUrl;
+
+
+                videoPreview.load();
+
+
+                if (videoPreviewWrapper) {
+
+                    videoPreviewWrapper.classList.remove(
+                        'd-none'
+                    );
+
+                }
+
+
+                if (imagePreviewWrapper) {
+
+                    imagePreviewWrapper.classList.add(
+                        'd-none'
+                    );
+
+                }
+
+
+                if (removeMediaBtn) {
+
+                    removeMediaBtn.classList.remove(
+                        'd-none'
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       REMOVE MEDIA
+    ========================================================== */
+
+    if (removeMediaBtn) {
+
+        removeMediaBtn.addEventListener(
+            'click',
+            function (e) {
+
+                e.preventDefault();
+
+
+                if (imageInput) {
+
+                    imageInput.value = '';
+
+                }
+
+
+                if (videoInput) {
+
+                    videoInput.value = '';
+
+                }
+
 
                 revokeImageUrl();
 
                 revokeVideoUrl();
 
+
+                if (imagePreview) {
+
+                    imagePreview.removeAttribute(
+                        'src'
+                    );
+
+                }
+
+
+                if (videoPreview) {
+
+                    videoPreview.pause();
+
+                    videoPreview.removeAttribute(
+                        'src'
+                    );
+
+                    videoPreview.load();
+
+                }
+
+
+                hideMediaPreviews();
+
             }
         );
 
-
-        /* =========================================================
-           SHARE
-        ========================================================== */
-
-        document.addEventListener(
-            'click',
-            async function (e) {
-
-                const btn =
-                    e.target.closest('.share-btn');
+    }
 
 
-                if (!btn) {
-                    return;
-                }
+    /* =========================================================
+       CLEANUP
+    ========================================================== */
+
+    window.addEventListener(
+        'beforeunload',
+        function () {
+
+            revokeImageUrl();
+
+            revokeVideoUrl();
+
+        }
+    );
 
 
-                e.preventDefault();
+    /* =========================================================
+       SHARE
+    ========================================================== */
+
+    document.addEventListener(
+        'click',
+        async function (e) {
+
+            const btn =
+                e.target.closest('.share-btn');
 
 
-                const url =
-                    btn.dataset.url;
+            if (!btn) {
+                return;
+            }
 
 
-                if (!url) {
-                    return;
-                }
+            e.preventDefault();
 
 
-                /*
-                 * Native Share
-                 */
-
-                if (navigator.share) {
-
-                    try {
-
-                        await navigator.share({
-                            title: 'Shared media',
-                            text: 'Check this out',
-                            url: url
-                        });
-
-                        return;
-
-                    } catch (error) {
-
-                        /*
-                         * Потребителят е натиснал Cancel.
-                         */
-
-                        if (
-                            error &&
-                            error.name === 'AbortError'
-                        ) {
-
-                            return;
-
-                        }
-
-                    }
-
-                }
+            const url =
+                btn.dataset.url;
 
 
-                /*
-                 * Clipboard API
-                 */
+            if (!url) {
+                return;
+            }
+
+
+            if (navigator.share) {
 
                 try {
 
+                    await navigator.share({
+                        title: 'Shared media',
+                        text: 'Check this out',
+                        url: url
+                    });
+
+                    return;
+
+                } catch (error) {
+
                     if (
-                        navigator.clipboard &&
-                        window.isSecureContext
+                        error &&
+                        error.name === 'AbortError'
                     ) {
-
-                        await navigator.clipboard.writeText(
-                            url
-                        );
-
-
-                        const oldHtml =
-                            btn.innerHTML;
-
-
-                        btn.innerHTML =
-                            '✓';
-
-
-                        setTimeout(
-                            function () {
-
-                                btn.innerHTML =
-                                    oldHtml;
-
-                            },
-                            1200
-                        );
-
 
                         return;
 
                     }
 
-                } catch (error) {
+                }
 
-                    console.error(
-                        'Clipboard failed:',
-                        error
+            }
+
+
+            try {
+
+                if (
+                    navigator.clipboard &&
+                    window.isSecureContext
+                ) {
+
+                    await navigator.clipboard.writeText(
+                        url
                     );
+
+
+                    const oldHtml =
+                        btn.innerHTML;
+
+
+                    btn.innerHTML =
+                        '✓';
+
+
+                    setTimeout(
+                        function () {
+
+                            btn.innerHTML =
+                                oldHtml;
+
+                        },
+                        1200
+                    );
+
+
+                    return;
 
                 }
 
+            } catch (error) {
 
-                /*
-                 * Old browser fallback
-                 */
+                console.error(
+                    'Clipboard failed:',
+                    error
+                );
 
-                const textarea =
-                    document.createElement(
-                        'textarea'
-                    );
-
-
-                textarea.value =
-                    url;
+            }
 
 
-                textarea.style.position =
-                    'fixed';
-
-                textarea.style.left =
-                    '-9999px';
-
-                textarea.style.top =
-                    '-9999px';
-
-                textarea.style.opacity =
-                    '0';
-
-
-                document.body.appendChild(
-                    textarea
+            const textarea =
+                document.createElement(
+                    'textarea'
                 );
 
 
-                textarea.focus();
-
-                textarea.select();
-
-
-                try {
-
-                    document.execCommand(
-                        'copy'
-                    );
-
-                } catch (error) {
-
-                    console.error(
-                        'Copy failed:',
-                        error
-                    );
-
-                }
+            textarea.value =
+                url;
 
 
-                textarea.remove();
+            textarea.style.position =
+                'fixed';
+
+            textarea.style.left =
+                '-9999px';
+
+            textarea.style.top =
+                '-9999px';
+
+            textarea.style.opacity =
+                '0';
+
+
+            document.body.appendChild(
+                textarea
+            );
+
+
+            textarea.focus();
+
+            textarea.select();
+
+
+            try {
+
+                document.execCommand(
+                    'copy'
+                );
+
+            } catch (error) {
+
+                console.error(
+                    'Copy failed:',
+                    error
+                );
 
             }
-        );
 
 
-        /* =========================================================
-           REACTIONS
-        ========================================================== */
+            textarea.remove();
 
-        const defaultAvatar =
-            "{% static 'images/profile_picture.webp' %}";
+        }
+    );
 
 
-        document.addEventListener(
-            'click',
-            async function (e) {
+    /* =========================================================
+       REACTIONS
+    ========================================================== */
 
-                const btn =
-                    e.target.closest('.js-react');
+    const defaultAvatar =
+        "{% static 'images/profile_picture.webp' %}";
 
 
-                if (!btn) {
-                    return;
+    document.addEventListener(
+        'click',
+        async function (e) {
+
+            const btn =
+                e.target.closest('.js-react');
+
+
+            if (!btn) {
+                return;
+            }
+
+
+            e.preventDefault();
+
+
+            if (btn.dataset.loading === '1') {
+                return;
+            }
+
+
+            btn.dataset.loading = '1';
+
+
+            const csrfTokenElement =
+                document.querySelector(
+                    '[name="csrfmiddlewaretoken"]'
+                );
+
+
+            const csrfToken =
+                csrfTokenElement
+                    ? csrfTokenElement.value
+                    : '';
+
+
+            if (!csrfToken) {
+
+                console.error(
+                    'CSRF token not found.'
+                );
+
+                btn.dataset.loading = '0';
+
+                return;
+
+            }
+
+
+            try {
+
+                const url =
+                    btn.href;
+
+
+                if (!url) {
+
+                    throw new Error(
+                        'Reaction URL not found.'
+                    );
+
                 }
 
 
-                e.preventDefault();
+                const response =
+                    await fetch(
+                        url,
+                        {
+                            method: 'POST',
 
+                            credentials:
+                                'same-origin',
 
-                /*
-                 * Не позволяваме двойно изпращане.
-                 */
+                            headers: {
 
-                if (btn.dataset.loading === '1') {
-                    return;
-                }
+                                'X-Requested-With':
+                                    'XMLHttpRequest',
 
+                                'Accept':
+                                    'application/json',
 
-                btn.dataset.loading = '1';
-
-
-                /*
-                 * CSRF token.
-                 */
-
-                const csrfTokenElement =
-                    document.querySelector(
-                        '[name="csrfmiddlewaretoken"]'
-                    );
-
-
-                const csrfToken =
-                    csrfTokenElement
-                        ? csrfTokenElement.value
-                        : '';
-
-
-                if (!csrfToken) {
-
-                    console.error(
-                        'CSRF token not found.'
-                    );
-
-                    btn.dataset.loading = '0';
-
-                    return;
-
-                }
-
-
-                try {
-
-                    /*
-                     * Взимаме URL от href.
-                     *
-                     * Backend вече очаква POST.
-                     */
-
-                    const url =
-                        btn.href;
-
-
-                    if (!url) {
-
-                        throw new Error(
-                            'Reaction URL not found.'
-                        );
-
-                    }
-
-
-                    const response =
-                        await fetch(
-                            url,
-                            {
-                                method: 'POST',
-
-                                credentials:
-                                    'same-origin',
-
-                                headers: {
-                                    'X-Requested-With':
-                                        'XMLHttpRequest',
-
-                                    'Accept':
-                                        'application/json',
-
-                                    'X-CSRFToken':
-                                        csrfToken
-                                }
-                            }
-                        );
-
-
-                    /*
-                     * Опитваме да прочетем JSON.
-                     */
-
-                    let data;
-
-                    try {
-
-                        data =
-                            await response.json();
-
-                    } catch (jsonError) {
-
-                        throw new Error(
-                            `Invalid server response (${response.status}).`
-                        );
-
-                    }
-
-
-                    /*
-                     * Проверяваме HTTP + Django response.
-                     */
-
-                    if (
-                        !response.ok ||
-                        !data.ok
-                    ) {
-
-                        throw new Error(
-                            data.error ||
-                            `Reaction failed (${response.status}).`
-                        );
-
-                    }
-
-
-                    const reaction =
-                        data.reaction ||
-                        btn.dataset.reaction;
-
-
-                    const messageId =
-                        data.message_id ||
-                        btn.dataset.msg;
-
-
-                    /* =================================================
-                       ACTIVE STATE
-                    ================================================== */
-
-                    btn.classList.toggle(
-                        'active-like',
-                        reaction === 'like' &&
-                        Boolean(data.active)
-                    );
-
-
-                    btn.classList.toggle(
-                        'active-heart',
-                        reaction === 'heart' &&
-                        Boolean(data.active)
-                    );
-
-
-                    /* =================================================
-                       AVATAR BOX
-                    ================================================== */
-
-                    let avatarBox =
-                        btn.querySelector(
-                            '[data-react-avatars]'
-                        );
-
-
-                    /*
-                     * Ако span-ът не е вътре в бутона,
-                     * търсим го по message ID + reaction.
-                     */
-
-                    if (
-                        !avatarBox &&
-                        messageId &&
-                        reaction
-                    ) {
-
-                        avatarBox =
-                            document.querySelector(
-                                `[data-react-avatars="${reaction}-${messageId}"]`
-                            );
-
-                    }
-
-
-                    /* =================================================
-                       RENDER REACTORS
-                    ================================================== */
-
-                    if (avatarBox) {
-
-                        avatarBox.replaceChildren();
-
-
-                        const reactors =
-                            Array.isArray(data.reactors)
-                                ? data.reactors
-                                : [];
-
-
-                        reactors.forEach(
-                            function (reactor) {
-
-                                const img =
-                                    document.createElement(
-                                        'img'
-                                    );
-
-
-                                img.className =
-                                    'react-avatar';
-
-
-                                img.alt =
-                                    reactor.username ||
-                                    'User';
-
-
-                                img.loading =
-                                    'lazy';
-
-
-                                img.src =
-                                    reactor.photo ||
-                                    defaultAvatar;
-
-
-                                avatarBox.appendChild(
-                                    img
-                                );
+                                'X-CSRFToken':
+                                    csrfToken
 
                             }
-                        );
-
-                    }
-
-
-                    /* =================================================
-                       UPDATE TOOLTIP
-                    ================================================== */
-
-                    if (
-                        Array.isArray(
-                            data.reactors
-                        )
-                    ) {
-
-                        const names =
-                            data.reactors
-                                .map(
-                                    function (reactor) {
-
-                                        return reactor.username;
-
-                                    }
-                                )
-                                .filter(Boolean);
-
-
-                        if (names.length) {
-
-                            btn.title =
-                                names.join(', ');
-
-                        } else {
-
-                            btn.title =
-                                reaction === 'heart'
-                                    ? 'Heart'
-                                    : 'Like';
 
                         }
-
-                    }
-
-                } catch (error) {
-
-                    console.error(
-                        'Reaction error:',
-                        error
                     );
 
-                } finally {
 
-                    btn.dataset.loading =
-                        '0';
+                let data;
+
+
+                try {
+
+                    data =
+                        await response.json();
+
+                } catch (jsonError) {
+
+                    throw new Error(
+                        `Invalid server response (${response.status}).`
+                    );
 
                 }
 
-            }
-        );
 
-    });
+                if (
+                    !response.ok ||
+                    !data.ok
+                ) {
+
+                    throw new Error(
+                        data.error ||
+                        `Reaction failed (${response.status}).`
+                    );
+
+                }
+
+
+                const reaction =
+                    data.reaction ||
+                    btn.dataset.reaction;
+
+
+                const messageId =
+                    data.message_id ||
+                    btn.dataset.msg;
+
+
+                /* =================================================
+                   ACTIVE STATE
+                ================================================== */
+
+                btn.classList.toggle(
+                    'active-like',
+                    reaction === 'like' &&
+                    Boolean(data.active)
+                );
+
+
+                btn.classList.toggle(
+                    'active-heart',
+                    reaction === 'heart' &&
+                    Boolean(data.active)
+                );
+
+
+                /* =================================================
+                   AVATAR BOX
+                ================================================== */
+
+                let avatarBox =
+                    btn.querySelector(
+                        '[data-react-avatars]'
+                    );
+
+
+                if (
+                    !avatarBox &&
+                    messageId &&
+                    reaction
+                ) {
+
+                    avatarBox =
+                        document.querySelector(
+                            `[data-react-avatars="${reaction}-${messageId}"]`
+                        );
+
+                }
+
+
+                /* =================================================
+                   RENDER REACTORS
+                ================================================== */
+
+                if (avatarBox) {
+
+                    avatarBox.replaceChildren();
+
+
+                    const reactors =
+                        Array.isArray(data.reactors)
+                            ? data.reactors
+                            : [];
+
+
+                    reactors.forEach(
+                        function (reactor) {
+
+                            const img =
+                                document.createElement(
+                                    'img'
+                                );
+
+
+                            img.className =
+                                'react-avatar';
+
+
+                            img.alt =
+                                reactor.username ||
+                                'User';
+
+
+                            img.loading =
+                                'lazy';
+
+
+                            img.src =
+                                reactor.photo ||
+                                defaultAvatar;
+
+
+                            avatarBox.appendChild(
+                                img
+                            );
+
+                        }
+                    );
+
+                }
+
+
+                /* =================================================
+                   TOOLTIP
+                ================================================== */
+
+                if (
+                    Array.isArray(
+                        data.reactors
+                    )
+                ) {
+
+                    const names =
+                        data.reactors
+                            .map(
+                                function (reactor) {
+
+                                    return reactor.username;
+
+                                }
+                            )
+                            .filter(Boolean);
+
+
+                    if (names.length) {
+
+                        btn.title =
+                            names.join(', ');
+
+                    } else {
+
+                        btn.title =
+                            reaction === 'heart'
+                                ? 'Heart'
+                                : 'Like';
+
+                    }
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    'Reaction error:',
+                    error
+                );
+
+            } finally {
+
+                btn.dataset.loading =
+                    '0';
+
+            }
+
+        }
+    );
+
+});
 </script>
+
 {% endblock %}
