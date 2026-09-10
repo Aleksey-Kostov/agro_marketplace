@@ -403,30 +403,49 @@
         removeMediaBtn.classList.add('d-none');
     });
 
-    /* Share = only copy link */
-    document.addEventListener('click', async function (e) {
-        const btn = e.target.closest('.share-btn');
-        if (!btn) return;
-        e.preventDefault();
-        e.stopPropagation();
+    /* Share */
+   document.addEventListener('click', async function (e) {
+    const btn = e.target.closest('.share-btn');
+    if (!btn) return;
 
-        const url = btn.dataset.url;
-        if (!url) return;
+    e.preventDefault();
+    e.stopPropagation();
 
+    const url = btn.dataset.url;
+    if (!url) return;
+
+    // Android / iOS / Windows (Edge, Chrome) / macOS Safari — вграден share
+    if (navigator.share) {
         try {
-            await navigator.clipboard.writeText(url);
-            const old = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i>';
-            setTimeout(() => { btn.innerHTML = old; }, 1200);
+            await navigator.share({
+                title: document.title || 'Shared media',
+                text: 'Check this out',
+                url: url
+            });
+            return;
         } catch (err) {
-            const input = document.createElement('input');
-            input.value = url;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
+            if (err && err.name === 'AbortError') return;
         }
-    });
+    }
+
+    try {
+        await navigator.clipboard.writeText(url);
+        const old = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        btn.title = 'Link copied';
+        setTimeout(() => {
+            btn.innerHTML = old;
+            btn.title = 'Share';
+        }, 1200);
+    } catch (err) {
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+    }
+});
 
     /* Reactions */
     document.addEventListener('click', async function (e) {
