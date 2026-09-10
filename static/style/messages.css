@@ -576,3 +576,23 @@
 }
 .tg-avatars .react-avatar:first-child { margin-left: 0; }
 
+.delete-message-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.delete-message-reaction {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+.delete-message-reaction .tg-emoji {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}

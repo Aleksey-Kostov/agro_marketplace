@@ -394,18 +394,20 @@
 
                                     <form method="post"
                                           action="{% url 'delete-one-message' item.pk %}"
-                                          class="d-inline"
+                                          class="d-inline delete-message-form"
                                           onsubmit="return confirm('Delete this message?');">
 
                                         {% csrf_token %}
 
                                         <button type="submit"
                                                 class="tg-reaction delete-message-reaction"
-                                                title="Delete">
-                                            <span class="tg-emoji">
-                                                🗑️
-                                            </span>
+                                                title="Delete"
+                                                aria-label="Delete message">
+
+                                            <span class="tg-emoji">🗑️</span>
+
                                         </button>
+
                                     </form>
 
                                     {% endif %}
@@ -752,257 +754,242 @@
 
         /* =========================================================
            CHAT SCROLL
-        ========================================================== */
+        ========================================================= */
 
-        const chatWindow =
-            document.getElementById('chat-window');
+const chatWindow =
+    document.getElementById('chat-window');
 
-        const scrollTopBtn =
-            document.getElementById('scroll-top-btn');
+const scrollTopBtn =
+    document.getElementById('scroll-top-btn');
 
-        const scrollBottomBtn =
-            document.getElementById('scroll-bottom-btn');
+const scrollBottomBtn =
+    document.getElementById('scroll-bottom-btn');
+
+
+function updateScrollButtons() {
+
+    if (!chatWindow) {
+        return;
+    }
+
+
+    const scrollTop =
+        chatWindow.scrollTop;
+
+    const maxScrollTop =
+        Math.max(
+            0,
+            chatWindow.scrollHeight -
+            chatWindow.clientHeight
+        );
+
+
+    /*
+     * На самия връх:
+     * няма UP.
+     *
+     * Веднага щом има дори 1px scroll:
+     * UP се показва.
+     */
+
+    if (scrollTopBtn) {
+
+        scrollTopBtn.classList.toggle(
+            'd-none',
+            scrollTop <= 0
+        );
+
+    }
+
+
+    /*
+     * На самия край:
+     * няма DOWN.
+     *
+     * Веднага щом не сме на края:
+     * DOWN се показва.
+     */
+
+    if (scrollBottomBtn) {
+
+        scrollBottomBtn.classList.toggle(
+            'd-none',
+            scrollTop >= maxScrollTop
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SCROLL TO TOP
+========================================================= */
+
+function scrollToTop() {
+
+    if (!chatWindow) {
+        return;
+    }
+
+    chatWindow.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+
+}
+
+
+/* =========================================================
+   SCROLL TO BOTTOM
+========================================================= */
+
+function scrollToBottom() {
+
+    if (!chatWindow) {
+        return;
+    }
+
+    chatWindow.scrollTo({
+        top: chatWindow.scrollHeight,
+        behavior: 'smooth'
+    });
+
+}
+
+
+/* =========================================================
+   SCROLL EVENT
+========================================================= */
+
+if (chatWindow) {
+
+    /*
+     * Изчисляваме веднага.
+     */
+    updateScrollButtons();
+
+
+    /*
+     * Изчисляваме при ВСЯКО движение.
+     */
+    chatWindow.addEventListener(
+        'scroll',
+        updateScrollButtons,
+        {
+            passive: true
+        }
+    );
+
+
+    /*
+     * Понякога scrollHeight се променя след
+     * зареждането на изображения/видеа.
+     *
+     * Затова проверяваме отново.
+     */
+
+    window.addEventListener(
+        'resize',
+        updateScrollButtons
+    );
+
+}
+
+
+/* =========================================================
+   UP BUTTON
+========================================================= */
+
+if (scrollTopBtn) {
+
+    scrollTopBtn.addEventListener(
+        'click',
+        function (e) {
+
+            e.preventDefault();
+
+            scrollToTop();
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   DOWN BUTTON
+========================================================= */
+
+if (scrollBottomBtn) {
+
+    scrollBottomBtn.addEventListener(
+        'click',
+        function (e) {
+
+            e.preventDefault();
+
+            scrollToBottom();
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   INITIAL CHAT POSITION
+========================================================= */
+
+function initializeChatPosition() {
+
+    if (!chatWindow) {
+        return;
+    }
+
+
+    /*
+     * Изчакваме браузъра да изчисли
+     * реалната височина на съобщенията.
+     */
+
+    requestAnimationFrame(function () {
+
+        chatWindow.scrollTop =
+            chatWindow.scrollHeight;
+
 
         /*
-         * Колко пиксела толеранс използваме за начало/край.
-         *
-         * 60px означава:
-         * - ако сме до 60px отгоре -> UP е скрит
-         * - ако сме до 60px отдолу -> DOWN е скрит
-         */
-        const SCROLL_THRESHOLD = 60;
-
-
-        function getScrollDistanceFromTop() {
-
-            if (!chatWindow) {
-                return 0;
-            }
-
-            return chatWindow.scrollTop;
-
-        }
-
-
-        function getScrollDistanceFromBottom() {
-
-            if (!chatWindow) {
-                return 0;
-            }
-
-            return (
-                chatWindow.scrollHeight -
-                chatWindow.scrollTop -
-                chatWindow.clientHeight
-            );
-
-        }
-
-
-        function isAtTop() {
-
-            return (
-                getScrollDistanceFromTop() <=
-                SCROLL_THRESHOLD
-            );
-
-        }
-
-
-        function isAtBottom() {
-
-            return (
-                getScrollDistanceFromBottom() <=
-                SCROLL_THRESHOLD
-            );
-
-        }
-
-
-        function updateScrollButtons() {
-
-            if (!chatWindow) {
-                return;
-            }
-
-
-            /*
-             * UP
-             *
-             * Скрит е само когато сме най-отгоре.
-             * Веднага щом започнем да слизаме надолу,
-             * се показва.
-             */
-
-            if (scrollTopBtn) {
-
-                scrollTopBtn.classList.toggle(
-                    'd-none',
-                    isAtTop()
-                );
-
-            }
-
-
-            /*
-             * DOWN
-             *
-             * Скрит е само когато сме най-отдолу.
-             * Веднага щом започнем да се качваме нагоре,
-             * се показва.
-             */
-
-            if (scrollBottomBtn) {
-
-                scrollBottomBtn.classList.toggle(
-                    'd-none',
-                    isAtBottom()
-                );
-
-            }
-
-        }
-
-
-        function scrollToTop(smooth = true) {
-
-            if (!chatWindow) {
-                return;
-            }
-
-            chatWindow.scrollTo({
-                top: 0,
-                behavior: smooth ? 'smooth' : 'auto'
-            });
-
-        }
-
-
-        function scrollToBottom(smooth = true) {
-
-            if (!chatWindow) {
-                return;
-            }
-
-            chatWindow.scrollTo({
-                top: chatWindow.scrollHeight,
-                behavior: smooth ? 'smooth' : 'auto'
-            });
-
-        }
-
-
-        /*
-         * Следим скрола постоянно.
+         * След първото позициониране
+         * преизчисляваме бутоните.
          */
 
-        if (chatWindow) {
+        requestAnimationFrame(function () {
 
             updateScrollButtons();
 
-            chatWindow.addEventListener(
-                'scroll',
-                updateScrollButtons,
-                {
-                    passive: true
-                }
-            );
+        });
 
+    });
+
+}
+
+
+if (document.readyState === 'complete') {
+
+    initializeChatPosition();
+
+} else {
+
+    window.addEventListener(
+        'load',
+        initializeChatPosition,
+        {
+            once: true
         }
+    );
 
-
-        /*
-         * UP button
-         */
-
-        if (scrollTopBtn) {
-
-            scrollTopBtn.addEventListener(
-                'click',
-                function (e) {
-
-                    e.preventDefault();
-
-                    scrollToTop(true);
-
-                }
-            );
-
-        }
-
-
-        /*
-         * DOWN button
-         */
-
-        if (scrollBottomBtn) {
-
-            scrollBottomBtn.addEventListener(
-                'click',
-                function (e) {
-
-                    e.preventDefault();
-
-                    scrollToBottom(true);
-
-                }
-            );
-
-        }
-
-
-        /*
-         * При отваряне на разговора:
-         *
-         * -> отиваме директно на последното съобщение
-         * -> DOWN се скрива
-         * -> UP остава скрит/показан според реалната височина
-         */
-
-        function initializeChatPosition() {
-
-            if (!chatWindow) {
-                return;
-            }
-
-
-            requestAnimationFrame(function () {
-
-                chatWindow.scrollTop =
-                    chatWindow.scrollHeight;
-
-
-                requestAnimationFrame(function () {
-
-                    updateScrollButtons();
-
-                });
-
-            });
-
-        }
-
-
-        /*
-         * Стартираме веднага, ако страницата вече е заредена.
-         */
-
-        if (document.readyState === 'complete') {
-
-            initializeChatPosition();
-
-        } else {
-
-            window.addEventListener(
-                'load',
-                initializeChatPosition,
-                {
-                    once: true
-                }
-            );
-
-        }
-
+}
 
         /* =========================================================
            MEDIA ELEMENTS
