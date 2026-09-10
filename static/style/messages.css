@@ -610,3 +610,23 @@
     align-items: center;
     justify-content: center;
 }
+
+/* =========================================================
+   MESSAGE DELIVERY / READ STATUS
+========================================================= */
+
+.message-delivery-status {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 600;
+    color: #999;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.message-delivery-status-read {
+    color: #198754;
+}
