@@ -2,6 +2,7 @@ import pytz
 from django.db import models
 from django.conf import settings
 from datetime import datetime
+from cloudinary.models import CloudinaryField
 
 User = settings.AUTH_USER_MODEL
 
@@ -11,7 +12,14 @@ class Message(models.Model):
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
     title = models.CharField(max_length=255, blank=True, null=True)
     body = models.TextField(blank=True, null=True)
-    image = models.ImageField(upload_to='message_images/', blank=True, null=True)
+    image = CloudinaryField('image', folder='message_images', blank=True, null=True)
+    video = CloudinaryField(
+        'video',
+        resource_type='video',
+        folder='message_videos',
+        blank=True,
+        null=True
+    )
     timestamp = models.DateTimeField(auto_now_add=True)
     parent_message = models.ForeignKey(
         'self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies'
@@ -21,6 +29,29 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.sender} -> {self.recipient}: {(self.title or 'No Title')[:30]}"
+
+    @property
+    def video_url(self):
+        if not self.video:
+            return ''
+        name = str(self.video)
+        if name.startswith('http'):
+            return name
+
+        from django.conf import settings
+        url = getattr(settings, 'CLOUDINARY_URL', '') or ''
+        cloud_name = ''
+        if '@' in url:
+            cloud_name = url.split('@')[-1].strip()
+
+        if not cloud_name:
+            # локален fallback
+            try:
+                return self.video.url
+            except Exception:
+                return ''
+
+        return f'https://res.cloudinary.com/{cloud_name}/video/upload/{name}'
 
 
 class MessageStatus(models.Model):

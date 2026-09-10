@@ -477,3 +477,332 @@
     padding-bottom: 0.9rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.15) !important;
 }
+
+
+.conversation-scroll {
+    position: relative;
+    max-height: 55vh;
+    overflow-y: auto;
+}
+
+.conversation-scroll-buttons {
+    position: sticky;
+    float: right;
+    right: 12px;
+    bottom: 12px;
+    z-index: 20;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    margin-right: 12px;
+    margin-top: -88px;
+}
+
+.scroll-navigation-btn {
+    width: 40px;
+    height: 40px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #fff;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, .2);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    transition:
+        transform .15s ease,
+        box-shadow .15s ease;
+}
+
+.scroll-navigation-btn:hover {
+    transform: scale(1.08);
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, .25);
+}
+
+.scroll-navigation-btn:active {
+    transform: scale(.95);
+}
+
+.scroll-navigation-btn.d-none {
+    display: none !important;
+}
+
+.scroll-top-btn,
+.scroll-bottom-btn {
+    position: static;
+}
+
+.media-wrap { position: relative; display: inline-block; }
+.share-btn { position: absolute; top: 6px; right: 6px; }
+
+.message-video {
+    max-width: min(260px, 100%);
+    max-height: 240px;
+    border-radius: 10px;
+    display: block;
+}
+
+.tg-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+}
+.tg-reaction {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px 2px 4px;
+    border-radius: 12px;
+    background: rgba(0,0,0,.06);
+    text-decoration: none;
+    line-height: 1;
+}
+.tg-emoji {
+    opacity: .35;
+    filter: grayscale(1);
+}
+.tg-reaction.active-like .tg-emoji,
+.tg-reaction.active-heart .tg-emoji {
+    opacity: 1;
+    filter: none;
+}
+.tg-avatars { display: inline-flex; }
+.react-avatar {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #fff;
+    margin-left: -3px;
+}
+.tg-avatars .react-avatar:first-child { margin-left: 0; }
+
+.delete-message-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.delete-message-reaction {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+.delete-message-reaction .tg-emoji {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================================================
+   MESSAGE DELIVERY / READ STATUS
+========================================================= */
+
+.message-delivery-status {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 600;
+    color: #999;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.message-delivery-status-read {
+    color: #8e44ad;
+}
+
+/* =========================================================
+   MODERN CHAT DRAG & DROP
+========================================================= */
+
+.conversation-scroll {
+    position: relative;
+}
+
+
+/* =========================================================
+   DROP OVERLAY
+========================================================= */
+
+.chat-drop-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 3px dashed #8e44ad;
+    border-radius: 12px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(0.98);
+    transition:
+        opacity 0.15s ease,
+        visibility 0.15s ease,
+        transform 0.15s ease;
+}
+
+
+.chat-drop-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+
+/* =========================================================
+   DROP CONTENT
+========================================================= */
+
+.chat-drop-overlay-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 5px;
+    color: #555;
+}
+
+
+.chat-drop-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 8px;
+    border-radius: 50%;
+    background: #f1e6f5;
+    color: #8e44ad;
+    font-size: 28px;
+}
+
+
+.chat-drop-overlay-content strong {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.chat-drop-overlay-content small {
+    font-size: 13px;
+    color: #888;
+}
+
+
+/* =========================================================
+   UPLOAD PROGRESS
+========================================================= */
+
+.upload-progress-wrap {
+    width: 100%;
+}
+
+
+.upload-progress-wrap .progress {
+    height: 7px;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+
+.upload-progress-wrap .progress-bar {
+    transition:
+        width 0.15s ease;
+}
+
+
+#upload-progress-text,
+#upload-progress-percent {
+    color: #777;
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 576px) {
+
+    .chat-drop-overlay {
+        border-width: 2px;
+        border-radius: 10px;
+    }
+
+    .chat-drop-icon {
+        width: 54px;
+        height: 54px;
+
+        font-size: 23px;
+    }
+
+    .chat-drop-overlay-content strong {
+        font-size: 16px;
+    }
+
+}
+
+
+/* =========================================================
+   UPLOAD PROGRESS
+========================================================= */
+
+.upload-progress-wrap {
+    width: 100%;
+}
+
+.upload-progress-wrap .progress {
+    height: 7px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.upload-progress-wrap .progress-bar {
+    transition: width 0.15s ease;
+}
+
+#upload-progress-text,
+#upload-progress-percent {
+    color: #777;
+    font-size: 12px;
+}
+
+.scroll-navigation-btn {
+    transition:
+        opacity 0.25s ease,
+        visibility 0.25s ease,
+        transform 0.25s ease;
+}
+
+.scroll-buttons-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(0.85);
+}
