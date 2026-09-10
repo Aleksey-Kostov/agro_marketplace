@@ -401,11 +401,11 @@ const attachVideoBtn =
 const removeMediaBtn =
     document.getElementById('remove-media-btn');
 
-const dropZone =
-    document.getElementById('attachment-drop-zone');
-
 const replyForm =
     document.getElementById('reply-form');
+
+const dropOverlay =
+    document.getElementById('chat-drop-overlay');
 
 const uploadProgressWrap =
     document.getElementById('upload-progress-wrap');
@@ -455,7 +455,7 @@ function formatFileSize(bytes) {
 
 
 /* =========================================================
-   FILE VALIDATION
+   VALIDATION
 ========================================================= */
 
 function validateImageFile(file) {
@@ -466,7 +466,9 @@ function validateImageFile(file) {
 
     if (!file.type.startsWith('image/')) {
 
-        alert('Please select a valid image file.');
+        alert(
+            'Please select a valid image file.'
+        );
 
         return false;
 
@@ -497,7 +499,9 @@ function validateVideoFile(file) {
 
     if (!file.type.startsWith('video/')) {
 
-        alert('Please select a valid video file.');
+        alert(
+            'Please select a valid video file.'
+        );
 
         return false;
 
@@ -516,209 +520,6 @@ function validateVideoFile(file) {
     }
 
     return true;
-
-}
-
-
-/* =========================================================
-   FILE PICKERS
-========================================================= */
-
-if (attachImageBtn && imageInput) {
-
-    attachImageBtn.addEventListener(
-        'click',
-        function (e) {
-
-            e.preventDefault();
-
-            imageInput.click();
-
-        }
-    );
-
-}
-
-
-if (attachVideoBtn && videoInput) {
-
-    attachVideoBtn.addEventListener(
-        'click',
-        function (e) {
-
-            e.preventDefault();
-
-            videoInput.click();
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   DROP ZONE CLICK
-========================================================= */
-
-if (dropZone && imageInput) {
-
-    dropZone.addEventListener(
-        'click',
-        function () {
-
-            imageInput.click();
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   DRAG & DROP
-========================================================= */
-
-if (dropZone) {
-
-    [
-        'dragenter',
-        'dragover'
-    ].forEach(function (eventName) {
-
-        dropZone.addEventListener(
-            eventName,
-            function (e) {
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                dropZone.classList.add(
-                    'drag-over'
-                );
-
-            }
-        );
-
-    });
-
-
-    [
-        'dragleave',
-        'drop'
-    ].forEach(function (eventName) {
-
-        dropZone.addEventListener(
-            eventName,
-            function (e) {
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                dropZone.classList.remove(
-                    'drag-over'
-                );
-
-            }
-        );
-
-    });
-
-
-    dropZone.addEventListener(
-        'drop',
-        function (e) {
-
-            const files =
-                e.dataTransfer &&
-                e.dataTransfer.files;
-
-
-            if (!files || !files.length) {
-                return;
-            }
-
-
-            const file =
-                files[0];
-
-
-            /*
-             * Determine image/video
-             * from MIME type.
-             */
-
-            if (file.type.startsWith('image/')) {
-
-                if (!validateImageFile(file)) {
-                    return;
-                }
-
-                /*
-                 * Assign dropped file to
-                 * the image input.
-                 */
-
-                const dataTransfer =
-                    new DataTransfer();
-
-                dataTransfer.items.add(file);
-
-                imageInput.files =
-                    dataTransfer.files;
-
-
-                /*
-                 * Clear video.
-                 */
-
-                if (videoInput) {
-                    videoInput.value = '';
-                }
-
-
-                handleImageFile(file);
-
-            } else if (file.type.startsWith('video/')) {
-
-                if (!validateVideoFile(file)) {
-                    return;
-                }
-
-                /*
-                 * Assign dropped file to
-                 * the video input.
-                 */
-
-                const dataTransfer =
-                    new DataTransfer();
-
-                dataTransfer.items.add(file);
-
-                videoInput.files =
-                    dataTransfer.files;
-
-
-                /*
-                 * Clear image.
-                 */
-
-                if (imageInput) {
-                    imageInput.value = '';
-                }
-
-
-                handleVideoFile(file);
-
-            } else {
-
-                alert(
-                    'Only image and video files are allowed.'
-                );
-
-            }
-
-        }
-    );
 
 }
 
@@ -791,7 +592,7 @@ function hideMediaPreviews() {
 
 
 /* =========================================================
-   HANDLE IMAGE FILE
+   HANDLE IMAGE
 ========================================================= */
 
 function handleImageFile(file) {
@@ -806,16 +607,13 @@ function handleImageFile(file) {
 
     }
 
+    /* Remove video */
 
     if (videoInput) {
-
         videoInput.value = '';
-
     }
 
-
     revokeVideoUrl();
-
 
     if (videoPreview) {
 
@@ -837,10 +635,8 @@ function handleImageFile(file) {
 
     revokeImageUrl();
 
-
     imageObjectUrl =
         URL.createObjectURL(file);
-
 
     imagePreview.src =
         imageObjectUrl;
@@ -876,7 +672,7 @@ function handleImageFile(file) {
 
 
 /* =========================================================
-   HANDLE VIDEO FILE
+   HANDLE VIDEO
 ========================================================= */
 
 function handleVideoFile(file) {
@@ -891,16 +687,13 @@ function handleVideoFile(file) {
 
     }
 
+    /* Remove image */
 
     if (imageInput) {
-
         imageInput.value = '';
-
     }
 
-
     revokeImageUrl();
-
 
     if (imagePreview) {
 
@@ -918,14 +711,11 @@ function handleVideoFile(file) {
 
     revokeVideoUrl();
 
-
     videoObjectUrl =
         URL.createObjectURL(file);
 
-
     videoPreview.src =
         videoObjectUrl;
-
 
     videoPreview.load();
 
@@ -960,6 +750,42 @@ function handleVideoFile(file) {
 
 
 /* =========================================================
+   FILE PICKERS
+========================================================= */
+
+if (attachImageBtn && imageInput) {
+
+    attachImageBtn.addEventListener(
+        'click',
+        function (e) {
+
+            e.preventDefault();
+
+            imageInput.click();
+
+        }
+    );
+
+}
+
+
+if (attachVideoBtn && videoInput) {
+
+    attachVideoBtn.addEventListener(
+        'click',
+        function (e) {
+
+            e.preventDefault();
+
+            videoInput.click();
+
+        }
+    );
+
+}
+
+
+/* =========================================================
    IMAGE SELECT
 ========================================================= */
 
@@ -973,11 +799,9 @@ if (imageInput) {
                 imageInput.files &&
                 imageInput.files[0];
 
-
             if (!file) {
                 return;
             }
-
 
             handleImageFile(file);
 
@@ -1001,11 +825,9 @@ if (videoInput) {
                 videoInput.files &&
                 videoInput.files[0];
 
-
             if (!file) {
                 return;
             }
-
 
             handleVideoFile(file);
 
@@ -1013,6 +835,319 @@ if (videoInput) {
     );
 
 }
+
+
+/* =========================================================
+   DRAG & DROP
+========================================================= */
+
+let dragCounter = 0;
+
+
+function showDropOverlay() {
+
+    if (!dropOverlay) {
+        return;
+    }
+
+    dropOverlay.classList.add(
+        'active'
+    );
+
+    dropOverlay.setAttribute(
+        'aria-hidden',
+        'false'
+    );
+
+}
+
+
+function hideDropOverlay() {
+
+    if (!dropOverlay) {
+        return;
+    }
+
+    dropOverlay.classList.remove(
+        'active'
+    );
+
+    dropOverlay.setAttribute(
+        'aria-hidden',
+        'true'
+    );
+
+}
+
+
+if (chatWindow && dropOverlay) {
+
+    chatWindow.addEventListener(
+        'dragenter',
+        function (e) {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            dragCounter++;
+
+            showDropOverlay();
+
+        }
+    );
+
+
+    chatWindow.addEventListener(
+        'dragover',
+        function (e) {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (
+                e.dataTransfer
+            ) {
+
+                e.dataTransfer.dropEffect =
+                    'copy';
+
+            }
+
+            showDropOverlay();
+
+        }
+    );
+
+
+    chatWindow.addEventListener(
+        'dragleave',
+        function (e) {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            dragCounter--;
+
+            if (dragCounter <= 0) {
+
+                dragCounter = 0;
+
+                hideDropOverlay();
+
+            }
+
+        }
+    );
+
+
+    chatWindow.addEventListener(
+        'drop',
+        function (e) {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            dragCounter = 0;
+
+            hideDropOverlay();
+
+
+            const files =
+                e.dataTransfer &&
+                e.dataTransfer.files;
+
+
+            if (!files || !files.length) {
+                return;
+            }
+
+
+            const file =
+                files[0];
+
+
+            if (file.type.startsWith('image/')) {
+
+                if (!validateImageFile(file)) {
+                    return;
+                }
+
+                const dataTransfer =
+                    new DataTransfer();
+
+                dataTransfer.items.add(file);
+
+                if (imageInput) {
+
+                    imageInput.files =
+                        dataTransfer.files;
+
+                }
+
+                if (videoInput) {
+                    videoInput.value = '';
+                }
+
+                handleImageFile(file);
+
+                return;
+
+            }
+
+
+            if (file.type.startsWith('video/')) {
+
+                if (!validateVideoFile(file)) {
+                    return;
+                }
+
+                const dataTransfer =
+                    new DataTransfer();
+
+                dataTransfer.items.add(file);
+
+                if (videoInput) {
+
+                    videoInput.files =
+                        dataTransfer.files;
+
+                }
+
+                if (imageInput) {
+                    imageInput.value = '';
+                }
+
+                handleVideoFile(file);
+
+                return;
+
+            }
+
+
+            alert(
+                'Only image and video files are allowed.'
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   PASTE IMAGE
+========================================================= */
+
+document.addEventListener(
+    'paste',
+    function (e) {
+
+        const activeElement =
+            document.activeElement;
+
+
+        /*
+         * Paste image only when user is
+         * inside the message input.
+         */
+
+        if (
+            !activeElement ||
+            !(
+                activeElement.matches(
+                    'textarea[name="body"]'
+                ) ||
+                activeElement.matches(
+                    'input[name="body"]'
+                ) ||
+                activeElement.id ===
+                    'message-body-input'
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        const clipboardItems =
+            e.clipboardData &&
+            e.clipboardData.items;
+
+
+        if (!clipboardItems) {
+            return;
+        }
+
+
+        for (
+            let i = 0;
+            i < clipboardItems.length;
+            i++
+        ) {
+
+            const item =
+                clipboardItems[i];
+
+
+            if (
+                item.kind !== 'file' ||
+                !item.type.startsWith('image/')
+            ) {
+
+                continue;
+
+            }
+
+
+            const file =
+                item.getAsFile();
+
+
+            if (!file) {
+                continue;
+            }
+
+
+            if (!validateImageFile(file)) {
+                return;
+            }
+
+
+            const dataTransfer =
+                new DataTransfer();
+
+            dataTransfer.items.add(file);
+
+
+            if (imageInput) {
+
+                imageInput.files =
+                    dataTransfer.files;
+
+            }
+
+
+            if (videoInput) {
+                videoInput.value = '';
+            }
+
+
+            handleImageFile(file);
+
+            /*
+             * Prevent the browser from inserting
+             * the pasted image into the textarea.
+             */
+
+            e.preventDefault();
+
+            return;
+
+        }
+
+    }
+);
 
 
 /* =========================================================
@@ -1029,21 +1164,15 @@ if (removeMediaBtn) {
 
 
             if (imageInput) {
-
                 imageInput.value = '';
-
             }
 
-
             if (videoInput) {
-
                 videoInput.value = '';
-
             }
 
 
             revokeImageUrl();
-
             revokeVideoUrl();
 
 
@@ -1091,6 +1220,7 @@ function showUploadProgress() {
         'd-none'
     );
 
+
     if (uploadProgressBar) {
 
         uploadProgressBar.style.width =
@@ -1103,12 +1233,14 @@ function showUploadProgress() {
 
     }
 
+
     if (uploadProgressPercent) {
 
         uploadProgressPercent.textContent =
             '0%';
 
     }
+
 
     if (uploadProgressText) {
 
@@ -1169,7 +1301,7 @@ function hideUploadProgress() {
 
 
 /* =========================================================
-   VALIDATE FORM FILES
+   VALIDATE ATTACHMENTS
 ========================================================= */
 
 function validateAttachmentsBeforeSubmit() {
@@ -1179,11 +1311,21 @@ function validateAttachmentsBeforeSubmit() {
         imageInput.files &&
         imageInput.files[0];
 
-
     const videoFile =
         videoInput &&
         videoInput.files &&
         videoInput.files[0];
+
+
+    if (imageFile && videoFile) {
+
+        alert(
+            'Please attach either an image or a video, not both.'
+        );
+
+        return false;
+
+    }
 
 
     if (imageFile) {
@@ -1219,11 +1361,6 @@ if (replyForm) {
         'submit',
         function (e) {
 
-            /*
-             * If there is no attachment,
-             * keep normal Django form submit.
-             */
-
             const imageFile =
                 imageInput &&
                 imageInput.files &&
@@ -1242,14 +1379,15 @@ if (replyForm) {
                 );
 
 
+            /*
+             * Text-only message:
+             * use normal Django submit.
+             */
+
             if (!hasAttachment) {
                 return;
             }
 
-
-            /*
-             * Validate before sending.
-             */
 
             if (
                 !validateAttachmentsBeforeSubmit()
@@ -1261,11 +1399,6 @@ if (replyForm) {
 
             }
 
-
-            /*
-             * Use XMLHttpRequest so we can
-             * monitor upload progress.
-             */
 
             e.preventDefault();
 
@@ -1282,10 +1415,6 @@ if (replyForm) {
 
             showUploadProgress();
 
-
-            /*
-             * Disable submit button while uploading.
-             */
 
             const submitButton =
                 replyForm.querySelector(
@@ -1306,10 +1435,6 @@ if (replyForm) {
 
             }
 
-
-            /*
-             * Upload progress.
-             */
 
             xhr.upload.addEventListener(
                 'progress',
@@ -1337,10 +1462,6 @@ if (replyForm) {
             );
 
 
-            /*
-             * Upload completed.
-             */
-
             xhr.addEventListener(
                 'load',
                 function () {
@@ -1363,18 +1484,12 @@ if (replyForm) {
                         }
 
 
-                        /*
-                         * Django normally redirects
-                         * back to read-message.
-                         *
-                         * XHR follows the redirect,
-                         * so responseURL is the final URL.
-                         */
-
                         setTimeout(
                             function () {
 
-                                if (xhr.responseURL) {
+                                if (
+                                    xhr.responseURL
+                                ) {
 
                                     window.location.href =
                                         xhr.responseURL;
@@ -1417,10 +1532,6 @@ if (replyForm) {
             );
 
 
-            /*
-             * Network error.
-             */
-
             xhr.addEventListener(
                 'error',
                 function () {
@@ -1448,10 +1559,6 @@ if (replyForm) {
             );
 
 
-            /*
-             * Abort.
-             */
-
             xhr.addEventListener(
                 'abort',
                 function () {
@@ -1474,10 +1581,6 @@ if (replyForm) {
             );
 
 
-            /*
-             * POST to current Django URL.
-             */
-
             xhr.open(
                 'POST',
                 replyForm.action ||
@@ -1485,10 +1588,6 @@ if (replyForm) {
                 true
             );
 
-
-            /*
-             * CSRF.
-             */
 
             const csrfTokenElement =
                 replyForm.querySelector(
@@ -1536,7 +1635,6 @@ window.addEventListener(
 
     }
 );
-
         /* =========================================================
            SHARE
         ========================================================== */

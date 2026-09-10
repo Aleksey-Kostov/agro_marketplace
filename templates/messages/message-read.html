@@ -132,6 +132,25 @@
 
             <div class="conversation-scroll"
                  id="chat-window">
+                <div id="chat-drop-overlay"
+                     class="chat-drop-overlay"
+                     aria-hidden="true">
+
+                    <div class="chat-drop-overlay-content">
+                        <div class="chat-drop-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+
+                        <strong>
+                            Drop image or video here
+                        </strong>
+
+                        <small>
+                            Release to attach
+                        </small>
+                    </div>
+
+                </div>
                 <div class="conversation"
                      id="chat-messages">
                     {% for item in conversation_messages %}
