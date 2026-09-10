@@ -7,6 +7,7 @@ from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.db import transaction
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.core.exceptions import ValidationError
 
 import markdown
 
@@ -25,7 +26,6 @@ from .templatetags.message_tags_inbox import (
 from ..accounts.models import AppUser
 from ..buyers.models import BuyerItems
 from ..sellers.models import SellerItems
-
 
 User = get_user_model()
 
@@ -103,8 +103,8 @@ def get_conversation_messages_for_user(root_message, user):
     visible_messages = []
 
     if is_message_visible_for_user(
-        root_message,
-        user,
+            root_message,
+            user,
     ):
         visible_messages.append(root_message)
 
@@ -129,8 +129,8 @@ def get_conversation_messages_for_user(root_message, user):
         for msg in next_level:
 
             if is_message_visible_for_user(
-                msg,
-                user,
+                    msg,
+                    user,
             ):
                 visible_messages.append(msg)
 
@@ -172,7 +172,6 @@ def add_message_delivery_status(messages, current_user):
     status_map = {}
 
     for status in statuses:
-
         status_map[
             (
                 status.message_id,
@@ -216,13 +215,13 @@ def get_admin_user():
     """
 
     return (
-        User.objects.filter(
-            is_superuser=True
-        ).first()
-        or
-        User.objects.filter(
-            is_staff=True
-        ).first()
+            User.objects.filter(
+                is_superuser=True
+            ).first()
+            or
+            User.objects.filter(
+                is_staff=True
+            ).first()
     )
 
 
@@ -233,15 +232,15 @@ def safe_next_url(request, fallback='message-inbox'):
     """
 
     next_url = (
-        request.POST.get('next')
-        or request.GET.get('next')
-        or request.META.get('HTTP_REFERER')
+            request.POST.get('next')
+            or request.GET.get('next')
+            or request.META.get('HTTP_REFERER')
     )
 
     if next_url and url_has_allowed_host_and_scheme(
-        next_url,
-        allowed_hosts={request.get_host()},
-        require_https=request.is_secure(),
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
     ):
         return next_url
 
@@ -283,15 +282,15 @@ def get_reaction_reactors(message, reaction):
                 photo = ''
 
             username = (
-                profile.username_in_marketplace
-                or user.username
+                    profile.username_in_marketplace
+                    or user.username
             )
 
         reactors.append({
             'id': user.pk,
             'photo': (
-                photo
-                or '/static/images/profile_picture.webp'
+                    photo
+                    or '/static/images/profile_picture.webp'
             ),
             'username': username,
         })
@@ -305,6 +304,48 @@ def is_valid_reaction(reaction):
         MessageReaction.HEART,
     )
 
+
+MAX_IMAGE_SIZE = 10 * 1024 * 1024
+MAX_VIDEO_SIZE = 100 * 1024 * 1024
+
+
+def validate_message_attachments(request):
+    """
+    Backend validation за message attachments.
+    Позволява максимум един attachment.
+    """
+
+    image_file = request.FILES.get('image')
+    video_file = request.FILES.get('video')
+
+    if image_file and video_file:
+        raise ValidationError(
+            "Please attach either an image or a video, not both."
+        )
+
+    if image_file:
+
+        if image_file.size > MAX_IMAGE_SIZE:
+            raise ValidationError(
+                "Image is too large. Maximum size is 10 MB."
+            )
+
+        if not image_file.content_type.startswith('image/'):
+            raise ValidationError(
+                "Invalid image file."
+            )
+
+    if video_file:
+
+        if video_file.size > MAX_VIDEO_SIZE:
+            raise ValidationError(
+                "Video is too large. Maximum size is 100 MB."
+            )
+
+        if not video_file.content_type.startswith('video/'):
+            raise ValidationError(
+                "Invalid video file."
+            )
 
 # ============================================================
 # SYSTEM MESSAGE
@@ -353,7 +394,6 @@ def send_system_message(recipient, title, body):
 
 @login_required
 def send_message(request, pk=None):
-
     recipient = (
         get_object_or_404(
             AppUser,
@@ -384,7 +424,6 @@ def send_message(request, pk=None):
     is_blocked_by_other = False
 
     if recipient:
-
         is_blocked = BlockedUser.objects.filter(
             blocker=request.user,
             blocked=recipient,
@@ -404,8 +443,18 @@ def send_message(request, pk=None):
 
         if form.is_valid():
 
-            if not recipient:
+            try:
+                validate_message_attachments(request)
+            except ValidationError as exc:
+                django_messages.error(
+                    request,
+                    exc.message,
+                )
+                return redirect(
+                    'message-inbox'
+                )
 
+            if not recipient:
                 django_messages.error(
                     request,
                     "Recipient is required.",
@@ -416,7 +465,6 @@ def send_message(request, pk=None):
                 )
 
             if is_blocked_by_other:
-
                 django_messages.error(
                     request,
                     "You cannot send messages to this user because you have been blocked.",
@@ -427,7 +475,6 @@ def send_message(request, pk=None):
                 )
 
             if is_blocked:
-
                 django_messages.error(
                     request,
                     "You cannot send messages to a blocked user. Please unblock them first.",
@@ -445,16 +492,15 @@ def send_message(request, pk=None):
             message.recipient = recipient
 
             if product and getattr(
-                product,
-                'title',
-                None,
+                    product,
+                    'title',
+                    None,
             ):
                 message.title = product.title
             else:
                 message.title = "Direct conversation"
 
             if message.body:
-
                 message.body = markdown.markdown(
                     message.body
                 )
@@ -475,7 +521,6 @@ def send_message(request, pk=None):
             # =================================================
 
             if recipient != request.user:
-
                 sender_status = (
                     MessageStatus.objects.create(
                         message=message,
@@ -513,7 +558,6 @@ def send_message(request, pk=None):
 
 @login_required
 def read_message(request, pk):
-
     message = get_object_or_404(
         Message.objects.select_related(
             'sender__profile',
@@ -533,7 +577,6 @@ def read_message(request, pk):
         message.sender,
         message.recipient,
     ]:
-
         return HttpResponse(
             "Not authorized",
             status=403,
@@ -555,9 +598,9 @@ def read_message(request, pk):
     # ========================================================
 
     for status in MessageStatus.objects.filter(
-        message__in=conversation_messages,
-        profile=current_user,
-        is_deleted=False,
+            message__in=conversation_messages,
+            profile=current_user,
+            is_deleted=False,
     ):
         status.mark_as_read()
 
@@ -577,7 +620,6 @@ def read_message(request, pk):
     is_blocked_by_other = False
 
     if other_user:
-
         is_blocked = BlockedUser.objects.filter(
             blocker=current_user,
             blocked=other_user,
@@ -609,6 +651,18 @@ def read_message(request, pk):
 
         if form.is_valid():
 
+            try:
+                validate_message_attachments(request)
+            except ValidationError as exc:
+                django_messages.error(
+                    request,
+                    exc.message,
+                )
+                return redirect(
+                    'read-message',
+                    pk=pk,
+                )
+
             recipient = (
                 root_message.recipient
                 if root_message.sender == current_user
@@ -616,7 +670,6 @@ def read_message(request, pk):
             )
 
             if not recipient:
-
                 django_messages.error(
                     request,
                     "Recipient not found.",
@@ -631,10 +684,9 @@ def read_message(request, pk):
             # =================================================
 
             if BlockedUser.objects.filter(
-                blocker=recipient,
-                blocked=current_user,
+                    blocker=recipient,
+                    blocked=current_user,
             ).exists():
-
                 django_messages.error(
                     request,
                     "You cannot send messages to this user because you have been blocked.",
@@ -650,10 +702,9 @@ def read_message(request, pk):
             # =================================================
 
             if BlockedUser.objects.filter(
-                blocker=current_user,
-                blocked=recipient,
+                    blocker=current_user,
+                    blocked=recipient,
             ).exists():
-
                 django_messages.error(
                     request,
                     "You cannot send messages to a blocked user. Please unblock them first.",
@@ -689,14 +740,13 @@ def read_message(request, pk):
             reply.recipient = recipient
 
             reply.title = (
-                root_message.title
-                or "Direct conversation"
+                    root_message.title
+                    or "Direct conversation"
             )
 
             reply.parent_message = last_msg
 
             if reply.body:
-
                 reply.body = markdown.markdown(
                     reply.body
                 )
@@ -728,7 +778,6 @@ def read_message(request, pk):
                     )
 
                     if not public_id:
-
                         raise ValueError(
                             "Cloudinary did not return a public_id."
                         )
@@ -763,7 +812,6 @@ def read_message(request, pk):
 
                 # Sender
                 if recipient != current_user:
-
                     sender_status = (
                         MessageStatus.objects.create(
                             message=reply,
@@ -822,21 +870,18 @@ def read_message(request, pk):
 
 @login_required
 def delete_one_message(request, pk):
-
     msg = get_object_or_404(
         Message,
         pk=pk,
     )
 
     if msg.sender != request.user:
-
         return HttpResponse(
             "Not allowed",
             status=403,
         )
 
     if request.method != 'POST':
-
         return HttpResponse(
             "POST required",
             status=405,
@@ -859,7 +904,6 @@ def delete_one_message(request, pk):
 
 @login_required
 def delete_message(request, pk):
-
     message = get_object_or_404(
         Message,
         pk=pk,
@@ -871,7 +915,6 @@ def delete_message(request, pk):
         message.sender,
         message.recipient,
     ]:
-
         return HttpResponse(
             "Not allowed",
             status=403,
@@ -888,8 +931,8 @@ def delete_message(request, pk):
     if request.method == 'POST':
 
         filter_type = (
-            request.POST.get('filter')
-            or 'inbox'
+                request.POST.get('filter')
+                or 'inbox'
         )
 
         with transaction.atomic():
@@ -904,9 +947,8 @@ def delete_message(request, pk):
             for msg in conversation:
 
                 if not msg.statuses.filter(
-                    is_deleted=False
+                        is_deleted=False
                 ).exists():
-
                     msg.delete()
 
         return redirect(
@@ -914,8 +956,8 @@ def delete_message(request, pk):
         )
 
     filter_type = (
-        request.GET.get('filter')
-        or 'inbox'
+            request.GET.get('filter')
+            or 'inbox'
     )
 
     return render(
@@ -936,9 +978,7 @@ def delete_message(request, pk):
 
 @login_required
 def react_message(request, pk, reaction):
-
     if request.method != 'POST':
-
         return JsonResponse(
             {
                 'ok': False,
@@ -956,7 +996,6 @@ def react_message(request, pk, reaction):
         msg.sender,
         msg.recipient,
     ]:
-
         return JsonResponse(
             {
                 'ok': False,
@@ -966,7 +1005,6 @@ def react_message(request, pk, reaction):
         )
 
     if msg.is_removed:
-
         return JsonResponse(
             {
                 'ok': False,
@@ -976,11 +1014,10 @@ def react_message(request, pk, reaction):
         )
 
     if getattr(
-        msg,
-        'is_system',
-        False,
+            msg,
+            'is_system',
+            False,
     ):
-
         return JsonResponse(
             {
                 'ok': False,
@@ -990,9 +1027,8 @@ def react_message(request, pk, reaction):
         )
 
     if not is_valid_reaction(
-        reaction
+            reaction
     ):
-
         return JsonResponse(
             {
                 'ok': False,
@@ -1050,7 +1086,6 @@ def react_message(request, pk, reaction):
 
 @login_required
 def report_message(request, pk):
-
     message = get_object_or_404(
         Message,
         pk=pk,
@@ -1060,14 +1095,12 @@ def report_message(request, pk):
         message.sender,
         message.recipient,
     ]:
-
         return HttpResponse(
             "Not authorized",
             status=403,
         )
 
     if request.method != 'POST':
-
         return redirect(
             'read-message',
             pk=message.pk,
@@ -1127,9 +1160,7 @@ def report_message(request, pk):
 
 @login_required
 def block_user(request, pk):
-
     if request.method != 'POST':
-
         return HttpResponse(
             "POST required",
             status=405,
@@ -1141,7 +1172,6 @@ def block_user(request, pk):
     )
 
     if user_to_block == request.user:
-
         django_messages.error(
             request,
             "You cannot block yourself.",
@@ -1183,9 +1213,7 @@ def block_user(request, pk):
 
 @login_required
 def unblock_user(request, pk):
-
     if request.method != 'POST':
-
         return HttpResponse(
             "POST required",
             status=405,
@@ -1228,7 +1256,6 @@ def unblock_user(request, pk):
 
 @login_required
 def message_inbox(request):
-
     filter_type = (
         request.GET.get(
             'filter',
@@ -1263,7 +1290,6 @@ def message_inbox(request):
             )
 
             if not all_msgs:
-
                 raw = get_conversation_messages(
                     root
                 )

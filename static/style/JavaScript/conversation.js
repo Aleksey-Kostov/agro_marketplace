@@ -370,399 +370,1172 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
 
-        /* =========================================================
-           MEDIA ELEMENTS
-        ========================================================== */
+/* =========================================================
+   MEDIA ELEMENTS
+========================================================= */
 
-        const imageInput =
-            document.getElementById('id_image');
+const imageInput =
+    document.getElementById('id_image');
 
-        const videoInput =
-            document.getElementById('id_video');
+const videoInput =
+    document.getElementById('id_video');
 
-        const imagePreview =
-            document.getElementById('image-preview');
+const imagePreview =
+    document.getElementById('image-preview');
 
-        const videoPreview =
-            document.getElementById('video-preview');
+const videoPreview =
+    document.getElementById('video-preview');
 
-        const imagePreviewWrapper =
-            document.getElementById('image-preview-wrap');
+const imagePreviewWrapper =
+    document.getElementById('image-preview-wrap');
 
-        const videoPreviewWrapper =
-            document.getElementById('video-preview-wrap');
+const videoPreviewWrapper =
+    document.getElementById('video-preview-wrap');
 
-        const attachImageBtn =
-            document.getElementById('attach-image-btn');
+const attachImageBtn =
+    document.getElementById('attach-image-btn');
 
-        const attachVideoBtn =
-            document.getElementById('attach-video-btn');
+const attachVideoBtn =
+    document.getElementById('attach-video-btn');
 
-        const removeMediaBtn =
-            document.getElementById('remove-media-btn');
+const removeMediaBtn =
+    document.getElementById('remove-media-btn');
+
+const dropZone =
+    document.getElementById('attachment-drop-zone');
+
+const replyForm =
+    document.getElementById('reply-form');
+
+const uploadProgressWrap =
+    document.getElementById('upload-progress-wrap');
+
+const uploadProgressBar =
+    document.getElementById('upload-progress-bar');
+
+const uploadProgressText =
+    document.getElementById('upload-progress-text');
+
+const uploadProgressPercent =
+    document.getElementById('upload-progress-percent');
 
 
-        let imageObjectUrl = null;
-        let videoObjectUrl = null;
+/* =========================================================
+   FILE SIZE LIMITS
+========================================================= */
+
+const MAX_IMAGE_SIZE =
+    10 * 1024 * 1024; // 10 MB
+
+const MAX_VIDEO_SIZE =
+    100 * 1024 * 1024; // 100 MB
 
 
-        /* =========================================================
-           FILE PICKERS
-        ========================================================== */
+let imageObjectUrl = null;
+let videoObjectUrl = null;
 
-        if (attachImageBtn && imageInput) {
 
-            attachImageBtn.addEventListener(
-                'click',
-                function (e) {
+/* =========================================================
+   FORMAT FILE SIZE
+========================================================= */
 
-                    e.preventDefault();
+function formatFileSize(bytes) {
 
-                    imageInput.click();
+    if (bytes < 1024) {
+        return `${bytes} B`;
+    }
 
-                }
-            );
+    if (bytes < 1024 * 1024) {
+        return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+
+}
+
+
+/* =========================================================
+   FILE VALIDATION
+========================================================= */
+
+function validateImageFile(file) {
+
+    if (!file) {
+        return false;
+    }
+
+    if (!file.type.startsWith('image/')) {
+
+        alert('Please select a valid image file.');
+
+        return false;
+
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+
+        alert(
+            `Image is too large.\n\n` +
+            `Maximum size: 10 MB\n` +
+            `Selected: ${formatFileSize(file.size)}`
+        );
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+
+function validateVideoFile(file) {
+
+    if (!file) {
+        return false;
+    }
+
+    if (!file.type.startsWith('video/')) {
+
+        alert('Please select a valid video file.');
+
+        return false;
+
+    }
+
+    if (file.size > MAX_VIDEO_SIZE) {
+
+        alert(
+            `Video is too large.\n\n` +
+            `Maximum size: 100 MB\n` +
+            `Selected: ${formatFileSize(file.size)}`
+        );
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+
+/* =========================================================
+   FILE PICKERS
+========================================================= */
+
+if (attachImageBtn && imageInput) {
+
+    attachImageBtn.addEventListener(
+        'click',
+        function (e) {
+
+            e.preventDefault();
+
+            imageInput.click();
 
         }
+    );
+
+}
 
 
-        if (attachVideoBtn && videoInput) {
+if (attachVideoBtn && videoInput) {
 
-            attachVideoBtn.addEventListener(
-                'click',
-                function (e) {
+    attachVideoBtn.addEventListener(
+        'click',
+        function (e) {
 
-                    e.preventDefault();
+            e.preventDefault();
 
-                    videoInput.click();
-
-                }
-            );
-
-        }
-
-
-        /* =========================================================
-           OBJECT URL CLEANUP
-        ========================================================== */
-
-        function revokeImageUrl() {
-
-            if (!imageObjectUrl) {
-                return;
-            }
-
-            URL.revokeObjectURL(
-                imageObjectUrl
-            );
-
-            imageObjectUrl = null;
+            videoInput.click();
 
         }
+    );
+
+}
 
 
-        function revokeVideoUrl() {
+/* =========================================================
+   DROP ZONE CLICK
+========================================================= */
 
-            if (!videoObjectUrl) {
-                return;
-            }
+if (dropZone && imageInput) {
 
-            URL.revokeObjectURL(
-                videoObjectUrl
-            );
+    dropZone.addEventListener(
+        'click',
+        function () {
 
-            videoObjectUrl = null;
+            imageInput.click();
 
         }
+    );
+
+}
 
 
-        function hideMediaPreviews() {
+/* =========================================================
+   DRAG & DROP
+========================================================= */
 
-            if (imagePreviewWrapper) {
+if (dropZone) {
 
-                imagePreviewWrapper.classList.add(
-                    'd-none'
+    [
+        'dragenter',
+        'dragover'
+    ].forEach(function (eventName) {
+
+        dropZone.addEventListener(
+            eventName,
+            function (e) {
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                dropZone.classList.add(
+                    'drag-over'
                 );
-
-            }
-
-            if (videoPreviewWrapper) {
-
-                videoPreviewWrapper.classList.add(
-                    'd-none'
-                );
-
-            }
-
-            if (removeMediaBtn) {
-
-                removeMediaBtn.classList.add(
-                    'd-none'
-                );
-
-            }
-
-        }
-
-
-        /* =========================================================
-           IMAGE SELECT
-        ========================================================== */
-
-        if (imageInput) {
-
-            imageInput.addEventListener(
-                'change',
-                function () {
-
-                    const file =
-                        imageInput.files &&
-                        imageInput.files[0];
-
-
-                    if (!file) {
-                        return;
-                    }
-
-
-                    if (videoInput) {
-
-                        videoInput.value = '';
-
-                    }
-
-
-                    revokeVideoUrl();
-
-
-                    if (videoPreview) {
-
-                        videoPreview.pause();
-
-                        videoPreview.removeAttribute(
-                            'src'
-                        );
-
-                        videoPreview.load();
-
-                    }
-
-
-                    if (!imagePreview) {
-                        return;
-                    }
-
-
-                    revokeImageUrl();
-
-
-                    imageObjectUrl =
-                        URL.createObjectURL(file);
-
-
-                    imagePreview.src =
-                        imageObjectUrl;
-
-
-                    if (imagePreviewWrapper) {
-
-                        imagePreviewWrapper.classList.remove(
-                            'd-none'
-                        );
-
-                    }
-
-
-                    if (videoPreviewWrapper) {
-
-                        videoPreviewWrapper.classList.add(
-                            'd-none'
-                        );
-
-                    }
-
-
-                    if (removeMediaBtn) {
-
-                        removeMediaBtn.classList.remove(
-                            'd-none'
-                        );
-
-                    }
-
-                }
-            );
-
-        }
-
-
-        /* =========================================================
-           VIDEO SELECT
-        ========================================================== */
-
-        if (videoInput) {
-
-            videoInput.addEventListener(
-                'change',
-                function () {
-
-                    const file =
-                        videoInput.files &&
-                        videoInput.files[0];
-
-
-                    if (!file) {
-                        return;
-                    }
-
-
-                    if (imageInput) {
-
-                        imageInput.value = '';
-
-                    }
-
-
-                    revokeImageUrl();
-
-
-                    if (imagePreview) {
-
-                        imagePreview.removeAttribute(
-                            'src'
-                        );
-
-                    }
-
-
-                    if (!videoPreview) {
-                        return;
-                    }
-
-
-                    revokeVideoUrl();
-
-
-                    videoObjectUrl =
-                        URL.createObjectURL(file);
-
-
-                    videoPreview.src =
-                        videoObjectUrl;
-
-
-                    videoPreview.load();
-
-
-                    if (videoPreviewWrapper) {
-
-                        videoPreviewWrapper.classList.remove(
-                            'd-none'
-                        );
-
-                    }
-
-
-                    if (imagePreviewWrapper) {
-
-                        imagePreviewWrapper.classList.add(
-                            'd-none'
-                        );
-
-                    }
-
-
-                    if (removeMediaBtn) {
-
-                        removeMediaBtn.classList.remove(
-                            'd-none'
-                        );
-
-                    }
-
-                }
-            );
-
-        }
-
-
-        /* =========================================================
-           REMOVE MEDIA
-        ========================================================== */
-
-        if (removeMediaBtn) {
-
-            removeMediaBtn.addEventListener(
-                'click',
-                function (e) {
-
-                    e.preventDefault();
-
-
-                    if (imageInput) {
-
-                        imageInput.value = '';
-
-                    }
-
-
-                    if (videoInput) {
-
-                        videoInput.value = '';
-
-                    }
-
-
-                    revokeImageUrl();
-
-                    revokeVideoUrl();
-
-
-                    if (imagePreview) {
-
-                        imagePreview.removeAttribute(
-                            'src'
-                        );
-
-                    }
-
-
-                    if (videoPreview) {
-
-                        videoPreview.pause();
-
-                        videoPreview.removeAttribute(
-                            'src'
-                        );
-
-                        videoPreview.load();
-
-                    }
-
-
-                    hideMediaPreviews();
-
-                }
-            );
-
-        }
-
-
-        /* =========================================================
-           CLEANUP
-        ========================================================== */
-
-        window.addEventListener(
-            'beforeunload',
-            function () {
-
-                revokeImageUrl();
-
-                revokeVideoUrl();
 
             }
         );
 
+    });
+
+
+    [
+        'dragleave',
+        'drop'
+    ].forEach(function (eventName) {
+
+        dropZone.addEventListener(
+            eventName,
+            function (e) {
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                dropZone.classList.remove(
+                    'drag-over'
+                );
+
+            }
+        );
+
+    });
+
+
+    dropZone.addEventListener(
+        'drop',
+        function (e) {
+
+            const files =
+                e.dataTransfer &&
+                e.dataTransfer.files;
+
+
+            if (!files || !files.length) {
+                return;
+            }
+
+
+            const file =
+                files[0];
+
+
+            /*
+             * Determine image/video
+             * from MIME type.
+             */
+
+            if (file.type.startsWith('image/')) {
+
+                if (!validateImageFile(file)) {
+                    return;
+                }
+
+                /*
+                 * Assign dropped file to
+                 * the image input.
+                 */
+
+                const dataTransfer =
+                    new DataTransfer();
+
+                dataTransfer.items.add(file);
+
+                imageInput.files =
+                    dataTransfer.files;
+
+
+                /*
+                 * Clear video.
+                 */
+
+                if (videoInput) {
+                    videoInput.value = '';
+                }
+
+
+                handleImageFile(file);
+
+            } else if (file.type.startsWith('video/')) {
+
+                if (!validateVideoFile(file)) {
+                    return;
+                }
+
+                /*
+                 * Assign dropped file to
+                 * the video input.
+                 */
+
+                const dataTransfer =
+                    new DataTransfer();
+
+                dataTransfer.items.add(file);
+
+                videoInput.files =
+                    dataTransfer.files;
+
+
+                /*
+                 * Clear image.
+                 */
+
+                if (imageInput) {
+                    imageInput.value = '';
+                }
+
+
+                handleVideoFile(file);
+
+            } else {
+
+                alert(
+                    'Only image and video files are allowed.'
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   OBJECT URL CLEANUP
+========================================================= */
+
+function revokeImageUrl() {
+
+    if (!imageObjectUrl) {
+        return;
+    }
+
+    URL.revokeObjectURL(
+        imageObjectUrl
+    );
+
+    imageObjectUrl = null;
+
+}
+
+
+function revokeVideoUrl() {
+
+    if (!videoObjectUrl) {
+        return;
+    }
+
+    URL.revokeObjectURL(
+        videoObjectUrl
+    );
+
+    videoObjectUrl = null;
+
+}
+
+
+/* =========================================================
+   HIDE PREVIEWS
+========================================================= */
+
+function hideMediaPreviews() {
+
+    if (imagePreviewWrapper) {
+
+        imagePreviewWrapper.classList.add(
+            'd-none'
+        );
+
+    }
+
+    if (videoPreviewWrapper) {
+
+        videoPreviewWrapper.classList.add(
+            'd-none'
+        );
+
+    }
+
+    if (removeMediaBtn) {
+
+        removeMediaBtn.classList.add(
+            'd-none'
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   HANDLE IMAGE FILE
+========================================================= */
+
+function handleImageFile(file) {
+
+    if (!validateImageFile(file)) {
+
+        if (imageInput) {
+            imageInput.value = '';
+        }
+
+        return;
+
+    }
+
+
+    if (videoInput) {
+
+        videoInput.value = '';
+
+    }
+
+
+    revokeVideoUrl();
+
+
+    if (videoPreview) {
+
+        videoPreview.pause();
+
+        videoPreview.removeAttribute(
+            'src'
+        );
+
+        videoPreview.load();
+
+    }
+
+
+    if (!imagePreview) {
+        return;
+    }
+
+
+    revokeImageUrl();
+
+
+    imageObjectUrl =
+        URL.createObjectURL(file);
+
+
+    imagePreview.src =
+        imageObjectUrl;
+
+
+    if (imagePreviewWrapper) {
+
+        imagePreviewWrapper.classList.remove(
+            'd-none'
+        );
+
+    }
+
+
+    if (videoPreviewWrapper) {
+
+        videoPreviewWrapper.classList.add(
+            'd-none'
+        );
+
+    }
+
+
+    if (removeMediaBtn) {
+
+        removeMediaBtn.classList.remove(
+            'd-none'
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   HANDLE VIDEO FILE
+========================================================= */
+
+function handleVideoFile(file) {
+
+    if (!validateVideoFile(file)) {
+
+        if (videoInput) {
+            videoInput.value = '';
+        }
+
+        return;
+
+    }
+
+
+    if (imageInput) {
+
+        imageInput.value = '';
+
+    }
+
+
+    revokeImageUrl();
+
+
+    if (imagePreview) {
+
+        imagePreview.removeAttribute(
+            'src'
+        );
+
+    }
+
+
+    if (!videoPreview) {
+        return;
+    }
+
+
+    revokeVideoUrl();
+
+
+    videoObjectUrl =
+        URL.createObjectURL(file);
+
+
+    videoPreview.src =
+        videoObjectUrl;
+
+
+    videoPreview.load();
+
+
+    if (videoPreviewWrapper) {
+
+        videoPreviewWrapper.classList.remove(
+            'd-none'
+        );
+
+    }
+
+
+    if (imagePreviewWrapper) {
+
+        imagePreviewWrapper.classList.add(
+            'd-none'
+        );
+
+    }
+
+
+    if (removeMediaBtn) {
+
+        removeMediaBtn.classList.remove(
+            'd-none'
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   IMAGE SELECT
+========================================================= */
+
+if (imageInput) {
+
+    imageInput.addEventListener(
+        'change',
+        function () {
+
+            const file =
+                imageInput.files &&
+                imageInput.files[0];
+
+
+            if (!file) {
+                return;
+            }
+
+
+            handleImageFile(file);
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   VIDEO SELECT
+========================================================= */
+
+if (videoInput) {
+
+    videoInput.addEventListener(
+        'change',
+        function () {
+
+            const file =
+                videoInput.files &&
+                videoInput.files[0];
+
+
+            if (!file) {
+                return;
+            }
+
+
+            handleVideoFile(file);
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   REMOVE MEDIA
+========================================================= */
+
+if (removeMediaBtn) {
+
+    removeMediaBtn.addEventListener(
+        'click',
+        function (e) {
+
+            e.preventDefault();
+
+
+            if (imageInput) {
+
+                imageInput.value = '';
+
+            }
+
+
+            if (videoInput) {
+
+                videoInput.value = '';
+
+            }
+
+
+            revokeImageUrl();
+
+            revokeVideoUrl();
+
+
+            if (imagePreview) {
+
+                imagePreview.removeAttribute(
+                    'src'
+                );
+
+            }
+
+
+            if (videoPreview) {
+
+                videoPreview.pause();
+
+                videoPreview.removeAttribute(
+                    'src'
+                );
+
+                videoPreview.load();
+
+            }
+
+
+            hideMediaPreviews();
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   UPLOAD PROGRESS
+========================================================= */
+
+function showUploadProgress() {
+
+    if (!uploadProgressWrap) {
+        return;
+    }
+
+    uploadProgressWrap.classList.remove(
+        'd-none'
+    );
+
+    if (uploadProgressBar) {
+
+        uploadProgressBar.style.width =
+            '0%';
+
+        uploadProgressBar.setAttribute(
+            'aria-valuenow',
+            '0'
+        );
+
+    }
+
+    if (uploadProgressPercent) {
+
+        uploadProgressPercent.textContent =
+            '0%';
+
+    }
+
+    if (uploadProgressText) {
+
+        uploadProgressText.textContent =
+            'Uploading...';
+
+    }
+
+}
+
+
+function updateUploadProgress(percent) {
+
+    percent =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                percent
+            )
+        );
+
+
+    if (uploadProgressBar) {
+
+        uploadProgressBar.style.width =
+            `${percent}%`;
+
+        uploadProgressBar.setAttribute(
+            'aria-valuenow',
+            String(percent)
+        );
+
+    }
+
+
+    if (uploadProgressPercent) {
+
+        uploadProgressPercent.textContent =
+            `${percent}%`;
+
+    }
+
+}
+
+
+function hideUploadProgress() {
+
+    if (uploadProgressWrap) {
+
+        uploadProgressWrap.classList.add(
+            'd-none'
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   VALIDATE FORM FILES
+========================================================= */
+
+function validateAttachmentsBeforeSubmit() {
+
+    const imageFile =
+        imageInput &&
+        imageInput.files &&
+        imageInput.files[0];
+
+
+    const videoFile =
+        videoInput &&
+        videoInput.files &&
+        videoInput.files[0];
+
+
+    if (imageFile) {
+
+        if (!validateImageFile(imageFile)) {
+            return false;
+        }
+
+    }
+
+
+    if (videoFile) {
+
+        if (!validateVideoFile(videoFile)) {
+            return false;
+        }
+
+    }
+
+
+    return true;
+
+}
+
+
+/* =========================================================
+   AJAX UPLOAD WITH PROGRESS
+========================================================= */
+
+if (replyForm) {
+
+    replyForm.addEventListener(
+        'submit',
+        function (e) {
+
+            /*
+             * If there is no attachment,
+             * keep normal Django form submit.
+             */
+
+            const imageFile =
+                imageInput &&
+                imageInput.files &&
+                imageInput.files[0];
+
+            const videoFile =
+                videoInput &&
+                videoInput.files &&
+                videoInput.files[0];
+
+
+            const hasAttachment =
+                Boolean(
+                    imageFile ||
+                    videoFile
+                );
+
+
+            if (!hasAttachment) {
+                return;
+            }
+
+
+            /*
+             * Validate before sending.
+             */
+
+            if (
+                !validateAttachmentsBeforeSubmit()
+            ) {
+
+                e.preventDefault();
+
+                return;
+
+            }
+
+
+            /*
+             * Use XMLHttpRequest so we can
+             * monitor upload progress.
+             */
+
+            e.preventDefault();
+
+
+            const formData =
+                new FormData(
+                    replyForm
+                );
+
+
+            const xhr =
+                new XMLHttpRequest();
+
+
+            showUploadProgress();
+
+
+            /*
+             * Disable submit button while uploading.
+             */
+
+            const submitButton =
+                replyForm.querySelector(
+                    'button[type="submit"]'
+                );
+
+
+            if (submitButton) {
+
+                submitButton.disabled =
+                    true;
+
+                submitButton.dataset.originalHtml =
+                    submitButton.innerHTML;
+
+                submitButton.innerHTML =
+                    '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
+
+            }
+
+
+            /*
+             * Upload progress.
+             */
+
+            xhr.upload.addEventListener(
+                'progress',
+                function (event) {
+
+                    if (!event.lengthComputable) {
+                        return;
+                    }
+
+
+                    const percent =
+                        Math.round(
+                            (
+                                event.loaded /
+                                event.total
+                            ) * 100
+                        );
+
+
+                    updateUploadProgress(
+                        percent
+                    );
+
+                }
+            );
+
+
+            /*
+             * Upload completed.
+             */
+
+            xhr.addEventListener(
+                'load',
+                function () {
+
+                    if (
+                        xhr.status >= 200 &&
+                        xhr.status < 400
+                    ) {
+
+                        updateUploadProgress(
+                            100
+                        );
+
+
+                        if (uploadProgressText) {
+
+                            uploadProgressText.textContent =
+                                'Upload complete';
+
+                        }
+
+
+                        /*
+                         * Django normally redirects
+                         * back to read-message.
+                         *
+                         * XHR follows the redirect,
+                         * so responseURL is the final URL.
+                         */
+
+                        setTimeout(
+                            function () {
+
+                                if (xhr.responseURL) {
+
+                                    window.location.href =
+                                        xhr.responseURL;
+
+                                } else {
+
+                                    window.location.reload();
+
+                                }
+
+                            },
+                            250
+                        );
+
+
+                    } else {
+
+                        alert(
+                            'Upload failed. Please try again.'
+                        );
+
+
+                        hideUploadProgress();
+
+
+                        if (submitButton) {
+
+                            submitButton.disabled =
+                                false;
+
+                            submitButton.innerHTML =
+                                submitButton.dataset.originalHtml ||
+                                '<i class="fas fa-paper-plane me-1"></i> Send';
+
+                        }
+
+                    }
+
+                }
+            );
+
+
+            /*
+             * Network error.
+             */
+
+            xhr.addEventListener(
+                'error',
+                function () {
+
+                    alert(
+                        'Upload failed. Please check your connection and try again.'
+                    );
+
+
+                    hideUploadProgress();
+
+
+                    if (submitButton) {
+
+                        submitButton.disabled =
+                            false;
+
+                        submitButton.innerHTML =
+                            submitButton.dataset.originalHtml ||
+                            '<i class="fas fa-paper-plane me-1"></i> Send';
+
+                    }
+
+                }
+            );
+
+
+            /*
+             * Abort.
+             */
+
+            xhr.addEventListener(
+                'abort',
+                function () {
+
+                    hideUploadProgress();
+
+
+                    if (submitButton) {
+
+                        submitButton.disabled =
+                            false;
+
+                        submitButton.innerHTML =
+                            submitButton.dataset.originalHtml ||
+                            '<i class="fas fa-paper-plane me-1"></i> Send';
+
+                    }
+
+                }
+            );
+
+
+            /*
+             * POST to current Django URL.
+             */
+
+            xhr.open(
+                'POST',
+                replyForm.action ||
+                window.location.href,
+                true
+            );
+
+
+            /*
+             * CSRF.
+             */
+
+            const csrfTokenElement =
+                replyForm.querySelector(
+                    '[name="csrfmiddlewaretoken"]'
+                );
+
+
+            if (csrfTokenElement) {
+
+                xhr.setRequestHeader(
+                    'X-CSRFToken',
+                    csrfTokenElement.value
+                );
+
+            }
+
+
+            xhr.setRequestHeader(
+                'X-Requested-With',
+                'XMLHttpRequest'
+            );
+
+
+            xhr.send(
+                formData
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   CLEANUP
+========================================================= */
+
+window.addEventListener(
+    'beforeunload',
+    function () {
+
+        revokeImageUrl();
+
+        revokeVideoUrl();
+
+    }
+);
 
         /* =========================================================
            SHARE

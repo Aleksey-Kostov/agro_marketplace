@@ -630,3 +630,83 @@
 .message-delivery-status-read {
     color: #8e44ad;
 }
+
+/* =========================================================
+   ATTACHMENT DROP ZONE
+========================================================= */
+
+.attachment-drop-zone {
+    border: 2px dashed #cfcfcf;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    background: #fafafa;
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.attachment-drop-zone:hover {
+    border-color: #999;
+    background: #f5f5f5;
+}
+
+.attachment-drop-zone.drag-over {
+    border-color: #8e44ad;
+    background: #f7effa;
+    transform: scale(1.01);
+}
+
+.attachment-drop-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: #777;
+}
+
+.attachment-drop-content i {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.attachment-drop-content span {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.attachment-drop-content small {
+    font-size: 12px;
+}
+
+.attachment-size-info {
+    margin-top: 4px;
+    color: #999;
+}
+
+
+/* =========================================================
+   UPLOAD PROGRESS
+========================================================= */
+
+.upload-progress-wrap {
+    width: 100%;
+}
+
+.upload-progress-wrap .progress {
+    height: 7px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.upload-progress-wrap .progress-bar {
+    transition: width 0.15s ease;
+}
+
+#upload-progress-text,
+#upload-progress-percent {
+    color: #777;
+    font-size: 12px;
+}

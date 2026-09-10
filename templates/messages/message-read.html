@@ -442,7 +442,29 @@
                         </video>
                     </div>
 
-                    <!-- FILE INPUTS -->
+                    <!-- =====================================================
+                    ATTACHMENT DROP ZONE
+                    ====================================================== -->
+
+                    <div id="attachment-drop-zone"
+                         class="attachment-drop-zone mb-2">
+                        <div class="attachment-drop-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>
+                              Drag & Drop image or video here
+                            </span>
+                            <small>
+                                or use the buttons below
+                            </small>
+                            <small class="attachment-size-info">
+                                Images: max 10 MB · Videos: max 100 MB
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- =====================================================
+                         FILE INPUTS
+                    ====================================================== -->
 
                     <input type="file"
                            name="image"
@@ -454,6 +476,33 @@
                            id="id_video"
                            accept="video/*"
                            hidden>
+
+                    <!-- =====================================================
+                         UPLOAD PROGRESS
+                    ====================================================== -->
+
+                    <div id="upload-progress-wrap"
+                         class="upload-progress-wrap d-none mb-2">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small id="upload-progress-text">
+                                Uploading...
+                            </small>
+                            <small id="upload-progress-percent">
+                                0%
+                            </small>
+                        </div>
+                        <div class="progress"
+                             role="progressbar"
+                             aria-label="Upload progress"
+                             aria-valuemin="0"
+                             aria-valuemax="100"
+                             aria-valuenow="0">
+                            <div id="upload-progress-bar"
+                                 class="progress-bar"
+                                 style="width: 0%;">
+                            </div>
+                        </div>
+                    </div>
                     <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
 
                         <!-- LEFT BUTTONS -->
