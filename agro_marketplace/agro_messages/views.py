@@ -397,9 +397,7 @@ def react_message(request, pk, reaction):
         return JsonResponse({'ok': False, 'error': 'Invalid'}, status=400)
 
     existing = MessageReaction.objects.filter(
-        message=msg,
-        user=request.user,
-        reaction=reaction
+        message=msg, user=request.user, reaction=reaction
     ).first()
 
     if existing:
@@ -407,19 +405,30 @@ def react_message(request, pk, reaction):
         active = False
     else:
         MessageReaction.objects.create(
-            message=msg,
-            user=request.user,
-            reaction=reaction
+            message=msg, user=request.user, reaction=reaction
         )
         active = True
+
+    reactors = []
+    for r in msg.reactions.filter(reaction=reaction).select_related('user__profile'):
+        photo = ''
+        try:
+            if r.user.profile.profile_photo:
+                photo = r.user.profile.profile_photo.url
+        except Exception:
+            photo = ''
+        reactors.append({
+            'id': r.user_id,
+            'photo': photo or '/static/images/profile_picture.webp',
+        })
 
     return JsonResponse({
         'ok': True,
         'reaction': reaction,
         'active': active,
         'message_id': pk,
+        'reactors': reactors,
     })
-
 
 # ============================================================
 # REPORT

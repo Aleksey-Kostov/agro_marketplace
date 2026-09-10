@@ -188,3 +188,16 @@ def user_reacted(message, user, reaction_type):
         return message.reactions.filter(user=user, reaction=reaction_type).exists()
     except Exception:
         return False
+
+
+@register.simple_tag
+def reaction_users(message, reaction_type):
+    try:
+        qs = (
+            message.reactions
+            .filter(reaction=reaction_type)
+            .select_related('user', 'user__profile')
+        )
+        return [r.user for r in qs]
+    except Exception:
+        return []
