@@ -942,7 +942,7 @@ footer {
 }
 
 .conversation-avatar {
-    flex-shrink: 0;
+    flex: 0 0 48px;
     margin-right: 12px;
 }
 
@@ -963,12 +963,21 @@ footer {
     transform: scale(1.05);
 }
 
+
+/* ==========================================================
+   MESSAGE BODY
+   ========================================================== */
+
 .conversation-message-body {
     flex: 0 1 auto;
-    width: auto;
-    max-width: calc(100% - 60px);
     min-width: 0;
+    max-width: calc(100% - 60px);
 }
+
+
+/* ==========================================================
+   META
+   ========================================================== */
 
 .conversation-meta {
     display: flex;
@@ -988,15 +997,21 @@ footer {
     font-size: 12px;
 }
 
+
+/* ==========================================================
+   MESSAGE BUBBLE
+   ========================================================== */
+
 .message-bubble {
     position: relative;
     display: inline-block;
 
     width: fit-content;
     max-width: 100%;
-    box-sizing: border-box;
 
     padding: 11px 15px;
+
+    box-sizing: border-box;
 
     background: #f0f2f5;
     border-radius: 4px 18px 18px 18px;
@@ -1010,9 +1025,16 @@ footer {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
+
+/* ==========================================================
+   LEFT MESSAGE ARROW
+   ========================================================== */
+
 .message-bubble::before {
     content: "";
+
     position: absolute;
+
     left: -8px;
     top: 12px;
 
@@ -1023,6 +1045,11 @@ footer {
     border-bottom: 7px solid transparent;
     border-right: 9px solid #f0f2f5;
 }
+
+
+/* ==========================================================
+   OWN MESSAGE
+   ========================================================== */
 
 .own-message {
     flex-direction: row-reverse;
@@ -1047,6 +1074,11 @@ footer {
     text-align: left;
 }
 
+
+/* ==========================================================
+   RIGHT MESSAGE ARROW
+   ========================================================== */
+
 .own-message .message-bubble::before {
     left: auto;
     right: -8px;
@@ -1056,6 +1088,64 @@ footer {
 }
 
 
+/* ==========================================================
+   MEDIA INSIDE MESSAGE
+   ========================================================== */
+
+.media-wrap {
+    position: relative;
+
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    width: fit-content;
+    max-width: 100%;
+}
+
+.media-wrap > a {
+    display: block;
+    max-width: 100%;
+    line-height: 0;
+}
+
+.message-image,
+.message-video {
+    display: block;
+
+    width: auto;
+    height: auto;
+
+    max-width: min(360px, 100%);
+    max-height: 240px;
+
+    object-fit: contain;
+    border-radius: 14px;
+}
+
+.message-video {
+    width: min(360px, 100%);
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 576px) {
+
+    .conversation-message-body {
+        max-width: calc(100% - 60px);
+    }
+
+    .message-image,
+    .message-video {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 14px;
+    }
+
+}
 /* =========================================================
    MEDIA
 ========================================================= */
