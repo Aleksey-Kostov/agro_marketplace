@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ========================================================== */
 
     const chatWindow =
-        document.getElementById('chat-window', 'text-area');
+        document.getElementById('chat-window');
 
     const scrollTopBtn =
         document.getElementById('scroll-top-btn');
