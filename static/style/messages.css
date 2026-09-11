@@ -543,11 +543,23 @@
     position: static;
 }
 
-.media-wrap { position: relative; display: inline-block; }
+/* WRAP AND SHARE */
+.media-wrap {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 100%;
+}
+
+/* Image / video */
+.media-wrap > a {
+    display: block;
+    max-width: 100%;
+    line-height: 0;
+}
+
 .share-btn {
     position: static;
-    margin-top: 6px;
-
     width: 34px;
     height: 30px;
     padding: 0;
@@ -557,6 +569,7 @@
     justify-content: center;
 
     border-radius: 14px;
+    margin: 0;
 }
 
 .tg-reactions {
