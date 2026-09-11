@@ -1273,21 +1273,6 @@ footer {
     .emoji-bar { display: flex; flex-wrap: wrap; }
 }
 
-.message-image {
-    max-width: 100%;
-    width: auto;
-    max-height: 280px;
-    border-radius: 10px;
-    object-fit: contain;
-    display: block;
-    cursor: pointer;
-}
-
-@media (max-width: 576px) {
-    .message-image {
-        max-height: 220px;
-    }
-}
 
 .attach-preview {
     max-width: 140px;
