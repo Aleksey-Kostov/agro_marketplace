@@ -809,98 +809,39 @@
    IMAGE AND VIDEO
 ========================================================= */
 
-.message-media {
-    width: auto;
-    max-width: 100%;
-    max-height: 280px;
-    border-radius: 10px;
-    display: block;
-    object-fit: contain;
-    cursor: pointer;
-}
-
-/* Image */
-.message-image {
-    height: auto;
-    border-radius: 14px;
-}
-
-/* Video */
-.message-video {
-    width: auto;
-    max-width: 100%;
-    height: auto;
-    max-height: 280px;
-    border-radius: 14px;
-}
-
-/* Actions under media */
-.message-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-    flex-wrap: wrap;
-}
-
-.message-actions button {
+.media-wrap {
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-
-    min-height: 34px;
-    padding: 6px 10px;
-
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
-
-    cursor: pointer;
-    transition:
-        background-color 0.15s ease,
-        color 0.15s ease,
-        transform 0.15s ease;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 100%;
 }
 
-.message-actions button:hover {
-    background: rgba(0, 0, 0, 0.06);
+.media-wrap > a {
+    display: block;
+    max-width: 100%;
+    line-height: 0;
 }
 
-.message-actions button:active {
-    transform: scale(0.96);
+.message-image,
+.message-video {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: min(360px, 100%);
+    max-height: 240px;
+    object-fit: contain;
+    border-radius: 14px;
 }
 
-/* Like / Heart states */
-.message-actions .liked {
-    color: #1877f2;
+.message-video {
+    width: min(360px, 100%);
 }
 
-.message-actions .hearted {
-    color: #e63963;
-}
-
-/* Small screens */
 @media (max-width: 576px) {
-    .message-media {
-        max-width: 100%;
-        max-height: 220px;
-        border-radius: 8px;
-    }
-
+    .message-image,
     .message-video {
-        max-height: 220px;
+        max-width: 100%;
+        max-height: 200px;
         border-radius: 14px;
-    }
-
-    .message-actions {
-        gap: 4px;
-        margin-top: 6px;
-    }
-
-    .message-actions button {
-        min-height: 32px;
-        padding: 5px 8px;
-        font-size: 14px;
     }
 }
