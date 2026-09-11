@@ -544,7 +544,12 @@
 }
 
 .media-wrap { position: relative; display: inline-block; }
-.share-btn { position: absolute; top: 6px; right: 6px; }
+.share-btn {
+     position: absolute;
+     top: 6px;
+     right: 6px;
+     border-radius: 14px;
+     }
 
 .tg-reactions {
     display: flex;
@@ -817,6 +822,7 @@
 /* Image */
 .message-image {
     height: auto;
+    border-radius: 14px;
 }
 
 /* Video */
@@ -825,6 +831,7 @@
     max-width: 100%;
     height: auto;
     max-height: 280px;
+    border-radius: 14px;
 }
 
 /* Actions under media */
@@ -883,6 +890,7 @@
 
     .message-video {
         max-height: 220px;
+        border-radius: 14px;
     }
 
     .message-actions {
