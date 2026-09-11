@@ -326,6 +326,18 @@
 
                                     </a>
 
+                                    <!-- SHARE OVER IMAGE -->
+
+                                    <button type="button"
+                                            class="media-share-btn share-btn"
+                                            data-url="{{ item.image.url }}"
+                                            title="Copy link"
+                                            aria-label="Share image">
+
+                                        <i class="fas fa-share-alt"></i>
+
+                                    </button>
+
                                 </div>
 
                                 {% endif %}
@@ -347,13 +359,25 @@
 
                                     </video>
 
+                                    <!-- SHARE OVER VIDEO -->
+
+                                    <button type="button"
+                                            class="media-share-btn share-btn"
+                                            data-url="{{ item.video_url|default:item.video.url }}"
+                                            title="Copy link"
+                                            aria-label="Share video">
+
+                                        <i class="fas fa-share-alt"></i>
+
+                                    </button>
+
                                 </div>
 
                                 {% endif %}
 
 
                                 <!-- =================================================
-                                     REACTIONS + SHARE
+                                     REACTIONS
                                 ================================================== -->
 
                                 {% if not item.is_system|default:False and not item.is_removed|default:False %}
@@ -373,9 +397,7 @@
 
                                     <div class="message-reactions">
 
-                                        <!-- =================================================
-                                             LIKE
-                                        ================================================== -->
+                                        <!-- LIKE -->
 
                                         <a href="{% url 'react-message' item.pk 'like' %}"
                                            class="tg-reaction js-react {% if liked %}active-like{% endif %}"
@@ -404,9 +426,7 @@
                                         </a>
 
 
-                                        <!-- =================================================
-                                             HEART
-                                        ================================================== -->
+                                        <!-- HEART -->
 
                                         <a href="{% url 'react-message' item.pk 'heart' %}"
                                            class="tg-reaction js-react {% if hearted %}active-heart{% endif %}"
@@ -435,9 +455,7 @@
                                         </a>
 
 
-                                        <!-- =================================================
-                                             DELETE OWN MESSAGE
-                                        ================================================== -->
+                                        <!-- DELETE OWN MESSAGE -->
 
                                         {% if item.sender == request.user %}
 
@@ -464,25 +482,6 @@
                                         {% endif %}
 
                                     </div>
-
-
-                                    <!-- =================================================
-                                         RIGHT SIDE - SHARE
-                                    ================================================== -->
-
-                                    {% if item.image or item.video %}
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light share-btn"
-                                            data-url="{% if item.image %}{{ item.image.url }}{% else %}{{ item.video_url|default:item.video.url }}{% endif %}"
-                                            title="Copy link"
-                                            aria-label="Share media">
-
-                                        <i class="fas fa-share-alt"></i>
-
-                                    </button>
-
-                                    {% endif %}
 
                                 </div>
 
@@ -513,8 +512,6 @@
 
                 <div class="conversation-scroll-buttons">
 
-                    <!-- UP -->
-
                     <button type="button"
                             id="scroll-top-btn"
                             class="scroll-navigation-btn scroll-top-btn d-none"
@@ -525,8 +522,6 @@
 
                     </button>
 
-
-                    <!-- DOWN -->
 
                     <button type="button"
                             id="scroll-bottom-btn"
@@ -603,9 +598,7 @@
                     {% csrf_token %}
 
 
-                    <!-- =================================================
-                         BODY
-                    ================================================== -->
+                    <!-- BODY -->
 
                     <div class="mb-2 position-relative">
 
@@ -636,9 +629,7 @@
                     </div>
 
 
-                    <!-- =================================================
-                         IMAGE PREVIEW
-                    ================================================== -->
+                    <!-- IMAGE PREVIEW -->
 
                     <div id="image-preview-wrap"
                          class="mb-2 d-none">
@@ -651,9 +642,7 @@
                     </div>
 
 
-                    <!-- =================================================
-                         VIDEO PREVIEW
-                    ================================================== -->
+                    <!-- VIDEO PREVIEW -->
 
                     <div id="video-preview-wrap"
                          class="mb-2 d-none">
@@ -666,9 +655,7 @@
                     </div>
 
 
-                    <!-- =================================================
-                         FILE INPUTS
-                    ================================================== -->
+                    <!-- FILE INPUTS -->
 
                     <input type="file"
                            name="image"
@@ -683,9 +670,7 @@
                            hidden>
 
 
-                    <!-- =================================================
-                         UPLOAD PROGRESS
-                    ================================================== -->
+                    <!-- UPLOAD PROGRESS -->
 
                     <div id="upload-progress-wrap"
                          class="upload-progress-wrap d-none mb-2">
@@ -719,13 +704,9 @@
                     </div>
 
 
-                    <!-- =================================================
-                         REPLY ACTIONS
-                    ================================================== -->
+                    <!-- REPLY ACTIONS -->
 
                     <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
-
-                        <!-- LEFT BUTTONS -->
 
                         <div class="btn-group"
                              role="group">
@@ -784,101 +765,30 @@
 
                                 <div class="d-flex flex-wrap gap-1">
 
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😊">😊</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😂">😂</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😍">😍</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😘">😘</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😉">😉</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😎">😎</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😢">😢</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😡">😡</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="👍">👍</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="👎">👎</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="👏">👏</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🙏">🙏</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="❤️">❤️</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🔥">🔥</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="⭐">⭐</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🎉">🎉</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="✅">✅</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="❌">❌</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🍎">🍎</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🍐">🍐</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🍇">🍇</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🥕">🥕</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="📦">📦</button>
-
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="💰">💰</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😊">😊</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😂">😂</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😍">😍</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😘">😘</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😉">😉</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😎">😎</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😢">😢</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😡">😡</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👍">👍</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👎">👎</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👏">👏</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🙏">🙏</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❤️">❤️</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🔥">🔥</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="⭐">⭐</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🎉">🎉</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="✅">✅</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❌">❌</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍎">🍎</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍐">🍐</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍇">🍇</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🥕">🥕</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="📦">📦</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="💰">💰</button>
 
                                 </div>
 
@@ -887,9 +797,7 @@
                         </div>
 
 
-                        <!-- =================================================
-                             SEND
-                        ================================================== -->
+                        <!-- SEND -->
 
                         <button type="submit"
                                 class="btn btn-primary px-4">
@@ -914,4 +822,3 @@
 </main>
 
 {% endblock %}
-
