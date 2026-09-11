@@ -545,11 +545,19 @@
 
 .media-wrap { position: relative; display: inline-block; }
 .share-btn {
-     position: absolute;
-     top: 6px;
-     right: 6px;
-     border-radius: 14px;
-     }
+    position: static;
+    margin-top: 6px;
+
+    width: 34px;
+    height: 30px;
+    padding: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 14px;
+}
 
 .tg-reactions {
     display: flex;
