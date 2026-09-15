@@ -1296,3 +1296,208 @@
         padding: .3rem .55rem;
     }
 }
+
+/* ============================================================
+EDIT MESSAGE BAR
+============================================================ */
+
+.editing-message-bar {
+display: flex;
+align-items: center;
+justify-content: space-between;
+width: 100%;
+margin-bottom: 8px;
+padding: 8px 10px;
+border-left: 3px solid #0d6efd;
+border-radius: 7px;
+background: rgba(13, 110, 253, 0.07);
+
+}
+
+.editing-message-info {
+display: flex;
+align-items: center;
+gap: 9px;
+min-width: 0;
+
+}
+
+.editing-message-info > i {
+color: #0d6efd;
+font-size: 0.9rem;
+}
+
+.editing-message-info > div {
+display: flex;
+flex-direction: column;
+min-width: 0;
+}
+
+.editing-message-info strong {
+font-size: 0.82rem;
+line-height: 1.2;
+color: #0d6efd;
+}
+
+.editing-message-info small {
+display: block;
+max-width: 500px;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+color: #6c757d;
+font-size: 0.75rem;
+}
+
+.editing-cancel-btn {
+flex: 0 0 auto;
+width: 28px;
+height: 28px;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+padding: 0;
+border: 0;
+border-radius: 50%;
+background: transparent;
+color: #6c757d;
+cursor: pointer;
+
+}
+
+.editing-cancel-btn:hover {
+background: rgba(0, 0, 0, 0.08);
+color: #212529;
+}
+
+/* ============================================================
+SIDE EDIT BUTTON
+============================================================ */
+
+.message-row-content {
+display: flex;
+align-items: flex-start;
+gap: 6px;
+width: fit-content;
+max-width: 100%;
+min-width: 0;
+
+}
+
+.own-message .message-row-content {
+margin-left: auto;
+}
+
+.message-side-actions {
+display: flex;
+flex-direction: column;
+flex: 0 0 auto;
+
+padding-top: 4px;
+
+opacity: 0;
+visibility: hidden;
+
+transform: translateX(4px);
+
+transition:
+    opacity .15s ease,
+    visibility .15s ease,
+    transform .15s ease;
+
+}
+
+.conversation-message:hover .message-side-actions {
+opacity: 1;
+visibility: visible;
+transform: translateX(0);
+}
+
+.message-side-btn {
+width: 30px;
+height: 30px;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+
+padding: 0;
+
+border: 1px solid rgba(0, 0, 0, .12);
+border-radius: 50%;
+
+background: #fff;
+color: #6c757d;
+
+text-decoration: none;
+
+cursor: pointer;
+
+box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+
+transition:
+    color .15s ease,
+    background-color .15s ease,
+    border-color .15s ease,
+    transform .15s ease;
+
+}
+
+.message-side-btn:hover {
+color: #198754;
+background: #f8f9fa;
+border-color: rgba(25, 135, 84, .35);
+transform: translateY(-1px);
+}
+
+.message-side-btn i {
+font-size: .78rem;
+}
+
+/* ============================================================
+MOBILE
+============================================================ */
+
+@media (max-width: 768px) {
+
+.message-side-actions {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+}
+
+.message-side-btn {
+    width: 28px;
+    height: 28px;
+}
+
+.message-side-btn i {
+    font-size: .72rem;
+}
+
+.editing-message-info small {
+    max-width: 220px;
+}
+
+}
+
+@media (max-width: 480px) {
+
+.message-row-content {
+    gap: 4px;
+}
+
+.editing-message-bar {
+    padding: 7px 8px;
+}
+
+.editing-message-info {
+    gap: 7px;
+}
+
+.editing-message-info strong {
+    font-size: .78rem;
+}
+
+.editing-message-info small {
+    max-width: 180px;
+}

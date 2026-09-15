@@ -347,6 +347,7 @@ def validate_message_attachments(request):
                 "Invalid video file."
             )
 
+
 # ============================================================
 # SYSTEM MESSAGE
 # ============================================================
@@ -556,6 +557,10 @@ def send_message(request, pk=None):
 # READ MESSAGE + REPLY
 # ============================================================
 
+# ============================================================
+# READ MESSAGE + REPLY
+# ============================================================
+
 @login_required
 def read_message(request, pk):
     message = get_object_or_404(
@@ -582,9 +587,11 @@ def read_message(request, pk):
             status=403,
         )
 
-    root_message = get_root(
-        message
-    )
+    # ========================================================
+    # ROOT MESSAGE
+    # ========================================================
+
+    root_message = get_root(message)
 
     conversation_messages = (
         get_conversation_messages_for_user(
@@ -609,12 +616,13 @@ def read_message(request, pk):
     # ========================================================
 
     if root_message.sender == current_user:
-
         other_user = root_message.recipient
-
     else:
-
         other_user = root_message.sender
+
+    # ========================================================
+    # BLOCK STATUS
+    # ========================================================
 
     is_blocked = False
     is_blocked_by_other = False
@@ -629,6 +637,10 @@ def read_message(request, pk):
             blocker=other_user,
             blocked=current_user,
         ).exists()
+
+    # ========================================================
+    # SYSTEM MESSAGE
+    # ========================================================
 
     is_system = bool(
         getattr(
@@ -651,17 +663,28 @@ def read_message(request, pk):
 
         if form.is_valid():
 
+            # =================================================
+            # ATTACHMENT VALIDATION
+            # =================================================
+
             try:
                 validate_message_attachments(request)
+
             except ValidationError as exc:
+
                 django_messages.error(
                     request,
                     exc.message,
                 )
+
                 return redirect(
                     'read-message',
                     pk=pk,
                 )
+
+            # =================================================
+            # RECIPIENT
+            # =================================================
 
             recipient = (
                 root_message.recipient
@@ -716,21 +739,83 @@ def read_message(request, pk):
                 )
 
             # =================================================
-            # GET LATEST VISIBLE MESSAGE
+            # FIND REPLY TARGET
             # =================================================
 
-            chronological = (
-                get_conversation_messages_for_user(
-                    root_message,
-                    current_user,
-                )
-            )
+            reply_to_id = (
+                    request.POST.get('reply_to')
+                    or ''
+            ).strip()
 
-            last_msg = (
-                chronological[-1]
-                if chronological
-                else root_message
-            )
+            reply_to = None
+
+            if reply_to_id:
+
+                try:
+
+                    reply_to = (
+                        Message.objects
+                        .select_related(
+                            'sender',
+                            'recipient',
+                        )
+                        .get(
+                            pk=int(reply_to_id)
+                        )
+                    )
+
+                except (
+                        Message.DoesNotExist,
+                        ValueError,
+                        TypeError,
+                ):
+
+                    reply_to = None
+
+            # =================================================
+            # SECURITY CHECK FOR REPLY TARGET
+            # =================================================
+
+            if reply_to is not None:
+
+                if reply_to.sender_id not in [
+                    current_user.pk,
+                    recipient.pk,
+                ] or reply_to.recipient_id not in [
+                    current_user.pk,
+                    recipient.pk,
+                ]:
+
+                    reply_to = None
+
+                else:
+
+                    reply_root = get_root(reply_to)
+
+                    if reply_root.pk != root_message.pk:
+                        reply_to = None
+
+            # =================================================
+            # FALLBACK
+            # =================================================
+
+            if reply_to is None:
+                chronological = (
+                    get_conversation_messages_for_user(
+                        root_message,
+                        current_user,
+                    )
+                )
+
+                reply_to = (
+                    chronological[-1]
+                    if chronological
+                    else root_message
+                )
+
+            # =================================================
+            # CREATE REPLY
+            # =================================================
 
             reply = form.save(
                 commit=False
@@ -744,7 +829,14 @@ def read_message(request, pk):
                     or "Direct conversation"
             )
 
-            reply.parent_message = last_msg
+            # IMPORTANT:
+            # The new message becomes a child of the
+            # message the user actually replied to.
+            reply.parent_message = reply_to
+
+            # =================================================
+            # MARKDOWN
+            # =================================================
 
             if reply.body:
                 reply.body = markdown.markdown(
@@ -752,7 +844,7 @@ def read_message(request, pk):
                 )
 
             # =================================================
-            # VIDEO
+            # VIDEO / CLOUDINARY
             # =================================================
 
             video_file = request.FILES.get(
@@ -804,13 +896,19 @@ def read_message(request, pk):
 
                 reply.save()
 
-                # Recipient
+                # ---------------------------------------------
+                # RECIPIENT STATUS
+                # ---------------------------------------------
+
                 MessageStatus.objects.create(
                     message=reply,
                     profile=recipient,
                 )
 
-                # Sender
+                # ---------------------------------------------
+                # SENDER STATUS
+                # ---------------------------------------------
+
                 if recipient != current_user:
                     sender_status = (
                         MessageStatus.objects.create(
@@ -846,6 +944,10 @@ def read_message(request, pk):
         if conversation_messages
         else root_message
     )
+
+    # ========================================================
+    # RENDER
+    # ========================================================
 
     return render(
         request,
@@ -1335,4 +1437,123 @@ def message_inbox(request):
             'conversations': page_obj,
             'filter_type': filter_type,
         },
+    )
+
+
+# ============================================================
+# EDIT ONE MESSAGE
+# ============================================================
+
+@login_required
+def edit_message(request, pk):
+
+    message = get_object_or_404(
+        Message.objects.select_related(
+            'sender__profile',
+            'recipient__profile',
+        ),
+        pk=pk,
+    )
+
+    # ========================================================
+    # ONLY MESSAGE OWNER CAN EDIT
+    # ========================================================
+
+    if message.sender != request.user:
+        return HttpResponse(
+            "Not allowed",
+            status=403,
+        )
+
+    # ========================================================
+    # SYSTEM MESSAGE
+    # ========================================================
+
+    if getattr(message, 'is_system', False):
+        return HttpResponse(
+            "System messages cannot be edited.",
+            status=403,
+        )
+
+    # ========================================================
+    # DELETED MESSAGE
+    # ========================================================
+
+    if message.is_removed:
+        return HttpResponse(
+            "Deleted messages cannot be edited.",
+            status=400,
+        )
+
+    # ========================================================
+    # POST
+    # ========================================================
+
+    if request.method != 'POST':
+        return HttpResponse(
+            "POST required",
+            status=405,
+        )
+
+    form = MessageForm(
+        request.POST,
+        request.FILES,
+        instance=message,
+    )
+
+    if not form.is_valid():
+
+        error_text = " ".join(
+            str(error)
+            for errors in form.errors.values()
+            for error in errors
+        )
+
+        return JsonResponse(
+            {
+                'ok': False,
+                'error': error_text or 'Invalid message.',
+            },
+            status=400,
+        )
+
+    # ========================================================
+    # BODY
+    # ========================================================
+
+    new_body = (
+        form.cleaned_data.get('body')
+        or ''
+    ).strip()
+
+    if not new_body:
+
+        return JsonResponse(
+            {
+                'ok': False,
+                'error': 'Message cannot be empty.',
+            },
+            status=400,
+        )
+
+    # ========================================================
+    # SAVE
+    # ========================================================
+
+    message.body = markdown.markdown(
+        new_body
+    )
+
+    message.save(
+        update_fields=[
+            'body',
+        ]
+    )
+
+    return JsonResponse(
+        {
+            'ok': True,
+            'message_id': message.pk,
+            'body': message.body,
+        }
     )
