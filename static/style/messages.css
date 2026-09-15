@@ -1,4 +1,7 @@
-/* General Styling for Message Box */
+/* =========================================================
+   GENERAL MESSAGE BOX
+========================================================= */
+
 .message-box {
     max-width: 630px;
     margin: 20px auto;
@@ -10,7 +13,6 @@
     font-family: Arial, sans-serif;
 }
 
-/* Title Styling */
 .message-box h3 {
     font-size: 1.5rem;
     color: #333;
@@ -19,7 +21,6 @@
     text-align: center;
 }
 
-/* Content Styling */
 .message-box p {
     font-size: 1rem;
     color: #555;
@@ -28,7 +29,6 @@
     text-align: justify;
 }
 
-/* Sender Details */
 .message-box .sender-info {
     font-size: 0.9rem;
     color: #888;
@@ -37,26 +37,14 @@
     margin-bottom: 10px;
 }
 
-/* Button Styling */
-/*.message-box .btn {*/
-/*    display: block;*/
-/*    width: 100%;*/
-/*    text-align: center;*/
-/*    padding: 10px;*/
-/*    font-size: 1rem;*/
-/*    color: #fff;*/
-/*    background-color: #28a745;*/
-/*    border: none;*/
-/*    border-radius: 5px;*/
-/*    cursor: pointer;*/
-/*    transition: background-color 0.3s;*/
-/*}*/
-
 .message-box .btn:hover {
     background-color: #218838;
 }
 
-/* Unread Messages Notification Bar */
+/* =========================================================
+   UNREAD BAR
+========================================================= */
+
 .unread-bar {
     background-color: rgba(40, 167, 69, 0.9);
     color: white;
@@ -83,14 +71,17 @@
     font-weight: bold;
 }
 
-/* Top Header with Icons */
+/* =========================================================
+   MAILBOX HEADER
+========================================================= */
+
 .mailbox-header {
     background-color: #28a745;
     color: white;
     display: flex;
     justify-content: center;
-    padding: 8px 20px;
     align-items: center;
+    padding: 8px 20px;
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     position: sticky;
@@ -99,6 +90,13 @@
     width: 100%;
     max-width: 630px;
     margin: 0 auto;
+}
+
+.mailbox-header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    gap: 10px;
 }
 
 @media (max-width: 768px) {
@@ -115,7 +113,10 @@
     }
 }
 
-/* Container for Messages */
+/* =========================================================
+   MAILBOX CONTAINER
+========================================================= */
+
 .mailbox-container {
     width: 100%;
     margin-top: 40px;
@@ -123,16 +124,27 @@
     justify-content: center;
     flex-direction: column;
     gap: 15px;
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 8px;
 }
 
-/* Status Count Styling */
+/* =========================================================
+   STATUS COUNT
+========================================================= */
+
 .status-count {
     font-weight: bold;
     font-size: 1rem;
     margin-left: 7px;
 }
 
-/* Message Box Styling */
+
+/* =========================================================
+   MESSAGE BOX - LIST
+========================================================= */
+
 .message-box {
     background-color: rgba(249, 249, 249, 0.95);
     padding: 15px;
@@ -140,10 +152,9 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-top: 20px;
     width: 100%;
-    max-width: 630px; /*Message box width */
+    max-width: 630px;
 }
 
-/* Message Title Styling */
 .message-box h2 {
     font-size: 1.4rem;
     color: #333;
@@ -152,7 +163,10 @@
     text-align: center;
 }
 
-/* Individual Message Styling */
+/* =========================================================
+   MESSAGE ITEM
+========================================================= */
+
 .message-item {
     background-color: #fff;
     border: 1px solid #ddd;
@@ -206,7 +220,10 @@
     color: #218838;
 }
 
-/* Delete Button Styling */
+/* =========================================================
+   DELETE BUTTON
+========================================================= */
+
 .delete-btn {
     background-color: #dc3545;
     color: white;
@@ -221,12 +238,15 @@
     background-color: #c82333;
 }
 
-/* Hide/Show Messages */
+
+/* =========================================================
+   HIDDEN / READ / UNREAD
+========================================================= */
+
 .message-item.hidden {
     display: none;
 }
 
-/* Message Status Styling */
 .read {
     background-color: #f0f8ff;
 }
@@ -235,7 +255,10 @@
     background-color: #ffebeb;
 }
 
-/* Status Icon Styling */
+/* =========================================================
+   STATUS ICON
+========================================================= */
+
 .status-icon {
     font-size: 1.5rem;
     color: white;
@@ -262,7 +285,10 @@
     text-align: center;
 }
 
-/* Back Button Styling */
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
 .back-btn {
     color: white;
     text-decoration: none;
@@ -273,43 +299,20 @@
 }
 
 .back-btn i {
-    font-size: 1.5rem; /* Adjust icon size */
+    font-size: 1.5rem;
 }
 
 .back-btn:hover {
-    color: #218838; /* Change color on hover */
+    color: #218838;
 }
 
-/* Inbox Container */
-.mailbox-container {
-    max-width: 960px; /* Matches the Inbox Header width */
-    margin: 20px auto;
-    /*padding: 20px;*/
-    border-radius: 8px;
-    /*box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);*/
-}
 
-/* Header */
-.mailbox-header {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+/* =========================================================
+   MESSAGE CARD
+========================================================= */
 
-/* Message List */
-.message-box {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-/* Message Card */
 .message-card {
-    position: relative; /* For hover effects */
+    position: relative;
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
@@ -317,25 +320,34 @@
     border: 1px solid #e0e4e8;
     border-radius: 8px;
     background: #fff;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 .message-card:hover {
-    transform: translateY(-5px); /* Slight lift effect */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Shadow effect */
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     cursor: pointer;
 }
 
-/* Unread Message Highlight */
 .message-card.unread {
-    border-left: 5px solid #007bff; /* Blue indicator for unread messages */
+    border-left: 5px solid #007bff;
 }
 
-/* Message Content */
+/* =========================================================
+   MESSAGE CONTENT - INBOX
+========================================================= */
+
 .message-content {
     flex-grow: 1;
     max-width: 70%;
 }
+
+
+/* =========================================================
+   MESSAGE META / TITLE
+========================================================= */
 
 .message-title {
     font-size: 1.1rem;
@@ -347,9 +359,11 @@
 .message-meta {
     font-size: 0.7rem;
     color: #666;
+
     margin-bottom: 8px;
+
     display: flex;
-    flex-direction: column; /* Arrange "From" and "Date" vertically */
+    flex-direction: column;
 }
 
 .message-meta > div {
@@ -362,7 +376,10 @@
     margin: 0;
 }
 
-/* Action Buttons */
+/* =========================================================
+   CUSTOM BUTTONS
+========================================================= */
+
 .custom-button {
     display: inline-flex;
     align-items: center;
@@ -392,7 +409,10 @@
     background-color: #a71d2a;
 }
 
-/* Empty Inbox */
+/* =========================================================
+   EMPTY INBOX
+========================================================= */
+
 .alert-warning {
     text-align: center;
     color: #999;
@@ -405,6 +425,10 @@
     margin-bottom: 10px;
     color: #ccc;
 }
+
+/* =========================================================
+   SENDER INFO
+========================================================= */
 
 .sender-info {
     display: flex;
@@ -424,22 +448,26 @@
     font-weight: bold;
 }
 
-
 .sender-info {
-    border: 1px solid #ddd; /* Optional border */
+    border: 1px solid #ddd;
     padding: 10px;
     border-radius: 5px;
-    background-color: #e1d5d5; /* Optional background */
+    background-color: #e1d5d5;
 }
 
 .sender-info .info-group {
-    flex: 1; /* Allows equal space distribution between groups */
+    flex: 1;
     padding: 5px;
 }
 
 .sender-info strong {
     color: #333;
 }
+
+
+/* =========================================================
+   REPLY BUTTON
+========================================================= */
 
 .replay-button {
     background-color: #28a745;
@@ -455,6 +483,10 @@
 }
 
 
+/* =========================================================
+   DETAIL LABEL
+========================================================= */
+
 .detail-label {
     margin-left: 230px;
     min-width: 100px;
@@ -468,6 +500,19 @@
         text-align: left;
     }
 }
+
+
+/* =========================================================
+   =========================================================
+   CONVERSATION
+   =========================================================
+========================================================= */
+
+
+/* =========================================================
+   CONVERSATION TITLE
+========================================================= */
+
 .conversation-title {
     display: flex;
     justify-content: space-between;
@@ -475,9 +520,13 @@
     gap: 0.75rem;
     margin-bottom: 1.5rem;
     padding-bottom: 0.9rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.15) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 }
 
+
+/* =========================================================
+   CONVERSATION SCROLL
+========================================================= */
 
 .conversation-scroll {
     position: relative;
@@ -485,17 +534,19 @@
     overflow-y: auto;
 }
 
+/* =========================================================
+   SCROLL BUTTONS
+========================================================= */
+
 .conversation-scroll-buttons {
     position: sticky;
     float: right;
     right: 12px;
     bottom: 12px;
     z-index: 20;
-
     display: flex;
     flex-direction: column;
     gap: 8px;
-
     margin-right: 12px;
     margin-top: -88px;
 }
@@ -503,29 +554,24 @@
 .scroll-navigation-btn {
     width: 40px;
     height: 40px;
-
     border: none;
     border-radius: 50%;
-
     background: #fff;
-
     box-shadow:
         0 2px 8px rgba(0, 0, 0, .2);
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     cursor: pointer;
-
     transition:
-        transform .15s ease,
+        opacity .25s ease,
+        visibility .25s ease,
+        transform .25s ease,
         box-shadow .15s ease;
 }
 
 .scroll-navigation-btn:hover {
     transform: scale(1.08);
-
     box-shadow:
         0 3px 10px rgba(0, 0, 0, .25);
 }
@@ -543,101 +589,98 @@
     position: static;
 }
 
-/* WRAP AND SHARE */
-.media-wrap {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: flex-start;
-    max-width: 100%;
-}
-
-/* Image / video */
-.media-wrap > a {
-    display: block;
-    max-width: 100%;
-    line-height: 0;
-}
-
-.share-btn {
-    position: static;
-    width: 34px;
-    height: 30px;
-    padding: 0;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 14px;
-    margin: 0;
-}
-
-.tg-reactions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    margin-top: 6px;
-}
-.tg-reaction {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 6px 2px 4px;
-    border-radius: 12px;
-    background: rgba(0,0,0,.06);
-    text-decoration: none;
-    line-height: 1;
-}
-.tg-emoji {
-    opacity: .35;
-    filter: grayscale(1);
-}
-.tg-reaction.active-like .tg-emoji,
-.tg-reaction.active-heart .tg-emoji {
-    opacity: 1;
-    filter: none;
-}
-.tg-avatars { display: inline-flex; }
-.react-avatar {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid #fff;
-    margin-left: -3px;
-}
-.tg-avatars .react-avatar:first-child { margin-left: 0; }
-
-.delete-message-form {
-    display: inline;
-    margin: 0;
-    padding: 0;
-}
-
-.delete-message-reaction {
-    border: 0;
-    background: transparent;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    font: inherit;
-}
-
-.delete-message-reaction .tg-emoji {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+.scroll-buttons-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(.85);
 }
 
 /* =========================================================
-   MESSAGE DELIVERY / READ STATUS
+   MESSAGE ROW
+========================================================= */
+
+.conversation-message {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 25px;
+}
+
+
+/* =========================================================
+   AVATAR
+========================================================= */
+
+.conversation-avatar {
+    flex: 0 0 48px;
+    width: 48px;
+    margin-right: 12px;
+}
+
+.message-avatar {
+    display: block;
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+}
+
+.conversation-avatar a .message-avatar {
+    transition: transform .2s ease;
+}
+
+.conversation-avatar a .message-avatar:hover {
+    transform: scale(1.05);
+}
+
+/* =========================================================
+   MESSAGE BODY
+========================================================= */
+
+.conversation-message-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: calc(100% - 60px);
+}
+
+
+/* =========================================================
+   MESSAGE META
+========================================================= */
+
+.conversation-meta {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 4px;
+}
+
+.conversation-name {
+    color: #222;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.conversation-date {
+    color: #777;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   DELIVERY STATUS
 ========================================================= */
 
 .message-delivery-status {
     display: inline-flex;
     align-items: center;
-    margin-left: 6px;
+    margin-left: 2px;
     font-size: 11px;
     line-height: 1;
     font-weight: 600;
@@ -650,17 +693,342 @@
     color: #8e44ad;
 }
 
+
 /* =========================================================
-   MODERN CHAT DRAG & DROP
+   IMPORTANT CHAT WRAPPER
 ========================================================= */
 
-.conversation-scroll {
+.chat-message-content {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+}
+
+/* =========================================================
+   MESSAGE BUBBLE
+========================================================= */
+
+.chat-message-content .message-bubble {
     position: relative;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 11px 15px;
+    background: #f0f2f5;
+    border-radius: 4px 18px 18px 18px;
+    font-size: 15px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, .08);
+}
+
+/* =========================================================
+   LEFT BUBBLE ARROW
+========================================================= */
+
+.chat-message-content .message-bubble::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 12px;
+    width: 0;
+    height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-right: 9px solid #f0f2f5;
+}
+
+/* =========================================================
+   OWN MESSAGE
+========================================================= */
+
+.own-message {
+    flex-direction: row-reverse;
+}
+
+.own-message .conversation-avatar {
+    margin-right: 0;
+    margin-left: 12px;
+}
+
+.own-message .conversation-message-body {
+    text-align: right;
+}
+
+.own-message .conversation-meta {
+    justify-content: flex-end;
+}
+
+.own-message .chat-message-content {
+    margin-left: auto;
+}
+
+.own-message .message-bubble {
+    background: #d9fdd3;
+    border-radius: 18px 4px 18px 18px;
+    text-align: left;
 }
 
 
 /* =========================================================
-   DROP OVERLAY
+   RIGHT BUBBLE ARROW
+========================================================= */
+
+.own-message .chat-message-content .message-bubble::before {
+    left: auto;
+    right: -8px;
+    border-right: none;
+    border-left: 9px solid #d9fdd3;
+}
+
+/* =========================================================
+   MEDIA WRAPPER
+========================================================= */
+
+.chat-message-content .media-wrap {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: fit-content;
+    max-width: 100%;
+}
+
+.chat-message-content .media-wrap > a {
+    display: block;
+    max-width: 100%;
+    line-height: 0;
+}
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+.chat-message-content .message-image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: min(360px, 100%);
+    max-height: 240px;
+    object-fit: contain;
+    border-radius: 14px;
+}
+
+/* =========================================================
+   VIDEO
+========================================================= */
+
+.chat-message-content .message-video {
+    display: block;
+    width: min(360px, 100%);
+    max-width: 360px;
+    height: auto;
+    max-height: 240px;
+    object-fit: contain;
+    border-radius: 14px;
+}
+
+/* =========================================================
+   MEDIA SHARE BUTTON
+========================================================= */
+
+.chat-message-content .media-share-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .65);
+    color: #fff;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(.85);
+    transition:
+        opacity .2s ease,
+        visibility .2s ease,
+        transform .2s ease;
+    z-index: 5;
+    cursor: pointer;
+}
+
+.chat-message-content .media-wrap:hover .media-share-btn {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+.chat-message-content .media-share-btn:hover {
+    background: rgba(0, 0, 0, .85);
+    color: #fff;
+}
+
+/* =========================================================
+   MESSAGE ACTIONS
+   IMPORTANT:
+   NEVER width: 100%
+========================================================= */
+
+.chat-message-content .message-actions {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 5px;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   REACTIONS
+========================================================= */
+
+.chat-message-content .message-reactions {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    max-width: 100%;
+    gap: 4px;
+}
+
+.chat-message-content .message-reactions .tg-reaction {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================================================
+   REACTION BUTTON
+========================================================= */
+
+.tg-reaction {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px 2px 4px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, .06);
+    text-decoration: none;
+    line-height: 1;
+}
+
+.tg-emoji {
+    opacity: .35;
+    filter: grayscale(1);
+}
+
+.tg-reaction.active-like .tg-emoji,
+.tg-reaction.active-heart .tg-emoji {
+    opacity: 1;
+    filter: none;
+}
+
+/* =========================================================
+   REACTION AVATARS
+========================================================= */
+
+.tg-avatars {
+    display: inline-flex;
+}
+
+.react-avatar {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #fff;
+    margin-left: -3px;
+}
+
+.tg-avatars .react-avatar:first-child {
+    margin-left: 0;
+}
+
+
+/* =========================================================
+   DELETE MESSAGE
+========================================================= */
+
+.delete-message-form {
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
+}
+
+.delete-message-reaction {
+    border: 0;
+    background: transparent;
+    padding: 2px 6px 2px 4px;
+    margin: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+.delete-message-reaction .tg-emoji {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================================================
+   REPLY FORM
+========================================================= */
+
+.reply-form {
+    width: 100%;
+}
+
+.reply-form textarea,
+.reply-form .form-control {
+    width: 100%;
+    min-height: 120px;
+    border-radius: 10px;
+    resize: vertical;
+    font-size: .95rem;
+}
+
+.reply-form .btn-primary {
+    border-radius: 8px;
+    min-width: 120px;
+}
+
+
+/* =========================================================
+   ATTACHMENT PREVIEW
+========================================================= */
+
+.attach-preview {
+    display: block;
+    max-width: 140px;
+    max-height: 100px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+
+/* =========================================================
+   EMOJI
+========================================================= */
+
+.emoji-bar .emoji-btn {
+    padding: 2px 6px;
+    line-height: 1.2;
+}
+
+
+/* =========================================================
+   DRAG & DROP
 ========================================================= */
 
 .chat-drop-overlay {
@@ -671,30 +1039,24 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: rgba(255, 255, 255, 0.88);
+    background: rgba(255, 255, 255, .88);
     border: 3px dashed #8e44ad;
     border-radius: 12px;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transform: scale(0.98);
+    transform: scale(.98);
     transition:
-        opacity 0.15s ease,
-        visibility 0.15s ease,
-        transform 0.15s ease;
+        opacity .15s ease,
+        visibility .15s ease,
+        transform .15s ease;
 }
-
 
 .chat-drop-overlay.active {
     opacity: 1;
     visibility: visible;
     transform: scale(1);
 }
-
-
-/* =========================================================
-   DROP CONTENT
-========================================================= */
 
 .chat-drop-overlay-content {
     display: flex;
@@ -705,7 +1067,6 @@
     gap: 5px;
     color: #555;
 }
-
 
 .chat-drop-icon {
     display: flex;
@@ -719,18 +1080,14 @@
     color: #8e44ad;
     font-size: 28px;
 }
-
-
 .chat-drop-overlay-content strong {
     font-size: 18px;
     font-weight: 600;
 }
-
 .chat-drop-overlay-content small {
     font-size: 13px;
     color: #888;
 }
-
 
 /* =========================================================
    UPLOAD PROGRESS
@@ -739,224 +1096,203 @@
 .upload-progress-wrap {
     width: 100%;
 }
-
-
 .upload-progress-wrap .progress {
     height: 7px;
-
     border-radius: 10px;
-
     overflow: hidden;
 }
-
-
 .upload-progress-wrap .progress-bar {
-    transition:
-        width 0.15s ease;
+    transition: width .15s ease;
 }
-
-
 #upload-progress-text,
 #upload-progress-percent {
     color: #777;
     font-size: 12px;
 }
 
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: .4rem;
+    font-size: .9rem;
+}
+.pagination a,
+.pagination span {
+    padding: .35rem .7rem;
+    white-space: nowrap;
+}
 
 /* =========================================================
    MOBILE
 ========================================================= */
 
 @media (max-width: 576px) {
+    .conversation-box {
+        padding: 12px;
+    }
+    .conversation-title {
+        flex-direction: column;
 
-    .chat-drop-overlay {
-        border-width: 2px;
-        border-radius: 10px;
+        align-items: flex-start !important;
+    }
+    .conversation-title h3 {
+        font-size: 1.05rem;
+
+        width: 100%;
+    }
+    .conversation-actions {
+        justify-content: flex-end;
+        margin-top: .25rem;
     }
 
-    .chat-drop-icon {
-        width: 54px;
-        height: 54px;
+    /* -----------------------------------------
+       MESSAGE
+    ----------------------------------------- */
 
-        font-size: 23px;
+    .conversation-message {
+        margin-bottom: 20px;
+    }
+    .conversation-avatar {
+        flex: 0 0 40px;
+        width: 40px;
+        margin-right: 8px;
+    }
+    .own-message .conversation-avatar {
+        margin-left: 8px;
+
+        margin-right: 0;
+    }
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+    }
+    .conversation-message-body {
+        max-width: calc(100% - 48px);
     }
 
-    .chat-drop-overlay-content strong {
-        font-size: 16px;
+    /* -----------------------------------------
+       META
+    ----------------------------------------- */
+
+    .conversation-meta {
+        gap: 5px;
+    }
+    .conversation-name {
+        font-size: 14px;
+    }
+    .conversation-date {
+        font-size: 11px;
     }
 
-}
+    /* -----------------------------------------
+       BUBBLE
+    ----------------------------------------- */
 
+    .chat-message-content .message-bubble {
+        font-size: 14px;
+        padding: 9px 12px;
+    }
 
-/* =========================================================
-   UPLOAD PROGRESS
-========================================================= */
-
-.upload-progress-wrap {
-    width: 100%;
-}
-
-.upload-progress-wrap .progress {
-    height: 7px;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.upload-progress-wrap .progress-bar {
-    transition: width 0.15s ease;
-}
-
-#upload-progress-text,
-#upload-progress-percent {
-    color: #777;
-    font-size: 12px;
-}
-
-.scroll-navigation-btn {
-    transition:
-        opacity 0.25s ease,
-        visibility 0.25s ease,
-        transform 0.25s ease;
-}
-
-.scroll-buttons-hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: scale(0.85);
-}
-
-/* =========================================================
-   IMAGE AND VIDEO
-========================================================= */
-
-.media-wrap {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: flex-start;
-    max-width: 100%;
-}
-
-.media-wrap > a {
-    display: block;
-    max-width: 100%;
-    line-height: 0;
-}
-
-.message-image,
-.message-video {
-    display: block;
-    width: auto;
-    height: auto;
-    max-width: min(360px, 100%);
-    max-height: 240px;
-    object-fit: contain;
-    border-radius: 14px;
-}
-
-.message-video {
-    width: min(360px, 100%);
-}
-
-@media (max-width: 576px) {
-    .message-image,
-    .message-video {
+    /* -----------------------------------------
+       MEDIA
+    ----------------------------------------- */
+    .chat-message-content .message-image,
+    .chat-message-content .message-video {
         max-width: 100%;
         max-height: 200px;
         border-radius: 14px;
     }
-}
 
-/* =========================================================
-   MESSAGE ACTIONS
-========================================================= */
+    /* -----------------------------------------
+       SHARE
+    ----------------------------------------- */
 
-.message-actions {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 5px;
-}
-
-.message-reactions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.message-reactions .tg-reaction {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-@media (max-width: 576px) {
-    .message-actions {
-        gap: 5px;
-        margin-top: 4px;
-    }
-
-    .message-reactions {
-        gap: 3px;
-    }
-}
-
-.media-share-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-
-    width: 34px;
-    height: 34px;
-    padding: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: none;
-    border-radius: 50%;
-
-    background: rgba(0, 0, 0, 0.65);
-    color: #fff;
-
-    opacity: 0;
-    visibility: hidden;
-    transform: scale(0.85);
-
-    transition:
-        opacity 0.2s ease,
-        visibility 0.2s ease,
-        transform 0.2s ease;
-
-    z-index: 5;
-}
-
-.media-wrap:hover .media-share-btn {
-    opacity: 1;
-    visibility: visible;
-    transform: scale(1);
-}
-
-.media-share-btn:hover {
-    background: rgba(0, 0, 0, 0.85);
-    color: #fff;
-}
-
-@media (max-width: 768px) {
-    .media-wrap:active .media-share-btn {
-        opacity: 1;
-        visibility: visible;
-        transform: scale(1);
-    }
-}
-
-@media (max-width: 576px) {
-    .media-share-btn {
+    .chat-message-content .media-share-btn {
         top: 6px;
         right: 6px;
         width: 32px;
         height: 32px;
+    }
+    .chat-message-content .media-wrap:active .media-share-btn {
+        opacity: 1;
+        visibility: visible;
+        transform: scale(1);
+    }
+
+    /* -----------------------------------------
+       REACTIONS
+    ----------------------------------------- */
+
+    .chat-message-content .message-actions {
+        margin-top: 4px;
+    }
+    .chat-message-content .message-reactions {
+        gap: 3px;
+    }
+
+    /* -----------------------------------------
+       REPLY
+    ----------------------------------------- */
+
+    .reply-form .btn-primary {
+        width: 100%;
+    }
+
+    /* -----------------------------------------
+       PREVIEW
+    ----------------------------------------- */
+
+    .attach-preview {
+        max-width: 100%;
+
+        max-height: 160px;
+    }
+    #image-preview-wrap .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    #remove-image-btn {
+        width: 100%;
+    }
+
+    /* -----------------------------------------
+       DROP
+    ----------------------------------------- */
+
+    .chat-drop-overlay {
+        border-width: 2px;
+
+        border-radius: 10px;
+    }
+    .chat-drop-icon {
+        width: 54px;
+
+        height: 54px;
+
+        font-size: 23px;
+    }
+    .chat-drop-overlay-content strong {
+        font-size: 16px;
+    }
+    .chat-drop-overlay-content small {
+        font-size: 12px;
+    }
+
+    /* -----------------------------------------
+       PAGINATION
+    ----------------------------------------- */
+
+    .pagination {
+        font-size: .8rem;
+    }
+    .pagination a,
+    .pagination span {
+        padding: .3rem .55rem;
     }
 }
