@@ -756,18 +756,18 @@ main {
 }
 
 html, body {
-    height: 100%; /* Задаваме 100% височина на html и body */
+    height: 100%;
     margin: 0;
     padding: 0;
 }
 
 body {
     display: flex;
-    flex-direction: column; /* Вертикално разположение */
+    flex-direction: column;
 }
 
 main {
-    flex: 1 0 auto; /* Това позволява на main да заема всички налични вертикални пространства */
+    flex: 1 0 auto;
 }
 
 footer {
@@ -877,6 +877,7 @@ footer {
     padding: 20px;
 }
 
+
 /* ==========================================================
    CONVERSATION TITLE + ACTION BUTTONS
    ========================================================== */
@@ -889,7 +890,7 @@ footer {
     margin-bottom: 25px;
     padding-bottom: 15px;
     border-bottom: 1px solid #ddd;
-    text-align: left; /* важно: премахваме старото text-align: center */
+    text-align: left;
 }
 
 .conversation-title h3 {
@@ -913,9 +914,11 @@ footer {
     width: 36px !important;
     height: 34px !important;
     padding: 0 !important;
+
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
+
     font-size: 0.85rem;
     margin: 0 !important;
 }
@@ -926,32 +929,51 @@ footer {
     padding: 0;
 }
 
+
 /* ==========================================================
-   CONVERSATION MESSAGES
+   CONVERSATION
    ========================================================== */
 
 .conversation {
     width: 100%;
 }
 
+
+/* ==========================================================
+   MESSAGE ROW
+   ========================================================== */
+
 .conversation-message {
     display: flex;
     align-items: flex-start;
+
     width: 100%;
     margin-bottom: 25px;
+
+    min-width: 0;
 }
+
+
+/* ==========================================================
+   AVATAR
+   ========================================================== */
 
 .conversation-avatar {
     flex: 0 0 48px;
+    width: 48px;
+
     margin-right: 12px;
 }
 
 .message-avatar {
     width: 48px;
     height: 48px;
+
     object-fit: cover;
+
     border-radius: 50%;
     border: 1px solid #ccc;
+
     display: block;
 }
 
@@ -966,11 +988,17 @@ footer {
 
 /* ==========================================================
    MESSAGE BODY
+
+   IMPORTANT:
+   - Body wraps bubble + actions.
+   - Actions stay directly below the bubble.
    ========================================================== */
 
 .conversation-message-body {
     flex: 0 1 auto;
+
     min-width: 0;
+    width: fit-content;
     max-width: calc(100% - 60px);
 }
 
@@ -982,8 +1010,12 @@ footer {
 .conversation-meta {
     display: flex;
     align-items: baseline;
+
     gap: 8px;
     margin-bottom: 4px;
+
+    width: fit-content;
+    max-width: 100%;
 }
 
 .conversation-name {
@@ -1004,7 +1036,8 @@ footer {
 
 .message-bubble {
     position: relative;
-    display: inline-block;
+
+    display: block;
 
     width: fit-content;
     max-width: 100%;
@@ -1014,6 +1047,7 @@ footer {
     box-sizing: border-box;
 
     background: #f0f2f5;
+
     border-radius: 4px 18px 18px 18px;
 
     font-size: 15px;
@@ -1070,7 +1104,9 @@ footer {
 
 .own-message .message-bubble {
     background: #d9fdd3;
+
     border-radius: 18px 4px 18px 18px;
+
     text-align: left;
 }
 
@@ -1089,7 +1125,7 @@ footer {
 
 
 /* ==========================================================
-   MEDIA INSIDE MESSAGE
+   MEDIA WRAPPER
    ========================================================== */
 
 .media-wrap {
@@ -1105,9 +1141,16 @@ footer {
 
 .media-wrap > a {
     display: block;
+
     max-width: 100%;
+
     line-height: 0;
 }
+
+
+/* ==========================================================
+   IMAGE / VIDEO
+   ========================================================== */
 
 .message-image,
 .message-video {
@@ -1120,6 +1163,7 @@ footer {
     max-height: 240px;
 
     object-fit: contain;
+
     border-radius: 14px;
 }
 
@@ -1129,70 +1173,159 @@ footer {
 
 
 /* ==========================================================
-   MOBILE
+   MEDIA SHARE BUTTON
    ========================================================== */
 
-@media (max-width: 576px) {
+.media-share-btn {
+    position: absolute;
 
-    .conversation-message-body {
-        max-width: calc(100% - 60px);
-    }
+    top: 8px;
+    right: 8px;
 
-    .message-image,
-    .message-video {
-        max-width: 100%;
-        max-height: 200px;
-        border-radius: 14px;
-    }
+    width: 34px;
+    height: 34px;
 
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: scale(0.85);
+
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease,
+        transform 0.2s ease;
+
+    z-index: 5;
+
+    cursor: pointer;
 }
-/* =========================================================
-   MEDIA
-========================================================= */
 
-.media-wrap {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: flex-start;
+.media-wrap:hover .media-share-btn {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+.media-share-btn:hover {
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+}
+
+
+/* ==========================================================
+   MESSAGE ACTIONS
+
+   IMPORTANT:
+   This is OUTSIDE .message-bubble but INSIDE
+   .conversation-message-body.
+
+   It therefore stays directly below the bubble.
+   ========================================================== */
+
+.message-actions {
+    display: flex;
+    align-items: center;
 
     width: fit-content;
     max-width: 100%;
 
-    position: relative;
+    margin-top: 5px;
+
+    box-sizing: border-box;
 }
 
-.media-wrap > a {
-    display: block;
+.message-reactions {
+    display: flex;
+    align-items: center;
+
+    gap: 4px;
+
+    width: fit-content;
     max-width: 100%;
-    line-height: 0;
 }
 
-.message-image,
-.message-video {
-    display: block;
-
-    width: auto;
-    height: auto;
-
-    max-width: min(360px, 100%);
-    max-height: 240px;
-
-    object-fit: contain;
-    border-radius: 14px;
+.message-reactions .tg-reaction {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.message-video {
-    width: min(360px, 100%);
+
+/* ==========================================================
+   OWN MESSAGE ACTIONS
+   ========================================================== */
+
+.own-message .message-actions {
+    margin-left: auto;
+    justify-content: flex-end;
 }
 
-@media (max-width: 576px) {
-    .message-image,
-    .message-video {
-        max-width: 100%;
-        max-height: 200px;
-        border-radius: 14px;
-    }
+
+/* ==========================================================
+   REACTION BUTTONS
+   ========================================================== */
+
+.react-btn {
+    opacity: 0.25;
+
+    filter: grayscale(100%);
+
+    text-decoration: none;
+
+    transition:
+        opacity 0.15s ease,
+        filter 0.15s ease;
 }
+
+.react-btn:hover {
+    opacity: 0.55;
+}
+
+.react-btn.active-like,
+.react-btn.active-heart {
+    opacity: 1;
+    filter: none;
+}
+
+
+/* ==========================================================
+   MESSAGE MINI ACTIONS
+   ========================================================== */
+
+.message-mini-actions {
+    display: flex;
+    gap: 0.5rem;
+
+    font-size: 0.85rem;
+}
+
+.mini-btn {
+    text-decoration: none;
+
+    color: #666;
+
+    padding: 2px 6px;
+
+    border-radius: 6px;
+}
+
+.mini-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
 
 /* ==========================================================
    REPLY FORM
@@ -1205,9 +1338,13 @@ footer {
 .reply-form textarea,
 .reply-form .form-control {
     width: 100%;
+
     min-height: 120px;
+
     border-radius: 10px;
+
     resize: vertical;
+
     font-size: 0.95rem;
 }
 
@@ -1216,6 +1353,37 @@ footer {
     min-width: 120px;
 }
 
+
+/* ==========================================================
+   ATTACHMENT PREVIEW
+   ========================================================== */
+
+.attach-preview {
+    max-width: 140px;
+    max-height: 100px;
+
+    width: auto;
+    height: auto;
+
+    object-fit: contain;
+
+    border-radius: 8px;
+    border: 1px solid #ddd;
+
+    display: block;
+}
+
+
+/* ==========================================================
+   EMOJI BAR
+   ========================================================== */
+
+.emoji-bar .emoji-btn {
+    padding: 2px 6px;
+    line-height: 1.2;
+}
+
+
 /* ==========================================================
    PAGINATION
    ========================================================== */
@@ -1223,25 +1391,31 @@ footer {
 .pagination {
     display: flex;
     flex-wrap: wrap;
+
     justify-content: center;
     align-items: center;
+
     gap: 0.4rem;
+
     font-size: 0.9rem;
 }
 
 .pagination a,
 .pagination span {
     padding: 0.35rem 0.7rem;
+
     white-space: nowrap;
 }
 
+
 /* ==========================================================
-   INBOX PREVIEW (остава както е)
+   INBOX PREVIEW
    ========================================================== */
 
 .message-preview {
     display: flex;
     align-items: flex-start;
+
     gap: 12px;
 }
 
@@ -1252,7 +1426,9 @@ footer {
 .message-preview-avatar img {
     width: 48px;
     height: 48px;
+
     object-fit: cover;
+
     border-radius: 50%;
     border: 1px solid #ccc;
 }
@@ -1283,6 +1459,7 @@ footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 10px;
 }
 
@@ -1294,12 +1471,32 @@ footer {
 .message-preview-date {
     font-size: 12px;
     color: #777;
+
     white-space: nowrap;
 }
 
 .message-excerpt {
     color: #666;
 }
+
+
+/* ==========================================================
+   CONVERSATION SEPARATOR
+   ========================================================== */
+
+.message-box.conversation-box > .conv-separator {
+    display: block !important;
+
+    width: 100% !important;
+    height: 1px !important;
+
+    margin: 12px 0 18px !important;
+
+    background-color: rgba(0, 0, 0, 0.15) !important;
+
+    flex-shrink: 0 !important;
+}
+
 
 /* ==========================================================
    MOBILE
@@ -1311,8 +1508,14 @@ footer {
         padding: 12px;
     }
 
+
+    /* ------------------------------------------------------
+       TITLE
+       ------------------------------------------------------ */
+
     .conversation-title {
         flex-direction: column;
+
         align-items: flex-start !important;
     }
 
@@ -1323,8 +1526,14 @@ footer {
 
     .conversation-actions {
         justify-content: flex-end;
+
         margin-top: 0.25rem;
     }
+
+
+    /* ------------------------------------------------------
+       AVATAR
+       ------------------------------------------------------ */
 
     .message-avatar {
         width: 40px;
@@ -1332,16 +1541,30 @@ footer {
     }
 
     .conversation-avatar {
+        flex: 0 0 40px;
+        width: 40px;
+
         margin-right: 8px;
     }
 
     .own-message .conversation-avatar {
         margin-left: 8px;
+        margin-right: 0;
     }
+
+
+    /* ------------------------------------------------------
+       MESSAGE BODY
+       ------------------------------------------------------ */
 
     .conversation-message-body {
         max-width: calc(100% - 48px);
     }
+
+
+    /* ------------------------------------------------------
+       META
+       ------------------------------------------------------ */
 
     .conversation-meta {
         gap: 5px;
@@ -1356,14 +1579,75 @@ footer {
         font-size: 11px;
     }
 
+
+    /* ------------------------------------------------------
+       BUBBLE
+       ------------------------------------------------------ */
+
     .message-bubble {
         font-size: 14px;
+
         padding: 9px 12px;
     }
+
+
+    /* ------------------------------------------------------
+       MEDIA
+       ------------------------------------------------------ */
+
+    .message-image,
+    .message-video {
+        max-width: 100%;
+        max-height: 200px;
+
+        border-radius: 14px;
+    }
+
+
+    /* ------------------------------------------------------
+       MEDIA SHARE
+       ------------------------------------------------------ */
+
+    .media-share-btn {
+        top: 6px;
+        right: 6px;
+
+        width: 32px;
+        height: 32px;
+    }
+
+    .media-wrap:active .media-share-btn {
+        opacity: 1;
+        visibility: visible;
+        transform: scale(1);
+    }
+
+
+    /* ------------------------------------------------------
+       ACTIONS
+       ------------------------------------------------------ */
+
+    .message-actions {
+        margin-top: 4px;
+    }
+
+    .message-reactions {
+        gap: 3px;
+    }
+
+
+    /* ------------------------------------------------------
+       REPLY
+       ------------------------------------------------------ */
 
     .reply-form .btn-primary {
         width: 100%;
     }
+
+
+    /* ------------------------------------------------------
+       PAGINATION
+       ------------------------------------------------------ */
 
     .pagination {
         font-size: 0.8rem;
@@ -1374,6 +1658,11 @@ footer {
         padding: 0.3rem 0.55rem;
     }
 
+
+    /* ------------------------------------------------------
+       INBOX PREVIEW
+       ------------------------------------------------------ */
+
     .message-preview-avatar img {
         width: 42px;
         height: 42px;
@@ -1381,64 +1670,21 @@ footer {
 
     .message-preview-header {
         flex-direction: column;
+
         align-items: flex-start;
+
         gap: 2px;
     }
 
     .message-preview-date {
         font-size: 11px;
     }
-}
-
-.message-box.conversation-box > .conv-separator {
-    display: block !important;
-    width: 100% !important;
-    height: 1px !important;
-    margin: 12px 0 18px !important;
-    background-color: rgba(0,0,0,0.15) !important;
-    flex-shrink: 0 !important;
-}
-
-.message-mini-actions {
-    display: flex;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-}
-
-.mini-btn {
-    text-decoration: none;
-    color: #666;
-    padding: 2px 6px;
-    border-radius: 6px;
-}
-
-.mini-btn:hover {
-    background: #f0f0f0;
-    color: #333;
-}
-
-.emoji-bar .emoji-btn {
-    padding: 2px 6px;
-    line-height: 1.2;
-}
-
-@media (max-width: 576px) {
-    .emoji-bar { display: flex; flex-wrap: wrap; }
-}
 
 
-.attach-preview {
-    max-width: 140px;
-    max-height: 100px;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    display: block;
-}
+    /* ------------------------------------------------------
+       ATTACHMENT PREVIEW
+       ------------------------------------------------------ */
 
-@media (max-width: 576px) {
     .attach-preview {
         max-width: 100%;
         max-height: 160px;
@@ -1446,27 +1692,21 @@ footer {
 
     #image-preview-wrap .d-flex {
         flex-direction: column;
+
         align-items: flex-start !important;
     }
 
     #remove-image-btn {
         width: 100%;
     }
-}
 
-.react-btn {
-    opacity: 0.25;
-    filter: grayscale(100%);
-    text-decoration: none;
-    transition: opacity 0.15s ease, filter 0.15s ease;
-}
 
-.react-btn:hover {
-    opacity: 0.55;
-}
+    /* ------------------------------------------------------
+       EMOJI
+       ------------------------------------------------------ */
 
-.react-btn.active-like,
-.react-btn.active-heart {
-    opacity: 1;
-    filter: none;
+    .emoji-bar {
+        display: flex;
+        flex-wrap: wrap;
+    }
 }
