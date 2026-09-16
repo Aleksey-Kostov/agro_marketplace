@@ -16,25 +16,25 @@
                         <label for="categorySelect" class="form-label">Category</label>
                         <select id="categorySelect" name="category" class="form-select">
                             <option value="">Select category</option>
-                            <option value="vegetables" {% if category =='vegetables' %}selected{% endif %}>
+                            <option value="vegetables" {% if category == 'vegetables' %}selected{% endif %}>
                                 Vegetables
                             </option>
-                            <option value="fruits" {% if category =='fruits' %}selected{% endif %}>Fruits</option>
-                            <option value="grain" {% if category =='grain' %}selected{% endif %}>Grains</option>
-                            <option value="dairy-products" {% if category =='dairy-products' %}selected{% endif %}>
+                            <option value="fruits" {% if category == 'fruits' %}selected{% endif %}>Fruits</option>
+                            <option value="grain" {% if category == 'grain' %}selected{% endif %}>Grains</option>
+                            <option value="dairy-products" {% if category == 'dairy-products' %}selected{% endif %}>
                                 Dairy Products
                             </option>
-                            <option value="mushrooms" {% if category =='mushrooms' %}selected{% endif %}>Mushrooms
+                            <option value="mushrooms" {% if category == 'mushrooms' %}selected{% endif %}>Mushrooms
                             </option>
-                            <option value="herbs-spices" {% if category =='herbs-spices' %}selected{% endif %}>
+                            <option value="herbs-spices" {% if category == 'herbs-spices' %}selected{% endif %}>
                                 Herbs &
                                 Spices
                             </option>
-                            <option value="grapes" {% if category =='grapes' %}selected{% endif %}>Grapes</option>
-                            <option value="bee-products" {% if category =='bee-products' %}selected{% endif %}>Bee
+                            <option value="grapes" {% if category == 'grapes' %}selected{% endif %}>Grapes</option>
+                            <option value="bee-products" {% if category == 'bee-products' %}selected{% endif %}>Bee
                                 Products
                             </option>
-                            <option value="other" {% if category =='other' %}selected{% endif %}>Other</option>
+                            <option value="other" {% if category == 'other' %}selected{% endif %}>Other</option>
                         </select>
                     </div>
 
