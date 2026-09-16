@@ -496,6 +496,10 @@ def send_system_message(recipient, title, body):
 @login_required
 def send_message(request, pk=None):
 
+    # =========================================================
+    # RECIPIENT
+    # =========================================================
+
     recipient = (
         get_object_or_404(
             AppUser,
@@ -505,27 +509,42 @@ def send_message(request, pk=None):
         else None
     )
 
+    # =========================================================
+    # PRODUCT
+    # =========================================================
+
     product = None
 
-    if recipient:
+    product_id = request.GET.get('product_id')
+    product_type = request.GET.get('product_type')
 
-        product = (
-            SellerItems.objects
-            .filter(
-                profile__user=recipient
+    if recipient and product_id:
+
+        if product_type == 'seller':
+
+            product = (
+                SellerItems.objects
+                .filter(
+                    pk=product_id,
+                    profile__user=recipient,
+                )
+                .first()
             )
-            .first()
-        )
 
-        if not product:
+        elif product_type == 'buyer':
 
             product = (
                 BuyerItems.objects
                 .filter(
-                    profile__user=recipient
+                    pk=product_id,
+                    profile__user=recipient,
                 )
                 .first()
             )
+
+    # =========================================================
+    # BLOCK STATUS
+    # =========================================================
 
     is_blocked = False
     is_blocked_by_other = False
@@ -549,6 +568,10 @@ def send_message(request, pk=None):
             )
             .exists()
         )
+
+    # =========================================================
+    # POST
+    # =========================================================
 
     if request.method == 'POST':
 
@@ -657,22 +680,6 @@ def send_message(request, pk=None):
                 or ''
             ).strip()
 
-            # =================================================
-            # CRITICAL RULE
-            # =================================================
-            #
-            # НЯМА reply_to:
-            #
-            #     parent_message = None
-            #
-            # ИМА reply_to:
-            #
-            #     parent_message = избраното съобщение
-            #
-            # НИКОГА не използваме последното съобщение
-            # като автоматичен parent.
-            # =================================================
-
             message.parent_message = None
 
             if reply_to_id.isdigit():
@@ -767,6 +774,10 @@ def send_message(request, pk=None):
 
         form = MessageForm()
 
+    # =========================================================
+    # RENDER
+    # =========================================================
+
     return render(
         request,
         'messages/message-send.html',
@@ -778,7 +789,6 @@ def send_message(request, pk=None):
             'is_blocked_by_other': is_blocked_by_other,
         },
     )
-
 
 # ============================================================
 # READ MESSAGE + REPLY
