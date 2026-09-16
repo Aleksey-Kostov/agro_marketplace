@@ -407,7 +407,6 @@ def send_message(request, pk=None):
     product = None
 
     if recipient:
-
         product = (
             SellerItems.objects
             .filter(profile__user=recipient)
@@ -437,12 +436,45 @@ def send_message(request, pk=None):
 
     if request.method == 'POST':
 
+        # =====================================================
+        # BLOCK CHECKS
+        # =====================================================
+
+        if not recipient:
+            django_messages.error(
+                request,
+                "Recipient is required.",
+            )
+            return redirect('message-inbox')
+
+        if is_blocked_by_other:
+            django_messages.error(
+                request,
+                "You cannot send messages to this user because you have been blocked.",
+            )
+            return redirect('message-inbox')
+
+        if is_blocked:
+            django_messages.error(
+                request,
+                "You cannot send messages to a blocked user. Please unblock them first.",
+            )
+            return redirect('message-inbox')
+
+        # =====================================================
+        # FORM
+        # =====================================================
+
         form = MessageForm(
             request.POST,
             request.FILES,
         )
 
         if form.is_valid():
+
+            # =================================================
+            # ATTACHMENT VALIDATION
+            # =================================================
 
             try:
                 validate_message_attachments(request)
@@ -452,38 +484,14 @@ def send_message(request, pk=None):
                     exc.message,
                 )
                 return redirect(
-                    'message-inbox'
+                    'read-message',
+                    pk=request.POST.get('reply_to')
+                    or recipient.pk,
                 )
 
-            if not recipient:
-                django_messages.error(
-                    request,
-                    "Recipient is required.",
-                )
-
-                return redirect(
-                    'message-inbox'
-                )
-
-            if is_blocked_by_other:
-                django_messages.error(
-                    request,
-                    "You cannot send messages to this user because you have been blocked.",
-                )
-
-                return redirect(
-                    'message-inbox'
-                )
-
-            if is_blocked:
-                django_messages.error(
-                    request,
-                    "You cannot send messages to a blocked user. Please unblock them first.",
-                )
-
-                return redirect(
-                    'message-inbox'
-                )
+            # =================================================
+            # CREATE MESSAGE
+            # =================================================
 
             message = form.save(
                 commit=False
@@ -492,14 +500,64 @@ def send_message(request, pk=None):
             message.sender = request.user
             message.recipient = recipient
 
+            # =================================================
+            # TITLE
+            # =================================================
+
             if product and getattr(
-                    product,
-                    'title',
-                    None,
+                product,
+                'title',
+                None,
             ):
                 message.title = product.title
             else:
                 message.title = "Direct conversation"
+
+            # =================================================
+            # REPLY TO
+            # =================================================
+
+            reply_to_id = (
+                request.POST.get('reply_to') or ''
+            ).strip()
+
+            if reply_to_id.isdigit():
+
+                parent_message = (
+                    Message.objects
+                    .filter(
+                        pk=int(reply_to_id),
+                    )
+                    .first()
+                )
+
+                if parent_message:
+
+                    # Reply must belong to the same
+                    # conversation.
+
+                    valid_parent = (
+                        (
+                            parent_message.sender == request.user
+                            and
+                            parent_message.recipient == recipient
+                        )
+                        or
+                        (
+                            parent_message.sender == recipient
+                            and
+                            parent_message.recipient == request.user
+                        )
+                    )
+
+                    if valid_parent:
+                        message.parent_message = (
+                            parent_message
+                        )
+
+            # =================================================
+            # MARKDOWN
+            # =================================================
 
             if message.body:
                 message.body = markdown.markdown(
@@ -522,6 +580,7 @@ def send_message(request, pk=None):
             # =================================================
 
             if recipient != request.user:
+
                 sender_status = (
                     MessageStatus.objects.create(
                         message=message,
@@ -531,13 +590,16 @@ def send_message(request, pk=None):
 
                 sender_status.mark_as_read()
 
+            # =================================================
+            # RESPONSE
+            # =================================================
+
             return redirect(
                 'read-message',
                 pk=message.pk,
             )
 
     else:
-
         form = MessageForm()
 
     return render(
@@ -552,10 +614,6 @@ def send_message(request, pk=None):
         },
     )
 
-
-# ============================================================
-# READ MESSAGE + REPLY
-# ============================================================
 
 # ============================================================
 # READ MESSAGE + REPLY
@@ -1446,76 +1504,103 @@ def message_inbox(request):
 
 @login_required
 def edit_message(request, pk):
-
     message = get_object_or_404(
         Message.objects.select_related(
-            'sender__profile',
-            'recipient__profile',
+            'sender',
+            'recipient',
         ),
         pk=pk,
     )
 
-    # ========================================================
-    # ONLY MESSAGE OWNER CAN EDIT
-    # ========================================================
+    # =====================================================
+    # PERMISSION
+    # =====================================================
 
     if message.sender != request.user:
-        return HttpResponse(
-            "Not allowed",
-            status=403,
-        )
-
-    # ========================================================
-    # SYSTEM MESSAGE
-    # ========================================================
-
-    if getattr(message, 'is_system', False):
-        return HttpResponse(
-            "System messages cannot be edited.",
-            status=403,
-        )
-
-    # ========================================================
-    # DELETED MESSAGE
-    # ========================================================
-
-    if message.is_removed:
-        return HttpResponse(
-            "Deleted messages cannot be edited.",
-            status=400,
-        )
-
-    # ========================================================
-    # POST
-    # ========================================================
-
-    if request.method != 'POST':
-        return HttpResponse(
-            "POST required",
-            status=405,
-        )
-
-    form = MessageForm(
-        request.POST,
-        request.FILES,
-        instance=message,
-    )
-
-    if not form.is_valid():
-
-        error_text = " ".join(
-            str(error)
-            for errors in form.errors.values()
-            for error in errors
-        )
-
         return JsonResponse(
             {
                 'ok': False,
-                'error': error_text or 'Invalid message.',
+                'error': 'You can only edit your own messages.',
+            },
+            status=403,
+        )
+
+    # =====================================================
+    # SYSTEM MESSAGE
+    # =====================================================
+
+    if message.is_system:
+        return JsonResponse(
+            {
+                'ok': False,
+                'error': 'System messages cannot be edited.',
+            },
+            status=403,
+        )
+
+    # =====================================================
+    # DELETED MESSAGE
+    # =====================================================
+
+    if message.is_removed:
+        return JsonResponse(
+            {
+                'ok': False,
+                'error': 'Deleted messages cannot be edited.',
             },
             status=400,
         )
+
+    # =====================================================
+    # METHOD
+    # =====================================================
+
+    if request.method != 'POST':
+        return JsonResponse(
+            {
+                'ok': False,
+                'error': 'POST required.',
+            },
+            status=405,
+        )
+
+    # =====================================================
+    # BODY
+    # =====================================================
+
+    new_body = (
+        request.POST.get('body') or ''
+    ).strip()
+
+    if not new_body:
+        return JsonResponse(
+            {
+                'ok': False,
+                'error': 'Message cannot be empty.',
+            },
+            status=400,
+        )
+
+    # =====================================================
+    # MARKDOWN
+    # =====================================================
+
+    message.body = markdown.markdown(
+        new_body
+    )
+
+    message.save(
+        update_fields=['body']
+    )
+
+    return JsonResponse(
+        {
+            'ok': True,
+            'message_id': message.pk,
+            'body': message.body,
+        }
+    )
+
 
     # ========================================================
     # BODY

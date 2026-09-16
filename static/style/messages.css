@@ -1691,3 +1691,974 @@ MOBILE
     }
 
 }
+
+/* =========================================================
+   ADDITIONAL CHAT FIXES
+   Compatible with current conversation template + JS
+========================================================= */
+
+
+/* =========================================================
+   CONVERSATION BOX
+========================================================= */
+
+.conversation-box {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   CONVERSATION SCROLL
+========================================================= */
+
+.conversation-scroll {
+    position: relative;
+    width: 100%;
+    max-height: 65vh;
+    min-height: 350px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    box-sizing: border-box;
+}
+
+.conversation-scroll::-webkit-scrollbar {
+    width: 7px;
+}
+
+.conversation-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.conversation-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, .18);
+    border-radius: 10px;
+}
+
+.conversation-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, .30);
+}
+
+
+/* =========================================================
+   MESSAGE ROW
+========================================================= */
+
+.message-row-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    width: fit-content;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.own-message .message-row-content {
+    margin-left: auto;
+    flex-direction: row-reverse;
+}
+
+
+/* =========================================================
+   MESSAGE SIDE ACTIONS
+========================================================= */
+
+.message-side-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+
+    flex: 0 0 auto;
+    min-width: 30px;
+
+    padding-top: 3px;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(4px);
+
+    transition:
+        opacity .15s ease,
+        visibility .15s ease,
+        transform .15s ease;
+}
+
+.own-message .message-side-actions {
+    transform: translateX(-4px);
+}
+
+.conversation-message:hover .message-side-actions,
+.message-side-actions:focus-within {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+
+/* =========================================================
+   SIDE BUTTON
+========================================================= */
+
+.message-side-btn {
+    width: 30px;
+    height: 30px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid rgba(0, 0, 0, .12);
+    border-radius: 50%;
+
+    background: #fff;
+    color: #6c757d;
+
+    cursor: pointer;
+
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+
+    transition:
+        color .15s ease,
+        background-color .15s ease,
+        border-color .15s ease,
+        transform .15s ease,
+        box-shadow .15s ease;
+}
+
+.message-side-btn:hover {
+    color: #0d6efd;
+    background: #f5f9ff;
+    border-color: rgba(13, 110, 253, .30);
+
+    transform: translateY(-1px);
+
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .10);
+}
+
+.message-side-btn:active {
+    transform: scale(.94);
+}
+
+.message-side-btn i {
+    font-size: .78rem;
+}
+
+
+/* =========================================================
+   MESSAGE BODY SAFETY
+========================================================= */
+
+.chat-message-content {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.message-bubble {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.message-body-html {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   REPLY PREVIEW
+========================================================= */
+
+.message-reply-preview {
+    display: flex;
+    align-items: stretch;
+    gap: 7px;
+
+    max-width: 100%;
+
+    margin-bottom: 8px;
+    padding: 6px 7px;
+
+    border-radius: 8px;
+
+    background: rgba(0, 0, 0, .055);
+    border: 1px solid rgba(0, 0, 0, .08);
+
+    color: inherit;
+    text-decoration: none;
+
+    overflow: hidden;
+
+    transition:
+        background-color .15s ease,
+        border-color .15s ease;
+}
+
+.message-reply-preview:hover {
+    background: rgba(0, 0, 0, .09);
+    border-color: rgba(0, 0, 0, .13);
+}
+
+.message-reply-line {
+    flex: 0 0 3px;
+    width: 3px;
+
+    border-radius: 4px;
+
+    background: #0d6efd;
+}
+
+.message-reply-content {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.message-reply-name {
+    margin-bottom: 2px;
+
+    font-size: .72rem;
+    font-weight: 700;
+
+    color: #0d6efd;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.message-reply-preview-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 7px;
+    min-width: 0;
+}
+
+.message-reply-text {
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: .76rem;
+    color: #666;
+}
+
+
+/* =========================================================
+   REPLY MEDIA THUMBNAIL
+========================================================= */
+
+.message-reply-media-thumb {
+    position: relative;
+
+    flex: 0 0 38px;
+
+    width: 38px;
+    height: 38px;
+
+    overflow: hidden;
+
+    border-radius: 6px;
+
+    background: #ddd;
+}
+
+.message-reply-media-thumb img,
+.message-reply-media-thumb video {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.message-reply-video-icon {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #fff;
+    background: rgba(0, 0, 0, .35);
+
+    font-size: .7rem;
+}
+
+
+/* =========================================================
+   MEDIA
+========================================================= */
+
+.media-wrap {
+    position: relative;
+
+    display: inline-flex;
+
+    max-width: 100%;
+
+    overflow: hidden;
+
+    border-radius: 10px;
+}
+
+.media-wrap > a {
+    display: block;
+    max-width: 100%;
+    line-height: 0;
+}
+
+.message-image {
+    display: block;
+
+    width: auto;
+    height: auto;
+
+    max-width: min(360px, 100%);
+    max-height: 300px;
+
+    object-fit: contain;
+
+    border-radius: 12px;
+}
+
+.message-video {
+    display: block;
+
+    width: min(360px, 100%);
+    max-width: 360px;
+
+    max-height: 300px;
+
+    border-radius: 12px;
+
+    background: #000;
+}
+
+
+/* =========================================================
+   MEDIA SHARE
+========================================================= */
+
+.media-share-btn {
+    position: absolute;
+
+    top: 7px;
+    right: 7px;
+
+    z-index: 5;
+
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+    border-radius: 50%;
+
+    color: #fff;
+    background: rgba(0, 0, 0, .65);
+
+    cursor: pointer;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: scale(.88);
+
+    transition:
+        opacity .15s ease,
+        visibility .15s ease,
+        transform .15s ease,
+        background-color .15s ease;
+}
+
+.media-wrap:hover .media-share-btn,
+.media-share-btn:focus-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+.media-share-btn:hover {
+    background: rgba(0, 0, 0, .88);
+}
+
+
+/* =========================================================
+   REACTIONS
+========================================================= */
+
+.message-actions {
+    width: fit-content;
+    max-width: 100%;
+}
+
+.message-reactions {
+    width: fit-content;
+    max-width: 100%;
+
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.tg-reaction {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 26px;
+
+    text-decoration: none;
+}
+
+.tg-avatars {
+    display: inline-flex;
+    align-items: center;
+}
+
+.react-avatar {
+    width: 17px;
+    height: 17px;
+
+    margin-left: -3px;
+
+    border: 1px solid #fff;
+    border-radius: 50%;
+
+    object-fit: cover;
+}
+
+.tg-avatars .react-avatar:first-child {
+    margin-left: 0;
+}
+
+
+/* =========================================================
+   EDITING BAR
+========================================================= */
+
+.editing-message-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+
+    margin-bottom: 8px;
+    padding: 8px 10px;
+
+    border-left: 3px solid #0d6efd;
+    border-radius: 7px;
+
+    background: rgba(13, 110, 253, .07);
+
+    box-sizing: border-box;
+}
+
+.editing-message-info {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    min-width: 0;
+}
+
+.editing-message-info > i {
+    flex: 0 0 auto;
+
+    color: #0d6efd;
+    font-size: .9rem;
+}
+
+.editing-message-info > div {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+.editing-message-info strong {
+    color: #0d6efd;
+
+    font-size: .82rem;
+    line-height: 1.2;
+}
+
+.editing-message-info small {
+    display: block;
+
+    max-width: 500px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #6c757d;
+
+    font-size: .75rem;
+}
+
+.editing-cancel-btn {
+    flex: 0 0 auto;
+
+    width: 28px;
+    height: 28px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: transparent;
+    color: #6c757d;
+
+    cursor: pointer;
+}
+
+.editing-cancel-btn:hover {
+    background: rgba(0, 0, 0, .08);
+    color: #212529;
+}
+
+
+/* =========================================================
+   REPLYING BAR
+========================================================= */
+
+.replying-message-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+
+    margin-bottom: 8px;
+    padding: 8px 10px;
+
+    border-left: 3px solid #6c757d;
+    border-radius: 7px;
+
+    background: rgba(108, 117, 125, .08);
+
+    box-sizing: border-box;
+}
+
+.replying-message-info {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    min-width: 0;
+}
+
+.replying-message-info > i {
+    flex: 0 0 auto;
+
+    color: #6c757d;
+}
+
+.replying-message-info > div {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+.replying-message-info strong {
+    color: #495057;
+
+    font-size: .82rem;
+    line-height: 1.2;
+}
+
+.replying-message-info small {
+    display: block;
+
+    max-width: 500px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #6c757d;
+
+    font-size: .75rem;
+}
+
+.replying-cancel-btn {
+    flex: 0 0 auto;
+
+    width: 28px;
+    height: 28px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: transparent;
+    color: #6c757d;
+
+    cursor: pointer;
+}
+
+.replying-cancel-btn:hover {
+    background: rgba(0, 0, 0, .08);
+    color: #212529;
+}
+
+
+/* =========================================================
+   HIDDEN STATES
+========================================================= */
+
+.editing-message-bar.d-none,
+.replying-message-bar.d-none,
+#image-preview-wrap.d-none,
+#video-preview-wrap.d-none,
+#upload-progress-wrap.d-none {
+    display: none !important;
+}
+
+
+/* =========================================================
+   IMAGE / VIDEO PREVIEW IN COMPOSER
+========================================================= */
+
+#image-preview-wrap,
+#video-preview-wrap {
+    width: fit-content;
+    max-width: 100%;
+}
+
+#image-preview,
+#video-preview {
+    display: block;
+
+    max-width: 300px;
+    max-height: 220px;
+
+    border-radius: 9px;
+    border: 1px solid #ddd;
+
+    object-fit: contain;
+}
+
+#video-preview {
+    background: #000;
+}
+
+
+/* =========================================================
+   DROP OVERLAY
+========================================================= */
+
+.chat-drop-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 50;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    border: 3px dashed #0d6efd;
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, .90);
+
+    opacity: 0;
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition:
+        opacity .15s ease,
+        visibility .15s ease;
+}
+
+.chat-drop-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.chat-drop-overlay-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 5px;
+
+    text-align: center;
+}
+
+.chat-drop-icon {
+    color: #0d6efd;
+    font-size: 2rem;
+}
+
+.chat-drop-overlay-content strong {
+    color: #212529;
+    font-size: .95rem;
+}
+
+.chat-drop-overlay-content small {
+    color: #6c757d;
+    font-size: .75rem;
+}
+
+
+/* =========================================================
+   UPLOAD PROGRESS
+========================================================= */
+
+.upload-progress-wrap {
+    width: 100%;
+}
+
+.upload-progress-wrap .progress {
+    height: 7px;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.upload-progress-wrap .progress-bar {
+    transition: width .15s ease;
+}
+
+
+/* =========================================================
+   EMOJI PICKER
+========================================================= */
+
+.emoji-picker {
+    z-index: 1055;
+
+    max-height: 260px;
+
+    overflow-y: auto;
+
+    box-shadow:
+        0 5px 20px rgba(0, 0, 0, .15);
+}
+
+.emoji-picker .emoji-btn {
+    width: 34px;
+    height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 0;
+
+    font-size: 1.15rem;
+    line-height: 1;
+
+    transition: transform .12s ease;
+}
+
+.emoji-picker .emoji-btn:hover {
+    transform: scale(1.08);
+}
+
+
+/* =========================================================
+   COMPOSER
+========================================================= */
+
+.reply-form {
+    position: relative;
+
+    width: 100%;
+}
+
+.reply-form form {
+    position: relative;
+}
+
+.reply-form textarea {
+    width: 100%;
+
+    min-height: 90px;
+    max-height: 220px;
+
+    resize: vertical;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   FOCUS
+========================================================= */
+
+.message-side-btn:focus-visible,
+.media-share-btn:focus-visible,
+.editing-cancel-btn:focus-visible,
+.replying-cancel-btn:focus-visible,
+.scroll-navigation-btn:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 768px) {
+
+    .conversation-scroll {
+        max-height: 65vh;
+        min-height: 320px;
+    }
+
+    .conversation-message-body {
+        max-width: calc(100% - 50px);
+    }
+
+    .message-side-actions {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+    }
+
+    .own-message .message-side-actions {
+        transform: none;
+    }
+
+    .message-side-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .message-side-btn i {
+        font-size: .72rem;
+    }
+
+    .message-image {
+        max-width: 280px;
+        max-height: 250px;
+    }
+
+    .message-video {
+        max-width: 280px;
+        max-height: 250px;
+    }
+
+    .media-share-btn {
+        opacity: 1;
+        visibility: visible;
+        transform: scale(1);
+    }
+
+    .editing-message-info small,
+    .replying-message-info small {
+        max-width: 260px;
+    }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+    .conversation-scroll {
+        max-height: 62vh;
+        min-height: 280px;
+    }
+
+    .conversation-message-body {
+        max-width: calc(100% - 43px);
+    }
+
+    .message-row-content {
+        gap: 4px;
+    }
+
+    .message-side-actions {
+        gap: 2px;
+    }
+
+    .message-side-btn {
+        width: 26px;
+        height: 26px;
+    }
+
+    .message-side-btn i {
+        font-size: .68rem;
+    }
+
+    .message-image {
+        max-width: 220px;
+        max-height: 220px;
+    }
+
+    .message-video {
+        max-width: 220px;
+        max-height: 220px;
+    }
+
+    #image-preview,
+    #video-preview {
+        max-width: 100%;
+        max-height: 180px;
+    }
+
+    .editing-message-bar,
+    .replying-message-bar {
+        padding: 7px 8px;
+    }
+
+    .editing-message-info,
+    .replying-message-info {
+        gap: 7px;
+    }
+
+    .editing-message-info small,
+    .replying-message-info small {
+        max-width: 190px;
+    }
+
+    .message-reply-text {
+        max-width: 140px;
+    }
+}

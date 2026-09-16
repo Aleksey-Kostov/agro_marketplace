@@ -4,27 +4,19 @@ document.addEventListener('DOMContentLoaded', function () {
        ELEMENTS
     ========================================================== */
 
-    const replyForm =
-        document.getElementById('reply-form');
+    const replyForm = document.getElementById('reply-form');
 
-    const messageBodyField =
-        replyForm
-            ? replyForm.querySelector(
-                'textarea[name="body"], input[name="body"]'
-            )
-            : null;
+    const messageBodyField = replyForm
+        ? replyForm.querySelector(
+            'textarea[name="body"], input[name="body"]'
+        )
+        : null;
 
-    const imageInput =
-        document.getElementById('id_image');
+    const imageInput = document.getElementById('id_image');
+    const videoInput = document.getElementById('id_video');
 
-    const videoInput =
-        document.getElementById('id_video');
-
-    const imagePreview =
-        document.getElementById('image-preview');
-
-    const videoPreview =
-        document.getElementById('video-preview');
+    const imagePreview = document.getElementById('image-preview');
+    const videoPreview = document.getElementById('video-preview');
 
     const imagePreviewWrap =
         document.getElementById('image-preview-wrap');
@@ -106,23 +98,18 @@ document.addEventListener('DOMContentLoaded', function () {
        CONSTANTS
     ========================================================== */
 
-    const MAX_IMAGE_SIZE =
-        10 * 1024 * 1024;
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+    const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 
-    const MAX_VIDEO_SIZE =
-        100 * 1024 * 1024;
-
-    const SCROLL_EPSILON = 1;
-
+    const SCROLL_EPSILON = 2;
     const SCROLL_BUTTON_HIDE_DELAY = 2000;
 
-    const normalFormAction =
-        replyForm
-            ? (
-                replyForm.getAttribute('action')
-                || window.location.href
-            )
-            : window.location.href;
+    const normalFormAction = replyForm
+        ? (
+            replyForm.getAttribute('action') ||
+            window.location.href
+        )
+        : window.location.href;
 
 
     /* =========================================================
@@ -133,6 +120,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let videoObjectUrl = null;
     let scrollButtonHideTimer = null;
     let dragCounter = 0;
+    let isSubmittingAttachment = false;
+    let isSubmittingEdit = false;
 
 
     /* =========================================================
@@ -141,17 +130,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function getCsrfToken() {
 
-        const csrf =
-            replyForm
-                ? replyForm.querySelector(
-                    '[name="csrfmiddlewaretoken"]'
-                )
-                : document.querySelector(
-                    '[name="csrfmiddlewaretoken"]'
-                );
+        const csrfInput = replyForm
+            ? replyForm.querySelector(
+                '[name="csrfmiddlewaretoken"]'
+            )
+            : document.querySelector(
+                '[name="csrfmiddlewaretoken"]'
+            );
 
-        return csrf
-            ? csrf.value
+        return csrfInput
+            ? csrfInput.value
             : '';
 
     }
@@ -161,82 +149,74 @@ document.addEventListener('DOMContentLoaded', function () {
        EMOJI
     ========================================================== */
 
-    document.addEventListener(
-        'click',
-        function (event) {
+    document.addEventListener('click', function (event) {
 
-            const emojiButton =
-                event.target.closest('.emoji-btn');
+        const emojiButton =
+            event.target.closest('.emoji-btn');
 
-            if (!emojiButton || !messageBodyField) {
-                return;
-            }
+        if (!emojiButton || !messageBodyField) {
+            return;
+        }
 
-            event.preventDefault();
-            event.stopPropagation();
+        event.preventDefault();
+        event.stopPropagation();
 
-            const emoji =
-                emojiButton.dataset.emoji || '';
+        const emoji =
+            emojiButton.dataset.emoji || '';
 
-            if (!emoji) {
-                return;
-            }
+        if (!emoji) {
+            return;
+        }
 
-            const start =
-                messageBodyField.selectionStart ??
-                messageBodyField.value.length;
+        const start =
+            typeof messageBodyField.selectionStart === 'number'
+                ? messageBodyField.selectionStart
+                : messageBodyField.value.length;
 
-            const end =
-                messageBodyField.selectionEnd ??
-                messageBodyField.value.length;
+        const end =
+            typeof messageBodyField.selectionEnd === 'number'
+                ? messageBodyField.selectionEnd
+                : messageBodyField.value.length;
 
-            const currentValue =
-                messageBodyField.value;
+        const currentValue =
+            messageBodyField.value;
 
-            messageBodyField.value =
-                currentValue.substring(0, start)
-                + emoji
-                + currentValue.substring(end);
+        messageBodyField.value =
+            currentValue.substring(0, start) +
+            emoji +
+            currentValue.substring(end);
 
-            const newPosition =
-                start + emoji.length;
+        const newPosition =
+            start + emoji.length;
 
-            messageBodyField.focus();
+        messageBodyField.focus();
 
-            try {
+        try {
 
-                messageBodyField.setSelectionRange(
-                    newPosition,
-                    newPosition
-                );
+            messageBodyField.setSelectionRange(
+                newPosition,
+                newPosition
+            );
 
-            } catch (error) {
-                // Ignore.
-            }
+        } catch (error) {
+            // Ignore.
+        }
 
-            const toggle =
-                document.getElementById(
-                    'emoji-toggle-btn'
-                );
+        const toggle =
+            document.getElementById('emoji-toggle-btn');
 
-            if (
-                toggle &&
-                window.bootstrap
-            ) {
+        if (toggle && window.bootstrap) {
 
-                const instance =
-                    bootstrap.Dropdown.getInstance(
-                        toggle
-                    );
+            const instance =
+                bootstrap.Dropdown.getInstance(toggle);
 
-                if (instance) {
-                    instance.hide();
-                }
-
+            if (instance) {
+                instance.hide();
             }
 
         }
-    );
+
+    });
 
 
     /* =========================================================
@@ -271,13 +251,11 @@ document.addEventListener('DOMContentLoaded', function () {
             getMaxScrollTop();
 
         const atTop =
-            currentScrollTop <=
-            SCROLL_EPSILON;
+            currentScrollTop <= SCROLL_EPSILON;
 
         const atBottom =
             currentScrollTop >=
-            maxScrollTop -
-            SCROLL_EPSILON;
+            maxScrollTop - SCROLL_EPSILON;
 
         if (scrollTopBtn) {
 
@@ -332,28 +310,25 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         scrollButtonHideTimer =
-            setTimeout(
-                function () {
+            setTimeout(function () {
 
-                    if (scrollTopBtn) {
+                if (scrollTopBtn) {
 
-                        scrollTopBtn.classList.add(
-                            'scroll-buttons-hidden'
-                        );
+                    scrollTopBtn.classList.add(
+                        'scroll-buttons-hidden'
+                    );
 
-                    }
+                }
 
-                    if (scrollBottomBtn) {
+                if (scrollBottomBtn) {
 
-                        scrollBottomBtn.classList.add(
-                            'scroll-buttons-hidden'
-                        );
+                    scrollBottomBtn.classList.add(
+                        'scroll-buttons-hidden'
+                    );
 
-                    }
+                }
 
-                },
-                SCROLL_BUTTON_HIDE_DELAY
-            );
+            }, SCROLL_BUTTON_HIDE_DELAY);
 
     }
 
@@ -392,26 +367,23 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        requestAnimationFrame(
-            function () {
+        requestAnimationFrame(function () {
 
-                scrollToBottom();
+            chatWindow.scrollTop =
+                chatWindow.scrollHeight;
+
+            updateScrollButtons();
+
+            requestAnimationFrame(function () {
+
+                chatWindow.scrollTop =
+                    chatWindow.scrollHeight;
 
                 updateScrollButtons();
 
-                requestAnimationFrame(
-                    function () {
+            });
 
-                        chatWindow.scrollTop =
-                            chatWindow.scrollHeight;
-
-                        updateScrollButtons();
-
-                    }
-                );
-
-            }
-        );
+        });
 
     }
 
@@ -425,9 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
             function () {
 
                 updateScrollButtons();
-
                 showScrollButtons();
-
                 scheduleScrollButtonHide();
 
             },
@@ -444,24 +414,16 @@ document.addEventListener('DOMContentLoaded', function () {
         if ('ResizeObserver' in window) {
 
             const resizeObserver =
-                new ResizeObserver(
-                    function () {
+                new ResizeObserver(function () {
 
-                        updateScrollButtons();
+                    updateScrollButtons();
 
-                    }
-                );
+                });
 
-            resizeObserver.observe(
-                chatWindow
-            );
+            resizeObserver.observe(chatWindow);
 
             if (chatMessages) {
-
-                resizeObserver.observe(
-                    chatMessages
-                );
-
+                resizeObserver.observe(chatMessages);
             }
 
         }
@@ -501,21 +463,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    if (document.readyState === 'complete') {
+    initializeChatPosition();
 
-        initializeChatPosition();
-
-    } else {
-
-        window.addEventListener(
-            'load',
-            initializeChatPosition,
-            {
-                once: true
-            }
-        );
-
-    }
+    window.addEventListener(
+        'load',
+        initializeChatPosition,
+        {
+            once: true
+        }
+    );
 
 
     /* =========================================================
@@ -566,8 +522,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (file.size > MAX_IMAGE_SIZE) {
 
             alert(
-                `Image is too large.\n\n` +
-                `Maximum size: 10 MB\n` +
+                'Image is too large.\n\n' +
+                'Maximum size: 10 MB\n' +
                 `Selected: ${formatFileSize(file.size)}`
             );
 
@@ -603,8 +559,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (file.size > MAX_VIDEO_SIZE) {
 
             alert(
-                `Video is too large.\n\n` +
-                `Maximum size: 100 MB\n` +
+                'Video is too large.\n\n' +
+                'Maximum size: 100 MB\n' +
                 `Selected: ${formatFileSize(file.size)}`
             );
 
@@ -627,9 +583,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        URL.revokeObjectURL(
-            imageObjectUrl
-        );
+        URL.revokeObjectURL(imageObjectUrl);
 
         imageObjectUrl = null;
 
@@ -642,11 +596,47 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        URL.revokeObjectURL(
-            videoObjectUrl
-        );
+        URL.revokeObjectURL(videoObjectUrl);
 
         videoObjectUrl = null;
+
+    }
+
+
+    /* =========================================================
+       CLEAR MEDIA
+    ========================================================== */
+
+    function clearMediaInputs() {
+
+        if (imageInput) {
+            imageInput.value = '';
+        }
+
+        if (videoInput) {
+            videoInput.value = '';
+        }
+
+        revokeImageUrl();
+        revokeVideoUrl();
+
+        if (imagePreview) {
+
+            imagePreview.removeAttribute('src');
+
+        }
+
+        if (videoPreview) {
+
+            videoPreview.pause();
+
+            videoPreview.removeAttribute('src');
+
+            videoPreview.load();
+
+        }
+
+        hideMediaPreviews();
 
     }
 
@@ -696,7 +686,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 imageInput.value = '';
             }
 
-            return;
+            return false;
 
         }
 
@@ -717,7 +707,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (!imagePreview) {
-            return;
+            return false;
         }
 
         revokeImageUrl();
@@ -752,6 +742,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
+        return true;
+
     }
 
 
@@ -767,7 +759,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 videoInput.value = '';
             }
 
-            return;
+            return false;
 
         }
 
@@ -779,14 +771,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (imagePreview) {
 
-            imagePreview.removeAttribute(
-                'src'
-            );
+            imagePreview.removeAttribute('src');
 
         }
 
         if (!videoPreview) {
-            return;
+            return false;
         }
 
         revokeVideoUrl();
@@ -823,6 +813,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
+        return true;
+
     }
 
 
@@ -837,6 +829,13 @@ document.addEventListener('DOMContentLoaded', function () {
             function (event) {
 
                 event.preventDefault();
+
+                if (
+                    isSubmittingAttachment ||
+                    isSubmittingEdit
+                ) {
+                    return;
+                }
 
                 imageInput.click();
 
@@ -853,6 +852,13 @@ document.addEventListener('DOMContentLoaded', function () {
             function (event) {
 
                 event.preventDefault();
+
+                if (
+                    isSubmittingAttachment ||
+                    isSubmittingEdit
+                ) {
+                    return;
+                }
 
                 videoInput.click();
 
@@ -926,38 +932,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 event.preventDefault();
 
-                if (imageInput) {
-                    imageInput.value = '';
-                }
-
-                if (videoInput) {
-                    videoInput.value = '';
-                }
-
-                revokeImageUrl();
-                revokeVideoUrl();
-
-                if (imagePreview) {
-
-                    imagePreview.removeAttribute(
-                        'src'
-                    );
-
-                }
-
-                if (videoPreview) {
-
-                    videoPreview.pause();
-
-                    videoPreview.removeAttribute(
-                        'src'
-                    );
-
-                    videoPreview.load();
-
-                }
-
-                hideMediaPreviews();
+                clearMediaInputs();
 
             }
         );
@@ -976,7 +951,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         dropOverlay.classList.add('active');
-
         dropOverlay.classList.add('show');
 
         dropOverlay.setAttribute(
@@ -994,7 +968,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         dropOverlay.classList.remove('active');
-
         dropOverlay.classList.remove('show');
 
         dropOverlay.setAttribute(
@@ -1014,6 +987,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 event.preventDefault();
                 event.stopPropagation();
 
+                if (isSubmittingEdit) {
+                    return;
+                }
+
                 dragCounter++;
 
                 showDropOverlay();
@@ -1028,6 +1005,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 event.preventDefault();
                 event.stopPropagation();
+
+                if (isSubmittingEdit) {
+                    return;
+                }
 
                 if (event.dataTransfer) {
 
@@ -1074,23 +1055,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 hideDropOverlay();
 
+                if (isSubmittingEdit) {
+                    return;
+                }
+
                 const files =
                     event.dataTransfer &&
                     event.dataTransfer.files;
 
-                if (
-                    !files ||
-                    !files.length
-                ) {
+                if (!files || !files.length) {
                     return;
                 }
 
-                const file =
-                    files[0];
+                const file = files[0];
 
-                if (
-                    file.type.startsWith('image/')
-                ) {
+                if (file.type.startsWith('image/')) {
 
                     if (!validateImageFile(file)) {
                         return;
@@ -1098,13 +1077,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     if (imageInput) {
 
-                        const dataTransfer =
-                            new DataTransfer();
+                        try {
 
-                        dataTransfer.items.add(file);
+                            const dataTransfer =
+                                new DataTransfer();
 
-                        imageInput.files =
-                            dataTransfer.files;
+                            dataTransfer.items.add(file);
+
+                            imageInput.files =
+                                dataTransfer.files;
+
+                        } catch (error) {
+
+                            console.error(
+                                'Unable to assign image file:',
+                                error
+                            );
+
+                        }
 
                     }
 
@@ -1115,9 +1105,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
 
-                if (
-                    file.type.startsWith('video/')
-                ) {
+                if (file.type.startsWith('video/')) {
 
                     if (!validateVideoFile(file)) {
                         return;
@@ -1125,13 +1113,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     if (videoInput) {
 
-                        const dataTransfer =
-                            new DataTransfer();
+                        try {
 
-                        dataTransfer.items.add(file);
+                            const dataTransfer =
+                                new DataTransfer();
 
-                        videoInput.files =
-                            dataTransfer.files;
+                            dataTransfer.items.add(file);
+
+                            videoInput.files =
+                                dataTransfer.files;
+
+                        } catch (error) {
+
+                            console.error(
+                                'Unable to assign video file:',
+                                error
+                            );
+
+                        }
 
                     }
 
@@ -1163,11 +1162,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            const activeElement =
-                document.activeElement;
+            if (isSubmittingEdit) {
+                return;
+            }
 
             if (
-                activeElement !== messageBodyField
+                document.activeElement !==
+                messageBodyField
             ) {
                 return;
             }
@@ -1207,20 +1208,29 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                const dataTransfer =
-                    new DataTransfer();
+                try {
 
-                dataTransfer.items.add(file);
+                    const dataTransfer =
+                        new DataTransfer();
 
-                if (imageInput) {
+                    dataTransfer.items.add(file);
 
-                    imageInput.files =
-                        dataTransfer.files;
+                    if (imageInput) {
 
-                }
+                        imageInput.files =
+                            dataTransfer.files;
 
-                if (videoInput) {
-                    videoInput.value = '';
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        'Unable to assign pasted image:',
+                        error
+                    );
+
+                    return;
+
                 }
 
                 handleImageFile(file);
@@ -1280,14 +1290,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateUploadProgress(percent) {
 
-        percent =
-            Math.max(
-                0,
-                Math.min(
-                    100,
-                    percent
-                )
-            );
+        percent = Math.max(
+            0,
+            Math.min(
+                100,
+                percent
+            )
+        );
 
         if (uploadProgressBar) {
 
@@ -1340,10 +1349,7 @@ document.addEventListener('DOMContentLoaded', function () {
             videoInput.files &&
             videoInput.files[0];
 
-        if (
-            imageFile &&
-            videoFile
-        ) {
+        if (imageFile && videoFile) {
 
             alert(
                 'Please attach either an image or a video, not both.'
@@ -1373,6 +1379,74 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
+       UI STATE
+    ========================================================== */
+
+    function setSubmitMode(mode) {
+
+        if (mode === 'edit') {
+
+            if (submitText) {
+                submitText.textContent =
+                    'Save changes';
+            }
+
+            if (submitIcon) {
+
+                submitIcon.classList.remove(
+                    'fa-paper-plane'
+                );
+
+                submitIcon.classList.add(
+                    'fa-save'
+                );
+
+            }
+
+            return;
+
+        }
+
+
+        if (submitText) {
+            submitText.textContent =
+                'Send';
+        }
+
+        if (submitIcon) {
+
+            submitIcon.classList.remove(
+                'fa-save'
+            );
+
+            submitIcon.classList.add(
+                'fa-paper-plane'
+            );
+
+        }
+
+    }
+
+
+    function getMessagePreview(text) {
+
+        let preview =
+            (text || '').trim();
+
+        if (preview.length > 100) {
+
+            preview =
+                preview.substring(0, 100) +
+                '...';
+
+        }
+
+        return preview;
+
+    }
+
+
+    /* =========================================================
        EDIT MODE
     ========================================================== */
 
@@ -1395,18 +1469,20 @@ document.addEventListener('DOMContentLoaded', function () {
         const messageBody =
             button.dataset.messageBody || '';
 
-        if (
-            !messageId ||
-            !editUrl
-        ) {
+        if (!messageId || !editUrl) {
             return;
         }
 
-        messageBodyField.value =
-            messageBody;
+        /*
+         * Edit is text-only.
+         * Clear any selected attachment first.
+         */
 
-        editingMessageId.value =
-            messageId;
+        clearMediaInputs();
+
+        /*
+         * Cancel reply mode.
+         */
 
         if (replyToInput) {
             replyToInput.value = '';
@@ -1415,6 +1491,16 @@ document.addEventListener('DOMContentLoaded', function () {
         if (replyBar) {
             replyBar.classList.add('d-none');
         }
+
+        /*
+         * Activate edit mode.
+         */
+
+        messageBodyField.value =
+            messageBody;
+
+        editingMessageId.value =
+            messageId;
 
         replyForm.setAttribute(
             'action',
@@ -1431,41 +1517,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (editingPreview) {
 
-            let preview =
-                messageBody.trim();
-
-            if (preview.length > 100) {
-
-                preview =
-                    preview.substring(0, 100)
-                    + '...';
-
-            }
-
             editingPreview.textContent =
-                preview ||
+                getMessagePreview(messageBody) ||
                 'Edit your message';
 
         }
 
-        if (submitText) {
-
-            submitText.textContent =
-                'Save changes';
-
-        }
-
-        if (submitIcon) {
-
-            submitIcon.classList.remove(
-                'fa-paper-plane'
-            );
-
-            submitIcon.classList.add(
-                'fa-save'
-            );
-
-        }
+        setSubmitMode('edit');
 
         messageBodyField.focus();
 
@@ -1495,7 +1553,10 @@ document.addEventListener('DOMContentLoaded', function () {
        CANCEL EDIT
     ========================================================== */
 
-    function cancelEdit() {
+    function cancelEdit(options = {}) {
+
+        const clearBody =
+            options.clearBody !== false;
 
         if (editingMessageId) {
             editingMessageId.value = '';
@@ -1514,23 +1575,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
-        if (submitText) {
-            submitText.textContent = 'Send';
-        }
+        setSubmitMode('send');
 
-        if (submitIcon) {
-
-            submitIcon.classList.remove(
-                'fa-save'
-            );
-
-            submitIcon.classList.add(
-                'fa-paper-plane'
-            );
-
-        }
-
-        if (messageBodyField) {
+        if (clearBody && messageBodyField) {
             messageBodyField.value = '';
         }
 
@@ -1564,6 +1611,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        /*
+         * Reply is normal message sending.
+         * Make sure edit mode is completely cancelled.
+         */
+
         if (editingMessageId) {
             editingMessageId.value = '';
         }
@@ -1572,25 +1624,19 @@ document.addEventListener('DOMContentLoaded', function () {
             editingBar.classList.add('d-none');
         }
 
+        replyForm.setAttribute(
+            'action',
+            normalFormAction
+        );
+
         if (replyToInput) {
             replyToInput.value = messageId;
         }
 
         if (replyPreview) {
 
-            let preview =
-                messageBody.trim();
-
-            if (preview.length > 100) {
-
-                preview =
-                    preview.substring(0, 100)
-                    + '...';
-
-            }
-
             replyPreview.textContent =
-                preview ||
+                getMessagePreview(messageBody) ||
                 'Reply to this message';
 
         }
@@ -1599,26 +1645,7 @@ document.addEventListener('DOMContentLoaded', function () {
             replyBar.classList.remove('d-none');
         }
 
-        replyForm.setAttribute(
-            'action',
-            normalFormAction
-        );
-
-        if (submitText) {
-            submitText.textContent = 'Send';
-        }
-
-        if (submitIcon) {
-
-            submitIcon.classList.remove(
-                'fa-save'
-            );
-
-            submitIcon.classList.add(
-                'fa-paper-plane'
-            );
-
-        }
+        setSubmitMode('send');
 
         messageBodyField.focus();
 
@@ -1634,7 +1661,10 @@ document.addEventListener('DOMContentLoaded', function () {
        CANCEL REPLY
     ========================================================== */
 
-    function cancelReply() {
+    function cancelReply(options = {}) {
+
+        const clearBody =
+            options.clearBody !== false;
 
         if (replyToInput) {
             replyToInput.value = '';
@@ -1642,6 +1672,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (replyBar) {
             replyBar.classList.add('d-none');
+        }
+
+        if (clearBody && messageBodyField) {
+            messageBodyField.value = '';
         }
 
     }
@@ -1665,6 +1699,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             event.preventDefault();
+
+            if (
+                isSubmittingAttachment ||
+                isSubmittingEdit
+            ) {
+                return;
+            }
 
             startEdit(button);
 
@@ -1691,6 +1732,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             event.preventDefault();
 
+            if (
+                isSubmittingAttachment ||
+                isSubmittingEdit
+            ) {
+                return;
+            }
+
             startReply(button);
 
         }
@@ -1698,7 +1746,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       CANCEL EDIT
+       CANCEL EDIT BUTTON
     ========================================================== */
 
     if (cancelEditBtn) {
@@ -1718,7 +1766,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       CANCEL REPLY
+       CANCEL REPLY BUTTON
     ========================================================== */
 
     if (cancelReplyBtn) {
@@ -1747,21 +1795,33 @@ document.addEventListener('DOMContentLoaded', function () {
             'submit',
             function (event) {
 
+                /*
+                 * Prevent double submit.
+                 */
+
+                if (
+                    isSubmittingAttachment ||
+                    isSubmittingEdit
+                ) {
+
+                    event.preventDefault();
+
+                    return;
+
+                }
+
+
+                /*
+                 * EDIT
+                 */
+
                 const isEditing =
                     editingMessageId &&
                     editingMessageId.value;
 
-                /*
-                 * EDIT
-                 *
-                 * Edit is always AJAX.
-                 */
-
                 if (isEditing) {
 
-                    handleEditSubmit(
-                        event
-                    );
+                    handleEditSubmit(event);
 
                     return;
 
@@ -1770,12 +1830,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 /*
                  * NORMAL SEND / REPLY
-                 *
-                 * Text-only:
-                 * normal Django submit.
-                 *
-                 * Attachment:
-                 * AJAX upload with progress.
                  */
 
                 const imageFile =
@@ -1794,9 +1848,20 @@ document.addEventListener('DOMContentLoaded', function () {
                         videoFile
                     );
 
+                /*
+                 * Text-only message:
+                 * allow normal Django POST.
+                 */
+
                 if (!hasAttachment) {
                     return;
                 }
+
+
+                /*
+                 * Attachment message:
+                 * use AJAX so progress can be shown.
+                 */
 
                 if (
                     !validateAttachmentsBeforeSubmit()
@@ -1808,9 +1873,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 }
 
-                handleAttachmentSubmit(
-                    event
-                );
+                handleAttachmentSubmit(event);
 
             }
         );
@@ -1825,6 +1888,10 @@ document.addEventListener('DOMContentLoaded', function () {
     async function handleEditSubmit(event) {
 
         event.preventDefault();
+
+        if (isSubmittingEdit) {
+            return;
+        }
 
         if (
             !replyForm ||
@@ -1863,9 +1930,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Message cannot be empty.'
             );
 
+            messageBodyField.focus();
+
             return;
 
         }
+
+        /*
+         * Edit must never include attachments.
+         */
+
+        clearMediaInputs();
 
         const formData =
             new FormData();
@@ -1887,6 +1962,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
+        isSubmittingEdit = true;
+
         if (submitBtn) {
             submitBtn.disabled = true;
         }
@@ -1898,16 +1975,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     editUrl,
                     {
                         method: 'POST',
-
                         body: formData,
-
-                        credentials:
-                            'same-origin',
-
+                        credentials: 'same-origin',
                         headers: {
                             'X-Requested-With':
                                 'XMLHttpRequest',
-
                             'Accept':
                                 'application/json'
                         }
@@ -1967,9 +2039,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else {
 
                     const newText =
-                        document.createElement(
-                            'div'
-                        );
+                        document.createElement('div');
 
                     newText.className =
                         'mb-1 message-body-html';
@@ -1977,9 +2047,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     newText.innerHTML =
                         data.body || '';
 
-                    bubble.prepend(
-                        newText
-                    );
+                    bubble.prepend(newText);
 
                 }
 
@@ -1987,31 +2055,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
             /* =============================================
-               UPDATE DATA FOR EDIT BUTTON
+               UPDATE EDIT BUTTON DATA
             ============================================== */
 
             document
                 .querySelectorAll(
                     '.edit-message-side-btn'
                 )
-                .forEach(
-                    function (button) {
+                .forEach(function (button) {
 
-                        if (
-                            button.dataset.messageId ===
-                            String(messageId)
-                        ) {
+                    if (
+                        button.dataset.messageId ===
+                        String(messageId)
+                    ) {
 
-                            button.dataset.messageBody =
-                                body;
-
-                        }
+                        button.dataset.messageBody =
+                            body;
 
                     }
-                );
+
+                });
 
 
-            cancelEdit();
+            /*
+             * Finish edit without leaving stale UI.
+             */
+
+            cancelEdit({
+                clearBody: true
+            });
 
         } catch (error) {
 
@@ -2026,6 +2098,8 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
         } finally {
+
+            isSubmittingEdit = false;
 
             if (submitBtn) {
                 submitBtn.disabled = false;
@@ -2044,17 +2118,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
         event.preventDefault();
 
-        if (!replyForm) {
+        if (
+            !replyForm ||
+            isSubmittingAttachment
+        ) {
+            return;
+        }
+
+        if (
+            !validateAttachmentsBeforeSubmit()
+        ) {
             return;
         }
 
         const formData =
-            new FormData(
-                replyForm
-            );
+            new FormData(replyForm);
 
         const xhr =
             new XMLHttpRequest();
+
+        isSubmittingAttachment = true;
 
         showUploadProgress();
 
@@ -2087,9 +2170,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         ) * 100
                     );
 
-                updateUploadProgress(
-                    percent
-                );
+                updateUploadProgress(percent);
 
             }
         );
@@ -2104,9 +2185,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     xhr.status < 400
                 ) {
 
-                    updateUploadProgress(
-                        100
-                    );
+                    updateUploadProgress(100);
 
                     if (uploadProgressText) {
 
@@ -2115,23 +2194,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     }
 
-                    setTimeout(
-                        function () {
+                    setTimeout(function () {
 
-                            if (xhr.responseURL) {
+                        if (xhr.responseURL) {
 
-                                window.location.href =
-                                    xhr.responseURL;
+                            window.location.href =
+                                xhr.responseURL;
 
-                            } else {
+                        } else {
 
-                                window.location.reload();
+                            window.location.reload();
 
-                            }
+                        }
 
-                        },
-                        250
-                    );
+                    }, 250);
 
                     return;
 
@@ -2149,17 +2225,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         );
 
                     if (data.error) {
+
                         errorMessage =
                             data.error;
+
                     }
 
                 } catch (error) {
                     // Ignore.
                 }
 
-                alert(
-                    errorMessage
-                );
+                alert(errorMessage);
 
                 resetUploadButton();
 
@@ -2216,9 +2292,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'XMLHttpRequest'
         );
 
-        xhr.send(
-            formData
-        );
+        xhr.send(formData);
 
     }
 
@@ -2226,6 +2300,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function resetUploadButton() {
 
         hideUploadProgress();
+
+        isSubmittingAttachment = false;
 
         if (submitBtn) {
 
@@ -2235,13 +2311,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 submitBtn.dataset.originalHtml ||
                 '<i class="fas fa-paper-plane me-1"></i> Send';
 
+            delete submitBtn.dataset.originalHtml;
+
         }
 
     }
 
 
     /* =========================================================
-       SHARE
+       SHARE MEDIA
     ========================================================== */
 
     document.addEventListener(
@@ -2250,14 +2328,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const button =
                 event.target.closest(
-                    '.media-share-btn'
+                    '.media-share-btn, .share-btn'
                 );
 
             if (!button) {
                 return;
             }
 
-            event.preventDefault();
+            /*
+             * Only handle buttons which actually have
+             * a media URL.
+             */
 
             const url =
                 button.dataset.url;
@@ -2265,6 +2346,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!url) {
                 return;
             }
+
+            event.preventDefault();
 
             if (navigator.share) {
 
@@ -2292,6 +2375,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
 
+
+            /*
+             * Clipboard API.
+             */
+
             try {
 
                 if (
@@ -2309,15 +2397,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     button.innerHTML =
                         '✓';
 
-                    setTimeout(
-                        function () {
+                    setTimeout(function () {
 
-                            button.innerHTML =
-                                oldHtml;
+                        button.innerHTML =
+                            oldHtml;
 
-                        },
-                        1200
-                    );
+                    }, 1200);
 
                     return;
 
@@ -2332,10 +2417,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
 
+
+            /*
+             * Fallback copy.
+             */
+
             const textarea =
-                document.createElement(
-                    'textarea'
-                );
+                document.createElement('textarea');
 
             textarea.value =
                 url;
@@ -2352,18 +2440,14 @@ document.addEventListener('DOMContentLoaded', function () {
             textarea.style.opacity =
                 '0';
 
-            document.body.appendChild(
-                textarea
-            );
+            document.body.appendChild(textarea);
 
             textarea.focus();
             textarea.select();
 
             try {
 
-                document.execCommand(
-                    'copy'
-                );
+                document.execCommand('copy');
 
             } catch (error) {
 
@@ -2393,9 +2477,7 @@ document.addEventListener('DOMContentLoaded', function () {
         async function (event) {
 
             const button =
-                event.target.closest(
-                    '.js-react'
-                );
+                event.target.closest('.js-react');
 
             if (!button) {
                 return;
@@ -2404,14 +2486,12 @@ document.addEventListener('DOMContentLoaded', function () {
             event.preventDefault();
 
             if (
-                button.dataset.loading ===
-                '1'
+                button.dataset.loading === '1'
             ) {
                 return;
             }
 
-            button.dataset.loading =
-                '1';
+            button.dataset.loading = '1';
 
             const csrfToken =
                 getCsrfToken();
@@ -2422,8 +2502,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     'CSRF token not found.'
                 );
 
-                button.dataset.loading =
-                    '0';
+                button.dataset.loading = '0';
 
                 return;
 
@@ -2432,9 +2511,7 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
 
                 const url =
-                    button.getAttribute(
-                        'href'
-                    );
+                    button.getAttribute('href');
 
                 if (!url) {
 
@@ -2449,17 +2526,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         url,
                         {
                             method: 'POST',
-
-                            credentials:
-                                'same-origin',
-
+                            credentials: 'same-origin',
                             headers: {
                                 'X-Requested-With':
                                     'XMLHttpRequest',
-
                                 'Accept':
                                     'application/json',
-
                                 'X-CSRFToken':
                                     csrfToken
                             }
@@ -2492,6 +2564,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
 
                 }
+
+
+                /* =============================================
+                   REACTION
+                ============================================== */
 
                 const reaction =
                     data.reaction ||
@@ -2551,40 +2628,32 @@ document.addEventListener('DOMContentLoaded', function () {
                     avatarBox.replaceChildren();
 
                     const reactors =
-                        Array.isArray(
-                            data.reactors
-                        )
+                        Array.isArray(data.reactors)
                             ? data.reactors
                             : [];
 
-                    reactors.forEach(
-                        function (reactor) {
+                    reactors.forEach(function (reactor) {
 
-                            const img =
-                                document.createElement(
-                                    'img'
-                                );
+                        const img =
+                            document.createElement('img');
 
-                            img.className =
-                                'react-avatar';
+                        img.className =
+                            'react-avatar';
 
-                            img.alt =
-                                reactor.username ||
-                                'User';
+                        img.alt =
+                            reactor.username ||
+                            'User';
 
-                            img.loading =
-                                'lazy';
+                        img.loading =
+                            'lazy';
 
-                            img.src =
-                                reactor.photo ||
-                                defaultAvatar;
+                        img.src =
+                            reactor.photo ||
+                            defaultAvatar;
 
-                            avatarBox.appendChild(
-                                img
-                            );
+                        avatarBox.appendChild(img);
 
-                        }
-                    );
+                    });
 
                 }
 
@@ -2594,20 +2663,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 ============================================== */
 
                 if (
-                    Array.isArray(
-                        data.reactors
-                    )
+                    Array.isArray(data.reactors)
                 ) {
 
                     const names =
                         data.reactors
-                            .map(
-                                function (reactor) {
-
-                                    return reactor.username;
-
-                                }
-                            )
+                            .map(function (reactor) {
+                                return reactor.username;
+                            })
                             .filter(Boolean);
 
                     button.title =
@@ -2630,8 +2693,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             } finally {
 
-                button.dataset.loading =
-                    '0';
+                button.dataset.loading = '0';
 
             }
 
@@ -2648,7 +2710,6 @@ document.addEventListener('DOMContentLoaded', function () {
         function () {
 
             revokeImageUrl();
-
             revokeVideoUrl();
 
             if (scrollButtonHideTimer) {
@@ -2656,6 +2717,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 clearTimeout(
                     scrollButtonHideTimer
                 );
+
+                scrollButtonHideTimer = null;
 
             }
 
