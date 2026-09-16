@@ -40,7 +40,7 @@ def get_conversation_messages(root_message):
     стари -> нови.
     """
 
-    messages = [root_message]
+    conversation_messages = [root_message]
     current_level = [root_message]
 
     while current_level:
@@ -59,10 +59,10 @@ def get_conversation_messages(root_message):
         if not next_level:
             break
 
-        messages.extend(next_level)
+        conversation_messages.extend(next_level)
         current_level = next_level
 
-    return messages
+    return conversation_messages
 
 
 def is_message_visible_for_user(message, user):
@@ -103,8 +103,8 @@ def get_conversation_messages_for_user(root_message, user):
     visible_messages = []
 
     if is_message_visible_for_user(
-            root_message,
-            user,
+        root_message,
+        user,
     ):
         visible_messages.append(root_message)
 
@@ -129,8 +129,8 @@ def get_conversation_messages_for_user(root_message, user):
         for msg in next_level:
 
             if is_message_visible_for_user(
-                    msg,
-                    user,
+                msg,
+                user,
             ):
                 visible_messages.append(msg)
 
@@ -148,9 +148,6 @@ def add_message_delivery_status(messages, current_user):
     - няма recipient status -> sent
     - има recipient status -> delivered
     - recipient status.is_read=True -> read
-
-    Това е подготвено така, че по-късно Channels/WebSocket
-    да може да използва същата логика.
     """
 
     if not messages:
@@ -183,7 +180,6 @@ def add_message_delivery_status(messages, current_user):
 
         msg.delivery_status = None
 
-        # Status се показва само за моите съобщения.
         if msg.sender_id != current_user.pk:
             continue
 
@@ -195,15 +191,12 @@ def add_message_delivery_status(messages, current_user):
         )
 
         if recipient_status is None:
-
             msg.delivery_status = 'sent'
 
         elif recipient_status.is_read:
-
             msg.delivery_status = 'read'
 
         else:
-
             msg.delivery_status = 'delivered'
 
     return messages
@@ -215,13 +208,13 @@ def get_admin_user():
     """
 
     return (
-            User.objects.filter(
-                is_superuser=True
-            ).first()
-            or
-            User.objects.filter(
-                is_staff=True
-            ).first()
+        User.objects.filter(
+            is_superuser=True
+        ).first()
+        or
+        User.objects.filter(
+            is_staff=True
+        ).first()
     )
 
 
@@ -232,15 +225,15 @@ def safe_next_url(request, fallback='message-inbox'):
     """
 
     next_url = (
-            request.POST.get('next')
-            or request.GET.get('next')
-            or request.META.get('HTTP_REFERER')
+        request.POST.get('next')
+        or request.GET.get('next')
+        or request.META.get('HTTP_REFERER')
     )
 
     if next_url and url_has_allowed_host_and_scheme(
-            next_url,
-            allowed_hosts={request.get_host()},
-            require_https=request.is_secure(),
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
     ):
         return next_url
 
@@ -256,8 +249,12 @@ def get_reaction_reactors(message, reaction):
 
     reactions = (
         message.reactions
-        .filter(reaction=reaction)
-        .select_related('user__profile')
+        .filter(
+            reaction=reaction
+        )
+        .select_related(
+            'user__profile'
+        )
     )
 
     for reaction_obj in reactions:
@@ -282,15 +279,15 @@ def get_reaction_reactors(message, reaction):
                 photo = ''
 
             username = (
-                    profile.username_in_marketplace
-                    or user.username
+                profile.username_in_marketplace
+                or user.username
             )
 
         reactors.append({
             'id': user.pk,
             'photo': (
-                    photo
-                    or '/static/images/profile_picture.webp'
+                photo
+                or '/static/images/profile_picture.webp'
             ),
             'username': username,
         })
@@ -395,6 +392,7 @@ def send_system_message(recipient, title, body):
 
 @login_required
 def send_message(request, pk=None):
+
     recipient = (
         get_object_or_404(
             AppUser,
@@ -407,16 +405,21 @@ def send_message(request, pk=None):
     product = None
 
     if recipient:
+
         product = (
             SellerItems.objects
-            .filter(profile__user=recipient)
+            .filter(
+                profile__user=recipient
+            )
             .first()
         )
 
         if not product:
             product = (
                 BuyerItems.objects
-                .filter(profile__user=recipient)
+                .filter(
+                    profile__user=recipient
+                )
                 .first()
             )
 
@@ -424,6 +427,7 @@ def send_message(request, pk=None):
     is_blocked_by_other = False
 
     if recipient:
+
         is_blocked = BlockedUser.objects.filter(
             blocker=request.user,
             blocked=recipient,
@@ -441,25 +445,37 @@ def send_message(request, pk=None):
         # =====================================================
 
         if not recipient:
+
             django_messages.error(
                 request,
                 "Recipient is required.",
             )
-            return redirect('message-inbox')
+
+            return redirect(
+                'message-inbox'
+            )
 
         if is_blocked_by_other:
+
             django_messages.error(
                 request,
                 "You cannot send messages to this user because you have been blocked.",
             )
-            return redirect('message-inbox')
+
+            return redirect(
+                'message-inbox'
+            )
 
         if is_blocked:
+
             django_messages.error(
                 request,
                 "You cannot send messages to a blocked user. Please unblock them first.",
             )
-            return redirect('message-inbox')
+
+            return redirect(
+                'message-inbox'
+            )
 
         # =====================================================
         # FORM
@@ -477,16 +493,24 @@ def send_message(request, pk=None):
             # =================================================
 
             try:
-                validate_message_attachments(request)
+
+                validate_message_attachments(
+                    request
+                )
+
             except ValidationError as exc:
+
                 django_messages.error(
                     request,
                     exc.message,
                 )
+
                 return redirect(
                     'read-message',
-                    pk=request.POST.get('reply_to')
-                    or recipient.pk,
+                    pk=(
+                        request.POST.get('reply_to')
+                        or recipient.pk
+                    ),
                 )
 
             # =================================================
@@ -509,8 +533,11 @@ def send_message(request, pk=None):
                 'title',
                 None,
             ):
+
                 message.title = product.title
+
             else:
+
                 message.title = "Direct conversation"
 
             # =================================================
@@ -518,39 +545,46 @@ def send_message(request, pk=None):
             # =================================================
 
             reply_to_id = (
-                request.POST.get('reply_to') or ''
+                request.POST.get('reply_to')
+                or ''
             ).strip()
+
+            # IMPORTANT:
+            # Ако няма reply_to -> parent_message остава NULL.
+            # НЕ reply-ваме автоматично последното съобщение.
 
             if reply_to_id.isdigit():
 
                 parent_message = (
                     Message.objects
                     .filter(
-                        pk=int(reply_to_id),
+                        pk=int(reply_to_id)
                     )
                     .first()
                 )
 
                 if parent_message:
 
-                    # Reply must belong to the same
-                    # conversation.
-
                     valid_parent = (
                         (
-                            parent_message.sender == request.user
+                            parent_message.sender_id
+                            == request.user.pk
                             and
-                            parent_message.recipient == recipient
+                            parent_message.recipient_id
+                            == recipient.pk
                         )
                         or
                         (
-                            parent_message.sender == recipient
+                            parent_message.sender_id
+                            == recipient.pk
                             and
-                            parent_message.recipient == request.user
+                            parent_message.recipient_id
+                            == request.user.pk
                         )
                     )
 
                     if valid_parent:
+
                         message.parent_message = (
                             parent_message
                         )
@@ -560,9 +594,14 @@ def send_message(request, pk=None):
             # =================================================
 
             if message.body:
+
                 message.body = markdown.markdown(
                     message.body
                 )
+
+            # =================================================
+            # SAVE
+            # =================================================
 
             message.save()
 
@@ -600,6 +639,7 @@ def send_message(request, pk=None):
             )
 
     else:
+
         form = MessageForm()
 
     return render(
@@ -621,6 +661,7 @@ def send_message(request, pk=None):
 
 @login_required
 def read_message(request, pk):
+
     message = get_object_or_404(
         Message.objects.select_related(
             'sender__profile',
@@ -640,6 +681,7 @@ def read_message(request, pk):
         message.sender,
         message.recipient,
     ]:
+
         return HttpResponse(
             "Not authorized",
             status=403,
@@ -649,7 +691,9 @@ def read_message(request, pk):
     # ROOT MESSAGE
     # ========================================================
 
-    root_message = get_root(message)
+    root_message = get_root(
+        message
+    )
 
     conversation_messages = (
         get_conversation_messages_for_user(
@@ -663,10 +707,11 @@ def read_message(request, pk):
     # ========================================================
 
     for status in MessageStatus.objects.filter(
-            message__in=conversation_messages,
-            profile=current_user,
-            is_deleted=False,
+        message__in=conversation_messages,
+        profile=current_user,
+        is_deleted=False,
     ):
+
         status.mark_as_read()
 
     # ========================================================
@@ -674,8 +719,11 @@ def read_message(request, pk):
     # ========================================================
 
     if root_message.sender == current_user:
+
         other_user = root_message.recipient
+
     else:
+
         other_user = root_message.sender
 
     # ========================================================
@@ -686,6 +734,7 @@ def read_message(request, pk):
     is_blocked_by_other = False
 
     if other_user:
+
         is_blocked = BlockedUser.objects.filter(
             blocker=current_user,
             blocked=other_user,
@@ -726,7 +775,10 @@ def read_message(request, pk):
             # =================================================
 
             try:
-                validate_message_attachments(request)
+
+                validate_message_attachments(
+                    request
+                )
 
             except ValidationError as exc:
 
@@ -751,6 +803,7 @@ def read_message(request, pk):
             )
 
             if not recipient:
+
                 django_messages.error(
                     request,
                     "Recipient not found.",
@@ -765,9 +818,10 @@ def read_message(request, pk):
             # =================================================
 
             if BlockedUser.objects.filter(
-                    blocker=recipient,
-                    blocked=current_user,
+                blocker=recipient,
+                blocked=current_user,
             ).exists():
+
                 django_messages.error(
                     request,
                     "You cannot send messages to this user because you have been blocked.",
@@ -783,9 +837,10 @@ def read_message(request, pk):
             # =================================================
 
             if BlockedUser.objects.filter(
-                    blocker=current_user,
-                    blocked=recipient,
+                blocker=current_user,
+                blocked=recipient,
             ).exists():
+
                 django_messages.error(
                     request,
                     "You cannot send messages to a blocked user. Please unblock them first.",
@@ -801,13 +856,13 @@ def read_message(request, pk):
             # =================================================
 
             reply_to_id = (
-                    request.POST.get('reply_to')
-                    or ''
+                request.POST.get('reply_to')
+                or ''
             ).strip()
 
             reply_to = None
 
-            if reply_to_id:
+            if reply_to_id.isdigit():
 
                 try:
 
@@ -823,9 +878,9 @@ def read_message(request, pk):
                     )
 
                 except (
-                        Message.DoesNotExist,
-                        ValueError,
-                        TypeError,
+                    Message.DoesNotExist,
+                    ValueError,
+                    TypeError,
                 ):
 
                     reply_to = None
@@ -836,43 +891,39 @@ def read_message(request, pk):
 
             if reply_to is not None:
 
-                if reply_to.sender_id not in [
+                valid_participants = {
                     current_user.pk,
                     recipient.pk,
-                ] or reply_to.recipient_id not in [
-                    current_user.pk,
-                    recipient.pk,
-                ]:
+                }
+
+                if {
+                    reply_to.sender_id,
+                    reply_to.recipient_id,
+                } != valid_participants:
 
                     reply_to = None
 
                 else:
 
-                    reply_root = get_root(reply_to)
+                    reply_root = get_root(
+                        reply_to
+                    )
 
                     if reply_root.pk != root_message.pk:
+
                         reply_to = None
 
             # =================================================
-            # FALLBACK
+            # IMPORTANT
+            # =================================================
+            # НЕ правим fallback към последното съобщение.
+            #
+            # Ако user НЕ е натиснал Reply:
+            # parent_message остава NULL.
             # =================================================
 
-            if reply_to is None:
-                chronological = (
-                    get_conversation_messages_for_user(
-                        root_message,
-                        current_user,
-                    )
-                )
-
-                reply_to = (
-                    chronological[-1]
-                    if chronological
-                    else root_message
-                )
-
             # =================================================
-            # CREATE REPLY
+            # CREATE MESSAGE
             # =================================================
 
             reply = form.save(
@@ -883,20 +934,28 @@ def read_message(request, pk):
             reply.recipient = recipient
 
             reply.title = (
-                    root_message.title
-                    or "Direct conversation"
+                root_message.title
+                or "Direct conversation"
             )
 
-            # IMPORTANT:
-            # The new message becomes a child of the
-            # message the user actually replied to.
-            reply.parent_message = reply_to
+            # Само ако потребителят действително е
+            # избрал Reply, задаваме parent_message.
+            if reply_to is not None:
+
+                reply.parent_message = (
+                    reply_to
+                )
+
+            else:
+
+                reply.parent_message = None
 
             # =================================================
             # MARKDOWN
             # =================================================
 
             if reply.body:
+
                 reply.body = markdown.markdown(
                     reply.body
                 )
@@ -928,6 +987,7 @@ def read_message(request, pk):
                     )
 
                     if not public_id:
+
                         raise ValueError(
                             "Cloudinary did not return a public_id."
                         )
@@ -968,6 +1028,7 @@ def read_message(request, pk):
                 # ---------------------------------------------
 
                 if recipient != current_user:
+
                     sender_status = (
                         MessageStatus.objects.create(
                             message=reply,
@@ -1030,18 +1091,21 @@ def read_message(request, pk):
 
 @login_required
 def delete_one_message(request, pk):
+
     msg = get_object_or_404(
         Message,
         pk=pk,
     )
 
     if msg.sender != request.user:
+
         return HttpResponse(
             "Not allowed",
             status=403,
         )
 
     if request.method != 'POST':
+
         return HttpResponse(
             "POST required",
             status=405,
@@ -1050,7 +1114,9 @@ def delete_one_message(request, pk):
     msg.is_removed = True
 
     msg.save(
-        update_fields=['is_removed']
+        update_fields=[
+            'is_removed'
+        ]
     )
 
     return redirect(
@@ -1064,6 +1130,7 @@ def delete_one_message(request, pk):
 
 @login_required
 def delete_message(request, pk):
+
     message = get_object_or_404(
         Message,
         pk=pk,
@@ -1075,6 +1142,7 @@ def delete_message(request, pk):
         message.sender,
         message.recipient,
     ]:
+
         return HttpResponse(
             "Not allowed",
             status=403,
@@ -1091,8 +1159,8 @@ def delete_message(request, pk):
     if request.method == 'POST':
 
         filter_type = (
-                request.POST.get('filter')
-                or 'inbox'
+            request.POST.get('filter')
+            or 'inbox'
         )
 
         with transaction.atomic():
@@ -1107,8 +1175,9 @@ def delete_message(request, pk):
             for msg in conversation:
 
                 if not msg.statuses.filter(
-                        is_deleted=False
+                    is_deleted=False
                 ).exists():
+
                     msg.delete()
 
         return redirect(
@@ -1116,8 +1185,8 @@ def delete_message(request, pk):
         )
 
     filter_type = (
-            request.GET.get('filter')
-            or 'inbox'
+        request.GET.get('filter')
+        or 'inbox'
     )
 
     return render(
@@ -1138,7 +1207,9 @@ def delete_message(request, pk):
 
 @login_required
 def react_message(request, pk, reaction):
+
     if request.method != 'POST':
+
         return JsonResponse(
             {
                 'ok': False,
@@ -1156,6 +1227,7 @@ def react_message(request, pk, reaction):
         msg.sender,
         msg.recipient,
     ]:
+
         return JsonResponse(
             {
                 'ok': False,
@@ -1165,6 +1237,7 @@ def react_message(request, pk, reaction):
         )
 
     if msg.is_removed:
+
         return JsonResponse(
             {
                 'ok': False,
@@ -1174,10 +1247,11 @@ def react_message(request, pk, reaction):
         )
 
     if getattr(
-            msg,
-            'is_system',
-            False,
+        msg,
+        'is_system',
+        False,
     ):
+
         return JsonResponse(
             {
                 'ok': False,
@@ -1187,8 +1261,9 @@ def react_message(request, pk, reaction):
         )
 
     if not is_valid_reaction(
-            reaction
+        reaction
     ):
+
         return JsonResponse(
             {
                 'ok': False,
@@ -1246,6 +1321,7 @@ def react_message(request, pk, reaction):
 
 @login_required
 def report_message(request, pk):
+
     message = get_object_or_404(
         Message,
         pk=pk,
@@ -1255,12 +1331,14 @@ def report_message(request, pk):
         message.sender,
         message.recipient,
     ]:
+
         return HttpResponse(
             "Not authorized",
             status=403,
         )
 
     if request.method != 'POST':
+
         return redirect(
             'read-message',
             pk=message.pk,
@@ -1320,7 +1398,9 @@ def report_message(request, pk):
 
 @login_required
 def block_user(request, pk):
+
     if request.method != 'POST':
+
         return HttpResponse(
             "POST required",
             status=405,
@@ -1332,6 +1412,7 @@ def block_user(request, pk):
     )
 
     if user_to_block == request.user:
+
         django_messages.error(
             request,
             "You cannot block yourself.",
@@ -1373,7 +1454,9 @@ def block_user(request, pk):
 
 @login_required
 def unblock_user(request, pk):
+
     if request.method != 'POST':
+
         return HttpResponse(
             "POST required",
             status=405,
@@ -1416,6 +1499,7 @@ def unblock_user(request, pk):
 
 @login_required
 def message_inbox(request):
+
     filter_type = (
         request.GET.get(
             'filter',
@@ -1450,6 +1534,7 @@ def message_inbox(request):
             )
 
             if not all_msgs:
+
                 raw = get_conversation_messages(
                     root
                 )
@@ -1488,6 +1573,7 @@ def message_inbox(request):
     page_obj = paginator.get_page(
         request.GET.get('page')
     )
+
     return render(
         request,
         'messages/message-inbox.html',
@@ -1504,6 +1590,7 @@ def message_inbox(request):
 
 @login_required
 def edit_message(request, pk):
+
     message = get_object_or_404(
         Message.objects.select_related(
             'sender',
@@ -1517,6 +1604,7 @@ def edit_message(request, pk):
     # =====================================================
 
     if message.sender != request.user:
+
         return JsonResponse(
             {
                 'ok': False,
@@ -1530,6 +1618,7 @@ def edit_message(request, pk):
     # =====================================================
 
     if message.is_system:
+
         return JsonResponse(
             {
                 'ok': False,
@@ -1543,6 +1632,7 @@ def edit_message(request, pk):
     # =====================================================
 
     if message.is_removed:
+
         return JsonResponse(
             {
                 'ok': False,
@@ -1556,6 +1646,7 @@ def edit_message(request, pk):
     # =====================================================
 
     if request.method != 'POST':
+
         return JsonResponse(
             {
                 'ok': False,
@@ -1569,10 +1660,12 @@ def edit_message(request, pk):
     # =====================================================
 
     new_body = (
-        request.POST.get('body') or ''
+        request.POST.get('body')
+        or ''
     ).strip()
 
     if not new_body:
+
         return JsonResponse(
             {
                 'ok': False,
@@ -1590,48 +1683,8 @@ def edit_message(request, pk):
     )
 
     message.save(
-        update_fields=['body']
-    )
-
-    return JsonResponse(
-        {
-            'ok': True,
-            'message_id': message.pk,
-            'body': message.body,
-        }
-    )
-
-
-    # ========================================================
-    # BODY
-    # ========================================================
-
-    new_body = (
-        form.cleaned_data.get('body')
-        or ''
-    ).strip()
-
-    if not new_body:
-
-        return JsonResponse(
-            {
-                'ok': False,
-                'error': 'Message cannot be empty.',
-            },
-            status=400,
-        )
-
-    # ========================================================
-    # SAVE
-    # ========================================================
-
-    message.body = markdown.markdown(
-        new_body
-    )
-
-    message.save(
         update_fields=[
-            'body',
+            'body'
         ]
     )
 

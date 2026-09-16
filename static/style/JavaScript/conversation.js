@@ -60,6 +60,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const uploadProgressPercent =
         document.getElementById('upload-progress-percent');
 
+    /* =========================================================
+       EDIT
+    ========================================================== */
+
     const editingBar =
         document.getElementById('editing-message-bar');
 
@@ -72,6 +76,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const cancelEditBtn =
         document.getElementById('cancel-edit-btn');
 
+    /* =========================================================
+       REPLY
+    ========================================================== */
+
     const replyBar =
         document.getElementById('replying-message-bar');
 
@@ -83,6 +91,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const replyToInput =
         document.getElementById('reply-to');
+
+    /* =========================================================
+       REPLY MEDIA PREVIEW
+    ========================================================== */
+
+    const replyMedia =
+        document.getElementById('replying-message-media');
+
+    const replyImage =
+        document.getElementById('replying-message-image');
+
+    const replyVideo =
+        document.getElementById('replying-message-video');
+
+    const replyVideoPlayer =
+        document.getElementById('replying-message-video-player');
+
+    /* =========================================================
+       SUBMIT
+    ========================================================== */
 
     const submitBtn =
         document.getElementById('message-submit-btn');
@@ -104,6 +132,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const SCROLL_EPSILON = 2;
     const SCROLL_BUTTON_HIDE_DELAY = 2000;
 
+
+    /*
+     * Remember the original form action.
+     *
+     * This is important because Edit temporarily changes
+     * the form action to the edit URL.
+     */
+
     const normalFormAction = replyForm
         ? (
             replyForm.getAttribute('action') ||
@@ -118,8 +154,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let imageObjectUrl = null;
     let videoObjectUrl = null;
+
     let scrollButtonHideTimer = null;
+
     let dragCounter = 0;
+
     let isSubmittingAttachment = false;
     let isSubmittingEdit = false;
 
@@ -604,6 +643,92 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
+       REPLY MEDIA
+    ========================================================== */
+
+    function clearReplyMedia() {
+
+        if (replyMedia) {
+            replyMedia.classList.add('d-none');
+        }
+
+        if (replyImage) {
+
+            replyImage.classList.add('d-none');
+
+            replyImage.removeAttribute('src');
+
+        }
+
+        if (replyVideo) {
+
+            replyVideo.classList.add('d-none');
+
+        }
+
+        if (replyVideoPlayer) {
+
+            replyVideoPlayer.pause();
+
+            replyVideoPlayer.removeAttribute('src');
+
+            replyVideoPlayer.load();
+
+        }
+
+    }
+
+
+    function setReplyMedia(imageUrl, videoUrl) {
+
+        clearReplyMedia();
+
+        if (
+            imageUrl &&
+            replyMedia &&
+            replyImage
+        ) {
+
+            replyImage.src =
+                imageUrl;
+
+            replyImage.classList.remove(
+                'd-none'
+            );
+
+            replyMedia.classList.remove(
+                'd-none'
+            );
+
+            return;
+
+        }
+
+
+        if (
+            videoUrl &&
+            replyMedia &&
+            replyVideo &&
+            replyVideoPlayer
+        ) {
+
+            replyVideoPlayer.src =
+                videoUrl;
+
+            replyVideo.classList.remove(
+                'd-none'
+            );
+
+            replyMedia.classList.remove(
+                'd-none'
+            );
+
+        }
+
+    }
+
+
+    /* =========================================================
        CLEAR MEDIA
     ========================================================== */
 
@@ -1069,6 +1194,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const file = files[0];
 
+
+                /* IMAGE */
+
                 if (file.type.startsWith('image/')) {
 
                     if (!validateImageFile(file)) {
@@ -1104,6 +1232,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 }
 
+
+                /* VIDEO */
 
                 if (file.type.startsWith('video/')) {
 
@@ -1387,8 +1517,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (mode === 'edit') {
 
             if (submitText) {
+
                 submitText.textContent =
                     'Save changes';
+
             }
 
             if (submitIcon) {
@@ -1409,8 +1541,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         if (submitText) {
+
             submitText.textContent =
                 'Send';
+
         }
 
         if (submitIcon) {
@@ -1473,15 +1607,16 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+
         /*
          * Edit is text-only.
-         * Clear any selected attachment first.
          */
 
         clearMediaInputs();
 
+
         /*
-         * Cancel reply mode.
+         * Clear Reply completely.
          */
 
         if (replyToInput) {
@@ -1491,6 +1626,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (replyBar) {
             replyBar.classList.add('d-none');
         }
+
+        clearReplyMedia();
+
 
         /*
          * Activate edit mode.
@@ -1585,6 +1723,8 @@ document.addEventListener('DOMContentLoaded', function () {
             replyToInput.value = '';
         }
 
+        clearReplyMedia();
+
     }
 
 
@@ -1607,13 +1747,19 @@ document.addEventListener('DOMContentLoaded', function () {
         const messageBody =
             button.dataset.messageBody || '';
 
+        const imageUrl =
+            button.dataset.replyImage || '';
+
+        const videoUrl =
+            button.dataset.replyVideo || '';
+
         if (!messageId) {
             return;
         }
 
+
         /*
-         * Reply is normal message sending.
-         * Make sure edit mode is completely cancelled.
+         * Reply must cancel Edit mode.
          */
 
         if (editingMessageId) {
@@ -1624,25 +1770,68 @@ document.addEventListener('DOMContentLoaded', function () {
             editingBar.classList.add('d-none');
         }
 
+
+        /*
+         * Restore normal send URL.
+         */
+
         replyForm.setAttribute(
             'action',
             normalFormAction
         );
 
+
+        /*
+         * Set reply target.
+         */
+
         if (replyToInput) {
-            replyToInput.value = messageId;
+
+            replyToInput.value =
+                messageId;
+
         }
+
+
+        /*
+         * Text preview.
+         */
 
         if (replyPreview) {
 
             replyPreview.textContent =
                 getMessagePreview(messageBody) ||
-                'Reply to this message';
+                (
+                    imageUrl
+                        ? 'Photo'
+                        : videoUrl
+                            ? 'Video'
+                            : 'Reply to this message'
+                );
 
         }
 
+
+        /*
+         * Media preview.
+         */
+
+        setReplyMedia(
+            imageUrl,
+            videoUrl
+        );
+
+
+        /*
+         * Show reply bar.
+         */
+
         if (replyBar) {
-            replyBar.classList.remove('d-none');
+
+            replyBar.classList.remove(
+                'd-none'
+            );
+
         }
 
         setSubmitMode('send');
@@ -1666,16 +1855,32 @@ document.addEventListener('DOMContentLoaded', function () {
         const clearBody =
             options.clearBody !== false;
 
+
+        /*
+         * This is critical.
+         * Otherwise the next normal message will
+         * accidentally remain a reply.
+         */
+
         if (replyToInput) {
             replyToInput.value = '';
         }
 
+
         if (replyBar) {
-            replyBar.classList.add('d-none');
+
+            replyBar.classList.add(
+                'd-none'
+            );
+
         }
 
+        clearReplyMedia();
+
         if (clearBody && messageBodyField) {
+
             messageBodyField.value = '';
+
         }
 
     }
@@ -1848,19 +2053,31 @@ document.addEventListener('DOMContentLoaded', function () {
                         videoFile
                     );
 
+
                 /*
-                 * Text-only message:
-                 * allow normal Django POST.
+                 * Text-only message.
+                 *
+                 * Allow normal Django POST.
                  */
 
                 if (!hasAttachment) {
+
+                    /*
+                     * The browser submits the hidden reply_to
+                     * automatically when Reply mode is active.
+                     *
+                     * If this is a normal message,
+                     * reply_to must be empty.
+                     */
+
                     return;
+
                 }
 
 
                 /*
                  * Attachment message:
-                 * use AJAX so progress can be shown.
+                 * use AJAX for progress.
                  */
 
                 if (
@@ -1936,11 +2153,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
+
         /*
-         * Edit must never include attachments.
+         * Edit must never include attachments
+         * or a reply target.
          */
 
         clearMediaInputs();
+
+        if (replyToInput) {
+            replyToInput.value = '';
+        }
 
         const formData =
             new FormData();
@@ -2078,7 +2301,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
             /*
-             * Finish edit without leaving stale UI.
+             * Finish edit.
              */
 
             cancelEdit({
@@ -2193,6 +2416,15 @@ document.addEventListener('DOMContentLoaded', function () {
                             'Upload complete';
 
                     }
+
+
+                    /*
+                     * The server response will contain
+                     * the redirect URL from Django.
+                     *
+                     * This also means the hidden reply_to
+                     * has already been submitted.
+                     */
 
                     setTimeout(function () {
 
@@ -2334,11 +2566,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!button) {
                 return;
             }
-
-            /*
-             * Only handle buttons which actually have
-             * a media URL.
-             */
 
             const url =
                 button.dataset.url;
