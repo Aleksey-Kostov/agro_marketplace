@@ -498,34 +498,49 @@ def send_message(request, pk=None):
 
     recipient = (
         get_object_or_404(
-            AppUser,
+            User,
             pk=pk,
         )
         if pk
         else None
     )
 
+    # =========================================================
+    # PRODUCT
+    # =========================================================
+
+    product_id = request.GET.get('product_id')
+    product_type = request.GET.get('product_type')
+
     product = None
 
-    if recipient:
+    if recipient and product_id:
 
-        product = (
-            SellerItems.objects
-            .filter(
-                profile__user=recipient
+        if product_type == 'seller':
+
+            product = (
+                SellerItems.objects
+                .filter(
+                    pk=product_id,
+                    profile__user=recipient,
+                )
+                .first()
             )
-            .first()
-        )
 
-        if not product:
+        elif product_type == 'buyer':
 
             product = (
                 BuyerItems.objects
                 .filter(
-                    profile__user=recipient
+                    pk=product_id,
+                    profile__user=recipient,
                 )
                 .first()
             )
+
+    # =========================================================
+    # BLOCK STATUS
+    # =========================================================
 
     is_blocked = False
     is_blocked_by_other = False
@@ -550,11 +565,15 @@ def send_message(request, pk=None):
             .exists()
         )
 
+    # =========================================================
+    # POST
+    # =========================================================
+
     if request.method == 'POST':
 
-        # =====================================================
+        # -----------------------------------------------------
         # BLOCK CHECKS
-        # =====================================================
+        # -----------------------------------------------------
 
         if not recipient:
 
@@ -589,9 +608,9 @@ def send_message(request, pk=None):
                 'message-inbox'
             )
 
-        # =====================================================
+        # -----------------------------------------------------
         # FORM
-        # =====================================================
+        # -----------------------------------------------------
 
         form = MessageForm(
             request.POST,
@@ -600,9 +619,9 @@ def send_message(request, pk=None):
 
         if form.is_valid():
 
-            # =================================================
+            # -------------------------------------------------
             # ATTACHMENT VALIDATION
-            # =================================================
+            # -------------------------------------------------
 
             try:
 
@@ -621,9 +640,9 @@ def send_message(request, pk=None):
                     'message-inbox'
                 )
 
-            # =================================================
+            # -------------------------------------------------
             # CREATE MESSAGE
-            # =================================================
+            # -------------------------------------------------
 
             message = form.save(
                 commit=False
@@ -632,9 +651,9 @@ def send_message(request, pk=None):
             message.sender = request.user
             message.recipient = recipient
 
-            # =================================================
+            # -------------------------------------------------
             # TITLE
-            # =================================================
+            # -------------------------------------------------
 
             if product and getattr(
                 product,
@@ -648,33 +667,20 @@ def send_message(request, pk=None):
 
                 message.title = "Direct conversation"
 
-            # =================================================
+            # -------------------------------------------------
             # REPLY TO
-            # =================================================
+            # -------------------------------------------------
 
             reply_to_id = (
                 request.POST.get('reply_to')
                 or ''
             ).strip()
 
-            # =================================================
-            # CRITICAL RULE
-            # =================================================
-            #
-            # НЯМА reply_to:
-            #
-            #     parent_message = None
-            #
-            # ИМА reply_to:
-            #
-            #     parent_message = избраното съобщение
-            #
-            # НИКОГА не използваме последното съобщение
-            # като автоматичен parent.
-            # =================================================
-
+            # Нормално ново съобщение няма parent.
             message.parent_message = None
 
+            # parent се задава САМО ако потребителят
+            # изрично е натиснал Reply.
             if reply_to_id.isdigit():
 
                 parent_message = (
@@ -712,9 +718,9 @@ def send_message(request, pk=None):
                             parent_message
                         )
 
-            # =================================================
+            # -------------------------------------------------
             # MARKDOWN
-            # =================================================
+            # -------------------------------------------------
 
             if message.body:
 
@@ -722,27 +728,21 @@ def send_message(request, pk=None):
                     message.body
                 )
 
-            # =================================================
+            # -------------------------------------------------
             # SAVE
-            # =================================================
+            # -------------------------------------------------
 
             with transaction.atomic():
 
                 message.save()
 
-                # ---------------------------------------------
-                # RECIPIENT STATUS
-                # ---------------------------------------------
-
+                # Recipient status
                 MessageStatus.objects.create(
                     message=message,
                     profile=recipient,
                 )
 
-                # ---------------------------------------------
-                # SENDER STATUS
-                # ---------------------------------------------
-
+                # Sender status
                 if recipient != request.user:
 
                     sender_status = (
@@ -754,9 +754,9 @@ def send_message(request, pk=None):
 
                     sender_status.mark_as_read()
 
-            # =================================================
+            # -------------------------------------------------
             # RESPONSE
-            # =================================================
+            # -------------------------------------------------
 
             return redirect(
                 'read-message',
@@ -766,6 +766,10 @@ def send_message(request, pk=None):
     else:
 
         form = MessageForm()
+
+    # =========================================================
+    # RENDER
+    # =========================================================
 
     return render(
         request,
