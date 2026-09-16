@@ -94,7 +94,7 @@
                                 <span class="tooltip-text">Info</span>
                             </a>
                             {% if user != object.profile.user %}
-                            <a href="{% url 'send-message' object.profile.pk %}?product_id={{ object.pk }}&product_type=seller"
+                            <a href="{% url 'send-message' object.profile.pk %}?product_id={{ object.id }}&product_type=seller"
                                class="btn btn-outline-success btn-sm activate">
                                 <i class="fas fa-envelope"></i>
                                 <span class="tooltip-text">Send Message</span>
@@ -261,7 +261,7 @@
                                 <span class="tooltip-text">Info</span>
                             </a>
                             {% if user != object.profile.user %}
-                            <a href="{% url 'send-message' object.profile.pk %}?product_id={{ object.pk }}&product_type=buyer"
+                            <a href="{% url 'send-message' object.profile.pk %}?product_id={{ object.id }}&product_type=buyer"
                                class="btn btn-outline-success btn-sm activate">
                                 <i class="fas fa-envelope"></i>
                                 <span class="tooltip-text">Send Message</span>
