@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.db import transaction
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 
 import markdown
 
@@ -36,48 +37,74 @@ User = get_user_model()
 
 def get_conversation_messages(root_message):
     """
-    Всички съобщения в conversation-а:
-    стари -> нови.
+    Връща ВСИЧКИ съобщения между двамата участници.
+
+    ВАЖНО:
+    parent_message НЕ определя структурата на разговора.
+
+    parent_message се използва САМО за Reply reference.
+
+    Нормалните съобщения имат:
+        parent_message = None
+
+    Само съобщения, изпратени след натискане на Reply,
+    имат:
+        parent_message = избраното съобщение
     """
 
-    conversation_messages = [root_message]
-    current_level = [root_message]
+    if not root_message:
+        return []
 
-    while current_level:
+    sender_id = root_message.sender_id
+    recipient_id = root_message.recipient_id
 
-        next_level = list(
-            Message.objects.filter(
-                parent_message__in=current_level
+    messages = (
+        Message.objects
+        .filter(
+            Q(
+                sender_id=sender_id,
+                recipient_id=recipient_id,
             )
-            .select_related(
-                'sender__profile',
-                'recipient__profile',
+            |
+            Q(
+                sender_id=recipient_id,
+                recipient_id=sender_id,
             )
-            .order_by('timestamp')
         )
+        .exclude(
+            is_removed=True
+        )
+        .select_related(
+            'sender__profile',
+            'recipient__profile',
+            'parent_message',
+            'parent_message__sender__profile',
+            'parent_message__recipient__profile',
+        )
+        .prefetch_related(
+            'statuses',
+            'reactions',
+        )
+        .order_by(
+            'timestamp',
+            'pk',
+        )
+    )
 
-        if not next_level:
-            break
-
-        conversation_messages.extend(next_level)
-        current_level = next_level
-
-    return conversation_messages
+    return list(messages)
 
 
 def is_message_visible_for_user(message, user):
     """
     Съобщението е видимо ако:
+
     - user е sender или recipient
     - user няма is_deleted=True status
 
     Ако status липсва -> считаме го за видимо.
     """
 
-    if user not in [
-        message.sender,
-        message.recipient,
-    ]:
+    if message.sender_id != user.pk and message.recipient_id != user.pk:
         return False
 
     status = (
@@ -97,44 +124,82 @@ def is_message_visible_for_user(message, user):
 
 def get_conversation_messages_for_user(root_message, user):
     """
-    Само съобщенията, които текущият user може да вижда.
+    Връща всички видими съобщения от разговора между
+    root_message.sender и root_message.recipient.
+
+    КРИТИЧНО:
+
+    НЕ използваме:
+
+        parent_message__in=current_level
+
+    защото parent_message е само Reply reference.
+
+    Разговорът се определя единствено от участниците.
     """
+
+    if not root_message:
+        return []
+
+    messages = (
+        Message.objects
+        .filter(
+            Q(
+                sender_id=root_message.sender_id,
+                recipient_id=root_message.recipient_id,
+            )
+            |
+            Q(
+                sender_id=root_message.recipient_id,
+                recipient_id=root_message.sender_id,
+            )
+        )
+        .exclude(
+            is_removed=True
+        )
+        .select_related(
+            'sender__profile',
+            'recipient__profile',
+            'parent_message',
+            'parent_message__sender__profile',
+            'parent_message__recipient__profile',
+        )
+        .prefetch_related(
+            'statuses',
+            'reactions',
+        )
+        .order_by(
+            'timestamp',
+            'pk',
+        )
+    )
 
     visible_messages = []
 
-    if is_message_visible_for_user(
-        root_message,
-        user,
-    ):
-        visible_messages.append(root_message)
-
-    current_level = [root_message]
-
-    while current_level:
-
-        next_level = list(
-            Message.objects.filter(
-                parent_message__in=current_level
+    user_statuses = {
+        status.message_id: status
+        for status in (
+            MessageStatus.objects
+            .filter(
+                profile=user,
+                message_id__in=[
+                    msg.pk for msg in messages
+                ],
             )
-            .select_related(
-                'sender__profile',
-                'recipient__profile',
-            )
-            .order_by('timestamp')
         )
+    }
 
-        if not next_level:
-            break
+    for msg in messages:
 
-        for msg in next_level:
+        if msg.sender_id != user.pk and msg.recipient_id != user.pk:
+            continue
 
-            if is_message_visible_for_user(
-                msg,
-                user,
-            ):
-                visible_messages.append(msg)
+        status = user_statuses.get(msg.pk)
 
-        current_level = next_level
+        if status and status.is_deleted:
+            continue
+
+        visible_messages.append(msg)
 
     return visible_messages
 
@@ -163,12 +228,15 @@ def add_message_delivery_status(messages, current_user):
         .filter(
             message_id__in=message_ids
         )
-        .select_related('profile')
+        .select_related(
+            'profile'
+        )
     )
 
     status_map = {}
 
     for status in statuses:
+
         status_map[
             (
                 status.message_id,
@@ -191,12 +259,15 @@ def add_message_delivery_status(messages, current_user):
         )
 
         if recipient_status is None:
+
             msg.delivery_status = 'sent'
 
         elif recipient_status.is_read:
+
             msg.delivery_status = 'read'
 
         else:
+
             msg.delivery_status = 'delivered'
 
     return messages
@@ -208,13 +279,17 @@ def get_admin_user():
     """
 
     return (
-        User.objects.filter(
+        User.objects
+        .filter(
             is_superuser=True
-        ).first()
+        )
+        .first()
         or
-        User.objects.filter(
+        User.objects
+        .filter(
             is_staff=True
-        ).first()
+        )
+        .first()
     )
 
 
@@ -273,9 +348,12 @@ def get_reaction_reactors(message, reaction):
         if profile:
 
             try:
+
                 if profile.profile_photo:
                     photo = profile.profile_photo.url
+
             except Exception:
+
                 photo = ''
 
             username = (
@@ -309,6 +387,7 @@ MAX_VIDEO_SIZE = 100 * 1024 * 1024
 def validate_message_attachments(request):
     """
     Backend validation за message attachments.
+
     Позволява максимум един attachment.
     """
 
@@ -316,6 +395,7 @@ def validate_message_attachments(request):
     video_file = request.FILES.get('video')
 
     if image_file and video_file:
+
         raise ValidationError(
             "Please attach either an image or a video, not both."
         )
@@ -323,11 +403,22 @@ def validate_message_attachments(request):
     if image_file:
 
         if image_file.size > MAX_IMAGE_SIZE:
+
             raise ValidationError(
                 "Image is too large. Maximum size is 10 MB."
             )
 
-        if not image_file.content_type.startswith('image/'):
+        content_type = (
+            getattr(
+                image_file,
+                'content_type',
+                ''
+            )
+            or ''
+        )
+
+        if not content_type.startswith('image/'):
+
             raise ValidationError(
                 "Invalid image file."
             )
@@ -335,11 +426,22 @@ def validate_message_attachments(request):
     if video_file:
 
         if video_file.size > MAX_VIDEO_SIZE:
+
             raise ValidationError(
                 "Video is too large. Maximum size is 100 MB."
             )
 
-        if not video_file.content_type.startswith('video/'):
+        content_type = (
+            getattr(
+                video_file,
+                'content_type',
+                ''
+            )
+            or ''
+        )
+
+        if not content_type.startswith('video/'):
+
             raise ValidationError(
                 "Invalid video file."
             )
@@ -371,6 +473,7 @@ def send_system_message(recipient, title, body):
         title=title,
         body=markdown.markdown(body),
         is_system=True,
+        parent_message=None,
     )
 
     MessageStatus.objects.create(
@@ -415,6 +518,7 @@ def send_message(request, pk=None):
         )
 
         if not product:
+
             product = (
                 BuyerItems.objects
                 .filter(
@@ -428,15 +532,23 @@ def send_message(request, pk=None):
 
     if recipient:
 
-        is_blocked = BlockedUser.objects.filter(
-            blocker=request.user,
-            blocked=recipient,
-        ).exists()
+        is_blocked = (
+            BlockedUser.objects
+            .filter(
+                blocker=request.user,
+                blocked=recipient,
+            )
+            .exists()
+        )
 
-        is_blocked_by_other = BlockedUser.objects.filter(
-            blocker=recipient,
-            blocked=request.user,
-        ).exists()
+        is_blocked_by_other = (
+            BlockedUser.objects
+            .filter(
+                blocker=recipient,
+                blocked=request.user,
+            )
+            .exists()
+        )
 
     if request.method == 'POST':
 
@@ -502,15 +614,11 @@ def send_message(request, pk=None):
 
                 django_messages.error(
                     request,
-                    exc.message,
+                    str(exc),
                 )
 
                 return redirect(
-                    'read-message',
-                    pk=(
-                        request.POST.get('reply_to')
-                        or recipient.pk
-                    ),
+                    'message-inbox'
                 )
 
             # =================================================
@@ -549,16 +657,31 @@ def send_message(request, pk=None):
                 or ''
             ).strip()
 
-            # IMPORTANT:
-            # Ако няма reply_to -> parent_message остава NULL.
-            # НЕ reply-ваме автоматично последното съобщение.
+            # =================================================
+            # CRITICAL RULE
+            # =================================================
+            #
+            # НЯМА reply_to:
+            #
+            #     parent_message = None
+            #
+            # ИМА reply_to:
+            #
+            #     parent_message = избраното съобщение
+            #
+            # НИКОГА не използваме последното съобщение
+            # като автоматичен parent.
+            # =================================================
+
+            message.parent_message = None
 
             if reply_to_id.isdigit():
 
                 parent_message = (
                     Message.objects
                     .filter(
-                        pk=int(reply_to_id)
+                        pk=int(reply_to_id),
+                        is_removed=False,
                     )
                     .first()
                 )
@@ -603,31 +726,33 @@ def send_message(request, pk=None):
             # SAVE
             # =================================================
 
-            message.save()
+            with transaction.atomic():
 
-            # =================================================
-            # RECIPIENT STATUS
-            # =================================================
+                message.save()
 
-            MessageStatus.objects.create(
-                message=message,
-                profile=recipient,
-            )
+                # ---------------------------------------------
+                # RECIPIENT STATUS
+                # ---------------------------------------------
 
-            # =================================================
-            # SENDER STATUS
-            # =================================================
-
-            if recipient != request.user:
-
-                sender_status = (
-                    MessageStatus.objects.create(
-                        message=message,
-                        profile=request.user,
-                    )
+                MessageStatus.objects.create(
+                    message=message,
+                    profile=recipient,
                 )
 
-                sender_status.mark_as_read()
+                # ---------------------------------------------
+                # SENDER STATUS
+                # ---------------------------------------------
+
+                if recipient != request.user:
+
+                    sender_status = (
+                        MessageStatus.objects.create(
+                            message=message,
+                            profile=request.user,
+                        )
+                    )
+
+                    sender_status.mark_as_read()
 
             # =================================================
             # RESPONSE
@@ -677,10 +802,11 @@ def read_message(request, pk):
     # AUTHORIZATION
     # ========================================================
 
-    if current_user not in [
-        message.sender,
-        message.recipient,
-    ]:
+    if (
+        message.sender_id != current_user.pk
+        and
+        message.recipient_id != current_user.pk
+    ):
 
         return HttpResponse(
             "Not authorized",
@@ -688,29 +814,53 @@ def read_message(request, pk):
         )
 
     # ========================================================
-    # ROOT MESSAGE
+    # CONVERSATION
     # ========================================================
-
-    root_message = get_root(
-        message
-    )
+    #
+    # НЕ използваме get_root() за изграждане на разговора.
+    #
+    # Всеки message в разговора е равноправно съобщение.
+    # parent_message е само Reply reference.
+    # ========================================================
 
     conversation_messages = (
         get_conversation_messages_for_user(
-            root_message,
+            message,
             current_user,
         )
     )
+
+    if not conversation_messages:
+
+        conversation_messages = [
+            message
+        ]
+
+    # ========================================================
+    # ROOT MESSAGE
+    # ========================================================
+    #
+    # Root тук е само първото съобщение хронологично.
+    # Това НЕ означава parent_message.
+    # ========================================================
+
+    root_message = conversation_messages[0]
 
     # ========================================================
     # MARK AS READ
     # ========================================================
 
-    for status in MessageStatus.objects.filter(
-        message__in=conversation_messages,
-        profile=current_user,
-        is_deleted=False,
-    ):
+    unread_statuses = (
+        MessageStatus.objects
+        .filter(
+            message__in=conversation_messages,
+            profile=current_user,
+            is_deleted=False,
+            is_read=False,
+        )
+    )
+
+    for status in unread_statuses:
 
         status.mark_as_read()
 
@@ -718,13 +868,13 @@ def read_message(request, pk):
     # OTHER USER
     # ========================================================
 
-    if root_message.sender == current_user:
+    if message.sender_id == current_user.pk:
 
-        other_user = root_message.recipient
+        other_user = message.recipient
 
     else:
 
-        other_user = root_message.sender
+        other_user = message.sender
 
     # ========================================================
     # BLOCK STATUS
@@ -735,15 +885,23 @@ def read_message(request, pk):
 
     if other_user:
 
-        is_blocked = BlockedUser.objects.filter(
-            blocker=current_user,
-            blocked=other_user,
-        ).exists()
+        is_blocked = (
+            BlockedUser.objects
+            .filter(
+                blocker=current_user,
+                blocked=other_user,
+            )
+            .exists()
+        )
 
-        is_blocked_by_other = BlockedUser.objects.filter(
-            blocker=other_user,
-            blocked=current_user,
-        ).exists()
+        is_blocked_by_other = (
+            BlockedUser.objects
+            .filter(
+                blocker=other_user,
+                blocked=current_user,
+            )
+            .exists()
+        )
 
     # ========================================================
     # SYSTEM MESSAGE
@@ -751,14 +909,14 @@ def read_message(request, pk):
 
     is_system = bool(
         getattr(
-            root_message,
+            message,
             'is_system',
             False,
         )
     )
 
     # ========================================================
-    # REPLY
+    # REPLY / SEND
     # ========================================================
 
     if request.method == 'POST' and not is_system:
@@ -784,7 +942,7 @@ def read_message(request, pk):
 
                 django_messages.error(
                     request,
-                    exc.message,
+                    str(exc),
                 )
 
                 return redirect(
@@ -797,9 +955,9 @@ def read_message(request, pk):
             # =================================================
 
             recipient = (
-                root_message.recipient
-                if root_message.sender == current_user
-                else root_message.sender
+                message.recipient
+                if message.sender_id == current_user.pk
+                else message.sender
             )
 
             if not recipient:
@@ -817,10 +975,14 @@ def read_message(request, pk):
             # BLOCKED BY OTHER
             # =================================================
 
-            if BlockedUser.objects.filter(
-                blocker=recipient,
-                blocked=current_user,
-            ).exists():
+            if (
+                BlockedUser.objects
+                .filter(
+                    blocker=recipient,
+                    blocked=current_user,
+                )
+                .exists()
+            ):
 
                 django_messages.error(
                     request,
@@ -836,10 +998,14 @@ def read_message(request, pk):
             # CURRENT USER BLOCKED OTHER
             # =================================================
 
-            if BlockedUser.objects.filter(
-                blocker=current_user,
-                blocked=recipient,
-            ).exists():
+            if (
+                BlockedUser.objects
+                .filter(
+                    blocker=current_user,
+                    blocked=recipient,
+                )
+                .exists()
+            ):
 
                 django_messages.error(
                     request,
@@ -873,7 +1039,8 @@ def read_message(request, pk):
                             'recipient',
                         )
                         .get(
-                            pk=int(reply_to_id)
+                            pk=int(reply_to_id),
+                            is_removed=False,
                         )
                     )
 
@@ -888,6 +1055,11 @@ def read_message(request, pk):
             # =================================================
             # SECURITY CHECK FOR REPLY TARGET
             # =================================================
+            #
+            # Reply target трябва да е точно от този разговор.
+            #
+            # НЕ използваме get_root().
+            # =================================================
 
             if reply_to is not None:
 
@@ -896,31 +1068,14 @@ def read_message(request, pk):
                     recipient.pk,
                 }
 
-                if {
+                reply_participants = {
                     reply_to.sender_id,
                     reply_to.recipient_id,
-                } != valid_participants:
+                }
+
+                if reply_participants != valid_participants:
 
                     reply_to = None
-
-                else:
-
-                    reply_root = get_root(
-                        reply_to
-                    )
-
-                    if reply_root.pk != root_message.pk:
-
-                        reply_to = None
-
-            # =================================================
-            # IMPORTANT
-            # =================================================
-            # НЕ правим fallback към последното съобщение.
-            #
-            # Ако user НЕ е натиснал Reply:
-            # parent_message остава NULL.
-            # =================================================
 
             # =================================================
             # CREATE MESSAGE
@@ -934,17 +1089,27 @@ def read_message(request, pk):
             reply.recipient = recipient
 
             reply.title = (
-                root_message.title
+                message.title
                 or "Direct conversation"
             )
 
-            # Само ако потребителят действително е
-            # избрал Reply, задаваме parent_message.
+            # =================================================
+            # CRITICAL REPLY RULE
+            # =================================================
+            #
+            # Само ако request.POST съдържа валиден reply_to,
+            # съобщението става Reply.
+            #
+            # При нормално изпращане:
+            #
+            #     parent_message = None
+            #
+            # НЯМА fallback към последното съобщение.
+            # =================================================
+
             if reply_to is not None:
 
-                reply.parent_message = (
-                    reply_to
-                )
+                reply.parent_message = reply_to
 
             else:
 
@@ -959,52 +1124,6 @@ def read_message(request, pk):
                 reply.body = markdown.markdown(
                     reply.body
                 )
-
-            # =================================================
-            # VIDEO / CLOUDINARY
-            # =================================================
-
-            video_file = request.FILES.get(
-                'video'
-            )
-
-            if video_file:
-
-                try:
-
-                    import cloudinary.uploader
-
-                    result = (
-                        cloudinary.uploader.upload(
-                            video_file,
-                            resource_type='video',
-                            folder='message_videos',
-                        )
-                    )
-
-                    public_id = result.get(
-                        'public_id'
-                    )
-
-                    if not public_id:
-
-                        raise ValueError(
-                            "Cloudinary did not return a public_id."
-                        )
-
-                    reply.video = public_id
-
-                except Exception as exc:
-
-                    django_messages.error(
-                        request,
-                        f"Video upload failed: {exc}",
-                    )
-
-                    return redirect(
-                        'read-message',
-                        pk=pk,
-                    )
 
             # =================================================
             # SAVE
@@ -1061,7 +1180,7 @@ def read_message(request, pk):
     last_message = (
         conversation_messages[-1]
         if conversation_messages
-        else root_message
+        else message
     )
 
     # ========================================================
@@ -1138,22 +1257,29 @@ def delete_message(request, pk):
 
     user = request.user
 
-    if user not in [
-        message.sender,
-        message.recipient,
-    ]:
+    if (
+        message.sender_id != user.pk
+        and
+        message.recipient_id != user.pk
+    ):
 
         return HttpResponse(
             "Not allowed",
             status=403,
         )
 
-    root = get_root(
-        message
-    )
+    # ========================================================
+    # IMPORTANT
+    # ========================================================
+    #
+    # Не използваме get_root() + parent tree.
+    #
+    # Целият разговор се намира по двамата участници.
+    # ========================================================
 
-    conversation = get_conversation_messages(
-        root
+    conversation = get_conversation_messages_for_user(
+        message,
+        user,
     )
 
     if request.method == 'POST':
@@ -1194,7 +1320,9 @@ def delete_message(request, pk):
         'messages/message-delete.html',
         {
             'message': message,
-            'root_message': root,
+            'root_message': conversation[0]
+            if conversation
+            else message,
             'messages_count': len(conversation),
             'filter_type': filter_type,
         },
@@ -1223,10 +1351,11 @@ def react_message(request, pk, reaction):
         pk=pk,
     )
 
-    if request.user not in [
-        msg.sender,
-        msg.recipient,
-    ]:
+    if (
+        msg.sender_id != request.user.pk
+        and
+        msg.recipient_id != request.user.pk
+    ):
 
         return JsonResponse(
             {
@@ -1327,10 +1456,11 @@ def report_message(request, pk):
         pk=pk,
     )
 
-    if request.user not in [
-        message.sender,
-        message.recipient,
-    ]:
+    if (
+        message.sender_id != request.user.pk
+        and
+        message.recipient_id != request.user.pk
+    ):
 
         return HttpResponse(
             "Not authorized",
@@ -1353,7 +1483,8 @@ def report_message(request, pk):
     )
 
     report, created = (
-        MessageReport.objects.get_or_create(
+        MessageReport.objects
+        .get_or_create(
             message=message,
             reported_by=request.user,
             defaults={
@@ -1423,7 +1554,8 @@ def block_user(request, pk):
         )
 
     obj, created = (
-        BlockedUser.objects.get_or_create(
+        BlockedUser.objects
+        .get_or_create(
             blocker=request.user,
             blocked=user_to_block,
         )
@@ -1468,10 +1600,12 @@ def unblock_user(request, pk):
     )
 
     deleted, _ = (
-        BlockedUser.objects.filter(
+        BlockedUser.objects
+        .filter(
             blocker=request.user,
             blocked=user_to_unblock,
-        ).delete()
+        )
+        .delete()
     )
 
     if deleted:
@@ -1535,20 +1669,6 @@ def message_inbox(request):
 
             if not all_msgs:
 
-                raw = get_conversation_messages(
-                    root
-                )
-
-                all_msgs = [
-                    msg
-                    for msg in raw
-                    if user in [
-                        msg.sender,
-                        msg.recipient,
-                    ]
-                ]
-
-            if not all_msgs:
                 continue
 
             last_msg = all_msgs[-1]
