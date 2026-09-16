@@ -7,10 +7,10 @@ urlpatterns = [
     path('unblock/<int:pk>/', views.unblock_user, name='unblock-user'),
     path('react/<int:pk>/<str:reaction>/', views.react_message, name='react-message'),
     path('delete-one/<int:pk>/', views.delete_one_message, name='delete-one-message'),
-    path('edit/<int:pk>/', views.edit_message, name='edit-message',),
     path('<int:pk>/', include([
         path('send/', views.send_message, name='send-message'),
         path('read/', views.read_message, name='read-message'),
+        path('edit/', views.edit_message, name='edit-message', ),
         path('delete/', views.delete_message, name='delete-message'),
         path('report/', views.report_message, name='report-message'),
     ])),

@@ -1,41 +1,54 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-
     /* =========================================================
-       EMOJI
+       ELEMENTS
     ========================================================== */
 
-    document.querySelectorAll('.emoji-btn').forEach(function (btn) {
+    const replyForm =
+        document.getElementById('reply-form');
 
-        btn.addEventListener('click', function (e) {
+    const messageBodyField =
+        replyForm
+            ? replyForm.querySelector(
+                'textarea[name="body"], input[name="body"]'
+            )
+            : null;
 
-            e.preventDefault();
-            e.stopPropagation();
+    const imageInput =
+        document.getElementById('id_image');
 
-            const input =
-                document.getElementById('message-body-input') ||
-                document.querySelector('textarea[name="body"]') ||
-                document.querySelector('input[name="body"]');
+    const videoInput =
+        document.getElementById('id_video');
 
-            if (!input) {
-                return;
-            }
+    const imagePreview =
+        document.getElementById('image-preview');
 
-            input.value += btn.dataset.emoji || '';
+    const videoPreview =
+        document.getElementById('video-preview');
 
-            input.focus();
+    const imagePreviewWrap =
+        document.getElementById('image-preview-wrap');
 
-        });
+    const videoPreviewWrap =
+        document.getElementById('video-preview-wrap');
 
-    });
+    const attachImageBtn =
+        document.getElementById('attach-image-btn');
 
+    const attachVideoBtn =
+        document.getElementById('attach-video-btn');
 
-    /* =========================================================
-       CHAT SCROLL
-    ========================================================== */
+    const removeMediaBtn =
+        document.getElementById('remove-media-btn');
 
     const chatWindow =
         document.getElementById('chat-window');
+
+    const chatMessages =
+        document.getElementById('chat-messages');
+
+    const dropOverlay =
+        document.getElementById('chat-drop-overlay');
 
     const scrollTopBtn =
         document.getElementById('scroll-top-btn');
@@ -43,17 +56,192 @@ document.addEventListener('DOMContentLoaded', function () {
     const scrollBottomBtn =
         document.getElementById('scroll-bottom-btn');
 
+    const uploadProgressWrap =
+        document.getElementById('upload-progress-wrap');
+
+    const uploadProgressBar =
+        document.getElementById('upload-progress-bar');
+
+    const uploadProgressText =
+        document.getElementById('upload-progress-text');
+
+    const uploadProgressPercent =
+        document.getElementById('upload-progress-percent');
+
+    const editingBar =
+        document.getElementById('editing-message-bar');
+
+    const editingMessageId =
+        document.getElementById('editing-message-id');
+
+    const editingPreview =
+        document.getElementById('editing-message-preview');
+
+    const cancelEditBtn =
+        document.getElementById('cancel-edit-btn');
+
+    const replyBar =
+        document.getElementById('replying-message-bar');
+
+    const replyPreview =
+        document.getElementById('replying-message-preview');
+
+    const cancelReplyBtn =
+        document.getElementById('cancel-reply-btn');
+
+    const replyToInput =
+        document.getElementById('reply-to');
+
+    const submitBtn =
+        document.getElementById('message-submit-btn');
+
+    const submitText =
+        document.getElementById('message-submit-text');
+
+    const submitIcon =
+        document.getElementById('message-submit-icon');
+
+
+    /* =========================================================
+       CONSTANTS
+    ========================================================== */
+
+    const MAX_IMAGE_SIZE =
+        10 * 1024 * 1024;
+
+    const MAX_VIDEO_SIZE =
+        100 * 1024 * 1024;
 
     const SCROLL_EPSILON = 1;
 
-    /*
-     * След колко милисекунди без движение
-     * стрелките да се скрият.
-     */
     const SCROLL_BUTTON_HIDE_DELAY = 2000;
 
-    let scrollButtonHideTimer = null;
+    const normalFormAction =
+        replyForm
+            ? (
+                replyForm.getAttribute('action')
+                || window.location.href
+            )
+            : window.location.href;
 
+
+    /* =========================================================
+       STATE
+    ========================================================== */
+
+    let imageObjectUrl = null;
+    let videoObjectUrl = null;
+    let scrollButtonHideTimer = null;
+    let dragCounter = 0;
+
+
+    /* =========================================================
+       CSRF
+    ========================================================== */
+
+    function getCsrfToken() {
+
+        const csrf =
+            replyForm
+                ? replyForm.querySelector(
+                    '[name="csrfmiddlewaretoken"]'
+                )
+                : document.querySelector(
+                    '[name="csrfmiddlewaretoken"]'
+                );
+
+        return csrf
+            ? csrf.value
+            : '';
+
+    }
+
+
+    /* =========================================================
+       EMOJI
+    ========================================================== */
+
+    document.addEventListener(
+        'click',
+        function (event) {
+
+            const emojiButton =
+                event.target.closest('.emoji-btn');
+
+            if (!emojiButton || !messageBodyField) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const emoji =
+                emojiButton.dataset.emoji || '';
+
+            if (!emoji) {
+                return;
+            }
+
+            const start =
+                messageBodyField.selectionStart ??
+                messageBodyField.value.length;
+
+            const end =
+                messageBodyField.selectionEnd ??
+                messageBodyField.value.length;
+
+            const currentValue =
+                messageBodyField.value;
+
+            messageBodyField.value =
+                currentValue.substring(0, start)
+                + emoji
+                + currentValue.substring(end);
+
+            const newPosition =
+                start + emoji.length;
+
+            messageBodyField.focus();
+
+            try {
+
+                messageBodyField.setSelectionRange(
+                    newPosition,
+                    newPosition
+                );
+
+            } catch (error) {
+                // Ignore.
+            }
+
+            const toggle =
+                document.getElementById(
+                    'emoji-toggle-btn'
+                );
+
+            if (
+                toggle &&
+                window.bootstrap
+            ) {
+
+                const instance =
+                    bootstrap.Dropdown.getInstance(
+                        toggle
+                    );
+
+                if (instance) {
+                    instance.hide();
+                }
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       CHAT SCROLL
+    ========================================================== */
 
     function getMaxScrollTop() {
 
@@ -70,9 +258,47 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /* =========================================================
-       SHOW SCROLL BUTTONS
-    ========================================================== */
+    function updateScrollButtons() {
+
+        if (!chatWindow) {
+            return;
+        }
+
+        const currentScrollTop =
+            chatWindow.scrollTop;
+
+        const maxScrollTop =
+            getMaxScrollTop();
+
+        const atTop =
+            currentScrollTop <=
+            SCROLL_EPSILON;
+
+        const atBottom =
+            currentScrollTop >=
+            maxScrollTop -
+            SCROLL_EPSILON;
+
+        if (scrollTopBtn) {
+
+            scrollTopBtn.classList.toggle(
+                'd-none',
+                atTop
+            );
+
+        }
+
+        if (scrollBottomBtn) {
+
+            scrollBottomBtn.classList.toggle(
+                'd-none',
+                atBottom
+            );
+
+        }
+
+    }
+
 
     function showScrollButtons() {
 
@@ -95,10 +321,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /* =========================================================
-       HIDE SCROLL BUTTONS AFTER INACTIVITY
-    ========================================================== */
-
     function scheduleScrollButtonHide() {
 
         if (scrollButtonHideTimer) {
@@ -108,7 +330,6 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
         }
-
 
         scrollButtonHideTimer =
             setTimeout(
@@ -121,7 +342,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         );
 
                     }
-
 
                     if (scrollBottomBtn) {
 
@@ -138,70 +358,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /* =========================================================
-       UPDATE SCROLL BUTTON STATE
-    ========================================================== */
-
-    function updateScrollButtons() {
-
-        if (!chatWindow) {
-            return;
-        }
-
-
-        const currentScrollTop =
-            chatWindow.scrollTop;
-
-
-        const maxScrollTop =
-            getMaxScrollTop();
-
-
-        /*
-         * UP
-         */
-
-        const atTop =
-            currentScrollTop <=
-            SCROLL_EPSILON;
-
-
-        /*
-         * DOWN
-         */
-
-        const atBottom =
-            currentScrollTop >=
-            maxScrollTop -
-            SCROLL_EPSILON;
-
-
-        if (scrollTopBtn) {
-
-            scrollTopBtn.classList.toggle(
-                'd-none',
-                atTop
-            );
-
-        }
-
-
-        if (scrollBottomBtn) {
-
-            scrollBottomBtn.classList.toggle(
-                'd-none',
-                atBottom
-            );
-
-        }
-
-    }
-
-
-    /* =========================================================
-       SCROLL TOP
-    ========================================================== */
-
     function scrollToTop() {
 
         if (!chatWindow) {
@@ -215,10 +371,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     }
 
-
-    /* =========================================================
-       SCROLL BOTTOM
-    ========================================================== */
 
     function scrollToBottom() {
 
@@ -234,14 +386,39 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /* =========================================================
-       SCROLL EVENTS
-    ========================================================== */
+    function initializeChatPosition() {
+
+        if (!chatWindow) {
+            return;
+        }
+
+        requestAnimationFrame(
+            function () {
+
+                scrollToBottom();
+
+                updateScrollButtons();
+
+                requestAnimationFrame(
+                    function () {
+
+                        chatWindow.scrollTop =
+                            chatWindow.scrollHeight;
+
+                        updateScrollButtons();
+
+                    }
+                );
+
+            }
+        );
+
+    }
+
 
     if (chatWindow) {
 
         updateScrollButtons();
-
 
         chatWindow.addEventListener(
             'scroll',
@@ -259,21 +436,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         );
 
-
         window.addEventListener(
             'resize',
-            function () {
-
-                updateScrollButtons();
-
-            }
+            updateScrollButtons
         );
-
-
-        /*
-         * Images/videos могат да променят
-         * височината на conversation-а.
-         */
 
         if ('ResizeObserver' in window) {
 
@@ -286,22 +452,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 );
 
-
             resizeObserver.observe(
                 chatWindow
             );
 
-
-            const messages =
-                document.getElementById(
-                    'chat-messages'
-                );
-
-
-            if (messages) {
+            if (chatMessages) {
 
                 resizeObserver.observe(
-                    messages
+                    chatMessages
                 );
 
             }
@@ -311,17 +469,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /* =========================================================
-       UP BUTTON
-    ========================================================== */
-
     if (scrollTopBtn) {
 
         scrollTopBtn.addEventListener(
             'click',
-            function (e) {
+            function (event) {
 
-                e.preventDefault();
+                event.preventDefault();
 
                 scrollToTop();
 
@@ -331,74 +485,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /* =========================================================
-       DOWN BUTTON
-    ========================================================== */
-
     if (scrollBottomBtn) {
 
         scrollBottomBtn.addEventListener(
             'click',
-            function (e) {
+            function (event) {
 
-                e.preventDefault();
+                event.preventDefault();
 
                 scrollToBottom();
-
-            }
-        );
-
-    }
-
-
-    /* =========================================================
-       INITIAL CHAT POSITION
-    ========================================================== */
-
-    function initializeChatPosition() {
-
-        if (!chatWindow) {
-            return;
-        }
-
-
-        requestAnimationFrame(
-            function () {
-
-                const maxScrollTop =
-                    Math.max(
-                        0,
-                        chatWindow.scrollHeight -
-                        chatWindow.clientHeight
-                    );
-
-
-                chatWindow.scrollTop =
-                    maxScrollTop;
-
-
-                updateScrollButtons();
-
-
-                requestAnimationFrame(
-                    function () {
-
-                        const finalMaxScrollTop =
-                            Math.max(
-                                0,
-                                chatWindow.scrollHeight -
-                                chatWindow.clientHeight
-                            );
-
-
-                        chatWindow.scrollTop =
-                            finalMaxScrollTop;
-
-
-                        updateScrollButtons();
-
-                    }
-                );
 
             }
         );
@@ -424,97 +519,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       MEDIA ELEMENTS
-    ========================================================== */
-
-    const imageInput =
-        document.getElementById('id_image');
-
-    const videoInput =
-        document.getElementById('id_video');
-
-    const imagePreview =
-        document.getElementById('image-preview');
-
-    const videoPreview =
-        document.getElementById('video-preview');
-
-    const imagePreviewWrapper =
-        document.getElementById('image-preview-wrap');
-
-    const videoPreviewWrapper =
-        document.getElementById('video-preview-wrap');
-
-    const attachImageBtn =
-        document.getElementById('attach-image-btn');
-
-    const attachVideoBtn =
-        document.getElementById('attach-video-btn');
-
-    const removeMediaBtn =
-        document.getElementById('remove-media-btn');
-
-    const replyForm =
-        document.getElementById('reply-form');
-
-    const dropOverlay =
-        document.getElementById('chat-drop-overlay');
-
-    const uploadProgressWrap =
-        document.getElementById('upload-progress-wrap');
-
-    const uploadProgressBar =
-        document.getElementById('upload-progress-bar');
-
-    const uploadProgressText =
-        document.getElementById('upload-progress-text');
-
-    const uploadProgressPercent =
-        document.getElementById('upload-progress-percent');
-
-
-    /* =========================================================
-       FILE SIZE LIMITS
-    ========================================================== */
-
-    const MAX_IMAGE_SIZE =
-        10 * 1024 * 1024;
-
-    const MAX_VIDEO_SIZE =
-        100 * 1024 * 1024;
-
-
-    let imageObjectUrl = null;
-    let videoObjectUrl = null;
-
-
-    /* =========================================================
-       FORMAT FILE SIZE
+       FILE SIZE
     ========================================================== */
 
     function formatFileSize(bytes) {
 
         if (bytes < 1024) {
-
             return `${bytes} B`;
-
         }
-
 
         if (bytes < 1024 * 1024) {
 
-            return `${(bytes / 1024).toFixed(1)} KB`;
+            return `${(
+                bytes / 1024
+            ).toFixed(1)} KB`;
 
         }
 
-
-        return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+        return `${(
+            bytes / 1024 / 1024
+        ).toFixed(1)} MB`;
 
     }
 
 
     /* =========================================================
-       IMAGE VALIDATION
+       VALIDATE IMAGE
     ========================================================== */
 
     function validateImageFile(file) {
@@ -522,7 +552,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!file) {
             return false;
         }
-
 
         if (!file.type.startsWith('image/')) {
 
@@ -533,7 +562,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
 
         }
-
 
         if (file.size > MAX_IMAGE_SIZE) {
 
@@ -547,14 +575,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
-
         return true;
 
     }
 
 
     /* =========================================================
-       VIDEO VALIDATION
+       VALIDATE VIDEO
     ========================================================== */
 
     function validateVideoFile(file) {
@@ -562,7 +589,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!file) {
             return false;
         }
-
 
         if (!file.type.startsWith('video/')) {
 
@@ -573,7 +599,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
 
         }
-
 
         if (file.size > MAX_VIDEO_SIZE) {
 
@@ -587,44 +612,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
-
         return true;
-
-    }
-
-
-    /* =========================================================
-       FILE PICKERS
-    ========================================================== */
-
-    if (attachImageBtn && imageInput) {
-
-        attachImageBtn.addEventListener(
-            'click',
-            function (e) {
-
-                e.preventDefault();
-
-                imageInput.click();
-
-            }
-        );
-
-    }
-
-
-    if (attachVideoBtn && videoInput) {
-
-        attachVideoBtn.addEventListener(
-            'click',
-            function (e) {
-
-                e.preventDefault();
-
-                videoInput.click();
-
-            }
-        );
 
     }
 
@@ -639,11 +627,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-
         URL.revokeObjectURL(
             imageObjectUrl
         );
-
 
         imageObjectUrl = null;
 
@@ -656,11 +642,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-
         URL.revokeObjectURL(
             videoObjectUrl
         );
-
 
         videoObjectUrl = null;
 
@@ -673,23 +657,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function hideMediaPreviews() {
 
-        if (imagePreviewWrapper) {
+        if (imagePreviewWrap) {
 
-            imagePreviewWrapper.classList.add(
+            imagePreviewWrap.classList.add(
                 'd-none'
             );
 
         }
 
+        if (videoPreviewWrap) {
 
-        if (videoPreviewWrapper) {
-
-            videoPreviewWrapper.classList.add(
+            videoPreviewWrap.classList.add(
                 'd-none'
             );
 
         }
-
 
         if (removeMediaBtn) {
 
@@ -703,7 +685,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       HANDLE IMAGE FILE
+       HANDLE IMAGE
     ========================================================== */
 
     function handleImageFile(file) {
@@ -718,67 +700,49 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
-
-        /*
-         * Remove video.
-         */
-
         if (videoInput) {
-
             videoInput.value = '';
-
         }
 
-
         revokeVideoUrl();
-
 
         if (videoPreview) {
 
             videoPreview.pause();
 
-            videoPreview.removeAttribute(
-                'src'
-            );
+            videoPreview.removeAttribute('src');
 
             videoPreview.load();
 
         }
 
-
         if (!imagePreview) {
             return;
         }
 
-
         revokeImageUrl();
-
 
         imageObjectUrl =
             URL.createObjectURL(file);
 
-
         imagePreview.src =
             imageObjectUrl;
 
+        if (imagePreviewWrap) {
 
-        if (imagePreviewWrapper) {
-
-            imagePreviewWrapper.classList.remove(
+            imagePreviewWrap.classList.remove(
                 'd-none'
             );
 
         }
 
+        if (videoPreviewWrap) {
 
-        if (videoPreviewWrapper) {
-
-            videoPreviewWrapper.classList.add(
+            videoPreviewWrap.classList.add(
                 'd-none'
             );
 
         }
-
 
         if (removeMediaBtn) {
 
@@ -792,7 +756,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       HANDLE VIDEO FILE
+       HANDLE VIDEO
     ========================================================== */
 
     function handleVideoFile(file) {
@@ -807,20 +771,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
-
-        /*
-         * Remove image.
-         */
-
         if (imageInput) {
-
             imageInput.value = '';
-
         }
 
-
         revokeImageUrl();
-
 
         if (imagePreview) {
 
@@ -830,43 +785,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
-
         if (!videoPreview) {
             return;
         }
 
-
         revokeVideoUrl();
-
 
         videoObjectUrl =
             URL.createObjectURL(file);
 
-
         videoPreview.src =
             videoObjectUrl;
 
-
         videoPreview.load();
 
+        if (videoPreviewWrap) {
 
-        if (videoPreviewWrapper) {
-
-            videoPreviewWrapper.classList.remove(
+            videoPreviewWrap.classList.remove(
                 'd-none'
             );
 
         }
 
+        if (imagePreviewWrap) {
 
-        if (imagePreviewWrapper) {
-
-            imagePreviewWrapper.classList.add(
+            imagePreviewWrap.classList.add(
                 'd-none'
             );
 
         }
-
 
         if (removeMediaBtn) {
 
@@ -880,7 +827,43 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       IMAGE SELECT
+       FILE PICKERS
+    ========================================================== */
+
+    if (attachImageBtn && imageInput) {
+
+        attachImageBtn.addEventListener(
+            'click',
+            function (event) {
+
+                event.preventDefault();
+
+                imageInput.click();
+
+            }
+        );
+
+    }
+
+
+    if (attachVideoBtn && videoInput) {
+
+        attachVideoBtn.addEventListener(
+            'click',
+            function (event) {
+
+                event.preventDefault();
+
+                videoInput.click();
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       IMAGE CHANGE
     ========================================================== */
 
     if (imageInput) {
@@ -893,11 +876,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     imageInput.files &&
                     imageInput.files[0];
 
-
                 if (!file) {
                     return;
                 }
-
 
                 handleImageFile(file);
 
@@ -908,7 +889,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       VIDEO SELECT
+       VIDEO CHANGE
     ========================================================== */
 
     if (videoInput) {
@@ -921,13 +902,62 @@ document.addEventListener('DOMContentLoaded', function () {
                     videoInput.files &&
                     videoInput.files[0];
 
-
                 if (!file) {
                     return;
                 }
 
-
                 handleVideoFile(file);
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       REMOVE MEDIA
+    ========================================================== */
+
+    if (removeMediaBtn) {
+
+        removeMediaBtn.addEventListener(
+            'click',
+            function (event) {
+
+                event.preventDefault();
+
+                if (imageInput) {
+                    imageInput.value = '';
+                }
+
+                if (videoInput) {
+                    videoInput.value = '';
+                }
+
+                revokeImageUrl();
+                revokeVideoUrl();
+
+                if (imagePreview) {
+
+                    imagePreview.removeAttribute(
+                        'src'
+                    );
+
+                }
+
+                if (videoPreview) {
+
+                    videoPreview.pause();
+
+                    videoPreview.removeAttribute(
+                        'src'
+                    );
+
+                    videoPreview.load();
+
+                }
+
+                hideMediaPreviews();
 
             }
         );
@@ -939,20 +969,15 @@ document.addEventListener('DOMContentLoaded', function () {
        DRAG & DROP
     ========================================================== */
 
-    let dragCounter = 0;
-
-
     function showDropOverlay() {
 
         if (!dropOverlay) {
             return;
         }
 
+        dropOverlay.classList.add('active');
 
-        dropOverlay.classList.add(
-            'active'
-        );
-
+        dropOverlay.classList.add('show');
 
         dropOverlay.setAttribute(
             'aria-hidden',
@@ -968,11 +993,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        dropOverlay.classList.remove('active');
 
-        dropOverlay.classList.remove(
-            'active'
-        );
-
+        dropOverlay.classList.remove('show');
 
         dropOverlay.setAttribute(
             'aria-hidden',
@@ -982,14 +1005,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    if (chatWindow && dropOverlay) {
+    if (chatWindow) {
 
         chatWindow.addEventListener(
             'dragenter',
-            function (e) {
+            function (event) {
 
-                e.preventDefault();
-                e.stopPropagation();
+                event.preventDefault();
+                event.stopPropagation();
 
                 dragCounter++;
 
@@ -1001,19 +1024,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         chatWindow.addEventListener(
             'dragover',
-            function (e) {
+            function (event) {
 
-                e.preventDefault();
-                e.stopPropagation();
+                event.preventDefault();
+                event.stopPropagation();
 
+                if (event.dataTransfer) {
 
-                if (e.dataTransfer) {
-
-                    e.dataTransfer.dropEffect =
+                    event.dataTransfer.dropEffect =
                         'copy';
 
                 }
-
 
                 showDropOverlay();
 
@@ -1023,13 +1044,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         chatWindow.addEventListener(
             'dragleave',
-            function (e) {
+            function (event) {
 
-                e.preventDefault();
-                e.stopPropagation();
+                event.preventDefault();
+                event.stopPropagation();
 
                 dragCounter--;
-
 
                 if (dragCounter <= 0) {
 
@@ -1045,144 +1065,81 @@ document.addEventListener('DOMContentLoaded', function () {
 
         chatWindow.addEventListener(
             'drop',
-            function (e) {
+            function (event) {
 
-                e.preventDefault();
-                e.stopPropagation();
+                event.preventDefault();
+                event.stopPropagation();
 
                 dragCounter = 0;
 
                 hideDropOverlay();
 
-
                 const files =
-                    e.dataTransfer &&
-                    e.dataTransfer.files;
-
+                    event.dataTransfer &&
+                    event.dataTransfer.files;
 
                 if (
                     !files ||
                     !files.length
                 ) {
-
                     return;
-
                 }
-
 
                 const file =
                     files[0];
 
-
-                /*
-                 * IMAGE
-                 */
-
                 if (
-                    file.type.startsWith(
-                        'image/'
-                    )
+                    file.type.startsWith('image/')
                 ) {
 
-                    if (
-                        !validateImageFile(
-                            file
-                        )
-                    ) {
-
+                    if (!validateImageFile(file)) {
                         return;
-
                     }
 
-
-                    const dataTransfer =
-                        new DataTransfer();
-
-
-                    dataTransfer.items.add(
-                        file
-                    );
-
-
                     if (imageInput) {
+
+                        const dataTransfer =
+                            new DataTransfer();
+
+                        dataTransfer.items.add(file);
 
                         imageInput.files =
                             dataTransfer.files;
 
                     }
 
-
-                    if (videoInput) {
-
-                        videoInput.value =
-                            '';
-
-                    }
-
-
-                    handleImageFile(
-                        file
-                    );
+                    handleImageFile(file);
 
                     return;
 
                 }
 
 
-                /*
-                 * VIDEO
-                 */
-
                 if (
-                    file.type.startsWith(
-                        'video/'
-                    )
+                    file.type.startsWith('video/')
                 ) {
 
-                    if (
-                        !validateVideoFile(
-                            file
-                        )
-                    ) {
-
+                    if (!validateVideoFile(file)) {
                         return;
-
                     }
 
-
-                    const dataTransfer =
-                        new DataTransfer();
-
-
-                    dataTransfer.items.add(
-                        file
-                    );
-
-
                     if (videoInput) {
+
+                        const dataTransfer =
+                            new DataTransfer();
+
+                        dataTransfer.items.add(file);
 
                         videoInput.files =
                             dataTransfer.files;
 
                     }
 
-
-                    if (imageInput) {
-
-                        imageInput.value =
-                            '';
-
-                    }
-
-
-                    handleVideoFile(
-                        file
-                    );
+                    handleVideoFile(file);
 
                     return;
 
                 }
-
 
                 alert(
                     'Only image and video files are allowed.'
@@ -1200,45 +1157,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.addEventListener(
         'paste',
-        function (e) {
+        function (event) {
+
+            if (!messageBodyField) {
+                return;
+            }
 
             const activeElement =
                 document.activeElement;
 
-
-            /*
-             * Paste image only when
-             * inside message input.
-             */
-
             if (
-                !activeElement ||
-                !(
-                    activeElement.matches(
-                        'textarea[name="body"]'
-                    ) ||
-                    activeElement.matches(
-                        'input[name="body"]'
-                    ) ||
-                    activeElement.id ===
-                        'message-body-input'
-                )
+                activeElement !== messageBodyField
             ) {
-
                 return;
-
             }
 
-
             const clipboardItems =
-                e.clipboardData &&
-                e.clipboardData.items;
-
+                event.clipboardData &&
+                event.clipboardData.items;
 
             if (!clipboardItems) {
                 return;
             }
-
 
             for (
                 let i = 0;
@@ -1249,47 +1189,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 const item =
                     clipboardItems[i];
 
-
                 if (
                     item.kind !== 'file' ||
-                    !item.type.startsWith(
-                        'image/'
-                    )
+                    !item.type.startsWith('image/')
                 ) {
-
                     continue;
-
                 }
-
 
                 const file =
                     item.getAsFile();
-
 
                 if (!file) {
                     continue;
                 }
 
-
-                if (
-                    !validateImageFile(
-                        file
-                    )
-                ) {
-
+                if (!validateImageFile(file)) {
                     return;
-
                 }
-
 
                 const dataTransfer =
                     new DataTransfer();
 
-
-                dataTransfer.items.add(
-                    file
-                );
-
+                dataTransfer.items.add(file);
 
                 if (imageInput) {
 
@@ -1298,26 +1219,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 }
 
-
                 if (videoInput) {
-
-                    videoInput.value =
-                        '';
-
+                    videoInput.value = '';
                 }
 
+                handleImageFile(file);
 
-                handleImageFile(
-                    file
-                );
-
-
-                /*
-                 * Не позволява изображението
-                 * да бъде поставено в textarea.
-                 */
-
-                e.preventDefault();
+                event.preventDefault();
 
                 return;
 
@@ -1325,70 +1233,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
     );
-
-
-    /* =========================================================
-       REMOVE MEDIA
-    ========================================================== */
-
-    if (removeMediaBtn) {
-
-        removeMediaBtn.addEventListener(
-            'click',
-            function (e) {
-
-                e.preventDefault();
-
-
-                if (imageInput) {
-
-                    imageInput.value =
-                        '';
-
-                }
-
-
-                if (videoInput) {
-
-                    videoInput.value =
-                        '';
-
-                }
-
-
-                revokeImageUrl();
-
-                revokeVideoUrl();
-
-
-                if (imagePreview) {
-
-                    imagePreview.removeAttribute(
-                        'src'
-                    );
-
-                }
-
-
-                if (videoPreview) {
-
-                    videoPreview.pause();
-
-                    videoPreview.removeAttribute(
-                        'src'
-                    );
-
-                    videoPreview.load();
-
-                }
-
-
-                hideMediaPreviews();
-
-            }
-        );
-
-    }
 
 
     /* =========================================================
@@ -1401,17 +1245,14 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-
         uploadProgressWrap.classList.remove(
             'd-none'
         );
-
 
         if (uploadProgressBar) {
 
             uploadProgressBar.style.width =
                 '0%';
-
 
             uploadProgressBar.setAttribute(
                 'aria-valuenow',
@@ -1420,14 +1261,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
-
         if (uploadProgressPercent) {
 
             uploadProgressPercent.textContent =
                 '0%';
 
         }
-
 
         if (uploadProgressText) {
 
@@ -1450,12 +1289,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 )
             );
 
-
         if (uploadProgressBar) {
 
             uploadProgressBar.style.width =
                 `${percent}%`;
-
 
             uploadProgressBar.setAttribute(
                 'aria-valuenow',
@@ -1463,7 +1300,6 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
         }
-
 
         if (uploadProgressPercent) {
 
@@ -1489,7 +1325,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       VALIDATE ATTACHMENTS BEFORE SUBMIT
+       ATTACHMENT VALIDATION
     ========================================================== */
 
     function validateAttachmentsBeforeSubmit() {
@@ -1499,16 +1335,10 @@ document.addEventListener('DOMContentLoaded', function () {
             imageInput.files &&
             imageInput.files[0];
 
-
         const videoFile =
             videoInput &&
             videoInput.files &&
             videoInput.files[0];
-
-
-        /*
-         * Само един attachment.
-         */
 
         if (
             imageFile &&
@@ -1523,36 +1353,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
-
-        if (imageFile) {
-
-            if (
-                !validateImageFile(
-                    imageFile
-                )
-            ) {
-
-                return false;
-
-            }
-
+        if (
+            imageFile &&
+            !validateImageFile(imageFile)
+        ) {
+            return false;
         }
 
-
-        if (videoFile) {
-
-            if (
-                !validateVideoFile(
-                    videoFile
-                )
-            ) {
-
-                return false;
-
-            }
-
+        if (
+            videoFile &&
+            !validateVideoFile(videoFile)
+        ) {
+            return false;
         }
-
 
         return true;
 
@@ -1560,26 +1373,420 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       AJAX UPLOAD WITH PROGRESS
+       EDIT MODE
+    ========================================================== */
+
+    function startEdit(button) {
+
+        if (
+            !replyForm ||
+            !messageBodyField ||
+            !editingMessageId
+        ) {
+            return;
+        }
+
+        const messageId =
+            button.dataset.messageId;
+
+        const editUrl =
+            button.dataset.editUrl;
+
+        const messageBody =
+            button.dataset.messageBody || '';
+
+        if (
+            !messageId ||
+            !editUrl
+        ) {
+            return;
+        }
+
+        messageBodyField.value =
+            messageBody;
+
+        editingMessageId.value =
+            messageId;
+
+        if (replyToInput) {
+            replyToInput.value = '';
+        }
+
+        if (replyBar) {
+            replyBar.classList.add('d-none');
+        }
+
+        replyForm.setAttribute(
+            'action',
+            editUrl
+        );
+
+        if (editingBar) {
+
+            editingBar.classList.remove(
+                'd-none'
+            );
+
+        }
+
+        if (editingPreview) {
+
+            let preview =
+                messageBody.trim();
+
+            if (preview.length > 100) {
+
+                preview =
+                    preview.substring(0, 100)
+                    + '...';
+
+            }
+
+            editingPreview.textContent =
+                preview ||
+                'Edit your message';
+
+        }
+
+        if (submitText) {
+
+            submitText.textContent =
+                'Save changes';
+
+        }
+
+        if (submitIcon) {
+
+            submitIcon.classList.remove(
+                'fa-paper-plane'
+            );
+
+            submitIcon.classList.add(
+                'fa-save'
+            );
+
+        }
+
+        messageBodyField.focus();
+
+        try {
+
+            const length =
+                messageBodyField.value.length;
+
+            messageBodyField.setSelectionRange(
+                length,
+                length
+            );
+
+        } catch (error) {
+            // Ignore.
+        }
+
+        replyForm.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+
+    }
+
+
+    /* =========================================================
+       CANCEL EDIT
+    ========================================================== */
+
+    function cancelEdit() {
+
+        if (editingMessageId) {
+            editingMessageId.value = '';
+        }
+
+        if (editingBar) {
+            editingBar.classList.add('d-none');
+        }
+
+        if (replyForm) {
+
+            replyForm.setAttribute(
+                'action',
+                normalFormAction
+            );
+
+        }
+
+        if (submitText) {
+            submitText.textContent = 'Send';
+        }
+
+        if (submitIcon) {
+
+            submitIcon.classList.remove(
+                'fa-save'
+            );
+
+            submitIcon.classList.add(
+                'fa-paper-plane'
+            );
+
+        }
+
+        if (messageBodyField) {
+            messageBodyField.value = '';
+        }
+
+        if (replyToInput) {
+            replyToInput.value = '';
+        }
+
+    }
+
+
+    /* =========================================================
+       REPLY MODE
+    ========================================================== */
+
+    function startReply(button) {
+
+        if (
+            !replyForm ||
+            !messageBodyField
+        ) {
+            return;
+        }
+
+        const messageId =
+            button.dataset.messageId;
+
+        const messageBody =
+            button.dataset.messageBody || '';
+
+        if (!messageId) {
+            return;
+        }
+
+        if (editingMessageId) {
+            editingMessageId.value = '';
+        }
+
+        if (editingBar) {
+            editingBar.classList.add('d-none');
+        }
+
+        if (replyToInput) {
+            replyToInput.value = messageId;
+        }
+
+        if (replyPreview) {
+
+            let preview =
+                messageBody.trim();
+
+            if (preview.length > 100) {
+
+                preview =
+                    preview.substring(0, 100)
+                    + '...';
+
+            }
+
+            replyPreview.textContent =
+                preview ||
+                'Reply to this message';
+
+        }
+
+        if (replyBar) {
+            replyBar.classList.remove('d-none');
+        }
+
+        replyForm.setAttribute(
+            'action',
+            normalFormAction
+        );
+
+        if (submitText) {
+            submitText.textContent = 'Send';
+        }
+
+        if (submitIcon) {
+
+            submitIcon.classList.remove(
+                'fa-save'
+            );
+
+            submitIcon.classList.add(
+                'fa-paper-plane'
+            );
+
+        }
+
+        messageBodyField.focus();
+
+        replyForm.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+
+    }
+
+
+    /* =========================================================
+       CANCEL REPLY
+    ========================================================== */
+
+    function cancelReply() {
+
+        if (replyToInput) {
+            replyToInput.value = '';
+        }
+
+        if (replyBar) {
+            replyBar.classList.add('d-none');
+        }
+
+    }
+
+
+    /* =========================================================
+       EDIT BUTTON
+    ========================================================== */
+
+    document.addEventListener(
+        'click',
+        function (event) {
+
+            const button =
+                event.target.closest(
+                    '.edit-message-side-btn'
+                );
+
+            if (!button) {
+                return;
+            }
+
+            event.preventDefault();
+
+            startEdit(button);
+
+        }
+    );
+
+
+    /* =========================================================
+       REPLY BUTTON
+    ========================================================== */
+
+    document.addEventListener(
+        'click',
+        function (event) {
+
+            const button =
+                event.target.closest(
+                    '.reply-message-side-btn'
+                );
+
+            if (!button) {
+                return;
+            }
+
+            event.preventDefault();
+
+            startReply(button);
+
+        }
+    );
+
+
+    /* =========================================================
+       CANCEL EDIT
+    ========================================================== */
+
+    if (cancelEditBtn) {
+
+        cancelEditBtn.addEventListener(
+            'click',
+            function (event) {
+
+                event.preventDefault();
+
+                cancelEdit();
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       CANCEL REPLY
+    ========================================================== */
+
+    if (cancelReplyBtn) {
+
+        cancelReplyBtn.addEventListener(
+            'click',
+            function (event) {
+
+                event.preventDefault();
+
+                cancelReply();
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       FORM SUBMIT
     ========================================================== */
 
     if (replyForm) {
 
         replyForm.addEventListener(
             'submit',
-            function (e) {
+            function (event) {
+
+                const isEditing =
+                    editingMessageId &&
+                    editingMessageId.value;
+
+                /*
+                 * EDIT
+                 *
+                 * Edit is always AJAX.
+                 */
+
+                if (isEditing) {
+
+                    handleEditSubmit(
+                        event
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                 * NORMAL SEND / REPLY
+                 *
+                 * Text-only:
+                 * normal Django submit.
+                 *
+                 * Attachment:
+                 * AJAX upload with progress.
+                 */
 
                 const imageFile =
                     imageInput &&
                     imageInput.files &&
                     imageInput.files[0];
 
-
                 const videoFile =
                     videoInput &&
                     videoInput.files &&
                     videoInput.files[0];
-
 
                 const hasAttachment =
                     Boolean(
@@ -1587,274 +1794,22 @@ document.addEventListener('DOMContentLoaded', function () {
                         videoFile
                     );
 
-
-                /*
-                 * Text-only message:
-                 * normal Django submit.
-                 */
-
                 if (!hasAttachment) {
-
                     return;
-
                 }
-
 
                 if (
                     !validateAttachmentsBeforeSubmit()
                 ) {
 
-                    e.preventDefault();
+                    event.preventDefault();
 
                     return;
 
                 }
 
-
-                e.preventDefault();
-
-
-                const formData =
-                    new FormData(
-                        replyForm
-                    );
-
-
-                const xhr =
-                    new XMLHttpRequest();
-
-
-                showUploadProgress();
-
-
-                const submitButton =
-                    replyForm.querySelector(
-                        'button[type="submit"]'
-                    );
-
-
-                if (submitButton) {
-
-                    submitButton.disabled =
-                        true;
-
-
-                    submitButton.dataset.originalHtml =
-                        submitButton.innerHTML;
-
-
-                    submitButton.innerHTML =
-                        '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
-
-                }
-
-
-                /*
-                 * Upload progress.
-                 */
-
-                xhr.upload.addEventListener(
-                    'progress',
-                    function (event) {
-
-                        if (
-                            !event.lengthComputable
-                        ) {
-
-                            return;
-
-                        }
-
-
-                        const percent =
-                            Math.round(
-                                (
-                                    event.loaded /
-                                    event.total
-                                ) * 100
-                            );
-
-
-                        updateUploadProgress(
-                            percent
-                        );
-
-                    }
-                );
-
-
-                /*
-                 * Request complete.
-                 */
-
-                xhr.addEventListener(
-                    'load',
-                    function () {
-
-                        if (
-                            xhr.status >= 200 &&
-                            xhr.status < 400
-                        ) {
-
-                            updateUploadProgress(
-                                100
-                            );
-
-
-                            if (
-                                uploadProgressText
-                            ) {
-
-                                uploadProgressText.textContent =
-                                    'Upload complete';
-
-                            }
-
-
-                            setTimeout(
-                                function () {
-
-                                    if (
-                                        xhr.responseURL
-                                    ) {
-
-                                        window.location.href =
-                                            xhr.responseURL;
-
-                                    } else {
-
-                                        window.location.reload();
-
-                                    }
-
-                                },
-                                250
-                            );
-
-
-                        } else {
-
-                            alert(
-                                'Upload failed. Please try again.'
-                            );
-
-
-                            hideUploadProgress();
-
-
-                            if (submitButton) {
-
-                                submitButton.disabled =
-                                    false;
-
-
-                                submitButton.innerHTML =
-                                    submitButton.dataset.originalHtml ||
-                                    '<i class="fas fa-paper-plane me-1"></i> Send';
-
-                            }
-
-                        }
-
-                    }
-                );
-
-
-                /*
-                 * Network error.
-                 */
-
-                xhr.addEventListener(
-                    'error',
-                    function () {
-
-                        alert(
-                            'Upload failed. Please check your connection and try again.'
-                        );
-
-
-                        hideUploadProgress();
-
-
-                        if (submitButton) {
-
-                            submitButton.disabled =
-                                false;
-
-
-                            submitButton.innerHTML =
-                                submitButton.dataset.originalHtml ||
-                                '<i class="fas fa-paper-plane me-1"></i> Send';
-
-                        }
-
-                    }
-                );
-
-
-                /*
-                 * Request aborted.
-                 */
-
-                xhr.addEventListener(
-                    'abort',
-                    function () {
-
-                        hideUploadProgress();
-
-
-                        if (submitButton) {
-
-                            submitButton.disabled =
-                                false;
-
-
-                            submitButton.innerHTML =
-                                submitButton.dataset.originalHtml ||
-                                '<i class="fas fa-paper-plane me-1"></i> Send';
-
-                        }
-
-                    }
-                );
-
-
-                xhr.open(
-                    'POST',
-                    replyForm.action ||
-                    window.location.href,
-                    true
-                );
-
-
-                /*
-                 * CSRF
-                 */
-
-                const csrfTokenElement =
-                    replyForm.querySelector(
-                        '[name="csrfmiddlewaretoken"]'
-                    );
-
-
-                if (csrfTokenElement) {
-
-                    xhr.setRequestHeader(
-                        'X-CSRFToken',
-                        csrfTokenElement.value
-                    );
-
-                }
-
-
-                xhr.setRequestHeader(
-                    'X-Requested-With',
-                    'XMLHttpRequest'
-                );
-
-
-                xhr.send(
-                    formData
+                handleAttachmentSubmit(
+                    event
                 );
 
             }
@@ -1864,28 +1819,425 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       CLEANUP
+       EDIT AJAX
     ========================================================== */
 
-    window.addEventListener(
-        'beforeunload',
-        function () {
+    async function handleEditSubmit(event) {
 
-            revokeImageUrl();
+        event.preventDefault();
 
-            revokeVideoUrl();
+        if (
+            !replyForm ||
+            !editingMessageId ||
+            !messageBodyField
+        ) {
+            return;
+        }
 
+        const messageId =
+            editingMessageId.value;
 
-            if (scrollButtonHideTimer) {
+        const editUrl =
+            replyForm.getAttribute('action');
 
-                clearTimeout(
-                    scrollButtonHideTimer
+        const body =
+            messageBodyField.value.trim();
+
+        if (!messageId) {
+            return;
+        }
+
+        if (!editUrl) {
+
+            alert(
+                'Edit URL is missing.'
+            );
+
+            return;
+
+        }
+
+        if (!body) {
+
+            alert(
+                'Message cannot be empty.'
+            );
+
+            return;
+
+        }
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            'body',
+            body
+        );
+
+        const csrfToken =
+            getCsrfToken();
+
+        if (csrfToken) {
+
+            formData.append(
+                'csrfmiddlewaretoken',
+                csrfToken
+            );
+
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+        }
+
+        try {
+
+            const response =
+                await fetch(
+                    editUrl,
+                    {
+                        method: 'POST',
+
+                        body: formData,
+
+                        credentials:
+                            'same-origin',
+
+                        headers: {
+                            'X-Requested-With':
+                                'XMLHttpRequest',
+
+                            'Accept':
+                                'application/json'
+                        }
+                    }
+                );
+
+            let data;
+
+            try {
+
+                data =
+                    await response.json();
+
+            } catch (jsonError) {
+
+                throw new Error(
+                    `Invalid server response (${response.status}).`
                 );
 
             }
 
+            if (
+                !response.ok ||
+                !data.ok
+            ) {
+
+                throw new Error(
+                    data.error ||
+                    'Unable to edit message.'
+                );
+
+            }
+
+
+            /* =============================================
+               UPDATE MESSAGE BUBBLE
+            ============================================== */
+
+            const bubble =
+                document.getElementById(
+                    'message-bubble-' +
+                    messageId
+                );
+
+            if (bubble) {
+
+                const textContainer =
+                    bubble.querySelector(
+                        '.message-body-html'
+                    );
+
+                if (textContainer) {
+
+                    textContainer.innerHTML =
+                        data.body || '';
+
+                } else {
+
+                    const newText =
+                        document.createElement(
+                            'div'
+                        );
+
+                    newText.className =
+                        'mb-1 message-body-html';
+
+                    newText.innerHTML =
+                        data.body || '';
+
+                    bubble.prepend(
+                        newText
+                    );
+
+                }
+
+            }
+
+
+            /* =============================================
+               UPDATE DATA FOR EDIT BUTTON
+            ============================================== */
+
+            document
+                .querySelectorAll(
+                    '.edit-message-side-btn'
+                )
+                .forEach(
+                    function (button) {
+
+                        if (
+                            button.dataset.messageId ===
+                            String(messageId)
+                        ) {
+
+                            button.dataset.messageBody =
+                                body;
+
+                        }
+
+                    }
+                );
+
+
+            cancelEdit();
+
+        } catch (error) {
+
+            console.error(
+                'Edit message error:',
+                error
+            );
+
+            alert(
+                error.message ||
+                'Unable to edit message.'
+            );
+
+        } finally {
+
+            if (submitBtn) {
+                submitBtn.disabled = false;
+            }
+
         }
-    );
+
+    }
+
+
+    /* =========================================================
+       ATTACHMENT AJAX SUBMIT
+    ========================================================== */
+
+    function handleAttachmentSubmit(event) {
+
+        event.preventDefault();
+
+        if (!replyForm) {
+            return;
+        }
+
+        const formData =
+            new FormData(
+                replyForm
+            );
+
+        const xhr =
+            new XMLHttpRequest();
+
+        showUploadProgress();
+
+        if (submitBtn) {
+
+            submitBtn.disabled = true;
+
+            submitBtn.dataset.originalHtml =
+                submitBtn.innerHTML;
+
+            submitBtn.innerHTML =
+                '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
+
+        }
+
+
+        xhr.upload.addEventListener(
+            'progress',
+            function (event) {
+
+                if (!event.lengthComputable) {
+                    return;
+                }
+
+                const percent =
+                    Math.round(
+                        (
+                            event.loaded /
+                            event.total
+                        ) * 100
+                    );
+
+                updateUploadProgress(
+                    percent
+                );
+
+            }
+        );
+
+
+        xhr.addEventListener(
+            'load',
+            function () {
+
+                if (
+                    xhr.status >= 200 &&
+                    xhr.status < 400
+                ) {
+
+                    updateUploadProgress(
+                        100
+                    );
+
+                    if (uploadProgressText) {
+
+                        uploadProgressText.textContent =
+                            'Upload complete';
+
+                    }
+
+                    setTimeout(
+                        function () {
+
+                            if (xhr.responseURL) {
+
+                                window.location.href =
+                                    xhr.responseURL;
+
+                            } else {
+
+                                window.location.reload();
+
+                            }
+
+                        },
+                        250
+                    );
+
+                    return;
+
+                }
+
+
+                let errorMessage =
+                    'Upload failed. Please try again.';
+
+                try {
+
+                    const data =
+                        JSON.parse(
+                            xhr.responseText
+                        );
+
+                    if (data.error) {
+                        errorMessage =
+                            data.error;
+                    }
+
+                } catch (error) {
+                    // Ignore.
+                }
+
+                alert(
+                    errorMessage
+                );
+
+                resetUploadButton();
+
+            }
+        );
+
+
+        xhr.addEventListener(
+            'error',
+            function () {
+
+                alert(
+                    'Upload failed. Please check your connection and try again.'
+                );
+
+                resetUploadButton();
+
+            }
+        );
+
+
+        xhr.addEventListener(
+            'abort',
+            function () {
+
+                resetUploadButton();
+
+            }
+        );
+
+
+        xhr.open(
+            'POST',
+            replyForm.action ||
+            window.location.href,
+            true
+        );
+
+
+        const csrfToken =
+            getCsrfToken();
+
+        if (csrfToken) {
+
+            xhr.setRequestHeader(
+                'X-CSRFToken',
+                csrfToken
+            );
+
+        }
+
+        xhr.setRequestHeader(
+            'X-Requested-With',
+            'XMLHttpRequest'
+        );
+
+        xhr.send(
+            formData
+        );
+
+    }
+
+
+    function resetUploadButton() {
+
+        hideUploadProgress();
+
+        if (submitBtn) {
+
+            submitBtn.disabled = false;
+
+            submitBtn.innerHTML =
+                submitBtn.dataset.originalHtml ||
+                '<i class="fas fa-paper-plane me-1"></i> Send';
+
+        }
+
+    }
 
 
     /* =========================================================
@@ -1894,34 +2246,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.addEventListener(
         'click',
-        async function (e) {
+        async function (event) {
 
-            const btn =
-                e.target.closest(
-                    '.share-btn'
+            const button =
+                event.target.closest(
+                    '.media-share-btn'
                 );
 
-
-            if (!btn) {
+            if (!button) {
                 return;
             }
 
-
-            e.preventDefault();
-
+            event.preventDefault();
 
             const url =
-                btn.dataset.url;
-
+                button.dataset.url;
 
             if (!url) {
                 return;
             }
-
-
-            /*
-             * Native share.
-             */
 
             if (navigator.share) {
 
@@ -1933,7 +2276,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         url: url
                     });
 
-
                     return;
 
                 } catch (error) {
@@ -1943,19 +2285,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         error.name ===
                             'AbortError'
                     ) {
-
                         return;
-
                     }
 
                 }
 
             }
-
-
-            /*
-             * Clipboard API.
-             */
 
             try {
 
@@ -1968,25 +2303,21 @@ document.addEventListener('DOMContentLoaded', function () {
                         url
                     );
 
-
                     const oldHtml =
-                        btn.innerHTML;
+                        button.innerHTML;
 
-
-                    btn.innerHTML =
+                    button.innerHTML =
                         '✓';
-
 
                     setTimeout(
                         function () {
 
-                            btn.innerHTML =
+                            button.innerHTML =
                                 oldHtml;
 
                         },
                         1200
                     );
-
 
                     return;
 
@@ -2001,46 +2332,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
 
-
-            /*
-             * Fallback copy.
-             */
-
             const textarea =
                 document.createElement(
                     'textarea'
                 );
 
-
             textarea.value =
                 url;
-
 
             textarea.style.position =
                 'fixed';
 
-
             textarea.style.left =
                 '-9999px';
-
 
             textarea.style.top =
                 '-9999px';
 
-
             textarea.style.opacity =
                 '0';
-
 
             document.body.appendChild(
                 textarea
             );
 
-
             textarea.focus();
-
             textarea.select();
-
 
             try {
 
@@ -2056,7 +2373,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
             }
-
 
             textarea.remove();
 
@@ -2074,47 +2390,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.addEventListener(
         'click',
-        async function (e) {
+        async function (event) {
 
-            const btn =
-                e.target.closest(
+            const button =
+                event.target.closest(
                     '.js-react'
                 );
 
-
-            if (!btn) {
+            if (!button) {
                 return;
             }
 
-
-            e.preventDefault();
-
+            event.preventDefault();
 
             if (
-                btn.dataset.loading ===
+                button.dataset.loading ===
                 '1'
             ) {
-
                 return;
-
             }
 
-
-            btn.dataset.loading =
+            button.dataset.loading =
                 '1';
 
-
-            const csrfTokenElement =
-                document.querySelector(
-                    '[name="csrfmiddlewaretoken"]'
-                );
-
-
             const csrfToken =
-                csrfTokenElement
-                    ? csrfTokenElement.value
-                    : '';
-
+                getCsrfToken();
 
             if (!csrfToken) {
 
@@ -2122,21 +2422,19 @@ document.addEventListener('DOMContentLoaded', function () {
                     'CSRF token not found.'
                 );
 
-
-                btn.dataset.loading =
+                button.dataset.loading =
                     '0';
-
 
                 return;
 
             }
 
-
             try {
 
                 const url =
-                    btn.href;
-
+                    button.getAttribute(
+                        'href'
+                    );
 
                 if (!url) {
 
@@ -2145,7 +2443,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
 
                 }
-
 
                 const response =
                     await fetch(
@@ -2157,7 +2454,6 @@ document.addEventListener('DOMContentLoaded', function () {
                                 'same-origin',
 
                             headers: {
-
                                 'X-Requested-With':
                                     'XMLHttpRequest',
 
@@ -2166,15 +2462,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                                 'X-CSRFToken':
                                     csrfToken
-
                             }
-
                         }
                     );
 
-
                 let data;
-
 
                 try {
 
@@ -2189,7 +2481,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 }
 
-
                 if (
                     !response.ok ||
                     !data.ok
@@ -2202,44 +2493,40 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 }
 
-
                 const reaction =
                     data.reaction ||
-                    btn.dataset.reaction;
-
+                    button.dataset.reaction;
 
                 const messageId =
                     data.message_id ||
-                    btn.dataset.msg;
+                    button.dataset.msg;
 
 
-                /* =================================================
+                /* =============================================
                    ACTIVE STATE
-                ================================================== */
+                ============================================== */
 
-                btn.classList.toggle(
+                button.classList.toggle(
                     'active-like',
                     reaction === 'like' &&
                     Boolean(data.active)
                 );
 
-
-                btn.classList.toggle(
+                button.classList.toggle(
                     'active-heart',
                     reaction === 'heart' &&
                     Boolean(data.active)
                 );
 
 
-                /* =================================================
+                /* =============================================
                    AVATAR BOX
-                ================================================== */
+                ============================================== */
 
                 let avatarBox =
-                    btn.querySelector(
+                    button.querySelector(
                         '[data-react-avatars]'
                     );
-
 
                 if (
                     !avatarBox &&
@@ -2255,14 +2542,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
 
-                /* =================================================
+                /* =============================================
                    RENDER REACTORS
-                ================================================== */
+                ============================================== */
 
                 if (avatarBox) {
 
                     avatarBox.replaceChildren();
-
 
                     const reactors =
                         Array.isArray(
@@ -2270,7 +2556,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         )
                             ? data.reactors
                             : [];
-
 
                     reactors.forEach(
                         function (reactor) {
@@ -2280,24 +2565,19 @@ document.addEventListener('DOMContentLoaded', function () {
                                     'img'
                                 );
 
-
                             img.className =
                                 'react-avatar';
-
 
                             img.alt =
                                 reactor.username ||
                                 'User';
 
-
                             img.loading =
                                 'lazy';
-
 
                             img.src =
                                 reactor.photo ||
                                 defaultAvatar;
-
 
                             avatarBox.appendChild(
                                 img
@@ -2309,9 +2589,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
 
-                /* =================================================
+                /* =============================================
                    TOOLTIP
-                ================================================== */
+                ============================================== */
 
                 if (
                     Array.isArray(
@@ -2330,20 +2610,14 @@ document.addEventListener('DOMContentLoaded', function () {
                             )
                             .filter(Boolean);
 
-
-                    if (names.length) {
-
-                        btn.title =
-                            names.join(', ');
-
-                    } else {
-
-                        btn.title =
-                            reaction === 'heart'
-                                ? 'Heart'
-                                : 'Like';
-
-                    }
+                    button.title =
+                        names.length
+                            ? names.join(', ')
+                            : (
+                                reaction === 'heart'
+                                    ? 'Heart'
+                                    : 'Like'
+                            );
 
                 }
 
@@ -2356,8 +2630,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
             } finally {
 
-                btn.dataset.loading =
+                button.dataset.loading =
                     '0';
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       BEFORE UNLOAD
+    ========================================================== */
+
+    window.addEventListener(
+        'beforeunload',
+        function () {
+
+            revokeImageUrl();
+
+            revokeVideoUrl();
+
+            if (scrollButtonHideTimer) {
+
+                clearTimeout(
+                    scrollButtonHideTimer
+                );
 
             }
 
