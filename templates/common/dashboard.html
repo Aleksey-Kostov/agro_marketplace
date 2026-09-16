@@ -95,7 +95,7 @@
                             </a>
                             {% if user != object.profile.user %}
                             <a href="{% url 'send-message' object.profile.pk %}?
-                            product_id={{ object.profile.seller_products.pk }}&product_type=seller"
+                            product_id={{ object.pk }}&product_type=seller"
                                class="btn btn-outline-success btn-sm activate">
                                 <i class="fas fa-envelope"></i>
                                 <span class="tooltip-text">Send Message</span>
@@ -263,7 +263,7 @@
                             </a>
                             {% if user != object.profile.user %}
                             <a href="{% url 'send-message' object.profile.pk %}?
-                            product_id={{ object.profile.buyer_products.pk }}&product_type=buyer"
+                            product_id={{ object.pk }}&product_type=buyer"
                                class="btn btn-outline-success btn-sm activate">
                                 <i class="fas fa-envelope"></i>
                                 <span class="tooltip-text">Send Message</span>
