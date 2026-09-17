@@ -16,34 +16,33 @@
                     <label for="categorySelect" class="form-label">Category</label>
                     <select id="categorySelect" name="category" class="form-select">
                         <option value="">Select category</option>
-                        <option value="vegetables" {% if category==
-                        'vegetables' %}selected{% endif %}>
+                        <option value="vegetables" {% if category == 'vegetables' %}selected{% endif %}>
                         Vegetables
                         </option>
-                        <option value="fruits" {% if category==
-                        'fruits' %}selected{% endif %}>Fruits</option>
-                        <option value="grain" {% if category==
-                        'grain' %}selected{% endif %}>Grains</option>
-                        <option value="dairy-products" {% if category==
-                        'dairy-products' %}selected{% endif %}>
+                        <option value="fruits" {% if category == 'fruits' %}selected{% endif %}>
+                        Fruits
+                        </option>
+                        <option value="grain" {% if category == 'grain' %}selected{% endif %}>
+                        Grains
+                        </option>
+                        <option value="dairy-products" {% if category == 'dairy-products' %}selected{% endif %}>
                         Dairy Products
                         </option>
-                        <option value="mushrooms" {% if category==
-                        'mushrooms' %}selected{% endif %}>Mushrooms
+                        <option value="mushrooms" {% if category == 'mushrooms' %}selected{% endif %}>
+                        Mushrooms
                         </option>
-                        <option value="herbs-spices" {% if category==
-                        'herbs-spices' %}selected{% endif %}>
-                        Herbs &
-                        Spices
+                        <option value="herbs-spices" {% if category == 'herbs-spices' %}selected{% endif %}>
+                        Herbs & Spices
                         </option>
-                        <option value="grapes" {% if category==
-                        'grapes' %}selected{% endif %}>Grapes</option>
-                        <option value="bee-products" {% if category==
-                        'bee-products' %}selected{% endif %}>Bee
-                        Products
+                        <option value="grapes" {% if category == 'grapes' %}selected{% endif %}>
+                        Grapes
                         </option>
-                        <option value="other" {% if category==
-                        'other' %}selected{% endif %}>Other</option>
+                        <option value="bee-products" {% if category == 'bee-products' %}selected{% endif %}>
+                        Bee Products
+                        </option>
+                        <option value="other" {% if category == 'other' %}selected{% endif %}>
+                        Other
+                        </option>
                     </select>
                 </div>
 
@@ -94,8 +93,7 @@
                                 <span class="tooltip-text">Info</span>
                             </a>
                             {% if user != object.profile.user %}
-                            <a href="{% url 'send-message' object.profile.pk %}?
-                            product_id={{ object.pk }}&product_type=seller"
+                            <a href="{% url 'send-message' object.profile.pk %}?product_id={{ object.pk }}&product_type=seller"
                                class="btn btn-outline-success btn-sm activate">
                                 <i class="fas fa-envelope"></i>
                                 <span class="tooltip-text">Send Message</span>
@@ -262,8 +260,7 @@
                                 <span class="tooltip-text">Info</span>
                             </a>
                             {% if user != object.profile.user %}
-                            <a href="{% url 'send-message' object.profile.pk %}?
-                            product_id={{ object.pk }}&product_type=buyer"
+                            <a href="{% url 'send-message' object.profile.pk %}?product_id={{ object.pk }}&product_type=buyer"
                                class="btn btn-outline-success btn-sm activate">
                                 <i class="fas fa-envelope"></i>
                                 <span class="tooltip-text">Send Message</span>
