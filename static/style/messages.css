@@ -895,6 +895,12 @@
    RESPONSIVE MEDIA
    1366px VIEWPORT ≈ 628px MEDIA
    LARGE MONITORS SCALE PROPORTIONALLY
+
+   46vw:
+   1366px -> 628.36px
+   1440px -> 662.40px
+   1920px -> 883.20px
+   2560px -> 1177.60px
 ========================================================= */
 
 .chat-message-content .message-image {
@@ -937,7 +943,13 @@
     align-items: flex-start;
 
     width: fit-content;
+
+    /*
+       Media width + bubble horizontal padding.
+       46vw media + 14px bubble padding.
+    */
     max-width: calc(46vw + 14px);
+
     min-width: 0;
 
     padding: 7px;
@@ -960,6 +972,10 @@
     max-width: 100%;
     min-width: 0;
 }
+
+/* =========================================================
+   MEDIA LINK
+========================================================= */
 
 .chat-message-content .message-bubble:has(.media-wrap) .media-wrap > a {
     display: block;
