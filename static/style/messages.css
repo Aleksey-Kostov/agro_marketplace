@@ -2008,28 +2008,36 @@
 
 /* =========================================================
    MEDIA MESSAGE BUBBLE
-   BUBBLE FOLLOWS THE MEDIA WIDTH
+   VIBER / WHATSAPP STYLE
 ========================================================= */
 
 .chat-message-content .message-bubble:has(.media-wrap) {
     width: fit-content;
     max-width: 100%;
-    padding: 0;
+    padding: 5px;
+    box-sizing: border-box;
 }
 
+/* MEDIA WRAPPER */
+
 .chat-message-content .message-bubble:has(.media-wrap) .media-wrap {
+    display: inline-flex;
     width: fit-content;
     max-width: 100%;
 }
 
+/* IMAGE */
+
 .chat-message-content .message-bubble:has(.media-wrap) .message-image {
     display: block;
     width: auto;
-    max-width: 360px;
     height: auto;
+    max-width: 360px;
     max-height: 240px;
     object-fit: contain;
 }
+
+/* VIDEO */
 
 .chat-message-content .message-bubble:has(.media-wrap) .message-video {
     display: block;
@@ -2040,10 +2048,29 @@
     object-fit: contain;
 }
 
+/* =========================================================
+   MEDIA + TEXT
+   KEEP BUBBLE AS TIGHT AS POSSIBLE
+========================================================= */
+
+.chat-message-content .message-bubble:has(.media-wrap) .message-body-html {
+    width: fit-content;
+    max-width: 100%;
+}
+
+.chat-message-content .message-bubble:has(.media-wrap) .message-actions {
+    width: fit-content;
+    max-width: 100%;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
 @media (max-width: 576px) {
 
     .chat-message-content .message-bubble:has(.media-wrap) {
-        padding: 0;
+        padding: 4px;
     }
 
     .chat-message-content .message-bubble:has(.media-wrap) .message-image,
