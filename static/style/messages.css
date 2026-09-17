@@ -2008,13 +2008,15 @@
 
 /* =========================================================
    MEDIA MESSAGE BUBBLE
-   VIBER / WHATSAPP STYLE
 ========================================================= */
 
 .chat-message-content .message-bubble:has(.media-wrap) {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
     width: fit-content;
     max-width: 100%;
-    padding: 5px;
+    padding: 7px;
     box-sizing: border-box;
 }
 
@@ -2022,6 +2024,8 @@
 
 .chat-message-content .message-bubble:has(.media-wrap) .media-wrap {
     display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
     width: fit-content;
     max-width: 100%;
 }
@@ -2049,18 +2053,25 @@
 }
 
 /* =========================================================
-   MEDIA + TEXT
-   KEEP BUBBLE AS TIGHT AS POSSIBLE
+   TEXT + MEDIA
+   KEEP BUBBLE TIGHT TO CONTENT
 ========================================================= */
 
 .chat-message-content .message-bubble:has(.media-wrap) .message-body-html {
-    width: fit-content;
+    display: block;
+    width: auto;
     max-width: 100%;
+    align-self: flex-start;
+    overflow-wrap: anywhere;
 }
 
+/* ACTIONS */
+
 .chat-message-content .message-bubble:has(.media-wrap) .message-actions {
+    display: flex;
     width: fit-content;
     max-width: 100%;
+    align-self: flex-start;
 }
 
 /* =========================================================
@@ -2070,7 +2081,7 @@
 @media (max-width: 576px) {
 
     .chat-message-content .message-bubble:has(.media-wrap) {
-        padding: 4px;
+        padding: 6px;
     }
 
     .chat-message-content .message-bubble:has(.media-wrap) .message-image,
