@@ -5,63 +5,41 @@
 .message-box {
     width: 100%;
     max-width: 100%;
-
     margin: 20px auto;
-
     background-color: rgba(249, 249, 249, 0.95);
-
     border: 1px solid #ddd;
     border-radius: 10px;
-
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-
     padding: 20px;
-
     box-sizing: border-box;
-
     font-family: Arial, sans-serif;
-
     min-width: 0;
 }
 
 .message-box h3 {
     font-size: 1.5rem;
-
     color: #333;
-
     margin-bottom: 10px;
-
     font-weight: bold;
-
     text-align: center;
 }
 
 .message-box p {
     font-size: 1rem;
-
     color: #555;
-
     line-height: 1.6;
-
     margin-bottom: 20px;
-
     text-align: justify;
-
     overflow-wrap: anywhere;
     word-break: break-word;
 }
 
 .message-box .sender-info {
     font-size: 0.9rem;
-
     color: #888;
-
     display: flex;
-
     justify-content: space-between;
-
     margin-bottom: 10px;
-
     min-width: 0;
 }
 
@@ -76,7 +54,6 @@
 
 .unread-bar {
     background-color: rgba(40, 167, 69, 0.9);
-
     color: white;
 
     padding: 10px 20px;
@@ -92,9 +69,7 @@
     z-index: 9999;
 
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
 
     font-size: 1rem;
@@ -108,7 +83,6 @@
 
 .unread-bar .icon {
     font-size: 1.5rem;
-
     margin-right: 10px;
 }
 
@@ -123,11 +97,9 @@
 
 .mailbox-header {
     background-color: #28a745;
-
     color: white;
 
     display: flex;
-
     justify-content: center;
     align-items: center;
 
@@ -150,7 +122,6 @@
     box-sizing: border-box;
 
     font-size: 1.5rem;
-
     font-weight: bold;
 
     gap: 10px;
@@ -162,7 +133,6 @@
 
     .mailbox-header {
         width: calc(100% - 24px);
-
         padding: 6px 15px;
     }
 }
@@ -171,7 +141,6 @@
 
     .mailbox-header {
         width: calc(100% - 16px);
-
         padding: 5px 10px;
     }
 }
@@ -187,10 +156,6 @@
 
    Maximum:
    1200px
-
-   IMPORTANT:
-   Това е единственото място, което определя основната
-   desktop ширина на целия chat.
 ========================================================= */
 
 .mailbox-container {
@@ -204,9 +169,7 @@
     margin-top: 40px;
 
     display: flex;
-
     flex-direction: column;
-
     justify-content: center;
 
     gap: 15px;
@@ -227,9 +190,7 @@
 
 .status-count {
     font-weight: bold;
-
     font-size: 1rem;
-
     margin-left: 7px;
 }
 
@@ -240,7 +201,6 @@
 
 .message-box {
     width: 100%;
-
     max-width: 100%;
 
     background-color: rgba(249, 249, 249, 0.95);
@@ -260,7 +220,6 @@
 
 .message-box h2 {
     font-size: 1.4rem;
-
     color: #333;
 
     margin-bottom: 15px;
@@ -279,11 +238,9 @@
     background-color: #fff;
 
     border: 1px solid #ddd;
-
     border-radius: 8px;
 
     padding: 12px;
-
     margin-bottom: 12px;
 
     transition: background-color 0.3s ease;
@@ -291,13 +248,11 @@
     cursor: pointer;
 
     min-height: 100px;
-
     height: auto;
 
     display: flex;
 
     justify-content: space-between;
-
     align-items: center;
 
     box-sizing: border-box;
@@ -311,9 +266,7 @@
 
 .message-title {
     font-size: 1.1rem;
-
     font-weight: bold;
-
     color: #333;
 
     flex-grow: 1;
@@ -321,13 +274,11 @@
     min-width: 0;
 
     overflow-wrap: anywhere;
-
     word-break: break-word;
 }
 
 .message-meta {
     font-size: 0.8rem;
-
     color: #888;
 
     display: flex;
@@ -341,7 +292,6 @@
 
 .message-excerpt {
     font-size: 0.9rem;
-
     color: #555;
 
     margin-top: 5px;
@@ -351,7 +301,6 @@
     overflow: hidden;
 
     overflow-wrap: anywhere;
-
     word-break: break-word;
 }
 
@@ -430,7 +379,6 @@
     margin: 0 20px;
 
     align-items: center;
-
     justify-content: center;
 }
 
@@ -440,7 +388,6 @@
     position: absolute;
 
     top: -5px;
-
     right: -10px;
 
     background-color: rgba(202, 84, 84, 0.9);
@@ -1253,19 +1200,23 @@
 
 
 /* =========================================================
-   MEDIA MESSAGE CONTENT
+   MEDIA MESSAGE
    =========================================================
-   Media messages intentionally use the available width
-   of the conversation body.
+   STANDARD DESKTOP MESSENGER SIZES
 
-   IMPORTANT:
-   No 46vw here.
+   1366px -> ~315px
+   1440px -> ~331px
+   1920px -> ~442px
+   2560px -> ~589px
+   3840px -> max 700px
+
+   Mobile switches to available width.
 ========================================================= */
 
 .chat-message-content:has(.media-wrap) {
     display: block;
 
-    width: 100%;
+    width: fit-content;
 
     max-width: 100%;
 
@@ -1292,13 +1243,13 @@
 
     align-items: stretch;
 
-    width: 100%;
+    width: fit-content;
 
-    max-width: 100%;
+    max-width: clamp(300px, 23vw, 700px);
 
     min-width: 0;
 
-    padding: 7px;
+    padding: 5px;
 
     box-sizing: border-box;
 
@@ -1323,7 +1274,7 @@
 
     align-items: stretch;
 
-    width: 100%;
+    width: fit-content;
 
     max-width: 100%;
 
@@ -1344,7 +1295,7 @@
 .chat-message-content:has(.media-wrap) .media-wrap > a {
     display: block;
 
-    width: 100%;
+    width: fit-content;
 
     max-width: 100%;
 
@@ -1365,7 +1316,7 @@
 .chat-message-content:has(.media-wrap) .message-image {
     display: block;
 
-    width: 100%;
+    width: auto;
 
     max-width: 100%;
 
@@ -1373,11 +1324,11 @@
 
     height: auto;
 
-    max-height: 60vh;
+    max-height: 65vh;
 
     object-fit: contain;
 
-    border-radius: 14px;
+    border-radius: 12px;
 
     box-sizing: border-box;
 }
@@ -1390,7 +1341,7 @@
 .chat-message-content:has(.media-wrap) .message-video {
     display: block;
 
-    width: 100%;
+    width: auto;
 
     max-width: 100%;
 
@@ -1398,13 +1349,79 @@
 
     height: auto;
 
-    max-height: 60vh;
+    max-height: 65vh;
 
     object-fit: contain;
 
-    border-radius: 14px;
+    border-radius: 12px;
 
     box-sizing: border-box;
+}
+
+
+/* =========================================================
+   LANDSCAPE MEDIA
+   16:9 / wide images
+========================================================= */
+
+.chat-message-content:has(.media-wrap)
+.message-image[data-orientation="landscape"],
+.chat-message-content:has(.media-wrap)
+.message-video[data-orientation="landscape"] {
+    width: 100%;
+
+    height: auto;
+
+    max-width: 100%;
+
+    max-height: none;
+
+    aspect-ratio: 16 / 9;
+
+    object-fit: cover;
+}
+
+
+/* =========================================================
+   PORTRAIT MEDIA
+   Prevent very tall images
+========================================================= */
+
+.chat-message-content:has(.media-wrap)
+.message-image[data-orientation="portrait"],
+.chat-message-content:has(.media-wrap)
+.message-video[data-orientation="portrait"] {
+    width: auto;
+
+    max-width: 100%;
+
+    height: auto;
+
+    max-height: min(65vh, 560px);
+
+    object-fit: contain;
+}
+
+
+/* =========================================================
+   SQUARE MEDIA
+========================================================= */
+
+.chat-message-content:has(.media-wrap)
+.message-image[data-orientation="square"],
+.chat-message-content:has(.media-wrap)
+.message-video[data-orientation="square"] {
+    width: auto;
+
+    max-width: 100%;
+
+    height: auto;
+
+    max-height: 65vh;
+
+    aspect-ratio: 1 / 1;
+
+    object-fit: cover;
 }
 
 
@@ -1412,7 +1429,9 @@
    TEXT + MEDIA
 ========================================================= */
 
-.chat-message-content:has(.media-wrap) .message-bubble:has(.media-wrap) .message-body-html {
+.chat-message-content:has(.media-wrap)
+.message-bubble:has(.media-wrap)
+.message-body-html {
     display: block;
 
     width: 100%;
@@ -1421,7 +1440,7 @@
 
     min-width: 0;
 
-    margin-top: 6px;
+    margin-top: 5px;
 
     box-sizing: border-box;
 
@@ -1913,15 +1932,12 @@
     display: block;
 
     width: 42px !important;
-
     height: 42px !important;
 
     max-width: 42px !important;
-
     max-height: 42px !important;
 
     min-width: 42px !important;
-
     min-height: 42px !important;
 
     object-fit: cover !important;
@@ -1933,7 +1949,6 @@
     position: relative;
 
     width: 42px;
-
     height: 42px;
 
     overflow: hidden;
@@ -2179,15 +2194,12 @@
     display: block;
 
     width: 42px !important;
-
     height: 42px !important;
 
     max-width: 42px !important;
-
     max-height: 42px !important;
 
     min-width: 42px !important;
-
     min-height: 42px !important;
 
     object-fit: cover !important;
@@ -2679,7 +2691,9 @@
        MOBILE MEDIA BUBBLE
     ===================================================== */
 
-    .chat-message-content:has(.media-wrap) .message-bubble:has(.media-wrap) {
+    .chat-message-content:has(.media-wrap)
+    .message-bubble:has(.media-wrap) {
+
         display: flex;
 
         flex-direction: column;
@@ -2705,6 +2719,7 @@
     ===================================================== */
 
     .chat-message-content:has(.media-wrap) .media-wrap {
+
         display: flex;
 
         width: 100%;
@@ -2722,6 +2737,7 @@
     ===================================================== */
 
     .chat-message-content:has(.media-wrap) .media-wrap > a {
+
         display: block;
 
         width: 100%;
@@ -2739,6 +2755,7 @@
     ===================================================== */
 
     .chat-message-content:has(.media-wrap) .message-image {
+
         display: block;
 
         width: 100%;
@@ -2762,6 +2779,7 @@
     ===================================================== */
 
     .chat-message-content:has(.media-wrap) .message-video {
+
         display: block;
 
         width: 100%;
@@ -2784,7 +2802,10 @@
        MOBILE MEDIA TEXT
     ===================================================== */
 
-    .chat-message-content:has(.media-wrap) .message-bubble:has(.media-wrap) .message-body-html {
+    .chat-message-content:has(.media-wrap)
+    .message-bubble:has(.media-wrap)
+    .message-body-html {
+
         display: block;
 
         width: 100%;
@@ -2810,6 +2831,7 @@
     ===================================================== */
 
     .chat-message-content .media-share-btn {
+
         top: 6px;
 
         right: 6px;
@@ -2820,6 +2842,7 @@
     }
 
     .chat-message-content .media-wrap:active .media-share-btn {
+
         opacity: 1;
 
         visibility: visible;
@@ -3276,18 +3299,31 @@
 
     .media-share-btn {
         position: absolute;
+
         top: 7px;
+
         right: 7px;
+
         width: 32px;
+
         height: 32px;
+
         border: 0;
+
         border-radius: 50%;
+
         background: rgba(0, 0, 0, .65);
+
         color: white;
+
         display: inline-flex;
+
         align-items: center;
+
         justify-content: center;
+
         cursor: pointer;
+
         z-index: 2;
     }
 
@@ -3308,14 +3344,22 @@
 .replying-message-media video,
 .replying-message-video-player {
     width: 42px !important;
+
     height: 42px !important;
+
     max-width: 42px !important;
+
     max-height: 42px !important;
+
     min-width: 42px !important;
+
     min-height: 42px !important;
+
     object-fit: cover !important;
+
     border-radius: 6px;
 }
+
 
 /* =========================================================
    EXTRA SAFETY - SMALL DEVICES
@@ -3329,15 +3373,21 @@
     .replying-message-media video,
     .replying-message-video-player {
         width: 40px !important;
+
         height: 40px !important;
+
         max-width: 40px !important;
+
         max-height: 40px !important;
+
         min-width: 40px !important;
+
         min-height: 40px !important;
     }
 }
 
 @media (max-width: 480px) {
+
     .message-reply-preview img,
     .message-reply-preview video,
     .replying-message-media img,
