@@ -60,12 +60,9 @@
                 <div class="btn-group conversation-actions"
                      role="group">
 
-
                     {% if not is_system %}
 
-                        <!-- =========================================
-                             BLOCK / UNBLOCK
-                        ========================================== -->
+                        <!-- BLOCK / UNBLOCK -->
 
                         {% if is_blocked %}
 
@@ -126,9 +123,7 @@
                         {% endif %}
 
 
-                        <!-- =========================================
-                             REPORT
-                        ========================================== -->
+                        <!-- REPORT -->
 
                         {% if last_message %}
 
@@ -159,9 +154,7 @@
                     {% endif %}
 
 
-                    <!-- =========================================
-                         DELETE CONVERSATION
-                    ========================================== -->
+                    <!-- DELETE CONVERSATION -->
 
                     {% if root_message %}
 
@@ -348,11 +341,6 @@
 
                                                 <!-- =================================
                                                      REPLY PREVIEW
-
-                                                     IMPORTANT:
-                                                     This appears ONLY when the
-                                                     current message actually
-                                                     has a parent_message.
                                                 ================================== -->
 
                                                 {% if item.parent_message %}
@@ -362,13 +350,10 @@
                                                        data-reply-target="{{ item.parent_message.pk }}"
                                                        title="Go to original message">
 
-
                                                         <div class="message-reply-line">
                                                         </div>
 
-
                                                         <div class="message-reply-content">
-
 
                                                             <div class="message-reply-name">
 
@@ -376,13 +361,7 @@
 
                                                             </div>
 
-
                                                             <div class="message-reply-preview-row">
-
-
-                                                                <!-- =====================
-                                                                     ORIGINAL MESSAGE TEXT
-                                                                ====================== -->
 
                                                                 <div class="message-reply-text">
 
@@ -409,10 +388,6 @@
                                                                 </div>
 
 
-                                                                <!-- =====================
-                                                                     SMALL IMAGE THUMB
-                                                                ====================== -->
-
                                                                 {% if item.parent_message.image %}
 
                                                                     <div class="message-reply-media-thumb">
@@ -422,11 +397,6 @@
                                                                              loading="lazy">
 
                                                                     </div>
-
-
-                                                                <!-- =====================
-                                                                     SMALL VIDEO THUMB
-                                                                ====================== -->
 
                                                                 {% elif item.parent_message.video %}
 
@@ -439,7 +409,6 @@
                                                                             <source src="{{ item.parent_message.video_url|default:item.parent_message.video.url }}">
 
                                                                         </video>
-
 
                                                                         <span class="message-reply-video-icon">
 
@@ -461,79 +430,96 @@
 
 
                                                 <!-- =================================
-                                                     TEXT
+                                                     CONTENT WRAPPER
+
+                                                     IMPORTANT:
+                                                     BODY + MEDIA are now inside
+                                                     one responsive container.
                                                 ================================== -->
 
-                                                {% if item.body %}
+                                                {% if item.body or item.image or item.video %}
 
-                                                    <div class="mb-1 message-body-html">
-                                                        {{ item.body|safe }}
-                                                    </div>
-
-                                                {% endif %}
+                                                    <div class="message-content-wrap">
 
 
-                                                <!-- =================================
-                                                     IMAGE
-                                                ================================== -->
+                                                        <!-- =========================
+                                                             TEXT
+                                                        ========================== -->
 
-                                                {% if item.image %}
+                                                        {% if item.body %}
 
-                                                    <div class="media-wrap mt-1">
+                                                            <div class="message-body-html">
+                                                                {{ item.body|safe }}
+                                                            </div>
 
-                                                        <a href="{{ item.image.url }}"
-                                                           target="_blank"
-                                                           rel="noopener noreferrer">
-
-                                                            <img src="{{ item.image.url }}"
-                                                                 alt="Attachment"
-                                                                 class="message-image"
-                                                                 loading="lazy">
-
-                                                        </a>
+                                                        {% endif %}
 
 
-                                                        <button type="button"
-                                                                class="media-share-btn share-btn"
-                                                                data-url="{{ item.image.url }}"
-                                                                title="Copy link"
-                                                                aria-label="Share image">
+                                                        <!-- =========================
+                                                             IMAGE
+                                                        ========================== -->
 
-                                                            <i class="fas fa-share-alt"></i>
+                                                        {% if item.image %}
 
-                                                        </button>
+                                                            <div class="media-wrap">
 
-                                                    </div>
+                                                                <a href="{{ item.image.url }}"
+                                                                   target="_blank"
+                                                                   rel="noopener noreferrer">
 
-                                                {% endif %}
+                                                                    <img src="{{ item.image.url }}"
+                                                                         alt="Attachment"
+                                                                         class="message-image"
+                                                                         loading="lazy">
 
-
-                                                <!-- =================================
-                                                     VIDEO
-                                                ================================== -->
-
-                                                {% if item.video %}
-
-                                                    <div class="media-wrap mt-1">
-
-                                                        <video class="message-video"
-                                                               controls
-                                                               preload="metadata">
-
-                                                            <source src="{{ item.video_url|default:item.video.url }}">
-
-                                                        </video>
+                                                                </a>
 
 
-                                                        <button type="button"
-                                                                class="media-share-btn share-btn"
-                                                                data-url="{{ item.video_url|default:item.video.url }}"
-                                                                title="Copy link"
-                                                                aria-label="Share video">
+                                                                <button type="button"
+                                                                        class="media-share-btn share-btn"
+                                                                        data-url="{{ item.image.url }}"
+                                                                        title="Copy link"
+                                                                        aria-label="Share image">
 
-                                                            <i class="fas fa-share-alt"></i>
+                                                                    <i class="fas fa-share-alt"></i>
 
-                                                        </button>
+                                                                </button>
+
+                                                            </div>
+
+                                                        {% endif %}
+
+
+                                                        <!-- =========================
+                                                             VIDEO
+                                                        ========================== -->
+
+                                                        {% if item.video %}
+
+                                                            <div class="media-wrap">
+
+                                                                <video class="message-video"
+                                                                       controls
+                                                                       preload="metadata">
+
+                                                                    <source src="{{ item.video_url|default:item.video.url }}">
+
+                                                                </video>
+
+
+                                                                <button type="button"
+                                                                        class="media-share-btn share-btn"
+                                                                        data-url="{{ item.video_url|default:item.video.url }}"
+                                                                        title="Copy link"
+                                                                        aria-label="Share video">
+
+                                                                    <i class="fas fa-share-alt"></i>
+
+                                                                </button>
+
+                                                            </div>
+
+                                                        {% endif %}
 
                                                     </div>
 
@@ -561,9 +547,7 @@
                                                 <div class="message-reactions">
 
 
-                                                    <!-- =========================
-                                                         LIKE
-                                                    ========================== -->
+                                                    <!-- LIKE -->
 
                                                     <a href="{% url 'react-message' item.pk 'like' %}"
                                                        class="tg-reaction js-react {% if liked %}active-like{% endif %}"
@@ -593,9 +577,7 @@
                                                     </a>
 
 
-                                                    <!-- =========================
-                                                         HEART
-                                                    ========================== -->
+                                                    <!-- HEART -->
 
                                                     <a href="{% url 'react-message' item.pk 'heart' %}"
                                                        class="tg-reaction js-react {% if hearted %}active-heart{% endif %}"
@@ -625,9 +607,7 @@
                                                     </a>
 
 
-                                                    <!-- =========================
-                                                         DELETE OWN MESSAGE
-                                                    ========================== -->
+                                                    <!-- DELETE OWN MESSAGE -->
 
                                                     {% if item.sender == request.user %}
 
@@ -671,9 +651,7 @@
                                         <div class="message-side-actions">
 
 
-                                            <!-- =========================
-                                                 REPLY
-                                            ========================== -->
+                                            <!-- REPLY -->
 
                                             <button type="button"
                                                     class="message-side-btn reply-message-side-btn"
@@ -696,10 +674,7 @@
                                             </button>
 
 
-                                            <!-- =========================
-                                                 EDIT
-                                                 OWN TEXT MESSAGE ONLY
-                                            ========================== -->
+                                            <!-- EDIT -->
 
                                             {% if item.sender == request.user and item.body %}
 
@@ -799,7 +774,6 @@
 
                         <i class="fas fa-ban me-2"></i>
 
-
                         {% if is_blocked_by_other %}
 
                             <strong>
@@ -832,9 +806,7 @@
                         {% csrf_token %}
 
 
-                        <!-- =========================================
-                             REPLY TARGET
-                        ========================================== -->
+                        <!-- REPLY TARGET -->
 
                         <input type="hidden"
                                name="reply_to"
@@ -842,9 +814,7 @@
                                value="">
 
 
-                        <!-- =========================================
-                             EDIT TARGET
-                        ========================================== -->
+                        <!-- EDIT TARGET -->
 
                         <input type="hidden"
                                name="editing_message_id"
@@ -852,9 +822,7 @@
                                value="">
 
 
-                        <!-- =========================================
-                             EDIT BAR
-                        ========================================== -->
+                        <!-- EDIT BAR -->
 
                         <div id="editing-message-bar"
                              class="editing-message-bar d-none">
@@ -891,9 +859,7 @@
                         </div>
 
 
-                        <!-- =========================================
-                             REPLY BAR
-                        ========================================== -->
+                        <!-- REPLY BAR -->
 
                         <div id="replying-message-bar"
                              class="replying-message-bar d-none">
@@ -930,14 +896,11 @@
                         </div>
 
 
-                        <!-- =========================================
-                             MESSAGE BODY
-                        ========================================== -->
+                        <!-- MESSAGE BODY -->
 
                         <div class="mb-2 position-relative">
 
                             {{ form.body }}
-
 
                             <div id="chat-drop-overlay"
                                  class="chat-drop-overlay"
@@ -964,9 +927,7 @@
                         </div>
 
 
-                        <!-- =========================================
-                             IMAGE PREVIEW
-                        ========================================== -->
+                        <!-- IMAGE PREVIEW -->
 
                         <div id="image-preview-wrap"
                              class="mb-2 d-none">
@@ -979,9 +940,7 @@
                         </div>
 
 
-                        <!-- =========================================
-                             VIDEO PREVIEW
-                        ========================================== -->
+                        <!-- VIDEO PREVIEW -->
 
                         <div id="video-preview-wrap"
                              class="mb-2 d-none">
@@ -994,16 +953,13 @@
                         </div>
 
 
-                        <!-- =========================================
-                             FILE INPUTS
-                        ========================================== -->
+                        <!-- FILE INPUTS -->
 
                         <input type="file"
                                name="image"
                                id="id_image"
                                accept="image/*"
                                hidden>
-
 
                         <input type="file"
                                name="video"
@@ -1012,9 +968,7 @@
                                hidden>
 
 
-                        <!-- =========================================
-                             UPLOAD PROGRESS
-                        ========================================== -->
+                        <!-- UPLOAD PROGRESS -->
 
                         <div id="upload-progress-wrap"
                              class="upload-progress-wrap d-none mb-2">
@@ -1049,12 +1003,9 @@
                         </div>
 
 
-                        <!-- =========================================
-                             COMPOSER ACTIONS
-                        ========================================== -->
+                        <!-- COMPOSER ACTIONS -->
 
                         <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
-
 
                             <div class="btn-group"
                                  role="group">
@@ -1171,9 +1122,7 @@
                             </div>
 
 
-                            <!-- =========================================
-                                 SEND / SAVE
-                            ========================================== -->
+                            <!-- SEND / SAVE -->
 
                             <button type="submit"
                                     class="btn btn-primary px-4"
@@ -1185,13 +1134,21 @@
                                 <span id="message-submit-text">
                                     Send
                                 </span>
+
                             </button>
+
                         </div>
+
                     </form>
+
                 </div>
+
             {% endif %}
+
         </div>
+
     </div>
+
 </main>
 
 {% endblock %}
