@@ -132,6 +132,8 @@
 
     border-radius: 8px;
     box-sizing: border-box;
+
+    min-width: 0;
 }
 
 /* =========================================================
@@ -157,6 +159,8 @@
 
     width: 100%;
     box-sizing: border-box;
+
+    min-width: 0;
 }
 
 .message-box h2 {
@@ -188,6 +192,7 @@
     align-items: center;
 
     box-sizing: border-box;
+    min-width: 0;
 }
 
 .message-item:hover {
@@ -284,7 +289,7 @@
     position: absolute;
     top: -5px;
     right: -10px;
-    background-color: rgb(202, 84, 84, 0.9);
+    background-color: rgba(202, 84, 84, 0.9);
     color: white;
     border-radius: 50%;
     padding: 2px 6px;
@@ -333,6 +338,7 @@
         transform 0.3s ease,
         box-shadow 0.3s ease;
     box-sizing: border-box;
+    min-width: 0;
 }
 
 .message-card:hover {
@@ -444,6 +450,8 @@
     padding: 10px;
     border-radius: 5px;
     background-color: #e1d5d5;
+
+    min-width: 0;
 }
 
 .sender-details {
@@ -505,8 +513,15 @@
 }
 
 /* =========================================================
-   CONVERSATION
+   CONVERSATION BOX
 ========================================================= */
+
+.conversation-box {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
 
 /* =========================================================
    CONVERSATION TITLE
@@ -517,9 +532,22 @@
     justify-content: space-between;
     align-items: center;
     gap: 0.75rem;
+
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
     margin-bottom: 1.5rem;
     padding-bottom: 0.9rem;
+
     border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+
+    box-sizing: border-box;
+}
+
+.conversation-title h3 {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 /* =========================================================
@@ -528,10 +556,13 @@
 
 .conversation-scroll {
     position: relative;
+
     max-height: 55vh;
     overflow-y: auto;
+
     width: 100%;
     min-width: 0;
+
     box-sizing: border-box;
 }
 
@@ -545,9 +576,11 @@
     right: 12px;
     bottom: 12px;
     z-index: 20;
+
     display: flex;
     flex-direction: column;
     gap: 8px;
+
     margin-right: 12px;
     margin-top: -88px;
 }
@@ -555,14 +588,20 @@
 .scroll-navigation-btn {
     width: 40px;
     height: 40px;
+
     border: none;
     border-radius: 50%;
+
     background: #fff;
+
     box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
     cursor: pointer;
+
     transition:
         opacity .25s ease,
         visibility .25s ease,
@@ -602,8 +641,10 @@
 .conversation-message {
     display: flex;
     align-items: flex-start;
+
     width: 100%;
     min-width: 0;
+
     margin-bottom: 25px;
 }
 
@@ -619,9 +660,12 @@
 
 .message-avatar {
     display: block;
+
     width: 48px;
     height: 48px;
+
     object-fit: cover;
+
     border-radius: 50%;
     border: 1px solid #ccc;
 }
@@ -653,8 +697,10 @@
     align-items: baseline;
     flex-wrap: wrap;
     gap: 8px;
+
     width: 100%;
     min-width: 0;
+
     margin-bottom: 4px;
 }
 
@@ -677,10 +723,13 @@
 .message-delivery-status {
     display: inline-flex;
     align-items: center;
+
     margin-left: 2px;
+
     font-size: 11px;
     line-height: 1;
     font-weight: 600;
+
     color: #999;
     white-space: nowrap;
     user-select: none;
@@ -696,9 +745,12 @@
 
 .chat-message-content {
     display: block;
+
     width: fit-content;
     max-width: 100%;
     min-width: 0;
+
+    box-sizing: border-box;
 }
 
 /* =========================================================
@@ -707,18 +759,27 @@
 
 .chat-message-content .message-bubble {
     position: relative;
+
     display: block;
+
     width: fit-content;
     max-width: 100%;
     min-width: 0;
+
     box-sizing: border-box;
+
     padding: 11px 15px;
+
     background: #f0f2f5;
+
     border-radius: 4px 18px 18px 18px;
+
     font-size: 15px;
     line-height: 1.5;
+
     word-wrap: break-word;
     overflow-wrap: break-word;
+
     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
 }
 
@@ -728,11 +789,15 @@
 
 .chat-message-content .message-bubble::before {
     content: "";
+
     position: absolute;
+
     left: -8px;
     top: 12px;
+
     width: 0;
     height: 0;
+
     border-top: 7px solid transparent;
     border-bottom: 7px solid transparent;
     border-right: 9px solid #f0f2f5;
@@ -776,6 +841,7 @@
 .own-message .chat-message-content .message-bubble::before {
     left: auto;
     right: -8px;
+
     border-right: none;
     border-left: 9px solid #d9fdd3;
 }
@@ -804,7 +870,89 @@
 
 .chat-message-content .media-wrap {
     position: relative;
+
     display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    width: fit-content;
+    max-width: 100%;
+    min-width: 0;
+
+    box-sizing: border-box;
+}
+
+.chat-message-content .media-wrap > a {
+    display: block;
+
+    width: fit-content;
+    max-width: 100%;
+
+    line-height: 0;
+}
+
+/* =========================================================
+   RESPONSIVE MEDIA
+   1366px VIEWPORT ≈ 628px MEDIA
+   LARGE MONITORS SCALE PROPORTIONALLY
+========================================================= */
+
+.chat-message-content .message-image {
+    display: block;
+
+    width: auto;
+    height: auto;
+
+    max-width: 46vw;
+    max-height: 60vh;
+
+    object-fit: contain;
+
+    border-radius: 14px;
+}
+
+.chat-message-content .message-video {
+    display: block;
+
+    width: 46vw;
+    max-width: 100%;
+
+    height: auto;
+    max-height: 60vh;
+
+    object-fit: contain;
+
+    border-radius: 14px;
+}
+
+/* =========================================================
+   MEDIA MESSAGE BUBBLE
+========================================================= */
+
+.chat-message-content .message-bubble:has(.media-wrap) {
+    position: relative;
+
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    width: fit-content;
+    max-width: calc(46vw + 14px);
+    min-width: 0;
+
+    padding: 7px;
+
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   MEDIA INSIDE BUBBLE
+========================================================= */
+
+.chat-message-content .message-bubble:has(.media-wrap) .media-wrap {
+    display: inline-flex;
+    flex: 0 0 auto;
+
     flex-direction: column;
     align-items: flex-start;
 
@@ -813,47 +961,66 @@
     min-width: 0;
 }
 
-.chat-message-content .media-wrap > a {
+.chat-message-content .message-bubble:has(.media-wrap) .media-wrap > a {
     display: block;
+
+    width: fit-content;
     max-width: 100%;
+
     line-height: 0;
 }
 
 /* =========================================================
-   NORMAL MESSAGE IMAGE
+   IMAGE INSIDE MEDIA BUBBLE
 ========================================================= */
 
-.chat-message-content .message-image {
+.chat-message-content .message-bubble:has(.media-wrap) .message-image {
     display: block;
+
     width: auto;
     height: auto;
 
-    /*
-       Media is responsive.
-       It can grow with the available chat width,
-       but will not become absurdly large.
-    */
-    max-width: min(720px, 75vw);
+    max-width: 46vw;
     max-height: 60vh;
 
     object-fit: contain;
+
     border-radius: 14px;
 }
 
 /* =========================================================
-   NORMAL MESSAGE VIDEO
+   VIDEO INSIDE MEDIA BUBBLE
 ========================================================= */
 
-.chat-message-content .message-video {
+.chat-message-content .message-bubble:has(.media-wrap) .message-video {
     display: block;
 
-    width: min(720px, 75vw);
+    width: 46vw;
     max-width: 100%;
+
     height: auto;
     max-height: 60vh;
 
     object-fit: contain;
+
     border-radius: 14px;
+}
+
+/* =========================================================
+   TEXT + MEDIA
+========================================================= */
+
+.chat-message-content .message-bubble:has(.media-wrap) .message-body-html {
+    display: block;
+
+    width: auto;
+    max-width: 46vw;
+    min-width: 0;
+
+    box-sizing: border-box;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 /* =========================================================
@@ -862,11 +1029,13 @@
 
 .chat-message-content .media-share-btn {
     position: absolute;
+
     top: 8px;
     right: 8px;
 
     width: 34px;
     height: 34px;
+
     padding: 0;
 
     display: flex;
@@ -875,11 +1044,13 @@
 
     border: none;
     border-radius: 50%;
+
     background: rgba(0, 0, 0, .65);
     color: #fff;
 
     opacity: 0;
     visibility: hidden;
+
     transform: scale(.85);
 
     transition:
@@ -916,6 +1087,7 @@
 
     margin-top: 5px;
     padding: 0;
+
     box-sizing: border-box;
 }
 
@@ -929,6 +1101,7 @@
 
     width: fit-content;
     max-width: 100%;
+
     gap: 4px;
 }
 
@@ -942,9 +1115,13 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
+
     padding: 2px 6px 2px 4px;
+
     border-radius: 12px;
+
     background: rgba(0, 0, 0, .06);
+
     text-decoration: none;
     line-height: 1;
 }
@@ -971,9 +1148,12 @@
 .react-avatar {
     width: 16px;
     height: 16px;
+
     border-radius: 50%;
     object-fit: cover;
+
     border: 1px solid #fff;
+
     margin-left: -3px;
 }
 
@@ -987,6 +1167,7 @@
 
 .delete-message-form {
     display: inline-flex;
+
     margin: 0;
     padding: 0;
 }
@@ -994,8 +1175,10 @@
 .delete-message-reaction {
     border: 0;
     background: transparent;
+
     padding: 2px 6px 2px 4px;
     margin: 0;
+
     cursor: pointer;
     font: inherit;
 }
@@ -1013,12 +1196,14 @@
 .message-side-actions {
     display: flex;
     flex-direction: column;
+
     flex: 0 0 auto;
 
     padding-top: 4px;
 
     opacity: 0;
     visibility: hidden;
+
     transform: translateX(4px);
 
     transition:
@@ -1042,8 +1227,10 @@
     justify-content: center;
 
     padding: 0;
+
     border: 1px solid rgba(0, 0, 0, .12);
     border-radius: 50%;
+
     background: #fff;
     color: #6c757d;
 
@@ -1063,6 +1250,7 @@
     color: #198754;
     background: #f8f9fa;
     border-color: rgba(25, 135, 84, .35);
+
     transform: translateY(-1px);
 }
 
@@ -1080,11 +1268,13 @@
     justify-content: space-between;
 
     width: 100%;
+
     margin-bottom: 8px;
     padding: 8px 10px;
 
     border-left: 3px solid #0d6efd;
     border-radius: 7px;
+
     background: rgba(13, 110, 253, 0.07);
 
     box-sizing: border-box;
@@ -1108,6 +1298,7 @@
 .editing-message-info > div {
     display: flex;
     flex-direction: column;
+
     min-width: 0;
     flex: 1 1 auto;
 }
@@ -1142,8 +1333,10 @@
     justify-content: center;
 
     padding: 0;
+
     border: 0;
     border-radius: 50%;
+
     background: transparent;
     color: #6c757d;
 
@@ -1175,6 +1368,7 @@
 
     border-left: 3px solid #6c757d;
     border-radius: 8px;
+
     background: rgba(108, 117, 125, .08);
 
     overflow: hidden;
@@ -1193,6 +1387,7 @@
 
 .replying-message-info > i {
     flex: 0 0 auto;
+
     color: #6c757d;
     font-size: .9rem;
 }
@@ -1225,6 +1420,7 @@
     max-height: 42px;
 
     object-fit: cover;
+
     border-radius: 6px;
 }
 
@@ -1235,6 +1431,7 @@
     height: 42px;
 
     overflow: hidden;
+
     border-radius: 6px;
 }
 
@@ -1312,6 +1509,7 @@
     justify-content: center;
 
     padding: 0;
+
     border: 0;
     border-radius: 6px;
 
@@ -1346,6 +1544,7 @@
 
     border-left: 3px solid #6c757d;
     border-radius: 6px;
+
     background: rgba(108, 117, 125, .08);
 
     color: inherit;
@@ -1367,6 +1566,7 @@
 .message-reply-preview .message-reply-text {
     min-width: 0;
     flex: 1 1 auto;
+
     overflow: hidden;
 }
 
@@ -1401,7 +1601,6 @@
 
 /* =========================================================
    REPLY PREVIEW MEDIA THUMBNAIL
-   IMPORTANT: SMALL BY DESIGN
 ========================================================= */
 
 .message-reply-media-thumb {
@@ -1431,10 +1630,11 @@
     max-width: 42px !important;
     max-height: 42px !important;
 
-    min-width: 42px;
-    min-height: 42px;
+    min-width: 42px !important;
+    min-height: 42px !important;
 
     object-fit: cover !important;
+
     border-radius: 6px;
 }
 
@@ -1495,9 +1695,13 @@
 .reply-form .form-control {
     width: 100%;
     min-height: 120px;
+
     border-radius: 10px;
+
     resize: vertical;
+
     font-size: .95rem;
+
     box-sizing: border-box;
 }
 
@@ -1541,7 +1745,9 @@
 .emoji-picker .emoji-btn {
     min-width: 34px;
     min-height: 34px;
+
     padding: 3px;
+
     font-size: 20px;
     line-height: 1;
 
@@ -1617,6 +1823,7 @@
     margin-bottom: 8px;
 
     border-radius: 50%;
+
     background: #f1e6f5;
     color: #8e44ad;
 
@@ -1668,6 +1875,7 @@
     align-items: center;
 
     gap: .4rem;
+
     font-size: .9rem;
 }
 
@@ -1678,7 +1886,7 @@
 }
 
 /* =========================================================
-   MOBILE
+   MOBILE <= 768
 ========================================================= */
 
 @media (max-width: 768px) {
@@ -1705,6 +1913,8 @@
 
 /* =========================================================
    MOBILE <= 576
+   MEDIA = FULL AVAILABLE BUBBLE WIDTH
+   НЕ използва 46vw
 ========================================================= */
 
 @media (max-width: 576px) {
@@ -1719,12 +1929,20 @@
     }
 
     .conversation-box {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+
         padding: 12px;
+
+        box-sizing: border-box;
     }
 
     .conversation-title {
         flex-direction: column;
         align-items: flex-start !important;
+
+        width: 100%;
     }
 
     .conversation-title h3 {
@@ -1737,7 +1955,9 @@
         margin-top: .25rem;
     }
 
-    /* MESSAGE */
+    /* =====================================================
+       MESSAGE
+    ===================================================== */
 
     .conversation-message {
         margin-bottom: 20px;
@@ -1761,9 +1981,12 @@
 
     .conversation-message-body {
         max-width: calc(100% - 48px);
+        min-width: 0;
     }
 
-    /* META */
+    /* =====================================================
+       META
+    ===================================================== */
 
     .conversation-meta {
         gap: 5px;
@@ -1777,23 +2000,98 @@
         font-size: 11px;
     }
 
-    /* BUBBLE */
+    /* =====================================================
+       BUBBLE
+    ===================================================== */
+
+    .chat-message-content {
+        width: fit-content;
+        max-width: 100%;
+        min-width: 0;
+    }
 
     .chat-message-content .message-bubble {
         font-size: 14px;
         padding: 9px 12px;
+        max-width: 100%;
     }
 
-    /* MEDIA */
+    /* =====================================================
+       MOBILE MEDIA BUBBLE
+       FULL AVAILABLE WIDTH
+    ===================================================== */
 
-    .chat-message-content .message-image,
-    .chat-message-content .message-video {
+    .chat-message-content .message-bubble:has(.media-wrap) {
+        display: inline-flex;
+
+        width: 100%;
         max-width: 100%;
-        max-height: 200px;
+        min-width: 0;
+
+        padding: 6px;
+
+        box-sizing: border-box;
+    }
+
+    .chat-message-content .message-bubble:has(.media-wrap) .media-wrap {
+        display: flex;
+
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .chat-message-content .message-bubble:has(.media-wrap) .media-wrap > a {
+        display: block;
+
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .chat-message-content .message-bubble:has(.media-wrap) .message-image {
+        display: block;
+
+        width: 100%;
+        max-width: 100%;
+
+        height: auto;
+        max-height: 70vh;
+
+        object-fit: contain;
+
         border-radius: 14px;
     }
 
-    /* SHARE */
+    .chat-message-content .message-bubble:has(.media-wrap) .message-video {
+        display: block;
+
+        width: 100%;
+        max-width: 100%;
+
+        height: auto;
+        max-height: 70vh;
+
+        object-fit: contain;
+
+        border-radius: 14px;
+    }
+
+    .chat-message-content .message-bubble:has(.media-wrap) .message-body-html {
+        display: block;
+
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+
+        box-sizing: border-box;
+
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    /* =====================================================
+       SHARE
+    ===================================================== */
 
     .chat-message-content .media-share-btn {
         top: 6px;
@@ -1809,7 +2107,9 @@
         transform: scale(1);
     }
 
-    /* REACTIONS */
+    /* =====================================================
+       REACTIONS
+    ===================================================== */
 
     .chat-message-content .message-actions {
         margin-top: 4px;
@@ -1819,13 +2119,17 @@
         gap: 3px;
     }
 
-    /* REPLY FORM */
+    /* =====================================================
+       REPLY FORM
+    ===================================================== */
 
     .reply-form .btn-primary {
         width: 100%;
     }
 
-    /* ATTACHMENT PREVIEW */
+    /* =====================================================
+       ATTACHMENT PREVIEW
+    ===================================================== */
 
     .attach-preview {
         max-width: 100%;
@@ -1841,7 +2145,9 @@
         width: 100%;
     }
 
-    /* DROP */
+    /* =====================================================
+       DROP
+    ===================================================== */
 
     .chat-drop-overlay {
         border-width: 2px;
@@ -1862,7 +2168,9 @@
         font-size: 12px;
     }
 
-    /* PAGINATION */
+    /* =====================================================
+       PAGINATION
+    ===================================================== */
 
     .pagination {
         font-size: .8rem;
@@ -1873,7 +2181,9 @@
         padding: .3rem .55rem;
     }
 
-    /* EDIT / REPLY BARS */
+    /* =====================================================
+       EDIT / REPLY BARS
+    ===================================================== */
 
     .editing-message-bar,
     .replying-message-bar {
@@ -1897,7 +2207,9 @@
         font-size: .72rem;
     }
 
-    /* REPLY MEDIA */
+    /* =====================================================
+       REPLY MEDIA
+    ===================================================== */
 
     .replying-message-media,
     .replying-message-video {
@@ -1915,7 +2227,9 @@
         max-height: 40px;
     }
 
-    /* SENT REPLY PREVIEW */
+    /* =====================================================
+       SENT REPLY PREVIEW
+    ===================================================== */
 
     .message-reply-preview {
         max-width: 100%;
@@ -1925,6 +2239,7 @@
 
     .message-reply-media-thumb {
         flex-basis: 40px;
+
         width: 40px;
         height: 40px;
 
@@ -1940,8 +2255,8 @@
         max-width: 40px !important;
         max-height: 40px !important;
 
-        min-width: 40px;
-        min-height: 40px;
+        min-width: 40px !important;
+        min-height: 40px !important;
     }
 }
 
@@ -1963,6 +2278,7 @@
     .message-row-content {
         gap: 4px;
         overflow: visible;
+        max-width: 100%;
     }
 
     .chat-message-content {
@@ -2017,6 +2333,10 @@
         word-break: break-word;
     }
 
+    /* =====================================================
+       EDIT / REPLY
+    ===================================================== */
+
     .editing-message-bar,
     .replying-message-bar {
         display: flex;
@@ -2069,10 +2389,13 @@
     .replying-cancel-btn {
         width: 30px;
         height: 30px;
+
         flex-shrink: 0;
     }
 
-    /* REPLY THUMBNAIL */
+    /* =====================================================
+       REPLY THUMBNAIL
+    ===================================================== */
 
     .replying-message-media {
         flex: 0 0 38px;
@@ -2099,7 +2422,9 @@
         font-size: 11px;
     }
 
-    /* SENT REPLY THUMBNAIL */
+    /* =====================================================
+       SENT REPLY THUMBNAIL
+    ===================================================== */
 
     .message-reply-media-thumb {
         flex: 0 0 38px;
@@ -2119,8 +2444,8 @@
         max-width: 38px !important;
         max-height: 38px !important;
 
-        min-width: 38px;
-        min-height: 38px;
+        min-width: 38px !important;
+        min-height: 38px !important;
     }
 
     .message-reply-preview .message-reply-name {
@@ -2136,9 +2461,16 @@
         z-index: 1055;
     }
 
+    /* =====================================================
+       MOBILE MEDIA FALLBACK
+    ===================================================== */
+
     .media-wrap {
         position: relative;
+
         display: inline-flex;
+
+        width: 100%;
         max-width: 100%;
     }
 
@@ -2171,167 +2503,73 @@
 }
 
 /* =========================================================
-   EXTRA SAFETY:
-   NEVER LET REPLY THUMBNAILS INHERIT NORMAL MEDIA SIZE
+   EXTRA SAFETY
+   REPLY THUMBNAILS NEVER INHERIT NORMAL MEDIA SIZE
 ========================================================= */
 
 .message-reply-preview img,
 .message-reply-preview video,
 .replying-message-media img,
-.replying-message-media video {
-    object-fit: cover !important;
-}
-
-.message-reply-preview .message-image,
-.message-reply-preview .message-video {
+.replying-message-media video,
+.replying-message-video-player {
     width: 42px !important;
     height: 42px !important;
 
     max-width: 42px !important;
     max-height: 42px !important;
+
+    min-width: 42px !important;
+    min-height: 42px !important;
+
+    object-fit: cover !important;
+
+    border-radius: 6px;
+}
+
+/* =========================================================
+   EXTRA SAFETY - REPLY THUMBNAILS ON SMALL DEVICES
+========================================================= */
+
+@media (max-width: 576px) {
+
+    .message-reply-preview img,
+    .message-reply-preview video,
+    .replying-message-media img,
+    .replying-message-media video,
+    .replying-message-video-player {
+        width: 40px !important;
+        height: 40px !important;
+
+        max-width: 40px !important;
+        max-height: 40px !important;
+
+        min-width: 40px !important;
+        min-height: 40px !important;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .message-reply-preview img,
+    .message-reply-preview video,
+    .replying-message-media img,
+    .replying-message-media video,
+    .replying-message-video-player {
+        width: 38px !important;
+        height: 38px !important;
+
+        max-width: 38px !important;
+        max-height: 38px !important;
+
+        min-width: 38px !important;
+        min-height: 38px !important;
+    }
 }
 
 /* =========================================================
    HIDDEN STATE
 ========================================================= */
 
-.editing-message-bar.d-none,
-.replying-message-bar.d-none,
-.replying-message-media.d-none,
-.replying-message-video.d-none {
+.hidden {
     display: none !important;
-}
-
-/* =========================================================
-   MEDIA MESSAGE BUBBLE
-   Bubble follows media naturally.
-   Long text cannot create an unnecessarily wide bubble.
-========================================================= */
-
-.chat-message-content .message-bubble:has(.media-wrap) {
-    position: relative;
-
-    display: inline-flex;
-    flex-direction: column;
-    align-items: flex-start;
-
-    width: fit-content;
-
-    /*
-       The bubble can use the full available chat width.
-       It is no longer locked to 360px / 374px.
-    */
-    max-width: 100%;
-    min-width: 0;
-
-    padding: 7px;
-
-    box-sizing: border-box;
-}
-
-/* =========================================================
-   MEDIA WRAPPER INSIDE BUBBLE
-========================================================= */
-
-.chat-message-content .message-bubble:has(.media-wrap) .media-wrap {
-    display: inline-flex;
-    flex: 0 0 auto;
-
-    flex-direction: column;
-    align-items: flex-start;
-
-    width: fit-content;
-    max-width: 100%;
-    min-width: 0;
-}
-
-/* =========================================================
-   MEDIA LINK
-========================================================= */
-
-.chat-message-content .message-bubble:has(.media-wrap) .media-wrap > a {
-    display: block;
-    width: fit-content;
-    max-width: 100%;
-    line-height: 0;
-}
-
-/* =========================================================
-   IMAGE INSIDE MEDIA BUBBLE
-========================================================= */
-
-.chat-message-content .message-bubble:has(.media-wrap) .message-image {
-    display: block;
-
-    width: auto;
-    height: auto;
-
-    max-width: min(720px, 75vw);
-    max-height: 60vh;
-
-    object-fit: contain;
-}
-
-/* =========================================================
-   VIDEO INSIDE MEDIA BUBBLE
-========================================================= */
-
-.chat-message-content .message-bubble:has(.media-wrap) .message-video {
-    display: block;
-
-    width: min(720px, 75vw);
-    max-width: 100%;
-
-    height: auto;
-    max-height: 60vh;
-
-    object-fit: contain;
-}
-
-/* =========================================================
-   TEXT + MEDIA
-========================================================= */
-
-.chat-message-content .message-bubble:has(.media-wrap) .message-body-html {
-    display: block;
-
-    /*
-       Important:
-       text can shrink and wrap instead of creating
-       a huge horizontal bubble.
-    */
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-
-    box-sizing: border-box;
-
-    overflow-wrap: anywhere;
-    word-break: break-word;
-}
-
-/* =========================================================
-   MOBILE MEDIA BUBBLE
-========================================================= */
-
-@media (max-width: 576px) {
-
-    .chat-message-content .message-bubble:has(.media-wrap) {
-        max-width: 100%;
-        padding: 6px;
-    }
-
-    .chat-message-content .message-bubble:has(.media-wrap) .media-wrap {
-        max-width: 100%;
-    }
-
-    .chat-message-content .message-bubble:has(.media-wrap) .message-image,
-    .chat-message-content .message-bubble:has(.media-wrap) .message-video {
-        max-width: 100%;
-        max-height: 200px;
-    }
-
-    .chat-message-content .message-bubble:has(.media-wrap) .message-body-html {
-        max-width: 100%;
-    }
 }
