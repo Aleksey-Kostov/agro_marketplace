@@ -672,7 +672,7 @@
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    margin-bottom: 25px;
+    margin-bottom: 14px;
     box-sizing: border-box;
 }
 
@@ -767,14 +767,15 @@
     color: #8e44ad;
 }
 
+
 /* =========================================================
    CHAT MESSAGE CONTENT
-========================================================= */
+   ========================================================= */
 
 .chat-message-content {
     display: block;
     width: fit-content;
-    max-width: 100%;
+    max-width: min(100%, 520px);
     min-width: 0;
     box-sizing: border-box;
 }
@@ -786,7 +787,7 @@
 
 /* =========================================================
    NORMAL MESSAGE BUBBLE
-========================================================= */
+   ========================================================= */
 
 .chat-message-content .message-bubble {
     position: relative;
@@ -795,20 +796,33 @@
     max-width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    padding: 11px 15px;
+    padding: 9px 14px;
     background: #f0f2f5;
     border-radius: 4px 18px 18px 18px;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
     font-size: 15px;
-    line-height: 1.5;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: 0;
+    color: #202124;
     word-wrap: break-word;
     overflow-wrap: anywhere;
     word-break: break-word;
     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
 }
 
+
 /* =========================================================
    LEFT BUBBLE ARROW
-========================================================= */
+   ========================================================= */
 
 .chat-message-content .message-bubble::before {
     content: "";
@@ -825,7 +839,7 @@
 
 /* =========================================================
    OWN MESSAGE
-========================================================= */
+   ========================================================= */
 
 .own-message {
     flex-direction: row-reverse;
@@ -833,7 +847,6 @@
 
 .own-message .conversation-avatar {
     margin-right: 0;
-
     margin-left: 12px;
 }
 
@@ -858,7 +871,7 @@
 
 /* =========================================================
    RIGHT BUBBLE ARROW
-========================================================= */
+   ========================================================= */
 
 .own-message .chat-message-content .message-bubble::before {
     left: auto;
@@ -870,14 +883,14 @@
 
 /* =========================================================
    MESSAGE ROW CONTENT
-========================================================= */
+   ========================================================= */
 
 .message-row-content {
     display: flex;
     align-items: flex-start;
     gap: 6px;
     width: fit-content;
-    max-width: 100%;
+    max-width: min(100%, 520px);
     min-width: 0;
     box-sizing: border-box;
 }
@@ -889,16 +902,160 @@
 
 /* =========================================================
    TEXT INSIDE MESSAGE
-========================================================= */
+   ========================================================= */
 
 .message-body-html {
     display: block;
     width: 100%;
     max-width: 100%;
     min-width: 0;
+    margin: 0;
     box-sizing: border-box;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: 0;
+    color: inherit;
     overflow-wrap: anywhere;
     word-break: break-word;
+}
+
+
+/* =========================================================
+   MEDIA — SAME MAXIMUM WIDTH AS TEXT
+   ========================================================= */
+
+.chat-message-content:has(.media-wrap) {
+    display: block;
+    width: min(100%, 520px);
+    max-width: 520px;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.own-message .chat-message-content:has(.media-wrap) {
+    margin-left: auto;
+}
+
+.chat-message-content:has(.media-wrap) .message-bubble {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.chat-message-content:has(.media-wrap) .media-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-radius: 14px;
+}
+
+.chat-message-content:has(.media-wrap) .media-wrap > a {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    line-height: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.chat-message-content:has(.media-wrap) .message-image,
+.chat-message-content:has(.media-wrap) .message-video {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 65vh;
+    object-fit: cover;
+    border-radius: 14px;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 576px) {
+
+    .conversation-message {
+        margin-bottom: 11px;
+    }
+
+    .conversation-message-body {
+        max-width: calc(100% - 48px);
+        min-width: 0;
+    }
+
+    .chat-message-content {
+        width: fit-content;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .chat-message-content .message-bubble {
+        width: fit-content;
+        max-width: 100%;
+        padding: 8px 12px;
+        border-radius: 17px 17px 17px 5px;
+        font-size: 14px;
+        line-height: 1.45;
+    }
+
+    .own-message .message-bubble {
+        border-radius: 17px 17px 5px 17px;
+    }
+
+    .chat-message-content:has(.media-wrap) {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .chat-message-content:has(.media-wrap) .message-bubble {
+        width: 100%;
+        max-width: 100%;
+        padding: 4px;
+    }
+
+    .chat-message-content:has(.media-wrap) .media-wrap {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 13px;
+    }
+
+    .chat-message-content:has(.media-wrap) .message-image,
+    .chat-message-content:has(.media-wrap) .message-video {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 13px;
+    }
+
+    .chat-message-content:has(.media-wrap)
+    .message-bubble:has(.media-wrap)
+    .message-body-html {
+        margin-top: 6px;
+        padding: 0 3px 2px;
+        font-size: 14px;
+        line-height: 1.45;
+    }
 }
 
 
@@ -918,8 +1075,6 @@
 
 .chat-message-content:has(.media-wrap) {
     display: block;
-    width: fit-content;
-    max-width: 100%;
     min-width: 0;
     box-sizing: border-box;
 }
@@ -937,8 +1092,6 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    width: fit-content;
-    max-width: clamp(300px, 23vw, 700px);
     min-width: 0;
     padding: 5px;
     box-sizing: border-box;
@@ -1878,7 +2031,7 @@
     ===================================================== */
 
     .conversation-message {
-        margin-bottom: 20px;
+        margin-bottom: 14px;
         width: 100%;
         max-width: 100%;
         min-width: 0;
