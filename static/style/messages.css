@@ -5,7 +5,7 @@
 .message-box {
     width: 100%;
     max-width: 100%;
-    margin: auto;
+    margin: 20px auto;
     background-color: rgba(249, 249, 249, 0.95);
     border: 1px solid #ddd;
     border-radius: 10px;
@@ -173,7 +173,7 @@
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-top: 20px;
+    margin-top: 0px;
     box-sizing: border-box;
     min-width: 0;
 }
