@@ -52,14 +52,14 @@
                     {% if is_blocked %}
                     <form method="post"
                           action="{% url 'unblock-user' other_user.pk %}"
-                          class="d-inline"
+                          class="d-inline rounded-start"
                           onsubmit="return confirm('Unblock this user?');">
                         {% csrf_token %}
                         <input type="hidden"
                                name="next"
                                value="{{ request.path }}">
                         <button type="submit"
-                                class="btn btn-outline-success btn-sm activate shadow-none rounded-start"
+                                class="btn btn-outline-success btn-sm activate shadow-none"
                                 title="Unblock"
                                 aria-label="Unblock">
                             <i class="fas fa-unlock"></i>
@@ -78,7 +78,7 @@
                                name="next"
                                value="{{ request.path }}">
                         <button type="submit"
-                                class="btn btn-outline-dark btn-sm activate shadow-none rounded-start"
+                                class="btn btn-outline-dark btn-sm activate shadow-none"
                                 title="Block"
                                 aria-label="Block">
                             <i class="fas fa-ban"></i>
