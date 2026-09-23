@@ -55,7 +55,7 @@ main {
    ========================================================== */
 
 h1 {
-    font: 90px/1.5 "Cormorant Infant";
+    font: 90px/1.5 "Cormorant Infant", serif;
     color: #fff;
 }
 
@@ -82,9 +82,9 @@ img {
 
 .nav-link {
     display: flex;
-    gap: 10px;
     align-items: center;
     justify-content: center;
+    gap: 10px;
 }
 
 
@@ -93,13 +93,13 @@ img {
    ========================================================== */
 
 .header {
-    background-color: #2e8b57;
-    color: white;
+    display: flex;
+    align-items: center;
 
     padding: 30px;
 
-    display: flex;
-    align-items: center;
+    background-color: #2e8b57;
+    color: white;
 }
 
 .header h1 {
@@ -111,55 +111,137 @@ img {
     width: 100px;
     height: 100px;
 
-    border-radius: 50%;
-    object-fit: cover;
-
     margin-right: 10px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
 }
 
 
 /* ==========================================================
-   WELCOME USER
+   USER WELCOME + AVATAR
    ========================================================== */
 
-.welcome-container {
-    top: 80px;
-    right: 20px;
+.user-welcome-item {
+    display: flex;
+    align-items: center;
+    margin-left: 1rem;
+}
 
+.user-welcome {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+.welcome-container {
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.35;
     text-align: right;
 
-    font-size: 12px;
-    color: #333;
+    background-color: rgba(46, 139, 87, 0.9);
 
-    background-color: rgba(113, 218, 65, 0.5);
+    padding: 7px 12px;
 
     border-radius: 8px;
-    padding: 6px;
+
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .welcome-text {
-    font-family: 'Poppins', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 0.95rem;
+    font-weight: 500;
 }
 
-.user-name {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 400;
-    color: #2a332e;
+.welcome-container strong {
+    font-weight: 700;
 }
 
 .current-date-time {
-    font-size: 0.7rem;
+    margin-top: 2px;
+
+    font-size: 0.78rem;
     font-weight: 400;
-    color: #555;
+
+    color: #e8f5e9;
 }
 
-.welcome {
-    display: inline-block;
-    width: auto;
+.profile-picture-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
 }
 
+.profile-picture {
+    display: block;
+
+    width: 44px;
+    height: 44px;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+    border: 2px solid #fff;
+
+    transition: transform 0.2s ease;
+}
+
+.profile-picture:hover {
+    transform: scale(1.05);
+}
+
+
+/* ==========================================================
+   MOBILE USER WELCOME
+   ========================================================== */
+
+@media (max-width: 991.98px) {
+
+    .user-welcome-item {
+        width: 100%;
+
+        margin-left: 0;
+        margin-top: 10px;
+    }
+
+    .user-welcome {
+        width: 100%;
+
+        justify-content: flex-start;
+
+        gap: 8px;
+    }
+
+    .welcome-container {
+        flex: 0 1 auto;
+
+        min-width: 0;
+
+        font-size: 0.9rem;
+
+        text-align: left;
+    }
+
+    .welcome-text {
+        font-size: 0.9rem;
+    }
+
+    .current-date-time {
+        font-size: 0.72rem;
+    }
+
+    .profile-picture {
+        width: 40px;
+        height: 40px;
+    }
+}
 
 /* ==========================================================
    SECTION TITLE
@@ -168,10 +250,12 @@ img {
 .section-title {
     position: relative;
 
+    margin: 20px 0;
+
+    padding: 0;
+
     font-size: 1.5em;
     font-weight: 500;
-
-    margin: 20px 0;
 
     color: #fcf6f6;
 
@@ -212,17 +296,21 @@ img {
 .feed-card-wrapper {
     position: relative;
 
+    width: 100%;
+
+    margin-bottom: 10px;
+
+    padding: 0;
+
     background-color: rgba(255, 255, 255, 0.8);
 
     border-radius: 8px;
 
     overflow: visible;
 
-    margin-bottom: 10px;
-
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 
-    transition: transform 0.2s;
+    transition: transform 0.2s ease;
 }
 
 .feed-card-wrapper:hover {
@@ -232,17 +320,17 @@ img {
 .feed-card {
     display: flex;
 
-    justify-content: space-between;
     align-items: flex-start;
+    justify-content: space-between;
 
     width: 100%;
 
     padding: 15px;
 
+    background-color: #fff;
+
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-
-    background-color: white;
 
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -253,9 +341,10 @@ img {
    ========================================================== */
 
 .name {
+    font-family: "MerriweatherEmbed", Georgia, serif;
+
     font-size: 18px;
     font-weight: bold;
-    font-family: "MerriweatherEmbed", Georgia, serif;
 }
 
 .category-note {
@@ -263,12 +352,12 @@ img {
 
     padding: 2px 6px;
 
-    font-size: 0.7rem;
-
     background-color: #28a745;
-    color: white;
+    color: #fff;
 
     border-radius: 5px;
+
+    font-size: 0.7rem;
 }
 
 .custom-category-note {
@@ -293,6 +382,7 @@ img {
 
 .card-footer {
     display: flex;
+
     justify-content: space-between;
 
     font-size: 0.8rem;
@@ -307,15 +397,20 @@ img {
 .image-wrapper {
     position: absolute;
 
-    right: 15px;
     top: 50%;
-
-    transform: translateY(-50%);
+    right: 15px;
 
     overflow: visible;
+
+    transform: translateY(-50%);
 }
 
 .product-image-container {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
     flex-shrink: 0;
 
     width: 70px;
@@ -323,12 +418,8 @@ img {
 
     margin-left: 15px;
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    border-radius: 8px;
     border: 1px solid #5eac68;
+    border-radius: 8px;
 
     overflow: hidden;
 }
@@ -347,6 +438,7 @@ img {
 
 .photo-container {
     position: relative;
+
     overflow: hidden;
 }
 
@@ -362,16 +454,17 @@ img {
         0 4px 8px rgba(0, 0, 0, 0.2),
         0 6px 20px rgba(0, 0, 0, 0.19);
 
+    transform-origin: center center;
+
     transition:
         transform 0.3s ease,
         z-index 0.3s ease;
-
-    transform-origin: center center;
 }
 
 .product-photo:hover {
-    transform: scale(1.5);
     z-index: 10;
+
+    transform: scale(1.5);
 }
 
 .photo-container:hover .product-photo:not(:hover) {
@@ -386,20 +479,20 @@ img {
 .text-truncate {
     max-width: 332px;
 
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+
     overflow: hidden;
+
+    font-size: 0.7rem;
+    line-height: 1rem;
+
+    color: dimgray;
 
     text-overflow: ellipsis;
 
     white-space: normal;
     word-wrap: break-word;
-
-    font-size: 0.7rem;
-    line-height: 1rem;
-
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-
-    color: dimgray;
 }
 
 .text-muted {
@@ -409,8 +502,10 @@ img {
 .title {
     position: relative;
 
-    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
 
+    font-family: "Poppins", sans-serif;
     font-size: 0.8rem;
     font-weight: 400;
     line-height: 1.5;
@@ -419,25 +514,8 @@ img {
 
     text-align: left;
 
-    margin: 0;
-    padding: 0;
-
-    border-top: solid 1px rgba(10, 10, 10, 0.3);
-    border-bottom: solid 1px rgba(10, 10, 10, 0.3);
-}
-
-
-/* ==========================================================
-   FLEX HELPERS
-   ========================================================== */
-
-.d-flex {
-    display: flex;
-
-    justify-content: space-between;
-    align-items: center;
-
-    width: 100%;
+    border-top: 1px solid rgba(10, 10, 10, 0.3);
+    border-bottom: 1px solid rgba(10, 10, 10, 0.3);
 }
 
 
@@ -449,11 +527,10 @@ img {
     width: 40px;
     height: 40px;
 
-    border-radius: 50%;
-
     object-fit: cover;
 
     border: 1px solid #bdc7d1;
+    border-radius: 50%;
 }
 
 .profile-edit {
@@ -507,18 +584,18 @@ img {
 }
 
 .btn-view {
+    padding: 5px 15px;
+
     background-color: #2e8b57;
     color: rgb(212, 76, 76);
 
     border-radius: 20px;
 
-    padding: 5px 15px;
-
     font-size: 0.9rem;
 }
 
 .toggle-password {
-    background-color: white;
+    background-color: #fff;
     border-color: #ccc;
     color: #000;
 }
@@ -529,12 +606,13 @@ img {
 }
 
 .back-button {
-    max-height: 45px;
-    min-width: 94px;
-
     display: inline-flex;
+
     align-items: center;
     justify-content: center;
+
+    min-width: 94px;
+    max-height: 45px;
 
     font-size: 18px;
 
@@ -546,7 +624,12 @@ img {
    BUTTON GROUP
    ========================================================== */
 
-.btn-group .btn {
+/*
+   Не прилагаме margin към conversation-actions,
+   защото там бутоните трябва да са свързани.
+*/
+
+.btn-group:not(.conversation-actions) .btn {
     margin-top: 5px;
     margin-bottom: 5px;
 }
@@ -562,9 +645,11 @@ img {
 }
 
 .text-danger {
-    color: red;
-    font-size: 0.9em;
     margin-top: 5px;
+
+    color: red;
+
+    font-size: 0.9em;
 }
 
 
@@ -573,14 +658,15 @@ img {
    ========================================================== */
 
 .divider {
+    margin: 10px 0;
+
     border: 0;
     border-top: 1px solid #ddd;
-
-    margin: 10px 0;
 }
 
 .vertical-line {
     position: relative;
+
     top: 10%;
 
     width: 2px;
@@ -588,7 +674,7 @@ img {
 
     margin: 0 auto;
 
-    background-color: black;
+    background-color: #000;
 
     border-radius: 1px;
 }
@@ -600,6 +686,7 @@ img {
 
 .pagination-container {
     display: flex;
+
     justify-content: center;
 
     margin-top: 20px;
@@ -612,15 +699,15 @@ img {
 
     flex-wrap: wrap;
 
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 
     gap: 0.4rem;
 
-    list-style: none;
-
+    margin: 0;
     padding-left: 0;
-    margin-bottom: 0;
+
+    list-style: none;
 
     font-size: 0.9rem;
 }
@@ -632,26 +719,25 @@ img {
 .page-link {
     display: inline-block;
 
-    padding: 10px 18px;
+    padding: 10px 15px;
 
-    color: #007bff;
     background-color: #fff;
+    color: #007bff;
 
     border: 1px solid #ddd;
-    border-radius: 50px;
+    border-radius: 50%;
 
-    font-size: 16px;
+    font-size: 18px;
 
     transition:
-        background-color 0.3s,
-        color 0.3s,
-        border-color 0.3s;
+        background-color 0.3s ease,
+        color 0.3s ease,
+        border-color 0.3s ease;
 }
 
 .page-link:hover {
+    background-color: #52914c;
     color: #fff;
-
-    background-color: #007bff;
 
     border-color: #007bff;
 }
@@ -666,8 +752,8 @@ img {
 }
 
 .page-item.disabled .page-link {
-    color: #aaa;
     background-color: #f8f9fa;
+    color: #aaa;
 
     border-color: #ddd;
 
@@ -677,19 +763,8 @@ img {
 .page-item.disabled .page-link:hover {
     background-color: #f8f9fa;
     color: #aaa;
-}
 
-.page-item .page-link {
-    padding: 10px 15px;
-
-    border-radius: 50%;
-
-    font-size: 18px;
-}
-
-.page-item .page-link:hover {
-    border-color: #007bff;
-    background-color: #52914c;
+    border-color: #ddd;
 }
 
 .page-link:focus {
@@ -697,11 +772,13 @@ img {
 }
 
 .paginator-page {
-    min-width: 120px;
-    max-width: 130px;
+    display: flex;
 
     align-items: center;
     justify-content: center;
+
+    min-width: 120px;
+    max-width: 130px;
 }
 
 
@@ -739,11 +816,9 @@ img {
 .latest-news-header {
     margin-top: 20px;
     margin-bottom: 30px;
-
     padding: 0;
 
     background-color: rgba(196, 212, 196, 0.9);
-
     color: #333;
 
     border-radius: 8px;
@@ -752,7 +827,7 @@ img {
 
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
-    font-family: 'Arial', sans-serif;
+    font-family: Arial, sans-serif;
 }
 
 .latest-news-header h2 {
@@ -776,18 +851,19 @@ footer {
     padding: 20px;
 
     background-color: #2e8b57;
-    color: white;
+    color: #fff;
 
     text-align: center;
 }
 
 footer ul.list-inline {
-    padding: 0;
     margin: 0;
+    padding: 0;
 }
 
 footer ul.list-inline li {
     display: inline;
+
     margin-right: 15px;
 }
 
@@ -802,14 +878,20 @@ footer ul.list-inline a {
    ========================================================== */
 
 .conversation-box {
+    width: 100%;
+
     padding: 20px;
+}
+
+.conversation {
+    width: 100%;
 }
 
 .conversation-title {
     display: flex;
 
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
 
     gap: 0.75rem;
 
@@ -823,6 +905,7 @@ footer ul.list-inline a {
 
 .conversation-title h3 {
     flex: 1;
+
     min-width: 0;
 
     margin: 0;
@@ -834,40 +917,63 @@ footer ul.list-inline a {
     word-break: break-word;
 }
 
+
+/* ==========================================================
+   CONVERSATION ACTIONS
+   ========================================================== */
+
 .conversation-actions {
     display: flex !important;
 
     align-items: center;
 
     flex-shrink: 0;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    gap: 0 !important;
+}
+
+.conversation-actions form {
+    display: flex !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .conversation-actions .btn,
 .conversation-actions form .btn {
-    width: 36px !important;
-    height: 34px !important;
-
-    padding: 0 !important;
-
     display: inline-flex !important;
 
     align-items: center;
     justify-content: center;
 
+    width: 36px !important;
+    height: 34px !important;
+
     margin: 0 !important;
+    padding: 0 !important;
+
+    border-radius: 0 !important;
 
     font-size: 0.85rem;
 }
 
-.conversation-actions form {
-    display: inline-flex;
+/*
+   Само външните краища са заоблени.
+*/
 
-    margin: 0;
-    padding: 0;
+.conversation-actions > :first-child .btn,
+.conversation-actions > form:first-child .btn {
+    border-top-left-radius: var(--bs-btn-border-radius) !important;
+    border-bottom-left-radius: var(--bs-btn-border-radius) !important;
 }
 
-.conversation {
-    width: 100%;
+.conversation-actions > :last-child .btn,
+.conversation-actions > a:last-child {
+    border-top-right-radius: var(--bs-btn-border-radius) !important;
+    border-bottom-right-radius: var(--bs-btn-border-radius) !important;
 }
 
 
@@ -882,9 +988,9 @@ footer ul.list-inline a {
 
     width: 100%;
 
-    margin-bottom: 25px;
-
     min-width: 0;
+
+    margin-bottom: 25px;
 }
 
 .conversation-message-body {
@@ -898,7 +1004,7 @@ footer ul.list-inline a {
 
 
 /* ==========================================================
-   AVATAR
+   MESSAGE AVATAR
    ========================================================== */
 
 .conversation-avatar {
@@ -917,8 +1023,8 @@ footer ul.list-inline a {
 
     object-fit: cover;
 
-    border-radius: 50%;
     border: 1px solid #ccc;
+    border-radius: 50%;
 }
 
 .conversation-avatar a .message-avatar {
@@ -975,9 +1081,7 @@ footer ul.list-inline a {
 
     padding: 11px 15px;
 
-    box-sizing: border-box;
-
-    background: #f0f2f5;
+    background-color: #f0f2f5;
 
     border-radius: 4px 18px 18px 18px;
 
@@ -995,15 +1099,14 @@ footer ul.list-inline a {
 
     position: absolute;
 
-    left: -8px;
     top: 12px;
+    left: -8px;
 
     width: 0;
     height: 0;
 
     border-top: 7px solid transparent;
     border-bottom: 7px solid transparent;
-
     border-right: 9px solid #f0f2f5;
 }
 
@@ -1030,7 +1133,7 @@ footer ul.list-inline a {
 }
 
 .own-message .message-bubble {
-    background: #d9fdd3;
+    background-color: #d9fdd3;
 
     border-radius: 18px 4px 18px 18px;
 
@@ -1038,8 +1141,8 @@ footer ul.list-inline a {
 }
 
 .own-message .message-bubble::before {
-    left: auto;
     right: -8px;
+    left: auto;
 
     border-right: none;
     border-left: 9px solid #d9fdd3;
@@ -1066,8 +1169,6 @@ footer ul.list-inline a {
 }
 
 .chat-message-content:has(.media-wrap) .message-bubble {
-    position: relative;
-
     display: flex;
 
     flex-direction: column;
@@ -1080,11 +1181,13 @@ footer ul.list-inline a {
 
     padding: 5px;
 
-    box-sizing: border-box;
-
     overflow: hidden;
 
     border-radius: 14px;
+}
+
+.chat-message-content:has(.media-wrap) .message-bubble::before {
+    display: none;
 }
 
 .own-message .chat-message-content:has(.media-wrap) .message-bubble {
@@ -1112,8 +1215,6 @@ footer ul.list-inline a {
     overflow: hidden;
 
     border-radius: 14px;
-
-    box-sizing: border-box;
 }
 
 .media-wrap > a {
@@ -1124,11 +1225,9 @@ footer ul.list-inline a {
 
     min-width: 0;
 
-    line-height: 0;
-
     overflow: hidden;
 
-    box-sizing: border-box;
+    line-height: 0;
 }
 
 
@@ -1151,8 +1250,6 @@ footer ul.list-inline a {
     object-fit: contain;
 
     border-radius: 12px;
-
-    box-sizing: border-box;
 }
 
 
@@ -1213,8 +1310,6 @@ footer ul.list-inline a {
 
     margin-top: 5px;
 
-    box-sizing: border-box;
-
     overflow-wrap: anywhere;
     word-break: break-word;
 
@@ -1232,21 +1327,21 @@ footer ul.list-inline a {
     top: 8px;
     right: 8px;
 
-    width: 34px;
-    height: 34px;
-
-    padding: 0;
-
     display: flex;
 
     align-items: center;
     justify-content: center;
 
-    border: none;
-    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
 
     background: rgba(0, 0, 0, 0.65);
     color: #fff;
+
+    border: none;
+    border-radius: 50%;
 
     opacity: 0;
     visibility: hidden;
@@ -1289,8 +1384,6 @@ footer ul.list-inline a {
     max-width: 100%;
 
     margin-top: 5px;
-
-    box-sizing: border-box;
 }
 
 .message-reactions {
@@ -1331,7 +1424,9 @@ footer ul.list-inline a {
 
     transition:
         opacity 0.15s ease,
-        filter 0.15s ease;
+        filter 0.15s ease,
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
 }
 
 .react-btn:hover {
@@ -1343,6 +1438,16 @@ footer ul.list-inline a {
     opacity: 1;
 
     filter: none;
+}
+
+.message-reactions .tg-reaction {
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.message-reactions .tg-reaction:hover {
+    transform: translateY(-2px) scale(1.03);
 }
 
 
@@ -1369,7 +1474,7 @@ footer ul.list-inline a {
 }
 
 .mini-btn:hover {
-    background: #f0f0f0;
+    background-color: #f0f0f0;
     color: #333;
 }
 
@@ -1388,11 +1493,11 @@ footer ul.list-inline a {
 
     min-height: 120px;
 
+    font-size: 0.95rem;
+
     border-radius: 10px;
 
     resize: vertical;
-
-    font-size: 0.95rem;
 }
 
 .reply-form .btn-primary {
@@ -1417,8 +1522,8 @@ footer ul.list-inline a {
 
     object-fit: contain;
 
-    border-radius: 8px;
     border: 1px solid #ddd;
+    border-radius: 8px;
 }
 
 
@@ -1473,8 +1578,8 @@ footer ul.list-inline a {
 
     object-fit: cover;
 
-    border-radius: 50%;
     border: 1px solid #ccc;
+    border-radius: 50%;
 }
 
 .message-avatar-link {
@@ -1511,13 +1616,15 @@ footer ul.list-inline a {
 }
 
 .message-preview-name {
-    font-weight: 600;
     color: #222;
+
+    font-weight: 600;
 }
 
 .message-preview-date {
-    font-size: 12px;
     color: #777;
+
+    font-size: 12px;
 
     white-space: nowrap;
 }
@@ -1528,20 +1635,10 @@ footer ul.list-inline a {
 
 
 /* ==========================================================
-   MOBILE
+   MOBILE <= 992px
    ========================================================== */
 
-@media (max-width: 992px) {
-
-    .welcome-container {
-        display: flex;
-
-        width: 58%;
-
-        font-size: 10px;
-
-        text-align: center;
-    }
+@media (max-width: 991.98px) {
 
     .header {
         display: flex;
@@ -1566,13 +1663,52 @@ footer ul.list-inline a {
     }
 
     .navbar-nav {
-        align-items: start;
+        align-items: flex-start;
+    }
+
+
+    /* ------------------------------------------
+       USER WELCOME
+       ------------------------------------------ */
+
+    .user-welcome-item {
+        width: auto !important;
+
+        margin-left: 0 !important;
+        margin-top: 10px !important;
+    }
+
+    .user-welcome {
+        width: auto !important;
+
+        gap: 5px !important;
+    }
+
+    .user-welcome .welcome-container {
+        width: auto !important;
+        max-width: none !important;
+
+        font-size: 10px !important;
+
+        text-align: right !important;
+    }
+
+    .user-welcome .profile-picture-link {
+        width: 40px !important;
+        height: 40px !important;
+
+        flex: 0 0 40px !important;
+    }
+
+    .user-welcome .profile-picture {
+        width: 40px !important;
+        height: 40px !important;
     }
 }
 
 
 /* ==========================================================
-   TABLET / MOBILE
+   TABLET / MOBILE <= 768px
    ========================================================== */
 
 @media (max-width: 768px) {
@@ -1593,8 +1729,8 @@ footer ul.list-inline a {
     }
 
     .back-button {
-        max-height: 40px;
         min-width: 80px;
+        max-height: 40px;
 
         font-size: 16px;
 
@@ -1604,7 +1740,7 @@ footer ul.list-inline a {
 
 
 /* ==========================================================
-   SMALL DEVICES
+   SMALL DEVICES <= 700px
    ========================================================== */
 
 @media (max-width: 700px) {
@@ -1624,7 +1760,7 @@ footer ul.list-inline a {
 
 
 /* ==========================================================
-   MOBILE MESSAGE SYSTEM
+   MOBILE MESSAGE SYSTEM <= 576px
    ========================================================== */
 
 @media (max-width: 576px) {
@@ -1634,7 +1770,9 @@ footer ul.list-inline a {
     }
 
 
-    /* TITLE */
+    /* ------------------------------------------
+       TITLE
+       ------------------------------------------ */
 
     .conversation-title {
         flex-direction: column;
@@ -1651,11 +1789,13 @@ footer ul.list-inline a {
     .conversation-actions {
         justify-content: flex-end;
 
-        margin-top: 0.25rem;
+        margin-top: 0.25rem !important;
     }
 
 
-    /* AVATAR */
+    /* ------------------------------------------
+       MESSAGE AVATAR
+       ------------------------------------------ */
 
     .message-avatar {
         width: 40px;
@@ -1671,19 +1811,23 @@ footer ul.list-inline a {
     }
 
     .own-message .conversation-avatar {
-        margin-left: 8px;
         margin-right: 0;
+        margin-left: 8px;
     }
 
 
-    /* MESSAGE BODY */
+    /* ------------------------------------------
+       MESSAGE BODY
+       ------------------------------------------ */
 
     .conversation-message-body {
         max-width: calc(100% - 48px);
     }
 
 
-    /* META */
+    /* ------------------------------------------
+       META
+       ------------------------------------------ */
 
     .conversation-meta {
         flex-wrap: wrap;
@@ -1700,7 +1844,9 @@ footer ul.list-inline a {
     }
 
 
-    /* BUBBLE */
+    /* ------------------------------------------
+       BUBBLE
+       ------------------------------------------ */
 
     .message-bubble {
         padding: 9px 12px;
@@ -1709,10 +1855,12 @@ footer ul.list-inline a {
     }
 
 
-    /* MEDIA */
+    /* ------------------------------------------
+       MEDIA
+       ------------------------------------------ */
 
     .chat-message-content:has(.media-wrap) {
-        width: min(100%, 100%);
+        width: 100%;
         max-width: 100%;
     }
 
@@ -1725,7 +1873,9 @@ footer ul.list-inline a {
     }
 
 
-    /* MEDIA SHARE */
+    /* ------------------------------------------
+       MEDIA SHARE
+       ------------------------------------------ */
 
     .media-share-btn {
         top: 6px;
@@ -1743,7 +1893,9 @@ footer ul.list-inline a {
     }
 
 
-    /* ACTIONS */
+    /* ------------------------------------------
+       ACTIONS
+       ------------------------------------------ */
 
     .message-actions {
         margin-top: 4px;
@@ -1754,14 +1906,18 @@ footer ul.list-inline a {
     }
 
 
-    /* REPLY */
+    /* ------------------------------------------
+       REPLY FORM
+       ------------------------------------------ */
 
     .reply-form .btn-primary {
         width: 100%;
     }
 
 
-    /* PAGINATION */
+    /* ------------------------------------------
+       PAGINATION
+       ------------------------------------------ */
 
     .pagination {
         font-size: 0.8rem;
@@ -1773,7 +1929,9 @@ footer ul.list-inline a {
     }
 
 
-    /* INBOX */
+    /* ------------------------------------------
+       INBOX
+       ------------------------------------------ */
 
     .message-preview-avatar img {
         width: 42px;
@@ -1793,7 +1951,9 @@ footer ul.list-inline a {
     }
 
 
-    /* ATTACHMENTS */
+    /* ------------------------------------------
+       ATTACHMENTS
+       ------------------------------------------ */
 
     .attach-preview {
         max-width: 100%;
@@ -1811,17 +1971,20 @@ footer ul.list-inline a {
     }
 
 
-    /* EMOJI */
+    /* ------------------------------------------
+       EMOJI
+       ------------------------------------------ */
 
     .emoji-bar {
         display: flex;
+
         flex-wrap: wrap;
     }
 }
 
 
 /* ==========================================================
-   EXTRA SMALL DEVICES
+   EXTRA SMALL DEVICES <= 480px
    ========================================================== */
 
 @media (max-width: 480px) {
@@ -1844,12 +2007,35 @@ footer ul.list-inline a {
     }
 
     .back-button {
-        max-height: 35px;
         min-width: 75px;
+        max-height: 35px;
 
         font-size: 14px;
 
         white-space: nowrap;
+    }
+
+
+    /* ------------------------------------------
+       USER WELCOME
+       ------------------------------------------ */
+
+    .user-welcome {
+        gap: 4px !important;
+    }
+
+    .user-welcome .welcome-container {
+        font-size: 9px !important;
+    }
+
+    .user-welcome .profile-picture-link,
+    .user-welcome .profile-picture {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .user-welcome .profile-picture-link {
+        flex: 0 0 36px !important;
     }
 }
 
@@ -1923,85 +2109,5 @@ footer ul.list-inline a {
 
     .profile-registration {
         max-width: 1200px;
-    }
-}
-
-/* ==========================================================
-   USER WELCOME + AVATAR
-   ========================================================== */
-
-.user-welcome-item {
-    display: flex;
-    align-items: center;
-    margin-left: 1rem;
-}
-
-.user-welcome {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-}
-
-.welcome-container {
-    color: #fff;
-    font-size: 0.8rem;
-    line-height: 1.25;
-    text-align: right;
-}
-
-.welcome-container strong {
-    font-weight: 600;
-}
-
-.profile-picture-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.profile-picture {
-    width: 42px;
-    height: 42px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 1px solid #fff;
-    display: block;
-    transition: transform 0.2s ease;
-}
-
-.profile-picture:hover {
-    transform: scale(1.05);
-}
-
-
-/* ==========================================================
-   MOBILE NAVBAR
-   ========================================================== */
-
-@media (max-width: 991.98px) {
-
-    .user-welcome-item {
-        margin-left: 0;
-        margin-top: 10px;
-        width: 100%;
-    }
-
-    .user-welcome {
-        width: 100%;
-        justify-content: flex-start;
-        gap: 8px;
-    }
-
-    .welcome-container {
-        text-align: left;
-        flex: 0 1 auto;
-        min-width: 0;
-    }
-
-    .profile-picture {
-        width: 40px;
-        height: 40px;
     }
 }
