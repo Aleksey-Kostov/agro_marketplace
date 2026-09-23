@@ -256,9 +256,7 @@
                                             </div>
                                             <div class="message-reply-content">
                                                 <div class="message-reply-name">
-                                                    {{
-                                                    item.parent_message.sender.profile.username_in_marketplace|default:item.parent_message.sender.username
-                                                    }}
+                                                    {{ item.parent_message.sender.profile.username_in_marketplace|default:item.parent_message.sender.username }}
                                                 </div>
                                                 <div class="message-reply-preview-row">
 
