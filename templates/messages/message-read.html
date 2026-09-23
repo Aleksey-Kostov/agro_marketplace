@@ -59,13 +59,13 @@
                                name="next"
                                value="{{ request.path }}">
                         <button type="submit"
-                                class="btn btn-outline-success btn-sm activate shadow-none"
+                                class="btn btn-outline-success btn-sm activate shadow-none rounded-start"
                                 title="Unblock"
                                 aria-label="Unblock">
                             <i class="fas fa-unlock"></i>
                             <span class="tooltip-text">
-                                        Unblock
-                                    </span>
+                                Unblock
+                            </span>
                         </button>
                     </form>
                     {% else %}
@@ -78,13 +78,13 @@
                                name="next"
                                value="{{ request.path }}">
                         <button type="submit"
-                                class="btn btn-outline-dark btn-sm activate shadow-none"
+                                class="btn btn-outline-dark btn-sm activate shadow-none rounded-start"
                                 title="Block"
                                 aria-label="Block">
                             <i class="fas fa-ban"></i>
                             <span class="tooltip-text">
-                                        Block
-                                    </span>
+                                Block
+                            </span>
                         </button>
                     </form>
                     {% endif %}
@@ -100,13 +100,13 @@
                           onsubmit="return confirm('Report this message?');">
                         {% csrf_token %}
                         <button type="submit"
-                                class="btn btn-outline-primary btn-sm activate shadow-none"
+                                class="btn btn-outline-primary btn-sm activate shadow-none rounded-0"
                                 title="Report"
                                 aria-label="Report">
                             <i class="fas fa-flag"></i>
                             <span class="tooltip-text">
-                                        Report
-                                    </span>
+                                Report
+                            </span>
                         </button>
                     </form>
                     {% endif %}
@@ -118,7 +118,7 @@
 
                     {% if root_message %}
                     <a href="{% url 'delete-message' root_message.pk %}?filter={{ request.GET.filter|default:'inbox' }}"
-                       class="btn btn-outline-danger btn-sm activate shadow-none"
+                       class="btn btn-outline-danger btn-sm activate shadow-none rounded-end"
                        title="Delete conversation"
                        aria-label="Delete conversation">
                         <i class="fas fa-trash-alt"></i>
