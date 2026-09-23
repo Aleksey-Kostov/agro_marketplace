@@ -104,14 +104,18 @@ class SellerItems(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        if not self.pk:
-            if not self.expiration_date:
-                self.expiration_date = datetime.now() + timedelta(days=30)
+        if not self.pk and not self.expiration_date:
+            self.expiration_date = datetime.now() + timedelta(days=30)
 
-            if not self.slug:
-                differentiator = "seller"
-                self.slug = slugify(f"{differentiator}-{self.pk}-{self.title}")
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+
+            while SellerItems.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+
+            self.slug = slug
+
         super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.title

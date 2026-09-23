@@ -1925,3 +1925,83 @@ footer ul.list-inline a {
         max-width: 1200px;
     }
 }
+
+/* ==========================================================
+   USER WELCOME + AVATAR
+   ========================================================== */
+
+.user-welcome-item {
+    display: flex;
+    align-items: center;
+    margin-left: 1rem;
+}
+
+.user-welcome {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.welcome-container {
+    color: #fff;
+    font-size: 0.8rem;
+    line-height: 1.25;
+    text-align: right;
+}
+
+.welcome-container strong {
+    font-weight: 600;
+}
+
+.profile-picture-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-picture {
+    width: 42px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid #fff;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.profile-picture:hover {
+    transform: scale(1.05);
+}
+
+
+/* ==========================================================
+   MOBILE NAVBAR
+   ========================================================== */
+
+@media (max-width: 991.98px) {
+
+    .user-welcome-item {
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    .user-welcome {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 8px;
+    }
+
+    .welcome-container {
+        text-align: left;
+        flex: 0 1 auto;
+        min-width: 0;
+    }
+
+    .profile-picture {
+        width: 40px;
+        height: 40px;
+    }
+}
