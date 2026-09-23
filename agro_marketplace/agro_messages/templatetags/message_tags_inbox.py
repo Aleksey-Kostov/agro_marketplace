@@ -3,6 +3,7 @@ from django.db.models import Q
 
 from ..models import Message, MessageStatus
 
+
 register = template.Library()
 
 
@@ -21,14 +22,6 @@ def _conversation_filter(message):
         product_type
         product_id
 
-    Примери:
-
-        User A <-> User B + seller #15
-        User A <-> User B + seller #20
-        User A <-> User B + buyer  #15
-
-    са 3 различни conversations.
-
     Посоката няма значение:
 
         A -> B
@@ -36,14 +29,17 @@ def _conversation_filter(message):
 
     са една и съща conversation.
 
+    Примери:
+
+        User A <-> User B + seller #15
+        User A <-> User B + seller #20
+        User A <-> User B + buyer  #15
+
+    са три различни conversations.
+
     parent_message НЕ участва.
 
     is_removed НЕ участва.
-
-    Това е важно, защото изтрито съобщение трябва да остане
-    част от conversation-а и да може да се покаже като:
-
-        This message was deleted
     """
 
     if not message:
@@ -75,8 +71,7 @@ def get_root(message):
 
     Това НЕ е истински root object.
 
-    Използва се за backwards compatibility и като
-    representative reference към conversation-а.
+    Използва се като representative reference към conversation-а.
     """
 
     if not message:
@@ -121,7 +116,7 @@ def get_conversation_ids(root):
             _conversation_filter(root)
         )
         .values_list(
-            'id',
+            'pk',
             flat=True,
         )
     )
@@ -194,10 +189,8 @@ def _visible_messages_for_user(user):
         .select_related(
             'sender',
             'recipient',
-
             'sender__profile',
             'recipient__profile',
-
             'parent_message',
             'parent_message__sender',
             'parent_message__recipient',
@@ -206,7 +199,7 @@ def _visible_messages_for_user(user):
 
     if deleted_ids:
         qs = qs.exclude(
-            id__in=deleted_ids
+            pk__in=deleted_ids
         )
 
     return qs
@@ -236,9 +229,9 @@ def _conversation_key(message):
 
     Но:
 
-    A <-> B + seller #15
-    A <-> B + seller #20
-    A <-> B + buyer  #15
+        A <-> B + seller #15
+        A <-> B + seller #20
+        A <-> B + buyer  #15
 
     са различни conversations.
 
@@ -279,6 +272,9 @@ def _has_unread_for_user(message_ids, user):
     if not message_ids:
         return False
 
+    if not user or not user.is_authenticated:
+        return False
+
     return (
         MessageStatus.objects
         .filter(
@@ -286,6 +282,9 @@ def _has_unread_for_user(message_ids, user):
             profile=user,
             is_read=False,
             is_deleted=False,
+            message__recipient=user,
+            message__is_removed=False,
+            message__is_system=False,
         )
         .exists()
     )
@@ -305,17 +304,6 @@ def _get_delivery_status(message, user):
         delivered
         read
 
-    Логика:
-
-        няма MessageStatus
-            -> sent
-
-        има MessageStatus + is_read=False
-            -> delivered
-
-        има MessageStatus + is_read=True
-            -> read
-
     Само съобщения, изпратени от текущия user,
     имат delivery status.
     """
@@ -323,30 +311,25 @@ def _get_delivery_status(message, user):
     if not message or not user:
         return None
 
-    # Само нашите съобщения имат delivery status.
     if message.sender_id != user.id:
         return None
 
-    try:
-        status = (
-            MessageStatus.objects
-            .filter(
-                message=message,
-                profile_id=message.recipient_id,
-            )
-            .first()
+    status = (
+        MessageStatus.objects
+        .filter(
+            message=message,
+            profile_id=message.recipient_id,
         )
+        .first()
+    )
 
-        if not status:
-            return 'sent'
-
-        if status.is_read:
-            return 'read'
-
-        return 'delivered'
-
-    except Exception:
+    if not status:
         return 'sent'
+
+    if status.is_read:
+        return 'read'
+
+    return 'delivered'
 
 
 # ============================================================
@@ -355,48 +338,37 @@ def _get_delivery_status(message, user):
 
 def get_user_conversations(user, filter_type='all'):
     """
-    Връща по един object за всяка conversation.
+    Връща по един dict за всяка conversation.
 
-    Всеки result е dict:
+    Result:
 
         {
             'root': first_message,
             'last_message': last_message,
+            'other_user': другият участник,
             'messages_count': count,
             'has_unread': bool,
             'delivery_status': 'sent' / 'delivered' / 'read' / None,
         }
 
-    Conversation се групира по:
+    Conversation identity:
 
-        users
-        +
+        user_1
+        user_2
         product_type
-        +
         product_id
-
-    Това означава:
-
-        A <-> B + seller #101
-
-    е различно от:
-
-        A <-> B + seller #202
-
-    и:
-
-        A <-> B + buyer #101
-
-    parent_message НЕ се използва за групиране.
-
-    is_removed=True съобщенията остават част от conversation-а.
-
-    MessageStatus.is_deleted=True съобщенията са скрити
-    само за конкретния user.
     """
 
     if not user or not user.is_authenticated:
         return []
+
+    if filter_type not in (
+        'inbox',
+        'sent',
+        'unread',
+        'all',
+    ):
+        filter_type = 'all'
 
     messages = list(
         _visible_messages_for_user(user)
@@ -409,9 +381,9 @@ def get_user_conversations(user, filter_type='all'):
     if not messages:
         return []
 
-    # ---------------------------------------------------------
+    # =========================================================
     # GROUP BY CONVERSATION
-    # ---------------------------------------------------------
+    # =========================================================
 
     conversations = {}
 
@@ -419,22 +391,18 @@ def get_user_conversations(user, filter_type='all'):
 
         key = _conversation_key(message)
 
-        if key not in conversations:
-            conversations[key] = []
-
-        conversations[key].append(message)
+        conversations.setdefault(
+            key,
+            [],
+        ).append(message)
 
     result = []
 
-    # ---------------------------------------------------------
-    # PROCESS EACH CONVERSATION
-    # ---------------------------------------------------------
+    # =========================================================
+    # PROCESS CONVERSATIONS
+    # =========================================================
 
-    for key, conversation_messages in conversations.items():
-
-        # -----------------------------------------------------
-        # Chronological order
-        # -----------------------------------------------------
+    for conversation_messages in conversations.values():
 
         conversation_messages.sort(
             key=lambda m: (
@@ -444,195 +412,150 @@ def get_user_conversations(user, filter_type='all'):
         )
 
         message_ids = [
-            message.id
+            message.pk
             for message in conversation_messages
         ]
 
-        # -----------------------------------------------------
-        # INBOX
-        # -----------------------------------------------------
+        # =====================================================
+        # FILTER: INBOX
+        # =====================================================
 
         if filter_type == 'inbox':
 
-            has_received = any(
+            if not any(
                 message.recipient_id == user.id
                 for message in conversation_messages
-            )
-
-            if not has_received:
+            ):
                 continue
 
-        # -----------------------------------------------------
-        # SENT
-        # -----------------------------------------------------
+        # =====================================================
+        # FILTER: SENT
+        # =====================================================
 
         elif filter_type == 'sent':
 
-            has_sent = any(
+            if not any(
                 message.sender_id == user.id
                 for message in conversation_messages
-            )
-
-            if not has_sent:
+            ):
                 continue
 
-        # -----------------------------------------------------
-        # UNREAD
-        # -----------------------------------------------------
+        # =====================================================
+        # STATUS IDS
+        # =====================================================
 
-        elif filter_type == 'unread':
-
-            # -------------------------------------------------
-            # Explicit MessageStatus unread
-            # -------------------------------------------------
-
-            unread_ids = set(
-                MessageStatus.objects
-                .filter(
-                    profile=user,
-                    message_id__in=message_ids,
-                    is_read=False,
-                    is_deleted=False,
-                )
-                .values_list(
-                    'message_id',
-                    flat=True,
-                )
-            )
-
-            # -------------------------------------------------
-            # Messages that have a status
-            # -------------------------------------------------
-
-            status_ids = set(
-                MessageStatus.objects
-                .filter(
-                    profile=user,
-                    message_id__in=message_ids,
-                )
-                .values_list(
-                    'message_id',
-                    flat=True,
-                )
-            )
-
-            # -------------------------------------------------
-            # Incoming messages without MessageStatus
-            #
-            # Ако няма status row, приемаме че съобщението
-            # все още е unread.
-            # -------------------------------------------------
-
-            no_status_ids = {
-                message.id
-                for message in conversation_messages
-                if (
-                    message.recipient_id == user.id
-                    and message.id not in status_ids
-                    and not message.is_removed
-                    and not message.is_system
-                )
-            }
-
-            unread_ids.update(
-                no_status_ids
-            )
-
-            if not unread_ids:
-                continue
-
-        # -----------------------------------------------------
-        # ROOT
-        # -----------------------------------------------------
-
-        root = conversation_messages[0]
-
-        # -----------------------------------------------------
-        # LAST MESSAGE
-        # -----------------------------------------------------
-
-        last_message = conversation_messages[-1]
-
-        # -----------------------------------------------------
-        # UNREAD
-        # -----------------------------------------------------
-
-        has_unread = False
-
-        # Existing MessageStatus unread
-        if (
+        status_ids = set(
             MessageStatus.objects
             .filter(
-                profile=user,
+                profile_id=user.id,
+                message_id__in=message_ids,
+            )
+            .values_list(
+                'message_id',
+                flat=True,
+            )
+        )
+
+        # =====================================================
+        # UNREAD IDS
+        # =====================================================
+
+        unread_ids = set(
+            MessageStatus.objects
+            .filter(
+                profile_id=user.id,
                 message_id__in=message_ids,
                 is_read=False,
                 is_deleted=False,
+                message__recipient_id=user.id,
+                message__is_removed=False,
+                message__is_system=False,
             )
-            .exclude(
-                message__is_removed=True
+            .values_list(
+                'message_id',
+                flat=True,
             )
-            .exclude(
-                message__is_system=True
-            )
-            .exists()
-        ):
-            has_unread = True
+        )
 
-        # Messages without status
-        if not has_unread:
+        # -----------------------------------------------------
+        # Incoming messages without MessageStatus
+        # -----------------------------------------------------
 
-            status_ids = set(
-                MessageStatus.objects
-                .filter(
-                    profile=user,
-                    message_id__in=message_ids,
-                )
-                .values_list(
-                    'message_id',
-                    flat=True,
-                )
-            )
-
-            has_no_status_unread = any(
+        no_status_unread_ids = {
+            message.pk
+            for message in conversation_messages
+            if (
                 message.recipient_id == user.id
-                and message.id not in status_ids
+                and message.pk not in status_ids
                 and not message.is_removed
                 and not message.is_system
-                for message in conversation_messages
             )
+        }
 
-            if has_no_status_unread:
-                has_unread = True
+        unread_ids.update(
+            no_status_unread_ids
+        )
 
-        # -----------------------------------------------------
+        has_unread = bool(
+            unread_ids
+        )
+
+        # =====================================================
+        # FILTER: UNREAD
+        # =====================================================
+
+        if filter_type == 'unread' and not has_unread:
+            continue
+
+        # =====================================================
+        # ROOT
+        # =====================================================
+
+        root = conversation_messages[0]
+
+        # =====================================================
+        # LAST MESSAGE
+        # =====================================================
+
+        last_message = conversation_messages[-1]
+
+        # =====================================================
+        # OTHER USER
+        # =====================================================
+
+        if last_message.sender_id == user.id:
+
+            other_user = last_message.recipient
+
+        else:
+
+            other_user = last_message.sender
+
+        # =====================================================
         # DELIVERY STATUS
-        # -----------------------------------------------------
+        # =====================================================
 
         delivery_status = _get_delivery_status(
             last_message,
             user,
         )
 
-        # -----------------------------------------------------
-        # Attach status to last message.
-        #
-        # Това позволява и:
+        # Позволява template-ът да използва:
         #
         # item.last_message.delivery_status
         #
-        # в template-а.
-        # -----------------------------------------------------
 
         last_message.delivery_status = delivery_status
 
-        # -----------------------------------------------------
-        # Result object
-        # -----------------------------------------------------
+        # =====================================================
+        # RESULT
+        # =====================================================
 
         result.append(
             {
                 'root': root,
                 'last_message': last_message,
+                'other_user': other_user,
                 'messages_count': len(
                     conversation_messages
                 ),
@@ -641,9 +564,9 @@ def get_user_conversations(user, filter_type='all'):
             }
         )
 
-    # ---------------------------------------------------------
-    # Newest conversations first
-    # ---------------------------------------------------------
+    # =========================================================
+    # NEWEST CONVERSATION FIRST
+    # =========================================================
 
     result.sort(
         key=lambda item: (
@@ -676,19 +599,10 @@ def message_counts(user):
 
     all_count:
         Брой всички conversations.
-
-    Message.is_removed=True:
-
-        - остава в conversation-а;
-        - не се брои като unread.
-
-    MessageStatus.is_deleted=True:
-
-        - не се вижда от user;
-        - не се брои.
     """
 
     if not user or not user.is_authenticated:
+
         return {
             'unread_count': 0,
             'inbox_count': 0,
@@ -700,9 +614,9 @@ def message_counts(user):
 
         deleted_ids = _deleted_message_ids(user)
 
-        # -----------------------------------------------------
+        # =====================================================
         # UNREAD WITH STATUS
-        # -----------------------------------------------------
+        # =====================================================
 
         unread_qs = (
             MessageStatus.objects
@@ -714,13 +628,14 @@ def message_counts(user):
                 message__is_removed=False,
             )
             .exclude(
-                message__is_system=True
+                message__is_system=True,
             )
         )
 
         if deleted_ids:
+
             unread_qs = unread_qs.exclude(
-                message_id__in=deleted_ids
+                message_id__in=deleted_ids,
             )
 
         unread_ids = set(
@@ -730,9 +645,9 @@ def message_counts(user):
             )
         )
 
-        # -----------------------------------------------------
+        # =====================================================
         # MESSAGES WITHOUT STATUS
-        # -----------------------------------------------------
+        # =====================================================
 
         known_status_ids = set(
             MessageStatus.objects
@@ -752,21 +667,22 @@ def message_counts(user):
                 is_removed=False,
             )
             .exclude(
-                is_system=True
+                is_system=True,
             )
             .exclude(
-                id__in=known_status_ids
+                pk__in=known_status_ids,
             )
         )
 
         if deleted_ids:
+
             no_status_qs = no_status_qs.exclude(
-                id__in=deleted_ids
+                pk__in=deleted_ids,
             )
 
         unread_ids.update(
             no_status_qs.values_list(
-                'id',
+                'pk',
                 flat=True,
             )
         )
@@ -775,9 +691,9 @@ def message_counts(user):
             unread_ids
         )
 
-        # -----------------------------------------------------
+        # =====================================================
         # CONVERSATION COUNTS
-        # -----------------------------------------------------
+        # =====================================================
 
         inbox_count = len(
             get_user_conversations(
@@ -826,22 +742,10 @@ def conversation_read_status(root_message, user):
     """
     Проверява дали има unread съобщение в цялата conversation.
 
-    Conversation:
+    Връща:
 
-        participants
-        +
-        product_type
-        +
-        product_id
-
-    is_removed=True:
-
-        остава в conversation-а,
-        но не се счита за unread.
-
-    MessageStatus.is_deleted=True:
-
-        съобщението не се счита за unread за този user.
+        unread
+        read
     """
 
     try:
@@ -860,9 +764,9 @@ def conversation_read_status(root_message, user):
         if not ids:
             return 'read'
 
-        # -----------------------------------------------------
+        # =====================================================
         # EXISTING UNREAD STATUS
-        # -----------------------------------------------------
+        # =====================================================
 
         has_unread = (
             MessageStatus.objects
@@ -873,6 +777,7 @@ def conversation_read_status(root_message, user):
                 is_deleted=False,
                 message__recipient=user,
                 message__is_removed=False,
+                message__is_system=False,
             )
             .exists()
         )
@@ -880,9 +785,9 @@ def conversation_read_status(root_message, user):
         if has_unread:
             return 'unread'
 
-        # -----------------------------------------------------
+        # =====================================================
         # STATUS IDS
-        # -----------------------------------------------------
+        # =====================================================
 
         status_ids = set(
             MessageStatus.objects
@@ -896,22 +801,22 @@ def conversation_read_status(root_message, user):
             )
         )
 
-        # -----------------------------------------------------
+        # =====================================================
         # MESSAGES WITHOUT STATUS
-        # -----------------------------------------------------
+        # =====================================================
 
         has_no_status_unread = (
             Message.objects
             .filter(
-                id__in=ids,
+                pk__in=ids,
                 recipient=user,
                 is_removed=False,
             )
             .exclude(
-                is_system=True
+                is_system=True,
             )
             .exclude(
-                id__in=status_ids
+                pk__in=status_ids,
             )
             .exists()
         )
@@ -941,7 +846,7 @@ def reaction_count(message, reaction_type):
         return (
             message.reactions
             .filter(
-                reaction=reaction_type
+                reaction=reaction_type,
             )
             .count()
         )
@@ -992,7 +897,7 @@ def reaction_users(
         qs = (
             message.reactions
             .filter(
-                reaction=reaction_type
+                reaction=reaction_type,
             )
             .select_related(
                 'user',

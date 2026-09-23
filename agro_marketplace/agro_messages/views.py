@@ -8,7 +8,6 @@ from django.urls import reverse
 from django.db import transaction
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.core.exceptions import ValidationError
-from django.db.models import Q
 
 import markdown
 
@@ -27,6 +26,7 @@ from .templatetags.message_tags_inbox import (
 from ..accounts.models import AppUser
 from ..buyers.models import BuyerItems
 from ..sellers.models import SellerItems
+
 
 User = get_user_model()
 
@@ -92,11 +92,9 @@ def _same_conversation(message_a, message_b):
         return False
 
     return (
-        message_a.product_type
-        == message_b.product_type
+        message_a.product_type == message_b.product_type
         and
-        message_a.product_id
-        == message_b.product_id
+        message_a.product_id == message_b.product_id
     )
 
 
@@ -253,10 +251,12 @@ def get_conversation_messages_for_user(root_message, user):
         )
     )
 
-    message_ids = [
-        message.pk
-        for message in messages
-    ]
+    message_ids = list(
+        messages.values_list(
+            'pk',
+            flat=True,
+        )
+    )
 
     if not message_ids:
         return []
@@ -303,6 +303,9 @@ def add_message_delivery_status(messages, current_user):
     if not messages:
         return messages
 
+    if not current_user or not current_user.is_authenticated:
+        return messages
+
     message_ids = [
         message.pk
         for message in messages
@@ -321,7 +324,6 @@ def add_message_delivery_status(messages, current_user):
     status_map = {}
 
     for status in statuses:
-
         status_map[
             (
                 status.message_id,
@@ -450,12 +452,9 @@ def get_reaction_reactors(message, reaction):
         if profile:
 
             try:
-
                 if profile.profile_photo:
                     photo = profile.profile_photo.url
-
             except Exception:
-
                 photo = ''
 
             username = (
@@ -513,13 +512,8 @@ def message_has_content(request):
         or ''
     ).strip()
 
-    image_file = request.FILES.get(
-        'image',
-    )
-
-    video_file = request.FILES.get(
-        'video',
-    )
+    image_file = request.FILES.get('image')
+    video_file = request.FILES.get('video')
 
     return bool(
         body
@@ -535,16 +529,10 @@ def validate_message_attachments(request):
     Позволява максимум един attachment.
     """
 
-    image_file = request.FILES.get(
-        'image',
-    )
-
-    video_file = request.FILES.get(
-        'video',
-    )
+    image_file = request.FILES.get('image')
+    video_file = request.FILES.get('video')
 
     if image_file and video_file:
-
         raise ValidationError(
             "Please attach either an image or a video, not both."
         )
@@ -552,7 +540,6 @@ def validate_message_attachments(request):
     if image_file:
 
         if image_file.size > MAX_IMAGE_SIZE:
-
             raise ValidationError(
                 "Image is too large. Maximum size is 10 MB."
             )
@@ -567,7 +554,6 @@ def validate_message_attachments(request):
         )
 
         if not content_type.startswith('image/'):
-
             raise ValidationError(
                 "Invalid image file."
             )
@@ -575,7 +561,6 @@ def validate_message_attachments(request):
     if video_file:
 
         if video_file.size > MAX_VIDEO_SIZE:
-
             raise ValidationError(
                 "Video is too large. Maximum size is 100 MB."
             )
@@ -590,7 +575,6 @@ def validate_message_attachments(request):
         )
 
         if not content_type.startswith('video/'):
-
             raise ValidationError(
                 "Invalid video file."
             )
@@ -665,13 +649,8 @@ def send_message(request, pk=None):
     # PRODUCT
     # =========================================================
 
-    product_id = request.GET.get(
-        'product_id',
-    )
-
-    product_type = request.GET.get(
-        'product_type',
-    )
+    product_id = request.GET.get('product_id')
+    product_type = request.GET.get('product_type')
 
     if request.method == 'POST':
 
@@ -687,9 +666,9 @@ def send_message(request, pk=None):
 
     product = None
 
-    # ---------------------------------------------------------
-    # Validate product
-    # ---------------------------------------------------------
+    # =========================================================
+    # VALIDATE PRODUCT
+    # =========================================================
 
     if recipient and product_id:
 
@@ -788,10 +767,6 @@ def send_message(request, pk=None):
 
         if form.is_valid():
 
-            # =================================================
-            # CONTENT CHECK
-            # =================================================
-
             if not message_has_content(request):
 
                 django_messages.error(
@@ -802,10 +777,6 @@ def send_message(request, pk=None):
                 return redirect(
                     'message-inbox',
                 )
-
-            # =================================================
-            # ATTACHMENT VALIDATION
-            # =================================================
 
             try:
 
@@ -824,10 +795,6 @@ def send_message(request, pk=None):
                     'message-inbox',
                 )
 
-            # =================================================
-            # CREATE MESSAGE
-            # =================================================
-
             message = form.save(
                 commit=False,
             )
@@ -837,13 +804,6 @@ def send_message(request, pk=None):
 
             # =================================================
             # PRODUCT CONTEXT
-            # =================================================
-            #
-            # Никога не записваме product_type/product_id
-            # директно от клиента.
-            #
-            # Записваме ги само ако product е успешно намерен
-            # и принадлежи на recipient.
             # =================================================
 
             if product:
@@ -899,11 +859,6 @@ def send_message(request, pk=None):
 
                 if parent_message:
 
-                    # -----------------------------------------
-                    # Parent must belong to EXACT SAME
-                    # conversation.
-                    # -----------------------------------------
-
                     temp_message = Message(
                         sender=request.user,
                         recipient=recipient,
@@ -916,9 +871,7 @@ def send_message(request, pk=None):
                         parent_message,
                     ):
 
-                        message.parent_message = (
-                            parent_message
-                        )
+                        message.parent_message = parent_message
 
             # =================================================
             # MARKDOWN
@@ -1062,7 +1015,6 @@ def read_message(request, pk):
     )
 
     for status in unread_statuses:
-
         status.mark_as_read()
 
     # ========================================================
@@ -1129,10 +1081,6 @@ def read_message(request, pk):
 
         if form.is_valid():
 
-            # =================================================
-            # CONTENT CHECK
-            # =================================================
-
             if not message_has_content(request):
 
                 django_messages.error(
@@ -1144,10 +1092,6 @@ def read_message(request, pk):
                     'read-message',
                     pk=pk,
                 )
-
-            # =================================================
-            # ATTACHMENT VALIDATION
-            # =================================================
 
             try:
 
@@ -1235,7 +1179,7 @@ def read_message(request, pk):
                 )
 
             # =================================================
-            # CREATE REPLY
+            # REPLY TARGET
             # =================================================
 
             reply_to_id = (
@@ -1262,15 +1206,6 @@ def read_message(request, pk):
             # =================================================
             # SECURITY CHECK
             # =================================================
-            #
-            # Reply target MUST belong to the same exact
-            # conversation.
-            #
-            # Това предотвратява:
-            #
-            # Seller #15 -> reply to Seller #20
-            #
-            # =================================================
 
             if reply_to is not None:
 
@@ -1293,37 +1228,18 @@ def read_message(request, pk):
             reply.recipient = recipient
 
             # =================================================
-            # IMPORTANT:
             # INHERIT PRODUCT CONTEXT
             # =================================================
-            #
-            # Reply към Seller #15 трябва да остане:
-            #
-            #     product_type = seller
-            #     product_id   = 15
-            #
-            # =================================================
 
-            reply.product_type = (
-                message.product_type
-            )
-
-            reply.product_id = (
-                message.product_id
-            )
+            reply.product_type = message.product_type
+            reply.product_id = message.product_id
 
             reply.title = (
                 message.title
                 or "Direct conversation"
             )
 
-            if reply_to is not None:
-
-                reply.parent_message = reply_to
-
-            else:
-
-                reply.parent_message = None
+            reply.parent_message = reply_to
 
             # =================================================
             # MARKDOWN
@@ -1447,11 +1363,16 @@ def delete_one_message(request, pk):
         )
 
     # ========================================================
-    # DELETED MESSAGE CANNOT BE UNREAD
+    # ONLY RECIPIENT'S MESSAGE STATUS
+    # ========================================================
+    #
+    # Не маркираме статуса на sender-а.
+    # Sender status вече е read по принцип.
     # ========================================================
 
     MessageStatus.objects.filter(
         message=msg,
+        profile_id=msg.recipient_id,
     ).update(
         is_read=True,
     )
@@ -1484,17 +1405,6 @@ def delete_message(request, pk):
         product_type
         +
         product_id
-
-    Това е критично.
-
-    Пример:
-
-        A <-> B + seller #15
-
-    НЕ трябва да изтрие:
-
-        A <-> B + seller #20
-        A <-> B + buyer #15
     """
 
     message = get_object_or_404(
@@ -1520,7 +1430,7 @@ def delete_message(request, pk):
         )
 
     # ========================================================
-    # FILTER
+    # FILTER TYPE
     # ========================================================
 
     filter_type = (
@@ -1528,6 +1438,14 @@ def delete_message(request, pk):
         or request.GET.get('filter')
         or 'inbox'
     )
+
+    if filter_type not in (
+        'inbox',
+        'sent',
+        'unread',
+        'all',
+    ):
+        filter_type = 'inbox'
 
     # ========================================================
     # ALL MESSAGES IN THIS EXACT CONVERSATION
@@ -1600,7 +1518,7 @@ def delete_message(request, pk):
             )
 
     # ========================================================
-    # REDIRECT TO INBOX
+    # REDIRECT
     # ========================================================
 
     return redirect(
@@ -1668,9 +1586,7 @@ def react_message(request, pk, reaction):
             status=400,
         )
 
-    if not is_valid_reaction(
-        reaction
-    ):
+    if not is_valid_reaction(reaction):
 
         return JsonResponse(
             {
@@ -1912,59 +1828,56 @@ def unblock_user(request, pk):
 
 @login_required
 def message_inbox(request):
+    """
+    Показва списъка с conversations.
 
-    filter_type = (
-        request.GET.get(
-            'filter',
-            'inbox',
-        )
+    ВАЖНО:
+
+    get_user_conversations() вече връща:
+
+        {
+            'root': ...,
+            'last_message': ...,
+            'other_user': ...,
+            'messages_count': ...,
+            'has_unread': ...,
+            'delivery_status': ...,
+        }
+
+    Следователно НЕ трябва да подаваме item обратно към
+    get_conversation_messages_for_user().
+
+    Старият код правеше точно това и третираше dict като Message,
+    след което exception-ът беше поглъщан от try/except.
+
+    Резултат:
+
+        message counts = има
+        inbox rows = няма
+
+    Тук просто пагинираме готовия списък.
+    """
+
+    filter_type = request.GET.get(
+        'filter',
+        'inbox',
     )
 
-    user = request.user
+    if filter_type not in (
+        'inbox',
+        'sent',
+        'unread',
+        'all',
+    ):
+        filter_type = 'inbox'
 
-    try:
-
-        roots = get_user_conversations(
-            user,
-            filter_type,
-        )
-
-    except Exception:
-
-        roots = []
-
-    conversation_list = []
-
-    for root in roots:
-
-        try:
-
-            all_msgs = (
-                get_conversation_messages_for_user(
-                    root,
-                    user,
-                )
-            )
-
-            if not all_msgs:
-                continue
-
-            last_msg = all_msgs[-1]
-
-            conversation_list.append(
-                {
-                    'root': root,
-                    'last_message': last_msg,
-                    'messages_count': len(all_msgs),
-                }
-            )
-
-        except Exception:
-
-            continue
+    conversations = get_user_conversations(
+        request.user,
+        filter_type,
+    )
 
     paginator = Paginator(
-        conversation_list,
+        conversations,
         5,
     )
 
