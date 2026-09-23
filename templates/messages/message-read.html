@@ -567,7 +567,7 @@
             {% else %}
             <div class="reply-form">
                 <form method="post"
-                      action="{% url 'send-message' other_user.pk %}"
+                      action=""
                       enctype="multipart/form-data"
                       id="reply-form">
                     {% csrf_token %}
