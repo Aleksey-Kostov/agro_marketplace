@@ -3,155 +3,858 @@
 {% load message_tags_inbox %}
 
 {% block content %}
-<main class="container my-2">
-    <div class="mailbox-container">
 
-        <!-- HEADER -->
-        <div class="col-12 edit-profile text-details mb-2 message-box">
-            <div class="d-flex align-items-center p-0 rounded flex-wrap gap-2">
-                <a href="{% url 'dash' %}" class="btn btn-secondary back-button">
+<style>
+    /* =========================================================
+       VIBER STYLE INBOX
+       ========================================================= */
+
+    .viber-inbox {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    .viber-header {
+        background: #fff;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+    }
+
+    .viber-header-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #222;
+    }
+
+    /* =========================================================
+       FILTERS
+       ========================================================= */
+
+    .viber-filters {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        gap: 6px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 10px 6px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+    }
+
+    .viber-filter {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 4px;
+        border-radius: 9px;
+        color: #777;
+        text-decoration: none;
+        transition: background-color .15s ease;
+    }
+
+    .viber-filter:hover {
+        background: #f5f6f8;
+        color: #444;
+    }
+
+    .viber-filter.active {
+        background: #f1f4ff;
+    }
+
+    .viber-filter-icon {
+        font-size: 18px;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .viber-filter-label {
+        font-size: 11px;
+        line-height: 15px;
+        white-space: nowrap;
+    }
+
+    .viber-filter .badge {
+        font-size: 9px;
+        vertical-align: middle;
+        margin-left: 2px;
+    }
+
+    /* =========================================================
+       LIST
+       ========================================================= */
+
+    .viber-conversation-list {
+        width: 100%;
+        overflow: hidden;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, .06);
+    }
+
+    .viber-list-title {
+        padding: 14px 15px 10px;
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        border-bottom: 1px solid #eee;
+    }
+
+    /* =========================================================
+       CONVERSATION
+       ========================================================= */
+
+    .viber-conversation {
+        position: relative;
+        width: 100%;
+        min-height: 76px;
+        border-bottom: 1px solid #eee;
+        transition: background-color .15s ease;
+    }
+
+    .viber-conversation:last-child {
+        border-bottom: 0;
+    }
+
+    .viber-conversation:hover {
+        background: #f7f8fa;
+    }
+
+    .viber-conversation.viber-unread {
+        background: #f5f8ff;
+    }
+
+    .viber-conversation.viber-unread:hover {
+        background: #eef3ff;
+    }
+
+    .viber-conversation-link {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-height: 76px;
+        padding: 10px 72px 10px 13px;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    /* =========================================================
+       AVATAR
+       ========================================================= */
+
+    .viber-avatar {
+        position: relative;
+        flex: 0 0 52px;
+        width: 52px;
+        height: 52px;
+        margin-right: 12px;
+    }
+
+    .viber-avatar img {
+        display: block;
+        width: 52px;
+        height: 52px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .viber-unread-dot {
+        position: absolute;
+        right: -1px;
+        bottom: -1px;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        background: #7367f0;
+    }
+
+    /* =========================================================
+       CONTENT
+       ========================================================= */
+
+    .viber-conversation-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .viber-conversation-top {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        margin-bottom: 3px;
+        padding-right: 42px;
+    }
+
+    .viber-user-name {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 15px;
+        line-height: 20px;
+        font-weight: 600;
+        color: #202124;
+    }
+
+    .viber-unread .viber-user-name {
+        font-weight: 700;
+    }
+
+    .viber-date {
+        position: absolute;
+        top: 10px;
+        right: 45px;
+        font-size: 11px;
+        line-height: 15px;
+        color: #969ba3;
+        white-space: nowrap;
+    }
+
+    /* =========================================================
+       LAST MESSAGE
+       ========================================================= */
+
+    .viber-last-message {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        max-width: 100%;
+        color: #777d86;
+        font-size: 13px;
+        line-height: 18px;
+    }
+
+    .viber-message-text {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .viber-check {
+        flex: 0 0 auto;
+        margin-right: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: -2px;
+        color: #9ba0a7;
+    }
+
+    .viber-check-read {
+        color: #4b8bf4;
+    }
+
+    .viber-media-preview {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: #707781;
+        white-space: nowrap;
+    }
+
+    .viber-message-removed {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-width: 0;
+        color: #999;
+        font-style: italic;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* =========================================================
+       PRODUCT / LISTING
+       ========================================================= */
+
+    .viber-product {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        max-width: 80%;
+        margin-top: 2px;
+        color: #a0a5ab;
+        font-size: 10px;
+        line-height: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .viber-product i {
+        flex: 0 0 auto;
+        font-size: 9px;
+    }
+
+    /* =========================================================
+       DELETE
+       ========================================================= */
+
+    .viber-delete {
+        position: absolute;
+        right: 10px;
+        bottom: 9px;
+
+        width: 30px;
+        height: 30px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 50%;
+        color: #9ca1a7;
+        text-decoration: none;
+
+        opacity: 0;
+        transition:
+            opacity .15s ease,
+            color .15s ease,
+            background-color .15s ease;
+    }
+
+    .viber-conversation:hover .viber-delete {
+        opacity: 1;
+    }
+
+    .viber-delete:hover {
+        color: #dc3545;
+        background: rgba(220, 53, 69, .08);
+    }
+
+    /* =========================================================
+       EMPTY
+       ========================================================= */
+
+    .viber-empty {
+        padding: 45px 20px;
+        text-align: center;
+        color: #888;
+    }
+
+    .viber-empty i {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 35px;
+        color: #aaa;
+    }
+
+    /* =========================================================
+       PAGINATION
+       ========================================================= */
+
+    .viber-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 15px;
+        background: #fff;
+        border-top: 1px solid #eee;
+    }
+
+    .viber-pagination-info {
+        font-size: 12px;
+        color: #888;
+    }
+
+    /* =========================================================
+       MOBILE
+       ========================================================= */
+
+    @media (max-width: 576px) {
+
+        .viber-inbox {
+            width: 100%;
+        }
+
+        .viber-header {
+            border-radius: 8px;
+        }
+
+        .viber-header-title {
+            font-size: 17px;
+        }
+
+        .viber-filter-label {
+            font-size: 10px;
+        }
+
+        .viber-conversation-link {
+            padding-left: 10px;
+            padding-right: 55px;
+        }
+
+        .viber-avatar {
+            flex-basis: 48px;
+            width: 48px;
+            height: 48px;
+            margin-right: 10px;
+        }
+
+        .viber-avatar img {
+            width: 48px;
+            height: 48px;
+        }
+
+        .viber-user-name {
+            font-size: 14px;
+        }
+
+        .viber-last-message {
+            font-size: 12px;
+        }
+
+        .viber-date {
+            top: 8px;
+            right: 38px;
+            font-size: 10px;
+        }
+
+        .viber-delete {
+            right: 7px;
+            bottom: 8px;
+            opacity: 1;
+        }
+
+        .viber-product {
+            max-width: 90%;
+        }
+    }
+</style>
+
+
+<main class="container my-2">
+    <div class="viber-inbox">
+
+        <!-- =====================================================
+             HEADER
+             ===================================================== -->
+
+        <div class="viber-header">
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'dash' %}"
+                   class="btn btn-secondary back-button">
                     <i class="fas fa-arrow-left"></i>
-                    <span class="d-none d-sm-inline">Back</span>
+                    <span class="d-none d-sm-inline">
+                        Back
+                    </span>
                 </a>
-                <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
+                <h3 class="viber-header-title flex-grow-1 text-center">
                     <i class="fas fa-comment-dots me-2"></i>
-                    Messages Box
+                    Messages
                 </h3>
             </div>
         </div>
 
-        <!-- FILTERS -->
-        <div class="mailbox-header d-flex justify-content-around mb-4">
-            {% message_counts user as counts %}
-            <a href="{% url 'message-inbox' %}?filter=unread" class="text-decoration-none"
+        <!-- =====================================================
+             FILTERS
+             ===================================================== -->
+
+        {% message_counts user as counts %}
+        <div class="viber-filters">
+
+            <!-- UNREAD -->
+
+            <a href="{% url 'message-inbox' %}?filter=unread"
+               class="viber-filter {% if filter_type == 'unread' %}active{% endif %}"
                title="Unread Messages">
-                <i class="fas fa-envelope text-primary" style="font-size: 1.5rem;"></i>
-                <p class="small text-muted mt-1">
+                <span class="viber-filter-icon text-primary">
+                    <i class="fas fa-envelope"></i>
+                </span>
+                <span class="viber-filter-label">
                     Unread
-                    <span class="badge bg-primary text-white">{{ counts.unread_count }}</span>
-                </p>
+                    {% if counts.unread_count %}
+                        <span class="badge bg-primary">
+                            {{ counts.unread_count }}
+                        </span>
+                    {% endif %}
+                </span>
             </a>
-            <a href="{% url 'message-inbox' %}?filter=inbox" class="text-decoration-none" title="Inbox">
-                <i class="fas fa-inbox text-secondary" style="font-size: 1.5rem;"></i>
-                <p class="small text-muted mt-1">
+
+            <!-- INBOX -->
+
+            <a href="{% url 'message-inbox' %}?filter=inbox"
+               class="viber-filter {% if filter_type == 'inbox' %}active{% endif %}"
+               title="Inbox">
+                <span class="viber-filter-icon text-secondary">
+                    <i class="fas fa-inbox"></i>
+                </span>
+                <span class="viber-filter-label">
                     Inbox
-                    <span class="badge bg-secondary text-white">{{ counts.inbox_count }}</span>
-                </p>
+                    {% if counts.inbox_count %}
+                        <span class="badge bg-secondary">
+                            {{ counts.inbox_count }}
+                        </span>
+                    {% endif %}
+                </span>
             </a>
-            <a href="{% url 'message-inbox' %}?filter=sent" class="text-decoration-none"
+
+            <!-- SENT -->
+
+            <a href="{% url 'message-inbox' %}?filter=sent"
+               class="viber-filter {% if filter_type == 'sent' %}active{% endif %}"
                title="Sent Messages">
-                <i class="fas fa-paper-plane text-info" style="font-size: 1.5rem;"></i>
-                <p class="small text-muted mt-1">
+                <span class="viber-filter-icon text-info">
+                    <i class="fas fa-paper-plane"></i>
+                </span>
+                <span class="viber-filter-label">
                     Sent
-                    <span class="badge bg-info text-white">{{ counts.sent_count }}</span>
-                </p>
+                    {% if counts.sent_count %}
+                        <span class="badge bg-info">
+                            {{ counts.sent_count }}
+                        </span>
+                    {% endif %}
+                </span>
             </a>
-            <a href="{% url 'message-inbox' %}?filter=all" class="text-decoration-none"
+
+            <!-- ALL -->
+
+            <a href="{% url 'message-inbox' %}?filter=all"
+               class="viber-filter {% if filter_type == 'all' %}active{% endif %}"
                title="All Messages">
-                <i class="fas fa-envelope-open-text text-success" style="font-size: 1.5rem;"></i>
-                <p class="small text-muted mt-1">
+                <span class="viber-filter-icon text-success">
+                    <i class="fas fa-envelope-open-text"></i>
+                </span>
+                <span class="viber-filter-label">
                     All
-                    <span class="badge bg-success text-white">{{ counts.all_count }}</span>
-                </p>
+                    {% if counts.all_count %}
+                        <span class="badge bg-success">
+                            {{ counts.all_count }}
+                        </span>
+                    {% endif %}
+                </span>
             </a>
-
         </div>
-        <!-- LIST -->
-        <div class="message-box conversation-box" id="inbox">
 
-            <h2>
+        <!-- =====================================================
+             CONVERSATION LIST
+             ===================================================== -->
+
+        <div class="viber-conversation-list"
+             id="inbox">
+
+            <!-- LIST TITLE -->
+
+            <h2 class="viber-list-title">
                 {% if filter_type == 'unread' %}
-                <i class="fas fa-envelope"></i> Unread Messages
+                <i class="fas fa-envelope me-2"></i>
+                Unread Messages
                 {% elif filter_type == 'sent' %}
-                <i class="fas fa-paper-plane"></i> Sent Messages
+                <i class="fas fa-paper-plane me-2"></i>
+                Sent Messages
                 {% elif filter_type == 'all' %}
-                <i class="fas fa-envelope-open-text"></i> All Messages
+                <i class="fas fa-envelope-open-text me-2"></i>
+                All Messages
                 {% else %}
-                <i class="fas fa-inbox"></i> Inbox
+                <i class="fas fa-inbox me-2"></i>
+                Inbox
                 {% endif %}
             </h2>
 
+            <!-- =================================================
+                 CONVERSATIONS
+                 ================================================= -->
+
             {% if conversations %}
             {% for item in conversations %}
-            <div class="message-card position-relative {% conversation_read_status item.root request.user %}"
-                 data-status="{% conversation_read_status item.root request.user %}">
+            {% conversation_read_status item.root request.user as conversation_status %}
 
-                <div class="position-absolute top-0 end-0 p-2" style="z-index: 10;">
-                    <div class="btn-group" role="group">
-                        <a href="{% url 'delete-message' item.root.pk %}?filter={{ filter_type }}"
-                           class="btn btn-outline-danger btn-sm activate shadow-none"
-                           onclick="event.stopPropagation();"
-                           title="Delete">
-                            <i class="fas fa-trash-alt"></i>
-                            <span class="tooltip-text">Delete</span>
-                        </a>
-                    </div>
-                </div>
+            <!-- =================================================
+                 DETERMINE OTHER USER
+                 ================================================= -->
+
+            {% if item.last_message.sender_id == request.user.id %}
+            {% with other_user=item.last_message.recipient %}
+            <div class="viber-conversation
+                                        {% if conversation_status == 'unread' %}
+                                            viber-unread
+                                        {% endif %}"
+                 data-status="{{ conversation_status }}">
+
+                <!-- DATE -->
+
+                <span class="viber-date">
+                                    {{ item.last_message.timestamp|date:"j M H:i" }}
+                                </span>
+
+                <!-- DELETE -->
+
+                <a href="{% url 'delete-message' item.root.pk %}?filter={{ filter_type }}"
+                   class="viber-delete activate"
+                   onclick="event.stopPropagation();"
+                   title="Delete conversation">
+                    <i class="fas fa-trash-alt"></i>
+                </a>
+
+                <!-- CONVERSATION -->
 
                 <a href="{% url 'read-message' item.last_message.pk %}"
-                   class="message-content text-decoration-none d-block">
+                   class="viber-conversation-link">
 
-                    <div class="message-preview">
-                        <div class="message-preview-avatar">
-                            {% if item.last_message.sender == request.user %}
-                            {% if item.last_message.sender.profile.profile_photo %}
-                            <img src="{{ item.last_message.sender.profile.profile_photo.url }}" alt="">
+                    <!-- AVATAR -->
+
+                    <div class="viber-avatar">
+                        {% if other_user.profile.profile_photo %}
+                        <img src="{{ other_user.profile.profile_photo.url }}"
+                             alt="{{ other_user.profile.username_in_marketplace|default:other_user.username }}">
+                        {% else %}
+
+                        <img src="{% static 'images/profile_picture.webp' %}"
+                             alt="{{ other_user.profile.username_in_marketplace|default:other_user.username }}">
+                        {% endif %}
+                        {% if conversation_status == 'unread' %}
+                        <span class="viber-unread-dot"></span>
+                        {% endif %}
+                    </div>
+
+                    <!-- CONTENT -->
+
+                    <div class="viber-conversation-content">
+
+                        <!-- NAME -->
+
+                        <div class="viber-conversation-top">
+                                            <span class="viber-user-name">
+                                                {{ other_user.profile.username_in_marketplace|default:other_user.username }}
+                                            </span>
+                        </div>
+
+                        <!-- LAST MESSAGE -->
+
+                        <div class="viber-last-message">
+
+                            <!-- DELIVERY STATUS -->
+
+                            {% if item.last_message.delivery_status == 'read' %}
+                            <span class="viber-check viber-check-read">
+                                                    ✓✓
+                                                </span>
+                            {% elif item.last_message.delivery_status == 'delivered' %}
+                            <span class="viber-check">
+                                                    ✓✓
+                                                </span>
                             {% else %}
-                            <img src="{% static 'images/profile_picture.webp' %}" alt="">
+                            <span class="viber-check">
+                                                    ✓
+                                                </span>
                             {% endif %}
+
+                            <!-- MESSAGE CONTENT -->
+
+                            {% if item.last_message.is_removed %}
+                            <span class="viber-message-removed">
+                                                    <i class="fas fa-ban"></i>
+                                                    This message was deleted
+                                                </span>
+                            {% elif item.last_message.image %}
+                            <span class="viber-media-preview">
+                                                    <i class="fas fa-camera"></i>
+                                                    Photo
+                                                </span>
+                            {% elif item.last_message.video %}
+                            <span class="viber-media-preview">
+                                                    <i class="fas fa-video"></i>
+                                                    Video
+                                                </span>
+                            {% elif item.last_message.body %}
+                            <span class="viber-message-text">
+                                                    {{ item.last_message.body|striptags|truncatechars:65 }}
+                                                </span>
+                            {% elif item.last_message.title %}
+                            <span class="viber-message-text">
+                                                    {{ item.last_message.title|striptags|truncatechars:65 }}
+                                                </span>
                             {% else %}
-                            {% if item.last_message.sender.profile.profile_photo %}
-                            <img src="{{ item.last_message.sender.profile.profile_photo.url }}" alt="">
-                            {% else %}
-                            <img src="{% static 'images/profile_picture.webp' %}" alt="">
-                            {% endif %}
+                            <span class="viber-message-text">
+                                                    Message
+                                                </span>
                             {% endif %}
                         </div>
 
-                        <div class="message-preview-info">
-                            <div class="message-preview-header">
-                                        <span class="message-preview-name">
-                                            {% if item.last_message.sender == request.user %}
-                                                You
-                                            {% else %}
-                                                {{ item.last_message.sender.profile.username_in_marketplace|default:item.last_message.sender.username }}
-                                            {% endif %}
-                                        </span>
-                                <span class="message-preview-date">
-                                            {{ item.last_message.timestamp|date:"j M. Y H:i" }}
-                                        </span>
-                            </div>
 
-                            <div class="message-title">
-                                {{ item.root.title|default:"Direct conversation" }}
-                                <small class="text-muted ms-2">({{ item.messages_count }} messages)</small>
-                            </div>
+                        <!-- PRODUCT / LISTING -->
+
+                        {% if item.root.product_type and item.root.product_id %}
+                        <div class="viber-product">
+                            <i class="fas fa-tag"></i>
+                            {% if item.root.title %}
+                            {{ item.root.title|striptags|truncatechars:55 }}
+                            {% else %}
+                            {{ item.root.product_type|title }}
+                            #{{ item.root.product_id }}
+                            {% endif %}
                         </div>
+                        {% endif %}
                     </div>
                 </a>
             </div>
+            {% endwith %}
+            {% else %}
+
+            <!-- =================================================
+                 OTHER USER IS SENDER
+                 ================================================= -->
+
+            {% with other_user=item.last_message.sender %}
+            <div class="viber-conversation
+                                        {% if conversation_status == 'unread' %}
+                                            viber-unread
+                                        {% endif %}"
+                 data-status="{{ conversation_status }}">
+
+                <!-- DATE -->
+
+                <span class="viber-date">
+                                    {{ item.last_message.timestamp|date:"j M H:i" }}
+                                </span>
+
+                <!-- DELETE -->
+
+                <a href="{% url 'delete-message' item.root.pk %}?filter={{ filter_type }}"
+                   class="viber-delete activate"
+                   onclick="event.stopPropagation();"
+                   title="Delete conversation">
+                    <i class="fas fa-trash-alt"></i>
+                </a>
+
+                <!-- CONVERSATION -->
+
+                <a href="{% url 'read-message' item.last_message.pk %}"
+                   class="viber-conversation-link">
+
+                    <!-- AVATAR -->
+
+                    <div class="viber-avatar">
+                        {% if other_user.profile.profile_photo %}
+                        <img src="{{ other_user.profile.profile_photo.url }}"
+                             alt="{{ other_user.profile.username_in_marketplace|default:other_user.username }}">
+                        {% else %}
+                        <img src="{% static 'images/profile_picture.webp' %}"
+                             alt="{{ other_user.profile.username_in_marketplace|default:other_user.username }}">
+                        {% endif %}
+                        {% if conversation_status == 'unread' %}
+                        <span class="viber-unread-dot"></span>
+                        {% endif %}
+                    </div>
+
+                    <!-- CONTENT -->
+
+                    <div class="viber-conversation-content">
+
+                        <!-- NAME -->
+
+                        <div class="viber-conversation-top">
+                                            <span class="viber-user-name">
+                                                {{ other_user.profile.username_in_marketplace|default:other_user.username }}
+                                            </span>
+                        </div>
+
+                        <!-- LAST MESSAGE -->
+
+                        <div class="viber-last-message">
+                            {% if item.last_message.image %}
+                            <span class="viber-media-preview">
+                                                    <i class="fas fa-camera"></i>
+                                                    Photo
+                                                </span>
+                            {% elif item.last_message.video %}
+                            <span class="viber-media-preview">
+                                                    <i class="fas fa-video"></i>
+                                                    Video
+                                                </span>
+                            {% elif item.last_message.is_removed %}
+                            <span class="viber-message-removed">
+                                                    <i class="fas fa-ban"></i>
+                                                    This message was deleted
+                                                </span>
+                            {% elif item.last_message.body %}
+                            <span class="viber-message-text">
+                                                    {{ item.last_message.body|striptags|truncatechars:65 }}
+                                                </span>
+                            {% elif item.last_message.title %}
+                            <span class="viber-message-text">
+                                                    {{ item.last_message.title|striptags|truncatechars:65 }}
+                                                </span>
+                            {% else %}
+                            <span class="viber-message-text">
+                                                    Message
+                                                </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- PRODUCT / LISTING -->
+
+                        {% if item.root.product_type and item.root.product_id %}
+                        <div class="viber-product">
+                            <i class="fas fa-tag"></i>
+                            {% if item.root.title %}
+                            {{ item.root.title|striptags|truncatechars:55 }}
+                            {% else %}
+                            {{ item.root.product_type|title }}
+                            #{{ item.root.product_id }}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+            {% endwith %}
+            {% endif %}
             {% endfor %}
 
+            <!-- =================================================
+                 PAGINATION
+                 ================================================= -->
+
             {% if conversations.has_other_pages %}
-            <div class="pagination mt-3 mb-3">
+            <div class="viber-pagination">
                 {% if conversations.has_previous %}
                 <a href="?page={{ conversations.previous_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
-                   class="btn btn-outline-secondary btn-sm">‹</a>
+                   class="btn btn-outline-secondary btn-sm">
+                    ‹
+                </a>
                 {% endif %}
-
-                <span>{{ conversations.number }} / {{ conversations.paginator.num_pages }}</span>
-
+                <span class="viber-pagination-info">
+                            {{ conversations.number }}
+                            /
+                            {{ conversations.paginator.num_pages }}
+                        </span>
                 {% if conversations.has_next %}
                 <a href="?page={{ conversations.next_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
-                   class="btn btn-outline-secondary btn-sm">›</a>
+                   class="btn btn-outline-secondary btn-sm">
+
+                    ›
+                </a>
                 {% endif %}
             </div>
             {% endif %}
-
             {% else %}
-            <div class="alert alert-warning text-center" role="alert">
-                <i class="fas fa-info-circle"></i>
-                No messages in your inbox.
+
+            <!-- =================================================
+                 EMPTY
+                 ================================================= -->
+
+            <div class="viber-empty">
+                <i class="fas fa-comments"></i>
+                <div>
+                    No messages in your inbox.
+                </div>
             </div>
             {% endif %}
         </div>
