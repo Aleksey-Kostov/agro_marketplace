@@ -1835,10 +1835,6 @@
     z-index: 1055;
 }
 
-.emoji {
-    border-radius: 0 6px 6px 0;
-}
-
 .emoji-picker .emoji-btn {
     min-width: 34px;
     min-height: 34px;
