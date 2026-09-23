@@ -256,7 +256,9 @@
                                             </div>
                                             <div class="message-reply-content">
                                                 <div class="message-reply-name">
-                                                    {{ item.parent_message.sender.profile.username_in_marketplace|default:item.parent_message.sender.username }}
+                                                    {{
+                                                    item.parent_message.sender.profile.username_in_marketplace|default:item.parent_message.sender.username
+                                                    }}
                                                 </div>
                                                 <div class="message-reply-preview-row">
 
@@ -569,6 +571,12 @@
                       enctype="multipart/form-data"
                       id="reply-form">
                     {% csrf_token %}
+                    <input type="hidden"
+                           name="product_type"
+                           value="{{ root_message.product_type|default:'' }}">
+                    <input type="hidden"
+                           name="product_id"
+                           value="{{ root_message.product_id|default:'' }}">
 
                     <!-- =================================================
                          REPLY TARGET
