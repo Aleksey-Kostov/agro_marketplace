@@ -1,3 +1,7 @@
+/* ==========================================================
+   GLOBAL RESET
+   ========================================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -9,28 +13,56 @@
     box-sizing: border-box;
 }
 
+
+/* ==========================================================
+   DOCUMENT
+   ========================================================== */
+
 html {
+    height: 100%;
     font: 18px/1.5 "Karla", sans-serif;
 }
-/**/
 
-/*main {*/
-/*    flex: 1;*/
-/*}*/
-
-/* Navbar */
-.navbar {
-    background-color: #2e8b57;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+html,
+body {
+    min-height: 100%;
 }
 
-/**/
+body {
+    display: flex;
+    flex-direction: column;
 
+    background-color: #f5f5f5;
+    background-image: url('../images/texture.jpg');
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-size: cover;
+    background-attachment: fixed;
+
+    color: #333;
+
+    transition: background-image 1s ease;
+}
+
+main {
+    flex: 1 0 auto;
+    min-height: 500px;
+}
+
+
+/* ==========================================================
+   TYPOGRAPHY
+   ========================================================== */
 
 h1 {
     font: 90px/1.5 "Cormorant Infant";
     color: #fff;
 }
+
+
+/* ==========================================================
+   IMAGES
+   ========================================================== */
 
 img {
     display: block;
@@ -39,31 +71,33 @@ img {
 }
 
 
-body {
-    background-color: #f5f5f5;
-    background-image: url('../images/texture.jpg');
-    background-repeat: no-repeat;
-    background-position: top center;
-    background-size: cover;
-    background-attachment: fixed;
-    color: #333;
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-    transition: background-image 1s ease;
-}
+/* ==========================================================
+   NAVBAR
+   ========================================================== */
 
-/* Navbar */
 .navbar {
     background-color: #2e8b57;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Header */
+.nav-link {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
 .header {
     background-color: #2e8b57;
     color: white;
+
     padding: 30px;
+
     display: flex;
     align-items: center;
 }
@@ -76,63 +110,147 @@ body {
 .header img.logo {
     width: 100px;
     height: 100px;
+
     border-radius: 50%;
     object-fit: cover;
+
     margin-right: 10px;
 }
+
+
+/* ==========================================================
+   WELCOME USER
+   ========================================================== */
 
 .welcome-container {
     top: 80px;
     right: 20px;
+
     text-align: right;
+
     font-size: 12px;
     color: #333;
+
+    background-color: rgba(113, 218, 65, 0.5);
+
+    border-radius: 8px;
+    padding: 6px;
 }
 
 .welcome-text {
     font-family: 'Poppins', sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .user-name {
     font-family: 'Poppins', sans-serif;
     font-weight: 400;
+    color: #2a332e;
 }
 
 .current-date-time {
+    font-size: 0.7rem;
     font-weight: 400;
-    font-size: 0.9rem;
     color: #555;
 }
 
-.section-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #2e8b57;
-    text-align: center;
-    margin: 30px 0 20px;
+.welcome {
+    display: inline-block;
+    width: auto;
 }
 
+
+/* ==========================================================
+   SECTION TITLE
+   ========================================================== */
+
+.section-title {
+    position: relative;
+
+    font-size: 1.5em;
+    font-weight: 500;
+
+    margin: 20px 0;
+
+    color: #fcf6f6;
+
+    text-align: center;
+
+    background-color: rgba(102, 161, 110, 0.4);
+
+    border-radius: 5px;
+}
+
+.section-title::before,
+.section-title::after {
+    content: "";
+
+    position: absolute;
+
+    top: 50%;
+
+    width: 37%;
+    height: 1px;
+
+    background-color: #0a0a0a;
+}
+
+.section-title::before {
+    left: 0;
+}
+
+.section-title::after {
+    right: 0;
+}
+
+
+/* ==========================================================
+   FEED CARDS
+   ========================================================== */
+
 .feed-card-wrapper {
+    position: relative;
+
     background-color: rgba(255, 255, 255, 0.8);
+
     border-radius: 8px;
-    overflow: hidden;
+
+    overflow: visible;
+
     margin-bottom: 10px;
+
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
     transition: transform 0.2s;
+}
+
+.feed-card-wrapper:hover {
+    transform: scale(1.02);
 }
 
 .feed-card {
     display: flex;
-    align-items: center;
-    padding: 10px;
+
+    justify-content: space-between;
+    align-items: flex-start;
+
+    width: 100%;
+
+    padding: 15px;
+
     border: 1px solid #e0e0e0;
     border-radius: 8px;
+
     background-color: white;
+
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 1000px; /* Adjust as needed */
 }
+
+
+/* ==========================================================
+   FEED CONTENT
+   ========================================================== */
 
 .name {
     font-size: 18px;
@@ -140,62 +258,526 @@ body {
     font-family: "MerriweatherEmbed", Georgia, serif;
 }
 
-
 .category-note {
+    width: fit-content;
+
+    padding: 2px 6px;
+
     font-size: 0.7rem;
+
     background-color: #28a745;
     color: white;
-    padding: 2px 6px;
-    border-radius: 0;
-    width: fit-content;
+
+    border-radius: 5px;
 }
 
-.seller-name, .buyer-name {
+.custom-category-note {
+    background-color: #d3506c;
+}
+
+.seller-name,
+.buyer-name {
     font-size: 1.1rem;
     font-weight: 600;
 }
 
-.description, .quantity-info {
+.description,
+.quantity-info {
     font-size: 0.95rem;
     color: #333;
+}
+
+.quantity {
+    font: 15px/1.6 "MerriweatherEmbed", Georgia, serif;
 }
 
 .card-footer {
     display: flex;
     justify-content: space-between;
+
     font-size: 0.8rem;
     color: #777;
 }
 
-.vertical-line {
-    width: 2px;
-    height: 90%;
-    background-color: black;
-    margin: 0 auto;
-    border-radius: 1px;
-    position: relative;
-    top: 10%;
+
+/* ==========================================================
+   PRODUCT IMAGE
+   ========================================================== */
+
+.image-wrapper {
+    position: absolute;
+
+    right: 15px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    overflow: visible;
+}
+
+.product-image-container {
+    flex-shrink: 0;
+
+    width: 70px;
+    height: 70px;
+
+    margin-left: 15px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 8px;
+    border: 1px solid #5eac68;
+
+    overflow: hidden;
+}
+
+.product-picture {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
 }
 
 
-.divider {
-    border: 0;
-    border-top: 1px solid #ddd;
-    margin: 10px 0;
+/* ==========================================================
+   PRODUCT PHOTOS
+   ========================================================== */
+
+.photo-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.product-photo {
+    width: 200px;
+    height: 200px;
+
+    object-fit: cover;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        0 6px 20px rgba(0, 0, 0, 0.19);
+
+    transition:
+        transform 0.3s ease,
+        z-index 0.3s ease;
+
+    transform-origin: center center;
+}
+
+.product-photo:hover {
+    transform: scale(1.5);
+    z-index: 10;
+}
+
+.photo-container:hover .product-photo:not(:hover) {
+    opacity: 0.6;
+}
+
+
+/* ==========================================================
+   TEXT
+   ========================================================== */
+
+.text-truncate {
+    max-width: 332px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: normal;
+    word-wrap: break-word;
+
+    font-size: 0.7rem;
+    line-height: 1rem;
+
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+
+    color: dimgray;
+}
+
+.text-muted {
+    font-size: 0.7rem;
+}
+
+.title {
+    position: relative;
+
+    font-family: 'Poppins', sans-serif;
+
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: 1.5;
+
+    color: #333;
+
+    text-align: left;
+
+    margin: 0;
+    padding: 0;
+
+    border-top: solid 1px rgba(10, 10, 10, 0.3);
+    border-bottom: solid 1px rgba(10, 10, 10, 0.3);
+}
+
+
+/* ==========================================================
+   FLEX HELPERS
+   ========================================================== */
+
+.d-flex {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    width: 100%;
+}
+
+
+/* ==========================================================
+   PROFILE
+   ========================================================== */
+
+.profile-picture {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    border: 1px solid #bdc7d1;
+}
+
+.profile-edit {
+    max-width: 1000px;
+}
+
+.edit-profile {
+    margin-bottom: 45px;
+}
+
+.profile-registration {
+    max-width: 900px;
+}
+
+
+/* ==========================================================
+   FORM ELEMENTS
+   ========================================================== */
+
+.code-country {
+    min-width: 180px;
+}
+
+.phone {
+    max-width: 260px;
+}
+
+.town {
+    max-width: 380px;
+}
+
+.code-count {
+    min-width: 150px;
+}
+
+.submit-button {
+    min-width: 200px;
+}
+
+.unit-measure {
+    margin-top: 0;
+}
+
+
+/* ==========================================================
+   BUTTONS
+   ========================================================== */
+
+.btn-sm {
+    width: 50px;
 }
 
 .btn-view {
     background-color: #2e8b57;
     color: rgb(212, 76, 76);
+
     border-radius: 20px;
+
     padding: 5px 15px;
+
     font-size: 0.9rem;
 }
 
+.toggle-password {
+    background-color: white;
+    border-color: #ccc;
+    color: #000;
+}
+
+.toggle-password:hover {
+    background-color: #f8f9fa;
+    border-color: #888;
+}
+
+.back-button {
+    max-height: 45px;
+    min-width: 94px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 18px;
+
+    white-space: nowrap;
+}
+
+
+/* ==========================================================
+   BUTTON GROUP
+   ========================================================== */
+
+.btn-group .btn {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+
+/* ==========================================================
+   STATUS / COLORS
+   ========================================================== */
+
+.sell,
+.buy {
+    color: #c1e22c;
+}
+
+.text-danger {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+
+/* ==========================================================
+   DIVIDERS
+   ========================================================== */
+
+.divider {
+    border: 0;
+    border-top: 1px solid #ddd;
+
+    margin: 10px 0;
+}
+
+.vertical-line {
+    position: relative;
+    top: 10%;
+
+    width: 2px;
+    height: 90%;
+
+    margin: 0 auto;
+
+    background-color: black;
+
+    border-radius: 1px;
+}
+
+
+/* ==========================================================
+   PAGINATION
+   ========================================================== */
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+
+    margin-top: 20px;
+
+    text-align: center;
+}
+
+.pagination {
+    display: inline-flex;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 0.4rem;
+
+    list-style: none;
+
+    padding-left: 0;
+    margin-bottom: 0;
+
+    font-size: 0.9rem;
+}
+
+.page-item {
+    margin: 0 4px;
+}
+
+.page-link {
+    display: inline-block;
+
+    padding: 10px 18px;
+
+    color: #007bff;
+    background-color: #fff;
+
+    border: 1px solid #ddd;
+    border-radius: 50px;
+
+    font-size: 16px;
+
+    transition:
+        background-color 0.3s,
+        color 0.3s,
+        border-color 0.3s;
+}
+
+.page-link:hover {
+    color: #fff;
+
+    background-color: #007bff;
+
+    border-color: #007bff;
+}
+
+.page-item.active .page-link {
+    background-color: #6b6d70;
+    color: #fff;
+
+    border-color: #007bff;
+
+    font-weight: bold;
+}
+
+.page-item.disabled .page-link {
+    color: #aaa;
+    background-color: #f8f9fa;
+
+    border-color: #ddd;
+
+    cursor: not-allowed;
+}
+
+.page-item.disabled .page-link:hover {
+    background-color: #f8f9fa;
+    color: #aaa;
+}
+
+.page-item .page-link {
+    padding: 10px 15px;
+
+    border-radius: 50%;
+
+    font-size: 18px;
+}
+
+.page-item .page-link:hover {
+    border-color: #007bff;
+    background-color: #52914c;
+}
+
+.page-link:focus {
+    box-shadow: none;
+}
+
+.paginator-page {
+    min-width: 120px;
+    max-width: 130px;
+
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* ==========================================================
+   CARDS / MEDIA
+   ========================================================== */
+
+.card-media {
+    min-width: 700px;
+}
+
+
+/* ==========================================================
+   MESSAGE CONTAINER
+   ========================================================== */
+
+.message {
+    width: 100%;
+    max-width: 630px;
+
+    background-color: rgba(249, 249, 249, 0.95);
+
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.shadow {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+
+/* ==========================================================
+   LATEST NEWS
+   ========================================================== */
+
+.latest-news-header {
+    margin-top: 20px;
+    margin-bottom: 30px;
+
+    padding: 0;
+
+    background-color: rgba(196, 212, 196, 0.9);
+
+    color: #333;
+
+    border-radius: 8px;
+
+    text-align: center;
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+    font-family: 'Arial', sans-serif;
+}
+
+.latest-news-header h2 {
+    margin: 0;
+
+    font-size: 2rem;
+
+    letter-spacing: 1px;
+}
+
+
+/* ==========================================================
+   FOOTER
+   ========================================================== */
+
 footer {
+    flex-shrink: 0;
+
+    width: 100%;
+
     padding: 20px;
+
     background-color: #2e8b57;
     color: white;
+
     text-align: center;
 }
 
@@ -214,698 +796,49 @@ footer ul.list-inline a {
     text-decoration: none;
 }
 
-.text-truncate {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 0.5rem;
-    margin-top: 0.5rem;
-
-}
-
-.btn-sm {
-    width: 50px;
-}
-
-.text-muted {
-    font-size: 0.7rem;
-}
-
-.profile-picture {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid #bdc7d1;
-}
-
-.section-title {
-    margin: 20px 0;
-    color: #343a40;
-}
-
-.feed-card-wrapper:hover {
-    transform: scale(1.02);
-}
-
-.category-note {
-    border-radius: 5px;
-}
-
-
-.feed-card-wrapper {
-    position: relative;
-    background-color: rgba(255, 255, 255, 0.8);
-    border-radius: 8px;
-    overflow: visible;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.feed-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 15px;
-    border-radius: 8px;
-    background-color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
-}
-
-
-.image-wrapper {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    overflow: visible;
-}
-
-
-.btn-group .btn {
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
-
-.btn-outline-success {
-    margin-right: 5px;
-}
-
-
-.section-title {
-    position: relative;
-    font-size: 1.5em;
-    font-weight: 500;
-    margin: 20px 0;
-    color: #fcf6f6;
-    background-color: rgba(102, 161, 110, 0.4);
-    border-radius: 5px;
-}
-
-.section-title:before,
-.section-title:after {
-    content: "";
-    position: absolute;
-    width: 37%;
-    height: 1px;
-    background-color: #0a0a0a;
-    top: 50%;
-}
-
-.section-title:before {
-    left: 0;
-}
-
-.section-title:after {
-    right: 0;
-}
-
-.pagination-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.pagination {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.pagination a:hover {
-    background-color: #28a745;
-}
-
-.pagination a {
-    display: inline-block;
-    padding: 10px 15px;
-    margin: 0 5px;
-    background-color: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.pagination a.disabled {
-    background-color: #ddd;
-    color: #aaa;
-    cursor: not-allowed;
-}
-
-.pagination span {
-    display: inline-block;
-    padding: 10px 15px;
-    font-size: 16px;
-    background-color: #f8f9fa;
-    color: #007bff;
-    border-radius: 5px;
-}
-
-.product-image-container {
-    margin-left: 15px;
-    flex-shrink: 0;
-    width: 70px;
-    height: 70px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 8px;
-    border: 1px solid #5eac68;
-    overflow: hidden;
-}
-
-.product-picture {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.text-truncate {
-    font-size: 0.7rem;
-    line-height: 1rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-    white-space: normal;
-    word-wrap: break-word;
-    color: dimgray;
-}
-
-.quantity {
-    font: 15px/1.6 "MerriweatherEmbed", Georgia, serif;
-}
-
-
-.title {
-    font-size: 0.8rem;
-    font-weight: 400;
-    color: #333;
-    text-align: left;
-    margin: 0;
-    padding: 0;
-    line-height: 1.5;
-    font-family: 'Poppins', sans-serif;
-    position: relative;
-    border-bottom: solid 1px rgb(10, 10, 10, 0.3);
-    border-top: solid 1px rgb(10, 10, 10, 0.3);
-}
-
-.d-flex {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.welcome-container {
-    background-color: rgba(113, 218, 65, 0.5);
-    color: #333;
-    border-radius: 8px;
-    padding: 6px;
-}
-
-.welcome-text {
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.user-name {
-    font-weight: 400;
-    color: #2a332e;
-}
-
-.current-date-time {
-    font-size: 0.7rem;
-    color: #555;
-}
-
-@media (max-width: 992px) {
-
-    .welcome-container {
-        display: flex;
-        width: 58%;
-        background-color: rgba(113, 218, 65, 0.5);
-        font-size: 10px;
-        text-align: center;
-    }
-
-    .header {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .header .logo {
-        margin-bottom: 15px;
-    }
-
-    .header h1 {
-        font-size: 1.5rem;
-    }
-
-    .header .lead {
-        font-size: 1rem;
-    }
-    .navbar-nav {
-        align-items: start;
-    }
-
-    .welcome {
-        display: inline-block;
-        justify-content: start;
-        width: auto;
-
-    }
-}
-
-main {
-    min-height: 500px;
-}
-
-
-.custom-category-note {
-    background-color: #d3506c
-}
-
-.product-photo {
-    width: 200px;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-}
-
-
-.photo-container {
-    position: relative;
-    overflow: hidden;
-}
-
-.product-photo {
-    transition: transform 0.3s ease, z-index 0.3s ease;
-    transform-origin: center center;
-}
-
-.product-photo:hover {
-    transform: scale(1.5);
-    z-index: 10;
-}
-
-.photo-container:hover .product-photo:not(:hover) {
-    opacity: 0.6;
-}
-
-/* Media Query for Devices with Width <= 768px */
-@media (max-width: 768px) {
-    .product-photo {
-        width: 120px;
-        height: 120px;
-        transition: all 0.3s ease;
-    }
-
-
-    .product-photo:hover, .product-photo:active {
-        height: 100px;
-        width: 120px;
-        transform: scale(2.5) translate(10%, -10%); /* Zoom and move */
-    }
-}
-
-/* Media Query for Devices with Width <= 480px */
-@media (max-width: 480px) {
-    .product-photo {
-        width: 60px;
-        height: 60px;
-        transition: all 0.3s ease;
-        flex-grow: 1;
-    }
-
-    .product-photo:hover, .product-photo:active {
-        height: 60px;
-        width: 100px;
-        transform: scale(2.5) translate(-3%, 10%);
-    }
-}
-
-
-
-
-.sell, .buy {
-    color: #c1e22c;
-}
-
-.text-danger {
-    color: red;
-    font-size: 0.9em;
-    margin-top: 5px;
-}
-
-.pagination-container {
-    margin-top: 20px;
-    text-align: center;
-}
-
-.pagination {
-    display: inline-flex;
-    justify-content: center;
-    list-style: none;
-    padding-left: 0;
-    margin-bottom: 0;
-}
-
-.page-item {
-    margin: 0 4px;
-}
-
-.page-link {
-    padding: 10px 18px;
-    color: #007bff;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 50px;
-    font-size: 16px;
-    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-    display: inline-block;
-}
-
-/* Hover effect */
-.page-link:hover {
-    color: #fff;
-    background-color: #007bff;
-    border-color: #007bff;
-}
-
-/* Active page styling */
-.page-item.active .page-link {
-    background-color: #6b6d70;
-    color: #fff;
-    border-color: #007bff;
-    font-weight: bold;
-}
-
-/* Disabled page button */
-.page-item.disabled .page-link {
-    color: #aaa;
-    background-color: #f8f9fa;
-    border-color: #ddd;
-    cursor: not-allowed;
-}
-
-.page-item.disabled .page-link:hover {
-    background-color: #f8f9fa;
-    color: #aaa;
-}
-
-/* Previous and Next buttons style */
-.page-item .page-link {
-    border-radius: 50%;
-    padding: 10px 15px;
-    font-size: 18px;
-}
-
-.page-item .page-link:hover {
-    border-color: #007bff;
-    background-color: #52914c;
-}
-
-.page-item .page-link {
-    border-radius: 50%;
-}
-
-.page-link:focus {
-    box-shadow: none;
-}
-
-
-.text-truncate {
-    max-width: 332px;
-}
-
-.back-button {
-    max-height: 45px;
-    min-width: 94px;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    white-space: nowrap;
-}
-
-/* For screen sizes 768px and below (tablets and smaller devices) */
-@media (max-width: 768px) {
-    .back-button {
-        max-height: 40px;
-        min-width: 80px;
-        font-size: 16px;
-        white-space: nowrap;
-    }
-}
-
-/* For screen sizes 480px and below (mobile devices) */
-@media (max-width: 480px) {
-    .back-button {
-        max-height: 35px;
-        min-width: 75px;
-        font-size: 14px;
-        white-space: nowrap;
-    }
-}
-
-.paginator-page {
-    min-width: 120px;
-    max-width: 130px;
-    align-items: center;
-    justify-content: center;
-}
-
-.card-media {
-    min-width: 700px;
-}
-
-@media (max-width: 700px) {
-    .card-media {
-        min-width: 350px;
-    }
-}
-
-.toggle-password {
-    background-color: white;
-    border-color: #ccc; /* Adjust border color */
-    color: #000; /* Text color */
-}
-
-.toggle-password:hover {
-    background-color: #f8f9fa; /* Light gray on hover */
-    border-color: #888;
-}
-
-.profile-edit {
-    max-width: 1000px;
-}
-
-.submit-button {
-    min-width: 200px;
-}
-
-@media (max-width: 700px) {
-    .submit-button {
-        min-width: 150px
-    }
-
-    .unit-measure {
-        margin-top: 25px;
-    }
-}
-
-.edit-profile {
-    margin-bottom: 45px;
-}
-
-.profile-registration {
-    max-width: 900px;
-}
-
-.code-country {
-    min-width: 180px;
-}
-
-.phone {
-    max-width: 260px;
-}
-
-.town {
-    max-width: 380px;
-}
-
-.message {
-    background-color: rgba(249, 249, 249, 0.95);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 630px
-}
-
-.shadow {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.code-count {
-    min-width: 150px;
-}
-
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    display: flex;
-    flex-direction: column;
-}
-
-main {
-    flex: 1 0 auto;
-}
-
-footer {
-    background-color: #2e8b57;
-    color: white;
-    text-align: center;
-    padding: 20px;
-    width: 100%;
-}
-
-.latest-news-header {
-    background-color: rgb(196, 212, 196, 0.9);
-    color: #333;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
-    margin-top: 20px;
-    font-family: 'Arial', sans-serif;
-}
-
-.latest-news-header h2 {
-    font-size: 2rem;
-    margin: 0;
-    letter-spacing: 1px;
-}
-
-.profile-picture {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.nav-link{
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
-}
-
-@media (min-width: 1400px) {
-    .container {
-        max-width: 1320px;
-    }
-
-    .edit-profile {
-        max-width: 1000px;
-        margin: 0 auto 2.5rem;
-    }
-
-    .profile-registration {
-        max-width: 900px;
-    }
-}
-
-@media (min-width: 1920px) {
-    .container {
-        max-width: 1600px;
-    }
-
-    .edit-profile {
-        max-width: 1100px;
-        margin: 0 auto 2.5rem;
-    }
-
-    .profile-registration {
-        max-width: 1000px;
-    }
-}
-
-@media (min-width: 2560px) {
-    .container {
-        max-width: 1920px;
-    }
-
-    .edit-profile {
-        max-width: 1200px;
-        margin: 0 auto 2.5rem;
-    }
-
-    .profile-registration {
-        max-width: 1100px;
-    }
-}
-
-@media (min-width: 3840px) {
-    .container {
-        max-width: 2200px;
-    }
-
-    .edit-profile {
-        max-width: 1300px;
-        margin: 0 auto 2.5rem;
-    }
-
-    .profile-registration {
-        max-width: 1200px;
-    }
-}
 
 /* ==========================================================
-   FACEBOOK / MESSENGER STYLE CONVERSATION
+   CONVERSATION
    ========================================================== */
 
 .conversation-box {
     padding: 20px;
 }
 
-
-/* ==========================================================
-   CONVERSATION TITLE + ACTION BUTTONS
-   ========================================================== */
-
 .conversation-title {
     display: flex;
+
     justify-content: space-between;
     align-items: center;
+
     gap: 0.75rem;
+
     margin-bottom: 25px;
     padding-bottom: 15px;
+
     border-bottom: 1px solid #ddd;
+
     text-align: left;
 }
 
 .conversation-title h3 {
+    flex: 1;
+    min-width: 0;
+
     margin: 0;
+
     font-size: 1.15rem;
     font-weight: 600;
     line-height: 1.3;
+
     word-break: break-word;
-    flex: 1;
-    min-width: 0;
 }
 
 .conversation-actions {
     display: flex !important;
+
     align-items: center;
+
     flex-shrink: 0;
 }
 
@@ -913,26 +846,25 @@ footer {
 .conversation-actions form .btn {
     width: 36px !important;
     height: 34px !important;
+
     padding: 0 !important;
 
     display: inline-flex !important;
+
     align-items: center;
     justify-content: center;
 
-    font-size: 0.85rem;
     margin: 0 !important;
+
+    font-size: 0.85rem;
 }
 
 .conversation-actions form {
     display: inline-flex;
+
     margin: 0;
     padding: 0;
 }
-
-
-/* ==========================================================
-   CONVERSATION
-   ========================================================== */
 
 .conversation {
     width: 100%;
@@ -945,10 +877,21 @@ footer {
 
 .conversation-message {
     display: flex;
+
     align-items: flex-start;
 
     width: 100%;
+
     margin-bottom: 25px;
+
+    min-width: 0;
+}
+
+.conversation-message-body {
+    flex: 0 1 auto;
+
+    width: fit-content;
+    max-width: calc(100% - 60px);
 
     min-width: 0;
 }
@@ -960,12 +903,15 @@ footer {
 
 .conversation-avatar {
     flex: 0 0 48px;
+
     width: 48px;
 
     margin-right: 12px;
 }
 
 .message-avatar {
+    display: block;
+
     width: 48px;
     height: 48px;
 
@@ -973,8 +919,6 @@ footer {
 
     border-radius: 50%;
     border: 1px solid #ccc;
-
-    display: block;
 }
 
 .conversation-avatar a .message-avatar {
@@ -987,45 +931,32 @@ footer {
 
 
 /* ==========================================================
-   MESSAGE BODY
-
-   IMPORTANT:
-   - Body wraps bubble + actions.
-   - Actions stay directly below the bubble.
-   ========================================================== */
-
-.conversation-message-body {
-    flex: 0 1 auto;
-
-    min-width: 0;
-    width: fit-content;
-    max-width: calc(100% - 60px);
-}
-
-
-/* ==========================================================
-   META
+   MESSAGE META
    ========================================================== */
 
 .conversation-meta {
     display: flex;
+
     align-items: baseline;
 
     gap: 8px;
-    margin-bottom: 4px;
 
     width: fit-content;
     max-width: 100%;
+
+    margin-bottom: 4px;
 }
 
 .conversation-name {
     color: #222;
+
     font-size: 15px;
     font-weight: 600;
 }
 
 .conversation-date {
     color: #777;
+
     font-size: 12px;
 }
 
@@ -1059,11 +990,6 @@ footer {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-
-/* ==========================================================
-   LEFT MESSAGE ARROW
-   ========================================================== */
-
 .message-bubble::before {
     content: "";
 
@@ -1077,6 +1003,7 @@ footer {
 
     border-top: 7px solid transparent;
     border-bottom: 7px solid transparent;
+
     border-right: 9px solid #f0f2f5;
 }
 
@@ -1110,11 +1037,6 @@ footer {
     text-align: left;
 }
 
-
-/* ==========================================================
-   RIGHT MESSAGE ARROW
-   ========================================================== */
-
 .own-message .message-bubble::before {
     left: auto;
     right: -8px;
@@ -1125,26 +1047,88 @@ footer {
 
 
 /* ==========================================================
+   MEDIA MESSAGE
+   ========================================================== */
+
+.chat-message-content:has(.media-wrap) {
+    display: block;
+
+    width: min(100%, 520px);
+    max-width: 520px;
+
+    min-width: 0;
+
+    box-sizing: border-box;
+}
+
+.own-message .chat-message-content:has(.media-wrap) {
+    margin-left: auto;
+}
+
+.chat-message-content:has(.media-wrap) .message-bubble {
+    position: relative;
+
+    display: flex;
+
+    flex-direction: column;
+    align-items: stretch;
+
+    width: 100%;
+    max-width: 100%;
+
+    min-width: 0;
+
+    padding: 5px;
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+
+    border-radius: 14px;
+}
+
+.own-message .chat-message-content:has(.media-wrap) .message-bubble {
+    border-radius: 14px;
+}
+
+
+/* ==========================================================
    MEDIA WRAPPER
    ========================================================== */
 
 .media-wrap {
     position: relative;
 
-    display: inline-flex;
+    display: flex;
+
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
 
     width: fit-content;
     max-width: 100%;
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    border-radius: 14px;
+
+    box-sizing: border-box;
 }
 
 .media-wrap > a {
     display: block;
 
+    width: fit-content;
     max-width: 100%;
 
+    min-width: 0;
+
     line-height: 0;
+
+    overflow: hidden;
+
+    box-sizing: border-box;
 }
 
 
@@ -1159,16 +1143,82 @@ footer {
     width: auto;
     height: auto;
 
-    max-width: min(360px, 100%);
-    max-height: 240px;
+    max-width: 100%;
+    max-height: 65vh;
+
+    min-width: 0;
 
     object-fit: contain;
 
-    border-radius: 14px;
+    border-radius: 12px;
+
+    box-sizing: border-box;
 }
 
-.message-video {
-    width: min(360px, 100%);
+
+/* ==========================================================
+   MEDIA ORIENTATION
+   ========================================================== */
+
+.message-image[data-orientation="landscape"],
+.message-video[data-orientation="landscape"] {
+    width: 100%;
+    height: auto;
+
+    max-width: 100%;
+    max-height: none;
+
+    aspect-ratio: 16 / 9;
+
+    object-fit: cover;
+}
+
+.message-image[data-orientation="portrait"],
+.message-video[data-orientation="portrait"] {
+    width: auto;
+    height: auto;
+
+    max-width: 100%;
+    max-height: min(65vh, 560px);
+
+    object-fit: contain;
+}
+
+.message-image[data-orientation="square"],
+.message-video[data-orientation="square"] {
+    width: auto;
+    height: auto;
+
+    max-width: 100%;
+    max-height: 65vh;
+
+    aspect-ratio: 1 / 1;
+
+    object-fit: cover;
+}
+
+
+/* ==========================================================
+   TEXT + MEDIA
+   ========================================================== */
+
+.chat-message-content:has(.media-wrap)
+.message-bubble .message-body-html {
+    display: block;
+
+    width: 100%;
+    max-width: 100%;
+
+    min-width: 0;
+
+    margin-top: 5px;
+
+    box-sizing: border-box;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    white-space: normal;
 }
 
 
@@ -1188,6 +1238,7 @@ footer {
     padding: 0;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -1215,6 +1266,7 @@ footer {
 .media-wrap:hover .media-share-btn {
     opacity: 1;
     visibility: visible;
+
     transform: scale(1);
 }
 
@@ -1226,16 +1278,11 @@ footer {
 
 /* ==========================================================
    MESSAGE ACTIONS
-
-   IMPORTANT:
-   This is OUTSIDE .message-bubble but INSIDE
-   .conversation-message-body.
-
-   It therefore stays directly below the bubble.
    ========================================================== */
 
 .message-actions {
     display: flex;
+
     align-items: center;
 
     width: fit-content;
@@ -1248,6 +1295,7 @@ footer {
 
 .message-reactions {
     display: flex;
+
     align-items: center;
 
     gap: 4px;
@@ -1258,23 +1306,20 @@ footer {
 
 .message-reactions .tg-reaction {
     display: inline-flex;
+
     align-items: center;
     justify-content: center;
 }
 
-
-/* ==========================================================
-   OWN MESSAGE ACTIONS
-   ========================================================== */
-
 .own-message .message-actions {
     margin-left: auto;
+
     justify-content: flex-end;
 }
 
 
 /* ==========================================================
-   REACTION BUTTONS
+   REACTIONS
    ========================================================== */
 
 .react-btn {
@@ -1296,27 +1341,29 @@ footer {
 .react-btn.active-like,
 .react-btn.active-heart {
     opacity: 1;
+
     filter: none;
 }
 
 
 /* ==========================================================
-   MESSAGE MINI ACTIONS
+   MINI MESSAGE ACTIONS
    ========================================================== */
 
 .message-mini-actions {
     display: flex;
+
     gap: 0.5rem;
 
     font-size: 0.85rem;
 }
 
 .mini-btn {
-    text-decoration: none;
+    padding: 2px 6px;
 
     color: #666;
 
-    padding: 2px 6px;
+    text-decoration: none;
 
     border-radius: 6px;
 }
@@ -1349,8 +1396,9 @@ footer {
 }
 
 .reply-form .btn-primary {
-    border-radius: 8px;
     min-width: 120px;
+
+    border-radius: 8px;
 }
 
 
@@ -1359,18 +1407,18 @@ footer {
    ========================================================== */
 
 .attach-preview {
-    max-width: 140px;
-    max-height: 100px;
+    display: block;
 
     width: auto;
     height: auto;
+
+    max-width: 140px;
+    max-height: 100px;
 
     object-fit: contain;
 
     border-radius: 8px;
     border: 1px solid #ddd;
-
-    display: block;
 }
 
 
@@ -1380,31 +1428,26 @@ footer {
 
 .emoji-bar .emoji-btn {
     padding: 2px 6px;
+
     line-height: 1.2;
 }
 
 
 /* ==========================================================
-   PAGINATION
+   CONVERSATION SEPARATOR
    ========================================================== */
 
-.pagination {
-    display: flex;
-    flex-wrap: wrap;
+.message-box.conversation-box > .conv-separator {
+    display: block !important;
 
-    justify-content: center;
-    align-items: center;
+    width: 100% !important;
+    height: 1px !important;
 
-    gap: 0.4rem;
+    margin: 12px 0 18px !important;
 
-    font-size: 0.9rem;
-}
+    background-color: rgba(0, 0, 0, 0.15) !important;
 
-.pagination a,
-.pagination span {
-    padding: 0.35rem 0.7rem;
-
-    white-space: nowrap;
+    flex-shrink: 0 !important;
 }
 
 
@@ -1414,6 +1457,7 @@ footer {
 
 .message-preview {
     display: flex;
+
     align-items: flex-start;
 
     gap: 12px;
@@ -1435,6 +1479,7 @@ footer {
 
 .message-avatar-link {
     display: block;
+
     cursor: pointer;
 }
 
@@ -1452,11 +1497,13 @@ footer {
 
 .message-preview-info {
     flex: 1;
+
     min-width: 0;
 }
 
 .message-preview-header {
     display: flex;
+
     align-items: center;
     justify-content: space-between;
 
@@ -1481,25 +1528,103 @@ footer {
 
 
 /* ==========================================================
-   CONVERSATION SEPARATOR
+   MOBILE
    ========================================================== */
 
-.message-box.conversation-box > .conv-separator {
-    display: block !important;
+@media (max-width: 992px) {
 
-    width: 100% !important;
-    height: 1px !important;
+    .welcome-container {
+        display: flex;
 
-    margin: 12px 0 18px !important;
+        width: 58%;
 
-    background-color: rgba(0, 0, 0, 0.15) !important;
+        font-size: 10px;
 
-    flex-shrink: 0 !important;
+        text-align: center;
+    }
+
+    .header {
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+
+        text-align: center;
+    }
+
+    .header .logo {
+        margin-bottom: 15px;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .header .lead {
+        font-size: 1rem;
+    }
+
+    .navbar-nav {
+        align-items: start;
+    }
 }
 
 
 /* ==========================================================
-   MOBILE
+   TABLET / MOBILE
+   ========================================================== */
+
+@media (max-width: 768px) {
+
+    .product-photo {
+        width: 120px;
+        height: 120px;
+
+        transition: all 0.3s ease;
+    }
+
+    .product-photo:hover,
+    .product-photo:active {
+        width: 120px;
+        height: 100px;
+
+        transform: scale(2.5) translate(10%, -10%);
+    }
+
+    .back-button {
+        max-height: 40px;
+        min-width: 80px;
+
+        font-size: 16px;
+
+        white-space: nowrap;
+    }
+}
+
+
+/* ==========================================================
+   SMALL DEVICES
+   ========================================================== */
+
+@media (max-width: 700px) {
+
+    .card-media {
+        min-width: 350px;
+    }
+
+    .submit-button {
+        min-width: 150px;
+    }
+
+    .unit-measure {
+        margin-top: 25px;
+    }
+}
+
+
+/* ==========================================================
+   MOBILE MESSAGE SYSTEM
    ========================================================== */
 
 @media (max-width: 576px) {
@@ -1509,9 +1634,7 @@ footer {
     }
 
 
-    /* ------------------------------------------------------
-       TITLE
-       ------------------------------------------------------ */
+    /* TITLE */
 
     .conversation-title {
         flex-direction: column;
@@ -1520,8 +1643,9 @@ footer {
     }
 
     .conversation-title h3 {
-        font-size: 1.05rem;
         width: 100%;
+
+        font-size: 1.05rem;
     }
 
     .conversation-actions {
@@ -1531,9 +1655,7 @@ footer {
     }
 
 
-    /* ------------------------------------------------------
-       AVATAR
-       ------------------------------------------------------ */
+    /* AVATAR */
 
     .message-avatar {
         width: 40px;
@@ -1542,6 +1664,7 @@ footer {
 
     .conversation-avatar {
         flex: 0 0 40px;
+
         width: 40px;
 
         margin-right: 8px;
@@ -1553,22 +1676,19 @@ footer {
     }
 
 
-    /* ------------------------------------------------------
-       MESSAGE BODY
-       ------------------------------------------------------ */
+    /* MESSAGE BODY */
 
     .conversation-message-body {
         max-width: calc(100% - 48px);
     }
 
 
-    /* ------------------------------------------------------
-       META
-       ------------------------------------------------------ */
+    /* META */
 
     .conversation-meta {
-        gap: 5px;
         flex-wrap: wrap;
+
+        gap: 5px;
     }
 
     .conversation-name {
@@ -1580,20 +1700,21 @@ footer {
     }
 
 
-    /* ------------------------------------------------------
-       BUBBLE
-       ------------------------------------------------------ */
+    /* BUBBLE */
 
     .message-bubble {
-        font-size: 14px;
-
         padding: 9px 12px;
+
+        font-size: 14px;
     }
 
 
-    /* ------------------------------------------------------
-       MEDIA
-       ------------------------------------------------------ */
+    /* MEDIA */
+
+    .chat-message-content:has(.media-wrap) {
+        width: min(100%, 100%);
+        max-width: 100%;
+    }
 
     .message-image,
     .message-video {
@@ -1604,9 +1725,7 @@ footer {
     }
 
 
-    /* ------------------------------------------------------
-       MEDIA SHARE
-       ------------------------------------------------------ */
+    /* MEDIA SHARE */
 
     .media-share-btn {
         top: 6px;
@@ -1619,13 +1738,12 @@ footer {
     .media-wrap:active .media-share-btn {
         opacity: 1;
         visibility: visible;
+
         transform: scale(1);
     }
 
 
-    /* ------------------------------------------------------
-       ACTIONS
-       ------------------------------------------------------ */
+    /* ACTIONS */
 
     .message-actions {
         margin-top: 4px;
@@ -1636,18 +1754,14 @@ footer {
     }
 
 
-    /* ------------------------------------------------------
-       REPLY
-       ------------------------------------------------------ */
+    /* REPLY */
 
     .reply-form .btn-primary {
         width: 100%;
     }
 
 
-    /* ------------------------------------------------------
-       PAGINATION
-       ------------------------------------------------------ */
+    /* PAGINATION */
 
     .pagination {
         font-size: 0.8rem;
@@ -1659,9 +1773,7 @@ footer {
     }
 
 
-    /* ------------------------------------------------------
-       INBOX PREVIEW
-       ------------------------------------------------------ */
+    /* INBOX */
 
     .message-preview-avatar img {
         width: 42px;
@@ -1681,9 +1793,7 @@ footer {
     }
 
 
-    /* ------------------------------------------------------
-       ATTACHMENT PREVIEW
-       ------------------------------------------------------ */
+    /* ATTACHMENTS */
 
     .attach-preview {
         max-width: 100%;
@@ -1701,12 +1811,117 @@ footer {
     }
 
 
-    /* ------------------------------------------------------
-       EMOJI
-       ------------------------------------------------------ */
+    /* EMOJI */
 
     .emoji-bar {
         display: flex;
         flex-wrap: wrap;
+    }
+}
+
+
+/* ==========================================================
+   EXTRA SMALL DEVICES
+   ========================================================== */
+
+@media (max-width: 480px) {
+
+    .product-photo {
+        width: 60px;
+        height: 60px;
+
+        flex-grow: 1;
+
+        transition: all 0.3s ease;
+    }
+
+    .product-photo:hover,
+    .product-photo:active {
+        width: 100px;
+        height: 60px;
+
+        transform: scale(2.5) translate(-3%, 10%);
+    }
+
+    .back-button {
+        max-height: 35px;
+        min-width: 75px;
+
+        font-size: 14px;
+
+        white-space: nowrap;
+    }
+}
+
+
+/* ==========================================================
+   LARGE SCREENS
+   ========================================================== */
+
+@media (min-width: 1400px) {
+
+    .container {
+        max-width: 1320px;
+    }
+
+    .edit-profile {
+        max-width: 1000px;
+
+        margin: 0 auto 2.5rem;
+    }
+
+    .profile-registration {
+        max-width: 900px;
+    }
+}
+
+@media (min-width: 1920px) {
+
+    .container {
+        max-width: 1600px;
+    }
+
+    .edit-profile {
+        max-width: 1100px;
+
+        margin: 0 auto 2.5rem;
+    }
+
+    .profile-registration {
+        max-width: 1000px;
+    }
+}
+
+@media (min-width: 2560px) {
+
+    .container {
+        max-width: 1920px;
+    }
+
+    .edit-profile {
+        max-width: 1200px;
+
+        margin: 0 auto 2.5rem;
+    }
+
+    .profile-registration {
+        max-width: 1100px;
+    }
+}
+
+@media (min-width: 3840px) {
+
+    .container {
+        max-width: 2200px;
+    }
+
+    .edit-profile {
+        max-width: 1300px;
+
+        margin: 0 auto 2.5rem;
+    }
+
+    .profile-registration {
+        max-width: 1200px;
     }
 }
