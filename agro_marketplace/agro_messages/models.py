@@ -26,6 +26,18 @@ class Message(models.Model):
     )
     is_system = models.BooleanField(default=False)
     is_removed = models.BooleanField(default=False)
+    product_type = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        db_index=True,
+    )
+
+    product_id = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        db_index=True,
+    )
 
     def __str__(self):
         return f"{self.sender} -> {self.recipient}: {(self.title or 'No Title')[:30]}"
