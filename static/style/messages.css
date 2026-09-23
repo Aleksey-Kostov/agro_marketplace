@@ -1833,6 +1833,9 @@
 
 .emoji-picker {
     z-index: 1055;
+}
+
+.emoji {
     border-radius: 0 6px 6px 0;
 }
 
