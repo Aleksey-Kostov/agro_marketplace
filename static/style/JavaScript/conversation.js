@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const uploadProgressPercent =
         document.getElementById('upload-progress-percent');
 
+
     /* =========================================================
        EDIT
     ========================================================== */
@@ -75,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const cancelEditBtn =
         document.getElementById('cancel-edit-btn');
+
 
     /* =========================================================
        REPLY
@@ -92,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const replyToInput =
         document.getElementById('reply-to');
 
+
     /* =========================================================
        REPLY MEDIA PREVIEW
     ========================================================== */
@@ -107,6 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const replyVideoPlayer =
         document.getElementById('replying-message-video-player');
+
 
     /* =========================================================
        SUBMIT
@@ -2237,53 +2241,26 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
 
-            /* =============================================
-               UPDATE MESSAGE BUBBLE
-            ============================================== */
-
-            const bubble =
-                document.getElementById(
-                    'message-bubble-' +
-                    messageId
-                );
-
-            if (bubble) {
-
-                const textContainer =
-                    bubble.querySelector(
-                        '.message-body-html'
-                    );
-
-                if (textContainer) {
-
-                    textContainer.innerHTML =
-                        data.body || '';
-
-                } else {
-
-                    const newText =
-                        document.createElement('div');
-
-                    newText.className =
-                        'mb-1 message-body-html';
-
-                    newText.innerHTML =
-                        data.body || '';
-
-                    bubble.prepend(newText);
-
-                }
-
-            }
+            /*
+             * IMPORTANT:
+             *
+             * We intentionally do NOT modify the message bubble
+             * with data.body using innerHTML.
+             *
+             * The server/database remains the source of truth.
+             *
+             * The only client-side state that must be updated
+             * here is the text stored on the Edit/Reply buttons.
+             */
 
 
             /* =============================================
-               UPDATE EDIT BUTTON DATA
+               UPDATE EDIT / REPLY BUTTON DATA
             ============================================== */
 
             document
                 .querySelectorAll(
-                    '.edit-message-side-btn'
+                    '.edit-message-side-btn, .reply-message-side-btn'
                 )
                 .forEach(function (button) {
 
