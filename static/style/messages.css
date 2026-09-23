@@ -3110,3 +3110,15 @@
     }
 }
 
+.conversation-actions .btn {
+    margin: 0 !important;
+    border-radius: 0 !important;
+}
+
+.conversation-actions form:first-child .btn {
+    border-radius: var(--bs-btn-border-radius) 0 0 var(--bs-btn-border-radius) !important;
+}
+
+.conversation-actions > a:last-child {
+    border-radius: 0 var(--bs-btn-border-radius) var(--bs-btn-border-radius) 0 !important;
+}
