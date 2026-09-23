@@ -22,6 +22,7 @@ from .models import (
 )
 from .templatetags.message_tags_inbox import (
     get_user_conversations,
+    _conversation_filter,
 )
 from ..accounts.models import AppUser
 from ..buyers.models import BuyerItems
@@ -39,20 +40,88 @@ MAX_VIDEO_SIZE = 100 * 1024 * 1024
 
 
 # ============================================================
-# HELPERS
+# CONVERSATION HELPERS
+# ============================================================
+
+def _same_conversation(message_a, message_b):
+    """
+    Проверява дали две съобщения принадлежат към една и съща
+    conversation.
+
+    Conversation identity:
+
+        User A
+        User B
+        product_type
+        product_id
+
+    Посоката няма значение:
+
+        A -> B
+        B -> A
+
+    са една и съща conversation.
+
+    Пример:
+
+        A <-> B + seller #15
+
+    НЕ е същото като:
+
+        A <-> B + seller #20
+
+    и:
+
+        A <-> B + buyer #15
+    """
+
+    if not message_a or not message_b:
+        return False
+
+    participants_a = {
+        message_a.sender_id,
+        message_a.recipient_id,
+    }
+
+    participants_b = {
+        message_b.sender_id,
+        message_b.recipient_id,
+    }
+
+    if participants_a != participants_b:
+        return False
+
+    return (
+        message_a.product_type
+        == message_b.product_type
+        and
+        message_a.product_id
+        == message_b.product_id
+    )
+
+
+# ============================================================
+# GET CONVERSATION MESSAGES
 # ============================================================
 
 def get_conversation_messages(root_message):
     """
-    Връща ВСИЧКИ съобщения между двамата участници.
+    Връща ВСИЧКИ съобщения от конкретната conversation.
+
+    Conversation се определя от:
+
+        participants
+        +
+        product_type
+        +
+        product_id
 
     parent_message НЕ определя conversation-а.
 
     is_removed=True НЕ се изключва.
 
-    Това е важно, защото single-deleted message трябва
-    да остане в conversation-а и template-ът да може
-    да покаже:
+    Това е важно, защото deleted message трябва да остане
+    в conversation-а и template-ът да може да покаже:
 
         This message was deleted
     """
@@ -60,21 +129,10 @@ def get_conversation_messages(root_message):
     if not root_message:
         return []
 
-    sender_id = root_message.sender_id
-    recipient_id = root_message.recipient_id
-
     messages = (
         Message.objects
         .filter(
-            Q(
-                sender_id=sender_id,
-                recipient_id=recipient_id,
-            )
-            |
-            Q(
-                sender_id=recipient_id,
-                recipient_id=sender_id,
-            )
+            _conversation_filter(root_message)
         )
         .select_related(
             'sender__profile',
@@ -96,14 +154,16 @@ def get_conversation_messages(root_message):
     return list(messages)
 
 
+# ============================================================
+# MESSAGE VISIBILITY
+# ============================================================
+
 def is_message_visible_for_user(message, user):
     """
     Съобщението е видимо ако:
 
-    - user е sender или recipient
-    - user няма MessageStatus.is_deleted=True
-
-    ВАЖНО:
+        - user е sender или recipient
+        - user няма MessageStatus.is_deleted=True
 
     Message.is_removed НЕ прави message invisible.
 
@@ -140,12 +200,22 @@ def is_message_visible_for_user(message, user):
     return not status.is_deleted
 
 
+# ============================================================
+# GET CONVERSATION MESSAGES FOR USER
+# ============================================================
+
 def get_conversation_messages_for_user(root_message, user):
     """
-    Връща всички съобщения от conversation-а,
+    Връща всички съобщения от конкретната conversation,
     които текущият user може да вижда.
 
-    Conversation се определя САМО от двамата участници.
+    Conversation се определя от:
+
+        participants
+        +
+        product_type
+        +
+        product_id
 
     parent_message е само Reply reference.
 
@@ -164,15 +234,7 @@ def get_conversation_messages_for_user(root_message, user):
     messages = (
         Message.objects
         .filter(
-            Q(
-                sender_id=root_message.sender_id,
-                recipient_id=root_message.recipient_id,
-            )
-            |
-            Q(
-                sender_id=root_message.recipient_id,
-                recipient_id=root_message.sender_id,
-            )
+            _conversation_filter(root_message)
         )
         .select_related(
             'sender__profile',
@@ -192,8 +254,8 @@ def get_conversation_messages_for_user(root_message, user):
     )
 
     message_ids = [
-        msg.pk
-        for msg in messages
+        message.pk
+        for message in messages
     ]
 
     if not message_ids:
@@ -213,13 +275,17 @@ def get_conversation_messages_for_user(root_message, user):
     )
 
     visible_messages = [
-        msg
-        for msg in messages
-        if msg.pk not in deleted_ids
+        message
+        for message in messages
+        if message.pk not in deleted_ids
     ]
 
     return visible_messages
 
+
+# ============================================================
+# DELIVERY / READ STATUS
+# ============================================================
 
 def add_message_delivery_status(messages, current_user):
     """
@@ -238,23 +304,24 @@ def add_message_delivery_status(messages, current_user):
         return messages
 
     message_ids = [
-        msg.pk
-        for msg in messages
+        message.pk
+        for message in messages
     ]
 
     statuses = (
         MessageStatus.objects
         .filter(
-            message_id__in=message_ids
+            message_id__in=message_ids,
         )
         .select_related(
-            'profile'
+            'profile',
         )
     )
 
     status_map = {}
 
     for status in statuses:
+
         status_map[
             (
                 status.message_id,
@@ -262,26 +329,41 @@ def add_message_delivery_status(messages, current_user):
             )
         ] = status
 
-    for msg in messages:
-        msg.delivery_status = None
-        if msg.is_removed:
+    for message in messages:
+
+        message.delivery_status = None
+
+        if message.is_removed:
             continue
-        if msg.sender_id != current_user.pk:
+
+        if message.sender_id != current_user.pk:
             continue
+
         recipient_status = status_map.get(
             (
-                msg.pk,
-                msg.recipient_id,
+                message.pk,
+                message.recipient_id,
             )
         )
+
         if recipient_status is None:
-            msg.delivery_status = 'sent'
+
+            message.delivery_status = 'sent'
+
         elif recipient_status.is_read:
-            msg.delivery_status = 'read'
+
+            message.delivery_status = 'read'
+
         else:
-            msg.delivery_status = 'delivered'
+
+            message.delivery_status = 'delivered'
+
     return messages
 
+
+# ============================================================
+# ADMIN
+# ============================================================
 
 def get_admin_user():
     """
@@ -291,17 +373,21 @@ def get_admin_user():
     return (
         User.objects
         .filter(
-            is_superuser=True
+            is_superuser=True,
         )
         .first()
         or
         User.objects
         .filter(
-            is_staff=True
+            is_staff=True,
         )
         .first()
     )
 
+
+# ============================================================
+# SAFE REDIRECT
+# ============================================================
 
 def safe_next_url(request, fallback='message-inbox'):
     """
@@ -317,13 +403,19 @@ def safe_next_url(request, fallback='message-inbox'):
 
     if next_url and url_has_allowed_host_and_scheme(
         next_url,
-        allowed_hosts={request.get_host()},
+        allowed_hosts={
+            request.get_host(),
+        },
         require_https=request.is_secure(),
     ):
         return next_url
 
     return fallback
 
+
+# ============================================================
+# REACTION HELPERS
+# ============================================================
 
 def get_reaction_reactors(message, reaction):
     """
@@ -335,10 +427,10 @@ def get_reaction_reactors(message, reaction):
     reactions = (
         message.reactions
         .filter(
-            reaction=reaction
+            reaction=reaction,
         )
         .select_related(
-            'user__profile'
+            'user__profile',
         )
     )
 
@@ -371,14 +463,16 @@ def get_reaction_reactors(message, reaction):
                 or user.username
             )
 
-        reactors.append({
-            'id': user.pk,
-            'photo': (
-                photo
-                or '/static/images/profile_picture.webp'
-            ),
-            'username': username,
-        })
+        reactors.append(
+            {
+                'id': user.pk,
+                'photo': (
+                    photo
+                    or '/static/images/profile_picture.webp'
+                ),
+                'username': username,
+            }
+        )
 
     return reactors
 
@@ -389,6 +483,10 @@ def is_valid_reaction(reaction):
         MessageReaction.HEART,
     )
 
+
+# ============================================================
+# MESSAGE CONTENT VALIDATION
+# ============================================================
 
 def message_has_content(request):
     """
@@ -415,8 +513,13 @@ def message_has_content(request):
         or ''
     ).strip()
 
-    image_file = request.FILES.get('image')
-    video_file = request.FILES.get('video')
+    image_file = request.FILES.get(
+        'image',
+    )
+
+    video_file = request.FILES.get(
+        'video',
+    )
 
     return bool(
         body
@@ -432,10 +535,16 @@ def validate_message_attachments(request):
     Позволява максимум един attachment.
     """
 
-    image_file = request.FILES.get('image')
-    video_file = request.FILES.get('video')
+    image_file = request.FILES.get(
+        'image',
+    )
+
+    video_file = request.FILES.get(
+        'video',
+    )
 
     if image_file and video_file:
+
         raise ValidationError(
             "Please attach either an image or a video, not both."
         )
@@ -443,6 +552,7 @@ def validate_message_attachments(request):
     if image_file:
 
         if image_file.size > MAX_IMAGE_SIZE:
+
             raise ValidationError(
                 "Image is too large. Maximum size is 10 MB."
             )
@@ -451,12 +561,13 @@ def validate_message_attachments(request):
             getattr(
                 image_file,
                 'content_type',
-                ''
+                '',
             )
             or ''
         )
 
         if not content_type.startswith('image/'):
+
             raise ValidationError(
                 "Invalid image file."
             )
@@ -464,6 +575,7 @@ def validate_message_attachments(request):
     if video_file:
 
         if video_file.size > MAX_VIDEO_SIZE:
+
             raise ValidationError(
                 "Video is too large. Maximum size is 100 MB."
             )
@@ -472,12 +584,13 @@ def validate_message_attachments(request):
             getattr(
                 video_file,
                 'content_type',
-                ''
+                '',
             )
             or ''
         )
 
         if not content_type.startswith('video/'):
+
             raise ValidationError(
                 "Invalid video file."
             )
@@ -490,6 +603,11 @@ def validate_message_attachments(request):
 def send_system_message(recipient, title, body):
     """
     Изпраща автоматично system message.
+
+    System messages нямат product context:
+
+        product_type = None
+        product_id = None
     """
 
     if not recipient:
@@ -510,6 +628,8 @@ def send_system_message(recipient, title, body):
         body=markdown.markdown(body),
         is_system=True,
         parent_message=None,
+        product_type=None,
+        product_id=None,
     )
 
     MessageStatus.objects.create(
@@ -545,8 +665,13 @@ def send_message(request, pk=None):
     # PRODUCT
     # =========================================================
 
-    product_id = request.GET.get('product_id')
-    product_type = request.GET.get('product_type')
+    product_id = request.GET.get(
+        'product_id',
+    )
+
+    product_type = request.GET.get(
+        'product_type',
+    )
 
     if request.method == 'POST':
 
@@ -561,6 +686,10 @@ def send_message(request, pk=None):
         )
 
     product = None
+
+    # ---------------------------------------------------------
+    # Validate product
+    # ---------------------------------------------------------
 
     if recipient and product_id:
 
@@ -627,7 +756,7 @@ def send_message(request, pk=None):
             )
 
             return redirect(
-                'message-inbox'
+                'message-inbox',
             )
 
         if is_blocked_by_other:
@@ -638,7 +767,7 @@ def send_message(request, pk=None):
             )
 
             return redirect(
-                'message-inbox'
+                'message-inbox',
             )
 
         if is_blocked:
@@ -649,7 +778,7 @@ def send_message(request, pk=None):
             )
 
             return redirect(
-                'message-inbox'
+                'message-inbox',
             )
 
         form = MessageForm(
@@ -671,7 +800,7 @@ def send_message(request, pk=None):
                 )
 
                 return redirect(
-                    'message-inbox'
+                    'message-inbox',
                 )
 
             # =================================================
@@ -681,7 +810,7 @@ def send_message(request, pk=None):
             try:
 
                 validate_message_attachments(
-                    request
+                    request,
                 )
 
             except ValidationError as exc:
@@ -692,7 +821,7 @@ def send_message(request, pk=None):
                 )
 
                 return redirect(
-                    'message-inbox'
+                    'message-inbox',
                 )
 
             # =================================================
@@ -700,11 +829,32 @@ def send_message(request, pk=None):
             # =================================================
 
             message = form.save(
-                commit=False
+                commit=False,
             )
 
             message.sender = request.user
             message.recipient = recipient
+
+            # =================================================
+            # PRODUCT CONTEXT
+            # =================================================
+            #
+            # Никога не записваме product_type/product_id
+            # директно от клиента.
+            #
+            # Записваме ги само ако product е успешно намерен
+            # и принадлежи на recipient.
+            # =================================================
+
+            if product:
+
+                message.product_type = product_type
+                message.product_id = product.pk
+
+            else:
+
+                message.product_type = None
+                message.product_id = None
 
             # =================================================
             # TITLE
@@ -737,6 +887,10 @@ def send_message(request, pk=None):
 
                 parent_message = (
                     Message.objects
+                    .select_related(
+                        'sender',
+                        'recipient',
+                    )
                     .filter(
                         pk=int(reply_to_id),
                     )
@@ -745,25 +899,22 @@ def send_message(request, pk=None):
 
                 if parent_message:
 
-                    valid_parent = (
-                        (
-                            parent_message.sender_id
-                            == request.user.pk
-                            and
-                            parent_message.recipient_id
-                            == recipient.pk
-                        )
-                        or
-                        (
-                            parent_message.sender_id
-                            == recipient.pk
-                            and
-                            parent_message.recipient_id
-                            == request.user.pk
-                        )
+                    # -----------------------------------------
+                    # Parent must belong to EXACT SAME
+                    # conversation.
+                    # -----------------------------------------
+
+                    temp_message = Message(
+                        sender=request.user,
+                        recipient=recipient,
+                        product_type=message.product_type,
+                        product_id=message.product_id,
                     )
 
-                    if valid_parent:
+                    if _same_conversation(
+                        temp_message,
+                        parent_message,
+                    ):
 
                         message.parent_message = (
                             parent_message
@@ -776,7 +927,7 @@ def send_message(request, pk=None):
             if message.body:
 
                 message.body = markdown.markdown(
-                    message.body
+                    message.body,
                 )
 
             # =================================================
@@ -823,8 +974,16 @@ def send_message(request, pk=None):
             'form': form,
             'recipient': recipient,
             'product': product,
-            'product_id': product_id,
-            'product_type': product_type,
+            'product_id': (
+                product.pk
+                if product
+                else None
+            ),
+            'product_type': (
+                product_type
+                if product
+                else None
+            ),
             'is_blocked': is_blocked,
             'is_blocked_by_other': is_blocked_by_other,
         },
@@ -858,6 +1017,7 @@ def read_message(request, pk):
         and
         message.recipient_id != current_user.pk
     ):
+
         return HttpResponse(
             "Not authorized",
             status=403,
@@ -876,13 +1036,8 @@ def read_message(request, pk):
 
     if not conversation_messages:
 
-        # Това може да се случи ако текущото message е
-        # user-deleted чрез MessageStatus.
-        #
-        # Самото съобщение не се показва, но conversation-ът
-        # може да бъде отворен през друго message.
         return redirect(
-            'message-inbox'
+            'message-inbox',
         )
 
     # ========================================================
@@ -907,6 +1062,7 @@ def read_message(request, pk):
     )
 
     for status in unread_statuses:
+
         status.mark_as_read()
 
     # ========================================================
@@ -996,7 +1152,7 @@ def read_message(request, pk):
             try:
 
                 validate_message_attachments(
-                    request
+                    request,
                 )
 
             except ValidationError as exc:
@@ -1029,7 +1185,7 @@ def read_message(request, pk):
                 )
 
                 return redirect(
-                    'message-inbox'
+                    'message-inbox',
                 )
 
             # =================================================
@@ -1079,7 +1235,7 @@ def read_message(request, pk):
                 )
 
             # =================================================
-            # FIND REPLY TARGET
+            # CREATE REPLY
             # =================================================
 
             reply_to_id = (
@@ -1106,20 +1262,22 @@ def read_message(request, pk):
             # =================================================
             # SECURITY CHECK
             # =================================================
+            #
+            # Reply target MUST belong to the same exact
+            # conversation.
+            #
+            # Това предотвратява:
+            #
+            # Seller #15 -> reply to Seller #20
+            #
+            # =================================================
 
             if reply_to is not None:
 
-                valid_participants = {
-                    current_user.pk,
-                    recipient.pk,
-                }
-
-                reply_participants = {
-                    reply_to.sender_id,
-                    reply_to.recipient_id,
-                }
-
-                if reply_participants != valid_participants:
+                if not _same_conversation(
+                    message,
+                    reply_to,
+                ):
 
                     reply_to = None
 
@@ -1128,11 +1286,31 @@ def read_message(request, pk):
             # =================================================
 
             reply = form.save(
-                commit=False
+                commit=False,
             )
 
             reply.sender = current_user
             reply.recipient = recipient
+
+            # =================================================
+            # IMPORTANT:
+            # INHERIT PRODUCT CONTEXT
+            # =================================================
+            #
+            # Reply към Seller #15 трябва да остане:
+            #
+            #     product_type = seller
+            #     product_id   = 15
+            #
+            # =================================================
+
+            reply.product_type = (
+                message.product_type
+            )
+
+            reply.product_id = (
+                message.product_id
+            )
 
             reply.title = (
                 message.title
@@ -1154,7 +1332,7 @@ def read_message(request, pk):
             if reply.body:
 
                 reply.body = markdown.markdown(
-                    reply.body
+                    reply.body,
                 )
 
             # =================================================
@@ -1257,17 +1435,6 @@ def delete_one_message(request, pk):
     # ========================================================
     # SOFT DELETE
     # ========================================================
-    #
-    # НЕ използваме msg.delete().
-    #
-    # Message остава в DB.
-    #
-    # Това позволява conversation-ът да запази
-    # позицията на съобщението и template-ът да покаже:
-    #
-    #     This message was deleted
-    #
-    # ========================================================
 
     if not msg.is_removed:
 
@@ -1290,13 +1457,9 @@ def delete_one_message(request, pk):
     )
 
     return redirect(
-        safe_next_url(request)
+        safe_next_url(request),
     )
 
-
-# ============================================================
-# DELETE CONVERSATION
-# ============================================================
 
 # ============================================================
 # DELETE CONVERSATION
@@ -1311,14 +1474,27 @@ def delete_message(request, pk):
         Shows message-delete.html confirmation page.
 
     POST:
-        Marks all messages in the conversation as deleted
-        for the current user.
+        Marks all messages from the SAME conversation as
+        deleted for the current user.
 
-    Conversation is determined ONLY by sender/recipient pair.
+    Conversation identity:
 
-    parent_message is only a reply reference.
+        participants
+        +
+        product_type
+        +
+        product_id
 
-    Message.is_removed is NOT changed here.
+    Това е критично.
+
+    Пример:
+
+        A <-> B + seller #15
+
+    НЕ трябва да изтрие:
+
+        A <-> B + seller #20
+        A <-> B + buyer #15
     """
 
     message = get_object_or_404(
@@ -1337,6 +1513,7 @@ def delete_message(request, pk):
         and
         message.recipient_id != user.pk
     ):
+
         return HttpResponse(
             "Not allowed",
             status=403,
@@ -1353,33 +1530,13 @@ def delete_message(request, pk):
     )
 
     # ========================================================
-    # ALL MESSAGES IN CONVERSATION
-    # ========================================================
-    #
-    # IMPORTANT:
-    #
-    # Conversation is ONLY:
-    #
-    #     A -> B
-    #     B -> A
-    #
-    # parent_message is NOT used.
-    #
-    # is_removed=True messages are INCLUDED.
+    # ALL MESSAGES IN THIS EXACT CONVERSATION
     # ========================================================
 
     conversation = list(
         Message.objects
         .filter(
-            Q(
-                sender_id=message.sender_id,
-                recipient_id=message.recipient_id,
-            )
-            |
-            Q(
-                sender_id=message.recipient_id,
-                recipient_id=message.sender_id,
-            )
+            _conversation_filter(message)
         )
         .order_by(
             'timestamp',
@@ -1389,17 +1546,6 @@ def delete_message(request, pk):
 
     # ========================================================
     # GET
-    # ========================================================
-    #
-    # First click on Delete:
-    #
-    # message-read.html
-    #        ↓
-    # GET /delete-message/<pk>/
-    #        ↓
-    # message-delete.html
-    #
-    # NOTHING is deleted here.
     # ========================================================
 
     if request.method == 'GET':
@@ -1434,24 +1580,6 @@ def delete_message(request, pk):
 
     # ========================================================
     # DELETE FOR CURRENT USER
-    # ========================================================
-    #
-    # We do NOT call:
-    #
-    #     message.delete()
-    #
-    # We do NOT set:
-    #
-    #     message.is_removed = True
-    #
-    # because this is deletion of the WHOLE conversation
-    # for the current user.
-    #
-    # Instead:
-    #
-    #     MessageStatus.is_deleted = True
-    #
-    # This hides the conversation from this user.
     # ========================================================
 
     message_ids = [
@@ -1628,7 +1756,7 @@ def report_message(request, pk):
     reason = (
         request.POST.get(
             'reason',
-            ''
+            '',
         )
         .strip()
     )
@@ -1670,7 +1798,7 @@ def report_message(request, pk):
         )
 
     return redirect(
-        'message-inbox'
+        'message-inbox',
     )
 
 
@@ -1701,7 +1829,7 @@ def block_user(request, pk):
         )
 
         return redirect(
-            safe_next_url(request)
+            safe_next_url(request),
         )
 
     obj, created = (
@@ -1727,7 +1855,7 @@ def block_user(request, pk):
         )
 
     return redirect(
-        safe_next_url(request)
+        safe_next_url(request),
     )
 
 
@@ -1774,7 +1902,7 @@ def unblock_user(request, pk):
         )
 
     return redirect(
-        safe_next_url(request)
+        safe_next_url(request),
     )
 
 
@@ -1869,9 +1997,9 @@ def edit_message(request, pk):
         pk=pk,
     )
 
-    # =====================================================
+    # ========================================================
     # PERMISSION
-    # =====================================================
+    # ========================================================
 
     if message.sender != request.user:
 
@@ -1883,9 +2011,9 @@ def edit_message(request, pk):
             status=403,
         )
 
-    # =====================================================
+    # ========================================================
     # SYSTEM MESSAGE
-    # =====================================================
+    # ========================================================
 
     if message.is_system:
 
@@ -1897,9 +2025,9 @@ def edit_message(request, pk):
             status=403,
         )
 
-    # =====================================================
+    # ========================================================
     # DELETED MESSAGE
-    # =====================================================
+    # ========================================================
 
     if message.is_removed:
 
@@ -1911,9 +2039,9 @@ def edit_message(request, pk):
             status=400,
         )
 
-    # =====================================================
+    # ========================================================
     # METHOD
-    # =====================================================
+    # ========================================================
 
     if request.method != 'POST':
 
@@ -1925,9 +2053,9 @@ def edit_message(request, pk):
             status=405,
         )
 
-    # =====================================================
+    # ========================================================
     # BODY
-    # =====================================================
+    # ========================================================
 
     new_body = (
         request.POST.get('body')
@@ -1944,17 +2072,17 @@ def edit_message(request, pk):
             status=400,
         )
 
-    # =====================================================
+    # ========================================================
     # MARKDOWN
-    # =====================================================
+    # ========================================================
 
     message.body = markdown.markdown(
-        new_body
+        new_body,
     )
 
     message.save(
         update_fields=[
-            'body'
+            'body',
         ]
     )
 
