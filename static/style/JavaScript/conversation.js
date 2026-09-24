@@ -319,12 +319,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        /*
-         * Additional fallback:
-         *
-         * Some message templates may store the ID
-         * on a child element instead of the wrapper.
-         */
         const childWithMessageId =
             element.querySelector(
                 '[data-message-id]'
@@ -2267,49 +2261,63 @@ document.addEventListener('DOMContentLoaded', function () {
        DELETE ONE MESSAGE
     ========================================================== */
 
+    /*
+     * IMPORTANT:
+     *
+     * Your HTML uses:
+     *
+     * <form method="post"
+     *       action="..."
+     *       class="delete-message-form">
+     *
+     * Therefore we MUST listen for "submit".
+     *
+     * Listening only for click is not enough because the
+     * browser will still submit the form normally.
+     */
     document.addEventListener(
-        'click',
+        'submit',
         async function (event) {
-            /*
-             * Catch the delete button even when the click
-             * is on an icon/span inside the button.
-             */
-            const button =
+
+            const form =
                 event.target.closest(
-                    '.delete-message-side-btn, ' +
-                    '.delete-message-btn, ' +
-                    '[data-delete-url]'
+                    '.delete-message-form'
                 );
 
-            if (!button) {
+            if (!form) {
                 return;
             }
 
             /*
-             * IMPORTANT:
+             * STOP NORMAL FORM SUBMISSION.
              *
-             * Prevent normal <a href="..."> navigation.
-             *
-             * Django's delete view returns redirect()
-             * for a normal request. We do NOT want that.
+             * This is the part that prevents the page
+             * from refreshing.
              */
             event.preventDefault();
             event.stopPropagation();
 
+            if (
+                typeof event.stopImmediatePropagation ===
+                'function'
+            ) {
+                event.stopImmediatePropagation();
+            }
+
             /*
-             * Prevent double clicks.
+             * Prevent double submit.
              */
             if (
-                button.dataset.loading === '1'
+                form.dataset.loading === '1'
             ) {
                 return;
             }
 
             /*
-             * Find the message wrapper.
+             * Find message wrapper.
              */
             const messageElement =
-                button.closest(
+                form.closest(
                     '.conversation-message'
                 );
 
@@ -2324,34 +2332,10 @@ document.addEventListener('DOMContentLoaded', function () {
             /*
              * Find message ID.
              */
-            let messageId = null;
-
-            try {
-                messageId =
-                    getMessageIdFromElement(
-                        messageElement
-                    );
-            } catch (error) {
-                console.error(
-                    'Delete: unable to get message ID:',
-                    error
+            const messageId =
+                getMessageIdFromElement(
+                    messageElement
                 );
-            }
-
-            /*
-             * Additional fallbacks.
-             */
-            if (!messageId) {
-                messageId =
-                    messageElement.dataset.messageId ||
-                    messageElement.getAttribute(
-                        'data-message-id'
-                    ) ||
-                    button.dataset.messageId ||
-                    button.getAttribute(
-                        'data-message-id'
-                    );
-            }
 
             if (!messageId) {
                 console.error(
@@ -2362,18 +2346,16 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             /*
-             * Get Django-generated delete URL.
+             * Django-generated action URL.
              */
             const deleteUrl =
-                button.getAttribute('href') ||
-                button.dataset.deleteUrl ||
-                button.getAttribute(
-                    'data-delete-url'
+                form.getAttribute(
+                    'action'
                 );
 
             if (!deleteUrl) {
                 console.error(
-                    'Delete: delete URL not found.'
+                    'Delete: form action is missing.'
                 );
 
                 return;
@@ -2410,28 +2392,53 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             /*
-             * Lock the button.
+             * Lock form/button.
              */
-            button.dataset.loading =
+            form.dataset.loading =
                 '1';
 
-            button.disabled =
-                true;
+            const submitButton =
+                form.querySelector(
+                    'button[type="submit"]'
+                );
+
+            if (submitButton) {
+                submitButton.disabled =
+                    true;
+            }
 
             /*
-             * Remember exact scroll position.
+             * Preserve current scroll position.
              */
-            const scrollTop =
+            const oldScrollTop =
                 chatWindow
                     ? chatWindow.scrollTop
                     : 0;
 
             try {
+
+                /*
+                 * Build FormData from the actual delete form.
+                 *
+                 * This automatically includes:
+                 *
+                 *     csrfmiddlewaretoken
+                 *
+                 * if present.
+                 */
+                const formData =
+                    new FormData(form);
+
+                /*
+                 * AJAX POST.
+                 */
                 const response =
                     await fetch(
                         deleteUrl,
                         {
                             method: 'POST',
+
+                            body: formData,
 
                             credentials:
                                 'same-origin',
@@ -2441,21 +2448,14 @@ document.addEventListener('DOMContentLoaded', function () {
                                     'XMLHttpRequest',
 
                                 'Accept':
-                                    'application/json',
-
-                                'X-CSRFToken':
-                                    csrfToken
-                            },
-
-                            body: ''
+                                    'application/json'
+                            }
                         }
                     );
 
                 /*
-                 * Read response as text first.
-                 *
-                 * This makes the code robust if Django
-                 * returns HTML instead of JSON.
+                 * Read text first so we can handle
+                 * unexpected Django responses gracefully.
                  */
                 const responseText =
                     await response.text();
@@ -2471,7 +2471,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     } catch (jsonError) {
                         console.error(
-                            'Delete: invalid JSON response:',
+                            'Delete: server did not return JSON:',
                             responseText
                         );
                     }
@@ -2491,7 +2491,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 /*
-                 * Django returned JSON with ok=false.
+                 * Backend explicitly returned ok=false.
                  */
                 if (
                     data &&
@@ -2506,41 +2506,50 @@ document.addEventListener('DOMContentLoaded', function () {
                 /*
                  * SUCCESS.
                  *
-                 * DO NOT reload the page.
+                 * IMPORTANT:
                  *
-                 * Backend:
+                 * We do NOT:
+                 *
+                 *     window.location.reload()
+                 *
+                 * We do NOT:
+                 *
+                 *     window.location.href = ...
+                 *
+                 * We do NOT manually remove the message.
+                 *
+                 * Django already does:
                  *
                  *     msg.is_removed = True
                  *     broadcast_message_deleted(msg)
                  *
-                 * WebSocket:
+                 * The WebSocket event:
                  *
                  *     message_deleted
                  *
-                 * The WebSocket handler below refreshes
-                 * ONLY this message.
+                 * will arrive on BOTH browsers.
+                 *
+                 * Then refreshWebSocketMessage()
+                 * refreshes ONLY this message.
                  */
-
                 console.log(
-                    'Message delete request successful:',
+                    'Message deleted successfully:',
                     messageId
                 );
 
                 /*
-                 * Usually the WebSocket event will refresh
-                 * the message.
-                 *
-                 * We do not manually refresh here because
-                 * the backend broadcast is authoritative.
+                 * Restore scroll position while waiting
+                 * for the WebSocket fragment replacement.
                  */
                 if (chatWindow) {
                     chatWindow.scrollTop =
-                        scrollTop;
+                        oldScrollTop;
                 }
 
                 updateScrollButtons();
 
             } catch (error) {
+
                 console.error(
                     'Delete message error:',
                     error
@@ -2552,17 +2561,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
             } finally {
-                /*
-                 * Unlock the button.
-                 *
-                 * The element may later be replaced by
-                 * the WebSocket fragment refresh.
-                 */
-                button.dataset.loading =
+
+                form.dataset.loading =
                     '0';
 
-                button.disabled =
-                    false;
+                /*
+                 * The message may already have been replaced
+                 * by the WebSocket fragment, so only touch
+                 * the original button if it still exists.
+                 */
+                if (
+                    submitButton &&
+                    submitButton.isConnected
+                ) {
+                    submitButton.disabled =
+                        false;
+                }
             }
         }
     );
@@ -4195,18 +4209,6 @@ document.addEventListener('DOMContentLoaded', function () {
             data.type ===
             'message_deleted'
         ) {
-            /*
-             * Backend sends:
-             *
-             * {
-             *     type: 'message_deleted',
-             *     message_id: 123,
-             *     is_removed: true
-             * }
-             *
-             * Accept several possible ID formats
-             * for compatibility.
-             */
             const messageId =
                 data.message_id ||
                 data.id ||
@@ -4223,16 +4225,18 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             /*
-             * IMPORTANT:
+             * DO NOT reload the page.
              *
-             * Do NOT reload the page.
+             * Django has already done:
              *
-             * The backend has already changed:
+             *     msg.is_removed = True
              *
-             *     message.is_removed = True
+             * and broadcasted:
              *
-             * Therefore the message fragment returned by
-             * Django will contain the deleted-message UI.
+             *     message_deleted
+             *
+             * Fetching the fragment now returns the
+             * "This message was deleted" version.
              *
              * Only this message is replaced.
              */
