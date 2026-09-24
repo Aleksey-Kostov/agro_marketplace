@@ -174,6 +174,14 @@ document.addEventListener('DOMContentLoaded', function () {
     ========================================================== */
 
     let messageWebSocket = null;
+
+    /*
+     * IMPORTANT:
+     *
+     * chat_typing.js uses this global reference.
+     */
+    window.agroMessageSocket = null;
+
     let websocketReconnectTimer = null;
     let websocketManuallyClosed = false;
 
@@ -352,6 +360,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
+    /* =========================================================
+       APPEND RENDERED MESSAGE
+    ========================================================== */
+
     function appendRenderedMessage(
         html,
         messageId,
@@ -388,21 +400,28 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
-        if (
-            shouldScroll &&
-            chatWindow
-        ) {
-            requestAnimationFrame(function () {
-                chatWindow.scrollTo({
-                    top: chatWindow.scrollHeight,
-                    behavior: 'smooth'
-                });
+        /*
+         * IMPORTANT:
+         *
+         * chat_typing.js owns the actual auto-scroll.
+         *
+         * We only notify it that a new message was rendered.
+         */
+        window.dispatchEvent(
+            new CustomEvent(
+                'agro:message-rendered',
+                {
+                    detail: {
+                        messageId: messageId,
+                        shouldScroll: Boolean(
+                            shouldScroll
+                        )
+                    }
+                }
+            )
+        );
 
-                updateScrollButtons();
-            });
-        } else {
-            updateScrollButtons();
-        }
+        updateScrollButtons();
 
         return true;
     }
@@ -2261,20 +2280,6 @@ document.addEventListener('DOMContentLoaded', function () {
        DELETE ONE MESSAGE
     ========================================================== */
 
-    /*
-     * IMPORTANT:
-     *
-     * Your HTML uses:
-     *
-     * <form method="post"
-     *       action="..."
-     *       class="delete-message-form">
-     *
-     * Therefore we MUST listen for "submit".
-     *
-     * Listening only for click is not enough because the
-     * browser will still submit the form normally.
-     */
     document.addEventListener(
         'submit',
         async function (event) {
@@ -2288,12 +2293,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            /*
-             * STOP NORMAL FORM SUBMISSION.
-             *
-             * This is the part that prevents the page
-             * from refreshing.
-             */
             event.preventDefault();
             event.stopPropagation();
 
@@ -2304,18 +2303,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 event.stopImmediatePropagation();
             }
 
-            /*
-             * Prevent double submit.
-             */
             if (
                 form.dataset.loading === '1'
             ) {
                 return;
             }
 
-            /*
-             * Find message wrapper.
-             */
             const messageElement =
                 form.closest(
                     '.conversation-message'
@@ -2329,9 +2322,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            /*
-             * Find message ID.
-             */
             const messageId =
                 getMessageIdFromElement(
                     messageElement
@@ -2345,9 +2335,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            /*
-             * Django-generated action URL.
-             */
             const deleteUrl =
                 form.getAttribute(
                     'action'
@@ -2361,9 +2348,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            /*
-             * CSRF.
-             */
             const csrfToken =
                 getCsrfToken();
 
@@ -2379,9 +2363,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            /*
-             * Confirmation.
-             */
             const confirmed =
                 window.confirm(
                     'Are you sure you want to delete this message?'
@@ -2391,9 +2372,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            /*
-             * Lock form/button.
-             */
             form.dataset.loading =
                 '1';
 
@@ -2407,56 +2385,32 @@ document.addEventListener('DOMContentLoaded', function () {
                     true;
             }
 
-            /*
-             * Preserve current scroll position.
-             */
             const oldScrollTop =
                 chatWindow
                     ? chatWindow.scrollTop
                     : 0;
 
             try {
-
-                /*
-                 * Build FormData from the actual delete form.
-                 *
-                 * This automatically includes:
-                 *
-                 *     csrfmiddlewaretoken
-                 *
-                 * if present.
-                 */
                 const formData =
                     new FormData(form);
 
-                /*
-                 * AJAX POST.
-                 */
                 const response =
                     await fetch(
                         deleteUrl,
                         {
                             method: 'POST',
-
                             body: formData,
-
                             credentials:
                                 'same-origin',
-
                             headers: {
                                 'X-Requested-With':
                                     'XMLHttpRequest',
-
                                 'Accept':
                                     'application/json'
                             }
                         }
                     );
 
-                /*
-                 * Read text first so we can handle
-                 * unexpected Django responses gracefully.
-                 */
                 const responseText =
                     await response.text();
 
@@ -2477,9 +2431,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
 
-                /*
-                 * HTTP error.
-                 */
                 if (!response.ok) {
                     throw new Error(
                         (
@@ -2490,9 +2441,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
                 }
 
-                /*
-                 * Backend explicitly returned ok=false.
-                 */
                 if (
                     data &&
                     data.ok === false
@@ -2503,44 +2451,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
                 }
 
-                /*
-                 * SUCCESS.
-                 *
-                 * IMPORTANT:
-                 *
-                 * We do NOT:
-                 *
-                 *     window.location.reload()
-                 *
-                 * We do NOT:
-                 *
-                 *     window.location.href = ...
-                 *
-                 * We do NOT manually remove the message.
-                 *
-                 * Django already does:
-                 *
-                 *     msg.is_removed = True
-                 *     broadcast_message_deleted(msg)
-                 *
-                 * The WebSocket event:
-                 *
-                 *     message_deleted
-                 *
-                 * will arrive on BOTH browsers.
-                 *
-                 * Then refreshWebSocketMessage()
-                 * refreshes ONLY this message.
-                 */
                 console.log(
                     'Message deleted successfully:',
                     messageId
                 );
 
-                /*
-                 * Restore scroll position while waiting
-                 * for the WebSocket fragment replacement.
-                 */
                 if (chatWindow) {
                     chatWindow.scrollTop =
                         oldScrollTop;
@@ -2549,7 +2464,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateScrollButtons();
 
             } catch (error) {
-
                 console.error(
                     'Delete message error:',
                     error
@@ -2561,15 +2475,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
             } finally {
-
                 form.dataset.loading =
                     '0';
 
-                /*
-                 * The message may already have been replaced
-                 * by the WebSocket fragment, so only touch
-                 * the original button if it still exists.
-                 */
                 if (
                     submitButton &&
                     submitButton.isConnected
@@ -2902,6 +2810,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     data.message_id,
                     shouldScroll
                 );
+
+                window.dispatchEvent(
+                    new CustomEvent(
+                        'agro:message-sent'
+                    )
+                );
             }
 
             resetComposerAfterSend();
@@ -3059,6 +2973,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         data.html,
                         data.message_id,
                         shouldScroll
+                    );
+
+                    window.dispatchEvent(
+                        new CustomEvent(
+                            'agro:message-sent'
+                        )
                     );
 
                     setTimeout(
@@ -3916,6 +3836,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        /*
+         * IMPORTANT:
+         *
+         * Determine whether the user is at the bottom
+         * BEFORE fetching/inserting the new message.
+         */
         const shouldScroll =
             isUserAtBottom();
 
@@ -4059,6 +3985,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
             return;
         }
+
+
+        /*
+         * IMPORTANT:
+         *
+         * Notify other chat modules.
+         *
+         * chat_typing.js uses this event for:
+         *
+         *     typing_start
+         *     typing_stop
+         */
+        window.dispatchEvent(
+            new CustomEvent(
+                'agro:websocket-message',
+                {
+                    detail: data
+                }
+            )
+        );
 
 
         /* -----------------------------------------------------
@@ -4224,22 +4170,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            /*
-             * DO NOT reload the page.
-             *
-             * Django has already done:
-             *
-             *     msg.is_removed = True
-             *
-             * and broadcasted:
-             *
-             *     message_deleted
-             *
-             * Fetching the fragment now returns the
-             * "This message was deleted" version.
-             *
-             * Only this message is replaced.
-             */
             refreshWebSocketMessage(
                 messageId
             );
@@ -4319,18 +4249,31 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        websocketManuallyClosed =
-            false;
+        websocketManuallyClosed = false;
 
         try {
             messageWebSocket =
                 new WebSocket(url);
+
+            /*
+             * IMPORTANT:
+             *
+             * Make the current WebSocket available
+             * to chat_typing.js.
+             */
+            window.agroMessageSocket =
+                messageWebSocket;
 
         } catch (error) {
             console.error(
                 'Unable to create WebSocket:',
                 error
             );
+
+            messageWebSocket = null;
+
+            window.agroMessageSocket =
+                null;
 
             scheduleWebSocketReconnect();
 
@@ -4379,6 +4322,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 messageWebSocket =
                     null;
 
+                /*
+                 * IMPORTANT:
+                 *
+                 * Clear global reference too.
+                 */
+                window.agroMessageSocket =
+                    null;
+
                 scheduleWebSocketReconnect();
             }
         );
@@ -4416,6 +4367,12 @@ document.addEventListener('DOMContentLoaded', function () {
             messageWebSocket =
                 null;
         }
+
+        /*
+         * Clear global reference as well.
+         */
+        window.agroMessageSocket =
+            null;
     }
 
 
