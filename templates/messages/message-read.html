@@ -135,7 +135,9 @@
             ====================================================== -->
 
             <div class="conversation-scroll"
-                 id="chat-window">
+                 id="chat-window"
+                 data-root-message-id="{{ root_message.pk }}"
+                 data-current-user-id="{{ request.user.pk }}">
                 <div class="conversation"
                      id="chat-messages">
                     {% for item in conversation_messages %}

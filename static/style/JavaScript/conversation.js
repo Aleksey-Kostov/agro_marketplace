@@ -136,6 +136,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const SCROLL_EPSILON = 2;
     const SCROLL_BUTTON_HIDE_DELAY = 2000;
 
+    const WEBSOCKET_RECONNECT_DELAY = 3000;
+
 
     /*
      * Remember the original form action.
@@ -165,6 +167,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let isSubmittingAttachment = false;
     let isSubmittingEdit = false;
+
+
+    /* =========================================================
+       WEBSOCKET STATE
+    ========================================================== */
+
+    let messageWebSocket = null;
+    let websocketReconnectTimer = null;
+    let websocketManuallyClosed = false;
 
 
     /* =========================================================
@@ -1611,17 +1622,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-
-        /*
-         * Edit is text-only.
-         */
-
         clearMediaInputs();
-
-
-        /*
-         * Clear Reply completely.
-         */
 
         if (replyToInput) {
             replyToInput.value = '';
@@ -1632,11 +1633,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         clearReplyMedia();
-
-
-        /*
-         * Activate edit mode.
-         */
 
         messageBodyField.value =
             messageBody;
@@ -1761,11 +1757,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-
-        /*
-         * Reply must cancel Edit mode.
-         */
-
         if (editingMessageId) {
             editingMessageId.value = '';
         }
@@ -1774,20 +1765,10 @@ document.addEventListener('DOMContentLoaded', function () {
             editingBar.classList.add('d-none');
         }
 
-
-        /*
-         * Restore normal send URL.
-         */
-
         replyForm.setAttribute(
             'action',
             normalFormAction
         );
-
-
-        /*
-         * Set reply target.
-         */
 
         if (replyToInput) {
 
@@ -1795,11 +1776,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 messageId;
 
         }
-
-
-        /*
-         * Text preview.
-         */
 
         if (replyPreview) {
 
@@ -1815,20 +1791,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
-
-        /*
-         * Media preview.
-         */
-
         setReplyMedia(
             imageUrl,
             videoUrl
         );
-
-
-        /*
-         * Show reply bar.
-         */
 
         if (replyBar) {
 
@@ -1859,17 +1825,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const clearBody =
             options.clearBody !== false;
 
-
-        /*
-         * This is critical.
-         * Otherwise the next normal message will
-         * accidentally remain a reply.
-         */
-
         if (replyToInput) {
             replyToInput.value = '';
         }
-
 
         if (replyBar) {
 
@@ -2004,10 +1962,6 @@ document.addEventListener('DOMContentLoaded', function () {
             'submit',
             function (event) {
 
-                /*
-                 * Prevent double submit.
-                 */
-
                 if (
                     isSubmittingAttachment ||
                     isSubmittingEdit
@@ -2018,11 +1972,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
 
                 }
-
-
-                /*
-                 * EDIT
-                 */
 
                 const isEditing =
                     editingMessageId &&
@@ -2035,11 +1984,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
 
                 }
-
-
-                /*
-                 * NORMAL SEND / REPLY
-                 */
 
                 const imageFile =
                     imageInput &&
@@ -2057,32 +2001,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         videoFile
                     );
 
-
-                /*
-                 * Text-only message.
-                 *
-                 * Allow normal Django POST.
-                 */
-
                 if (!hasAttachment) {
-
-                    /*
-                     * The browser submits the hidden reply_to
-                     * automatically when Reply mode is active.
-                     *
-                     * If this is a normal message,
-                     * reply_to must be empty.
-                     */
 
                     return;
 
                 }
-
-
-                /*
-                 * Attachment message:
-                 * use AJAX for progress.
-                 */
 
                 if (
                     !validateAttachmentsBeforeSubmit()
@@ -2156,12 +2079,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
 
         }
-
-
-        /*
-         * Edit must never include attachments
-         * or a reply target.
-         */
 
         clearMediaInputs();
 
@@ -2240,24 +2157,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
 
-
-            /*
-             * IMPORTANT:
-             *
-             * We intentionally do NOT modify the message bubble
-             * with data.body using innerHTML.
-             *
-             * The server/database remains the source of truth.
-             *
-             * The only client-side state that must be updated
-             * here is the text stored on the Edit/Reply buttons.
-             */
-
-
-            /* =============================================
-               UPDATE EDIT / REPLY BUTTON DATA
-            ============================================== */
-
             document
                 .querySelectorAll(
                     '.edit-message-side-btn, .reply-message-side-btn'
@@ -2275,11 +2174,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
 
                 });
-
-
-            /*
-             * Finish edit.
-             */
 
             cancelEdit({
                 clearBody: true
@@ -2353,7 +2247,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
-
         xhr.upload.addEventListener(
             'progress',
             function (event) {
@@ -2375,7 +2268,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         );
 
-
         xhr.addEventListener(
             'load',
             function () {
@@ -2393,15 +2285,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             'Upload complete';
 
                     }
-
-
-                    /*
-                     * The server response will contain
-                     * the redirect URL from Django.
-                     *
-                     * This also means the hidden reply_to
-                     * has already been submitted.
-                     */
 
                     setTimeout(function () {
 
@@ -2421,7 +2304,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
 
                 }
-
 
                 let errorMessage =
                     'Upload failed. Please try again.';
@@ -2451,7 +2333,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         );
 
-
         xhr.addEventListener(
             'error',
             function () {
@@ -2465,7 +2346,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         );
 
-
         xhr.addEventListener(
             'abort',
             function () {
@@ -2475,14 +2355,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         );
 
-
         xhr.open(
             'POST',
             replyForm.action ||
             window.location.href,
             true
         );
-
 
         const csrfToken =
             getCsrfToken();
@@ -2579,11 +2457,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
 
-
-            /*
-             * Clipboard API.
-             */
-
             try {
 
                 if (
@@ -2620,11 +2493,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
             }
-
-
-            /*
-             * Fallback copy.
-             */
 
             const textarea =
                 document.createElement('textarea');
@@ -2769,11 +2637,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 }
 
-
-                /* =============================================
-                   REACTION
-                ============================================== */
-
                 const reaction =
                     data.reaction ||
                     button.dataset.reaction;
@@ -2781,11 +2644,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 const messageId =
                     data.message_id ||
                     button.dataset.msg;
-
-
-                /* =============================================
-                   ACTIVE STATE
-                ============================================== */
 
                 button.classList.toggle(
                     'active-like',
@@ -2798,11 +2656,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     reaction === 'heart' &&
                     Boolean(data.active)
                 );
-
-
-                /* =============================================
-                   AVATAR BOX
-                ============================================== */
 
                 let avatarBox =
                     button.querySelector(
@@ -2821,11 +2674,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         );
 
                 }
-
-
-                /* =============================================
-                   RENDER REACTORS
-                ============================================== */
 
                 if (avatarBox) {
 
@@ -2860,11 +2708,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
 
                 }
-
-
-                /* =============================================
-                   TOOLTIP
-                ============================================== */
 
                 if (
                     Array.isArray(data.reactors)
@@ -2906,6 +2749,666 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
+       WEBSOCKET
+       RECEIVE NEW MESSAGES WITHOUT REFRESH
+    ========================================================== */
+
+    function escapeHtml(value) {
+
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+
+    }
+
+
+    function formatMessageDate(timestamp) {
+
+        if (!timestamp) {
+            return '';
+        }
+
+        const date =
+            new Date(timestamp);
+
+        if (Number.isNaN(date.getTime())) {
+            return '';
+        }
+
+        return date.toLocaleString(
+            'en-GB',
+            {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }
+        );
+
+    }
+
+
+    function getWebSocketUrl() {
+
+        if (!chatWindow) {
+            return null;
+        }
+
+        const rootMessageId =
+            chatWindow.dataset.rootMessageId;
+
+        if (!rootMessageId) {
+
+            console.warn(
+                'WebSocket: data-root-message-id is missing.'
+            );
+
+            return null;
+
+        }
+
+        const protocol =
+            window.location.protocol === 'https:'
+                ? 'wss:'
+                : 'ws:';
+
+        return (
+            `${protocol}//` +
+            `${window.location.host}` +
+            `/ws/messages/${encodeURIComponent(rootMessageId)}/`
+        );
+
+    }
+
+
+    function isUserAtBottom() {
+
+        if (!chatWindow) {
+            return true;
+        }
+
+        return (
+            chatWindow.scrollTop +
+            chatWindow.clientHeight
+        ) >= (
+            chatWindow.scrollHeight -
+            50
+        );
+
+    }
+
+
+    function appendIncomingMessage(message) {
+
+        if (!chatMessages || !message) {
+            return;
+        }
+
+        const messageId =
+            message.id;
+
+        if (!messageId) {
+            return;
+        }
+
+
+        /*
+         * Never add the same message twice.
+         */
+
+        if (
+            document.getElementById(
+                `msg-${messageId}`
+            )
+        ) {
+            return;
+        }
+
+
+        /*
+         * Do not append our own message.
+         *
+         * Current architecture still sends normal text
+         * messages through Django HTTP POST.
+         *
+         * Therefore the sender already gets the message
+         * from the normal redirect/HTTP response.
+         */
+
+        const currentUserId =
+            chatWindow
+                ? Number(
+                    chatWindow.dataset.currentUserId
+                )
+                : null;
+
+        if (
+            currentUserId &&
+            Number(message.sender_id) ===
+                currentUserId
+        ) {
+            return;
+        }
+
+
+        const shouldScroll =
+            isUserAtBottom();
+
+
+        const wrapper =
+            document.createElement('div');
+
+        wrapper.id =
+            `msg-${messageId}`;
+
+        wrapper.className =
+            'conversation-message mb-3';
+
+
+        /*
+         * Message direction.
+         */
+
+        wrapper.classList.add(
+            'received'
+        );
+
+
+        const senderUsername =
+            message.sender_username ||
+            'User';
+
+
+        const profilePhoto =
+            message.sender_profile_photo ||
+            defaultAvatar;
+
+
+        const timestamp =
+            formatMessageDate(
+                message.timestamp
+            );
+
+
+        /*
+         * Build message HTML.
+         *
+         * body is server-generated/sanitized HTML
+         * from the WebSocket consumer.
+         */
+
+        let html = '';
+
+
+        html += `
+            <div class="d-flex align-items-start gap-2">
+                <div class="flex-shrink-0">
+                    <img
+                        src="${escapeHtml(profilePhoto)}"
+                        alt="${escapeHtml(senderUsername)}"
+                        class="rounded-circle"
+                        width="40"
+                        height="40"
+                        loading="lazy"
+                    >
+                </div>
+
+                <div class="flex-grow-1 min-width-0">
+
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <strong>
+                            ${escapeHtml(senderUsername)}
+                        </strong>
+
+                        ${
+                            timestamp
+                                ? `
+                                    <small class="text-muted">
+                                        ${escapeHtml(timestamp)}
+                                    </small>
+                                `
+                                : ''
+                        }
+                    </div>
+        `;
+
+
+        /*
+         * Reply preview.
+         */
+
+        if (message.parent_message) {
+
+            const parentBody =
+                message.parent_message.body || '';
+
+            const parentSender =
+                message.parent_message.sender_username ||
+                'User';
+
+            const parentId =
+                message.parent_message.id;
+
+            html += `
+                <a
+                    href="#msg-${escapeHtml(parentId)}"
+                    class="text-decoration-none"
+                >
+                    <div class="reply-preview mb-2">
+                        <strong>
+                            ${escapeHtml(parentSender)}
+                        </strong>
+
+                        <div>
+                            ${escapeHtml(
+                                getMessagePreview(parentBody)
+                            )}
+                        </div>
+                    </div>
+                </a>
+            `;
+
+        }
+
+
+        /*
+         * Message bubble.
+         */
+
+        html += `
+                    <div class="message-bubble">
+        `;
+
+
+        /*
+         * Body.
+         *
+         * The consumer sends the server-processed body.
+         */
+
+        if (message.body) {
+
+            html += `
+                        <div class="message-body">
+                            ${message.body}
+                        </div>
+            `;
+
+        }
+
+
+        /*
+         * Image.
+         */
+
+        if (message.image_url) {
+
+            html += `
+                        <div class="message-media mt-2">
+                            <img
+                                src="${escapeHtml(message.image_url)}"
+                                alt="Message image"
+                                class="img-fluid rounded"
+                                loading="lazy"
+                            >
+                        </div>
+            `;
+
+        }
+
+
+        /*
+         * Video.
+         */
+
+        if (message.video_url) {
+
+            html += `
+                        <div class="message-media mt-2">
+                            <video
+                                controls
+                                preload="metadata"
+                                class="img-fluid rounded"
+                            >
+                                <source
+                                    src="${escapeHtml(message.video_url)}"
+                                >
+                            </video>
+                        </div>
+            `;
+
+        }
+
+
+        html += `
+                    </div>
+        `;
+
+
+        /*
+         * Reply button.
+         *
+         * We intentionally keep this independent from the
+         * server-side reaction URLs.
+         */
+
+        html += `
+                    <div class="message-actions mt-1">
+                        <button
+                            type="button"
+                            class="btn btn-sm reply-message-side-btn"
+                            data-message-id="${escapeHtml(messageId)}"
+                            data-message-body="${escapeHtml(message.body || '')}"
+                            data-reply-image="${escapeHtml(message.image_url || '')}"
+                            data-reply-video="${escapeHtml(message.video_url || '')}"
+                        >
+                            Reply
+                        </button>
+                    </div>
+        `;
+
+
+        html += `
+                </div>
+            </div>
+        `;
+
+
+        wrapper.innerHTML =
+            html;
+
+
+        chatMessages.appendChild(
+            wrapper
+        );
+
+
+        /*
+         * Scroll only if user was already at bottom.
+         *
+         * This prevents a new message from jumping the user
+         * away from an older part of the conversation.
+         */
+
+        if (shouldScroll) {
+
+            requestAnimationFrame(function () {
+
+                chatWindow.scrollTo({
+                    top: chatWindow.scrollHeight,
+                    behavior: 'smooth'
+                });
+
+            });
+
+        }
+
+        updateScrollButtons();
+
+    }
+
+
+    function handleWebSocketMessage(event) {
+
+        let data;
+
+        try {
+
+            data =
+                JSON.parse(event.data);
+
+        } catch (error) {
+
+            console.error(
+                'WebSocket invalid JSON:',
+                error
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * Connection established.
+         */
+
+        if (
+            data.type ===
+            'connection_established'
+        ) {
+
+            console.log(
+                'WebSocket connected.'
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * New message.
+         */
+
+        if (
+            data.type ===
+            'message_created'
+        ) {
+
+            if (data.message) {
+
+                appendIncomingMessage(
+                    data.message
+                );
+
+            }
+
+            return;
+
+        }
+
+
+        /*
+         * Server error.
+         */
+
+        if (
+            data.type ===
+            'error'
+        ) {
+
+            console.error(
+                'WebSocket server error:',
+                data.code,
+                data.message
+            );
+
+            return;
+
+        }
+
+    }
+
+
+    function scheduleWebSocketReconnect() {
+
+        if (websocketManuallyClosed) {
+            return;
+        }
+
+        if (websocketReconnectTimer) {
+            return;
+        }
+
+        websocketReconnectTimer =
+            setTimeout(function () {
+
+                websocketReconnectTimer =
+                    null;
+
+                connectWebSocket();
+
+            }, WEBSOCKET_RECONNECT_DELAY);
+
+    }
+
+
+    function connectWebSocket() {
+
+        if (!chatWindow) {
+            return;
+        }
+
+        const url =
+            getWebSocketUrl();
+
+        if (!url) {
+            return;
+        }
+
+
+        /*
+         * Do not open a second connection.
+         */
+
+        if (
+            messageWebSocket &&
+            (
+                messageWebSocket.readyState ===
+                    WebSocket.OPEN ||
+                messageWebSocket.readyState ===
+                    WebSocket.CONNECTING
+            )
+        ) {
+            return;
+        }
+
+
+        websocketManuallyClosed = false;
+
+
+        try {
+
+            messageWebSocket =
+                new WebSocket(url);
+
+        } catch (error) {
+
+            console.error(
+                'Unable to create WebSocket:',
+                error
+            );
+
+            scheduleWebSocketReconnect();
+
+            return;
+
+        }
+
+
+        messageWebSocket.addEventListener(
+            'open',
+            function () {
+
+                console.log(
+                    'Message WebSocket connected.'
+                );
+
+            }
+        );
+
+
+        messageWebSocket.addEventListener(
+            'message',
+            handleWebSocketMessage
+        );
+
+
+        messageWebSocket.addEventListener(
+            'error',
+            function (error) {
+
+                console.error(
+                    'Message WebSocket error:',
+                    error
+                );
+
+            }
+        );
+
+
+        messageWebSocket.addEventListener(
+            'close',
+            function (event) {
+
+                console.warn(
+                    'Message WebSocket closed:',
+                    event.code,
+                    event.reason
+                );
+
+                messageWebSocket =
+                    null;
+
+                scheduleWebSocketReconnect();
+
+            }
+        );
+
+    }
+
+
+    function closeWebSocket() {
+
+        websocketManuallyClosed = true;
+
+
+        if (websocketReconnectTimer) {
+
+            clearTimeout(
+                websocketReconnectTimer
+            );
+
+            websocketReconnectTimer =
+                null;
+
+        }
+
+
+        if (messageWebSocket) {
+
+            try {
+
+                messageWebSocket.close(
+                    1000,
+                    'Page unloading'
+                );
+
+            } catch (error) {
+                // Ignore.
+            }
+
+            messageWebSocket =
+                null;
+
+        }
+
+    }
+
+
+    /*
+     * Start WebSocket after the page has initialized.
+     */
+
+    connectWebSocket();
+
+
+    /* =========================================================
        BEFORE UNLOAD
     ========================================================== */
 
@@ -2915,6 +3418,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             revokeImageUrl();
             revokeVideoUrl();
+
+            closeWebSocket();
 
             if (scrollButtonHideTimer) {
 
