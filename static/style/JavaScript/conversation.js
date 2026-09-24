@@ -191,14 +191,6 @@ document.addEventListener('DOMContentLoaded', function () {
      *
      * Multiple refresh requests for the same message are
      * queued instead of being silently ignored.
-     *
-     * This prevents race conditions between:
-     *
-     * reaction POST
-     *     +
-     * WebSocket reaction_updated
-     *     +
-     * status refresh
      */
     const pendingMessageRefreshes = new Map();
 
@@ -327,6 +319,28 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
+        /*
+         * Additional fallback:
+         *
+         * Some message templates may store the ID
+         * on a child element instead of the wrapper.
+         */
+        const childWithMessageId =
+            element.querySelector(
+                '[data-message-id]'
+            );
+
+        if (childWithMessageId) {
+            const id =
+                Number(
+                    childWithMessageId.dataset.messageId
+                );
+
+            if (id) {
+                return id;
+            }
+        }
+
         return null;
     }
 
@@ -427,15 +441,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     window.location.origin
                 );
 
-            /*
-             * Expected:
-             *
-             * /messages/fragment/0/
-             *
-             * becomes:
-             *
-             * /messages/fragment/123/
-             */
             url.pathname =
                 url.pathname.replace(
                     /\/0\/?$/,
@@ -564,9 +569,6 @@ document.addEventListener('DOMContentLoaded', function () {
             newMessage
         );
 
-        /*
-         * Restore exact scroll position.
-         */
         if (
             preserveScroll &&
             chatWindow
@@ -596,12 +598,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return Promise.resolve(false);
         }
 
-        /*
-         * If another refresh for this message is already
-         * running, wait for it and then perform this refresh.
-         *
-         * This is critical for reactions/status updates.
-         */
         const previous =
             pendingMessageRefreshes.get(id) ||
             Promise.resolve();
@@ -2268,6 +2264,311 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
+       DELETE ONE MESSAGE
+    ========================================================== */
+
+    document.addEventListener(
+        'click',
+        async function (event) {
+            /*
+             * Catch the delete button even when the click
+             * is on an icon/span inside the button.
+             */
+            const button =
+                event.target.closest(
+                    '.delete-message-side-btn, ' +
+                    '.delete-message-btn, ' +
+                    '[data-delete-url]'
+                );
+
+            if (!button) {
+                return;
+            }
+
+            /*
+             * IMPORTANT:
+             *
+             * Prevent normal <a href="..."> navigation.
+             *
+             * Django's delete view returns redirect()
+             * for a normal request. We do NOT want that.
+             */
+            event.preventDefault();
+            event.stopPropagation();
+
+            /*
+             * Prevent double clicks.
+             */
+            if (
+                button.dataset.loading === '1'
+            ) {
+                return;
+            }
+
+            /*
+             * Find the message wrapper.
+             */
+            const messageElement =
+                button.closest(
+                    '.conversation-message'
+                );
+
+            if (!messageElement) {
+                console.error(
+                    'Delete: conversation-message element not found.'
+                );
+
+                return;
+            }
+
+            /*
+             * Find message ID.
+             */
+            let messageId = null;
+
+            try {
+                messageId =
+                    getMessageIdFromElement(
+                        messageElement
+                    );
+            } catch (error) {
+                console.error(
+                    'Delete: unable to get message ID:',
+                    error
+                );
+            }
+
+            /*
+             * Additional fallbacks.
+             */
+            if (!messageId) {
+                messageId =
+                    messageElement.dataset.messageId ||
+                    messageElement.getAttribute(
+                        'data-message-id'
+                    ) ||
+                    button.dataset.messageId ||
+                    button.getAttribute(
+                        'data-message-id'
+                    );
+            }
+
+            if (!messageId) {
+                console.error(
+                    'Delete: message ID not found.'
+                );
+
+                return;
+            }
+
+            /*
+             * Get Django-generated delete URL.
+             */
+            const deleteUrl =
+                button.getAttribute('href') ||
+                button.dataset.deleteUrl ||
+                button.getAttribute(
+                    'data-delete-url'
+                );
+
+            if (!deleteUrl) {
+                console.error(
+                    'Delete: delete URL not found.'
+                );
+
+                return;
+            }
+
+            /*
+             * CSRF.
+             */
+            const csrfToken =
+                getCsrfToken();
+
+            if (!csrfToken) {
+                console.error(
+                    'Delete: CSRF token not found.'
+                );
+
+                alert(
+                    'CSRF token not found. Please refresh the page.'
+                );
+
+                return;
+            }
+
+            /*
+             * Confirmation.
+             */
+            const confirmed =
+                window.confirm(
+                    'Are you sure you want to delete this message?'
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            /*
+             * Lock the button.
+             */
+            button.dataset.loading =
+                '1';
+
+            button.disabled =
+                true;
+
+            /*
+             * Remember exact scroll position.
+             */
+            const scrollTop =
+                chatWindow
+                    ? chatWindow.scrollTop
+                    : 0;
+
+            try {
+                const response =
+                    await fetch(
+                        deleteUrl,
+                        {
+                            method: 'POST',
+
+                            credentials:
+                                'same-origin',
+
+                            headers: {
+                                'X-Requested-With':
+                                    'XMLHttpRequest',
+
+                                'Accept':
+                                    'application/json',
+
+                                'X-CSRFToken':
+                                    csrfToken
+                            },
+
+                            body: ''
+                        }
+                    );
+
+                /*
+                 * Read response as text first.
+                 *
+                 * This makes the code robust if Django
+                 * returns HTML instead of JSON.
+                 */
+                const responseText =
+                    await response.text();
+
+                let data = null;
+
+                if (responseText) {
+                    try {
+                        data =
+                            JSON.parse(
+                                responseText
+                            );
+
+                    } catch (jsonError) {
+                        console.error(
+                            'Delete: invalid JSON response:',
+                            responseText
+                        );
+                    }
+                }
+
+                /*
+                 * HTTP error.
+                 */
+                if (!response.ok) {
+                    throw new Error(
+                        (
+                            data &&
+                            data.error
+                        ) ||
+                        `Unable to delete message (${response.status}).`
+                    );
+                }
+
+                /*
+                 * Django returned JSON with ok=false.
+                 */
+                if (
+                    data &&
+                    data.ok === false
+                ) {
+                    throw new Error(
+                        data.error ||
+                        'Unable to delete message.'
+                    );
+                }
+
+                /*
+                 * SUCCESS.
+                 *
+                 * DO NOT reload the page.
+                 *
+                 * Backend:
+                 *
+                 *     msg.is_removed = True
+                 *     broadcast_message_deleted(msg)
+                 *
+                 * WebSocket:
+                 *
+                 *     message_deleted
+                 *
+                 * The WebSocket handler below refreshes
+                 * ONLY this message.
+                 */
+
+                console.log(
+                    'Message delete request successful:',
+                    messageId
+                );
+
+                /*
+                 * Usually the WebSocket event will refresh
+                 * the message.
+                 *
+                 * We do not manually refresh here because
+                 * the backend broadcast is authoritative.
+                 */
+                if (chatWindow) {
+                    chatWindow.scrollTop =
+                        scrollTop;
+                }
+
+                updateScrollButtons();
+
+            } catch (error) {
+                console.error(
+                    'Delete message error:',
+                    error
+                );
+
+                alert(
+                    error.message ||
+                    'Unable to delete message.'
+                );
+
+            } finally {
+                /*
+                 * Unlock the button.
+                 *
+                 * The element may later be replaced by
+                 * the WebSocket fragment refresh.
+                 */
+                button.dataset.loading =
+                    '0';
+
+                button.disabled =
+                    false;
+            }
+        }
+    );
+
+
+    /* =========================================================
        CANCEL EDIT
     ========================================================== */
 
@@ -3044,11 +3345,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return null;
         }
 
-        /*
-         * Prefer the actual Django-generated href.
-         *
-         * This is the safest option.
-         */
         const href =
             button.getAttribute('href');
 
@@ -3135,12 +3431,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return null;
         }
 
-        /*
-         * Avoid depending on CSS.escape.
-         *
-         * This works even in browsers where CSS.escape
-         * is unavailable.
-         */
         const allAvatarBoxes =
             document.querySelectorAll(
                 '[data-react-avatars]'
@@ -3353,9 +3643,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             button.disabled = true;
 
-            /*
-             * Preserve exact scroll position.
-             */
             const scrollTop =
                 chatWindow
                     ? chatWindow.scrollTop
@@ -3401,21 +3688,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
                 }
 
-                /*
-                 * Update immediately.
-                 */
                 updateReactionUI(
                     button,
                     data
                 );
 
-                /*
-                 * Then refresh authoritative server HTML.
-                 *
-                 * Because refreshMessageFragment() is queued,
-                 * this cannot race with another refresh for
-                 * the same message.
-                 */
                 await refreshMessageFragment(
                     data.message_id ||
                     messageId,
@@ -3437,10 +3714,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     error
                 );
 
-                /*
-                 * If the POST failed, restore the authoritative
-                 * state from Django.
-                 */
                 try {
                     await refreshMessageFragment(
                         messageId,
@@ -3461,11 +3734,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 button.disabled = false;
 
-                /*
-                 * The button may have been replaced by
-                 * refreshMessageFragment(), therefore find
-                 * the current buttons again.
-                 */
                 const currentMessage =
                     getMessageElement(
                         messageId
@@ -3539,10 +3807,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        /*
-         * Django uses .received-message for messages
-         * belonging to the other participant.
-         */
         chatMessages
             .querySelectorAll(
                 '.conversation-message.received-message'
@@ -3623,11 +3887,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (
             getMessageElement(messageId)
         ) {
-            /*
-             * Message already exists.
-             *
-             * It may still need to be marked as read.
-             */
             markMessageAsRead(
                 messageId
             );
@@ -3656,10 +3915,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     messageId
                 );
 
-            /*
-             * It could have been inserted while
-             * the request was running.
-             */
             if (
                 getMessageElement(messageId)
             ) {
@@ -3678,11 +3933,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
             if (inserted) {
-                /*
-                 * The message is now visible in the
-                 * conversation, so tell the backend
-                 * that it has been read.
-                 */
                 markMessageAsRead(
                     messageId
                 );
@@ -3809,10 +4059,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Message WebSocket connected.'
             );
 
-            /*
-             * Mark all received messages in the currently
-             * opened conversation as read.
-             */
             markExistingReceivedMessagesAsRead();
 
             return;
@@ -3854,22 +4100,6 @@ document.addEventListener('DOMContentLoaded', function () {
             data.type ===
                 'message_delivery_updated'
         ) {
-            /*
-             * Support:
-             *
-             * {
-             *     type: 'message_status_updated',
-             *     message_ids: [1, 2, 3]
-             * }
-             *
-             * and:
-             *
-             * {
-             *     type: 'message_status_updated',
-             *     message_id: 123
-             * }
-             */
-
             if (
                 Array.isArray(
                     data.message_ids
@@ -3929,7 +4159,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         /* -----------------------------------------------------
-           GENERIC MESSAGE UPDATE
+           MESSAGE UPDATED
         ------------------------------------------------------ */
 
         if (
@@ -3952,6 +4182,63 @@ document.addEventListener('DOMContentLoaded', function () {
                     messageId
                 );
             }
+
+            return;
+        }
+
+
+        /* -----------------------------------------------------
+           MESSAGE DELETED
+        ------------------------------------------------------ */
+
+        if (
+            data.type ===
+            'message_deleted'
+        ) {
+            /*
+             * Backend sends:
+             *
+             * {
+             *     type: 'message_deleted',
+             *     message_id: 123,
+             *     is_removed: true
+             * }
+             *
+             * Accept several possible ID formats
+             * for compatibility.
+             */
+            const messageId =
+                data.message_id ||
+                data.id ||
+                data.message?.id ||
+                data.data?.message_id ||
+                data.data?.id;
+
+            if (!messageId) {
+                console.warn(
+                    'WebSocket message_deleted: message ID is missing.'
+                );
+
+                return;
+            }
+
+            /*
+             * IMPORTANT:
+             *
+             * Do NOT reload the page.
+             *
+             * The backend has already changed:
+             *
+             *     message.is_removed = True
+             *
+             * Therefore the message fragment returned by
+             * Django will contain the deleted-message UI.
+             *
+             * Only this message is replaced.
+             */
+            refreshWebSocketMessage(
+                messageId
+            );
 
             return;
         }
@@ -4054,10 +4341,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     'Message WebSocket connected.'
                 );
 
-                /*
-                 * As soon as the socket is connected,
-                 * mark existing received messages as read.
-                 */
                 markExistingReceivedMessagesAsRead();
             }
         );
