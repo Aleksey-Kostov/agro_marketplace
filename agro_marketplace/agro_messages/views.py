@@ -48,13 +48,6 @@ MAX_VIDEO_SIZE = 100 * 1024 * 1024
 # ============================================================
 
 def is_ajax_request(request):
-    """
-    Проверява дали request-ът е изпратен от JavaScript/AJAX.
-
-    Поддържаме X-Requested-With, защото conversation.js
-    изпраща този header.
-    """
-
     return (
         request.headers.get('X-Requested-With')
         == 'XMLHttpRequest'
@@ -62,28 +55,25 @@ def is_ajax_request(request):
 
 
 # ============================================================
-# WEBSOCKET HELPERS
+# WEBSOCKET GROUP
 # ============================================================
 
 def build_message_group_name(
-        sender_id,
-        recipient_id,
-        product_type,
-        product_id,
+    sender_id,
+    recipient_id,
+    product_type,
+    product_id,
 ):
     """
-    Builds the exact same WebSocket group name used by
-    MessageConsumer.
+    IMPORTANT:
+    Тази функция трябва да е абсолютно същата и в consumers.py.
 
     Conversation identity:
 
-        participants
-        +
+        user 1
+        user 2
         product_type
-        +
         product_id
-
-    Direction does not matter.
     """
 
     user_ids = sorted(
@@ -105,12 +95,11 @@ def build_message_group_name(
     return f"chat_{digest}"
 
 
-def serialize_message_for_websocket(message):
-    """
-    Converts a Message instance into JSON-safe data for
-    WebSocket delivery.
-    """
+# ============================================================
+# WEBSOCKET SERIALIZATION
+# ============================================================
 
+def serialize_message_for_websocket(message):
     image_url = None
     video_url = None
 
@@ -158,11 +147,72 @@ def serialize_message_for_websocket(message):
     }
 
 
+# ============================================================
+# GENERIC WEBSOCKET BROADCAST
+# ============================================================
+
+def broadcast_message_event(
+    message,
+    event_type,
+    extra_data=None,
+):
+    """
+    Изпраща realtime event до двамата участници
+    в конкретната conversation.
+
+    Никога не чупи HTTP request-а, ако WebSocket layer
+    временно не работи.
+    """
+
+    if not message:
+        return
+
+    try:
+        channel_layer = get_channel_layer()
+
+        if channel_layer is None:
+            return
+
+        group_name = build_message_group_name(
+            sender_id=message.sender_id,
+            recipient_id=message.recipient_id,
+            product_type=message.product_type,
+            product_id=message.product_id,
+        )
+
+        data = {
+            'type': event_type,
+            'message_id': message.pk,
+        }
+
+        if extra_data:
+            data.update(extra_data)
+
+        async_to_sync(
+            channel_layer.group_send
+        )(
+            group_name,
+            {
+                'type': 'chat_message',
+                'data': data,
+            },
+        )
+
+    except Exception:
+        return
+
+
+# ============================================================
+# MESSAGE CREATED
+# ============================================================
+
 def broadcast_message_created(message):
     """
-    Broadcasts a newly created message to all WebSocket clients
-    connected to this exact conversation.
+    Broadcast за ново съобщение.
     """
+
+    if not message:
+        return
 
     try:
         channel_layer = get_channel_layer()
@@ -185,19 +235,109 @@ def broadcast_message_created(message):
                 'type': 'chat_message',
                 'data': {
                     'type': 'message_created',
-                    'message': serialize_message_for_websocket(
-                        message
+                    'message': (
+                        serialize_message_for_websocket(
+                            message
+                        )
                     ),
                 },
             },
         )
 
     except Exception:
-        """
-        WebSocket delivery must never break normal HTTP
-        message creation.
-        """
         return
+
+
+# ============================================================
+# MESSAGE STATUS
+# ============================================================
+
+def broadcast_message_status(
+    message,
+    status,
+):
+    """
+    status:
+        delivered
+        read
+        sent
+    """
+
+    if not message:
+        return
+
+    broadcast_message_event(
+        message,
+        'message_status_updated',
+        {
+            'status': status,
+            'delivery_status': status,
+        },
+    )
+
+
+# ============================================================
+# MESSAGE REACTION
+# ============================================================
+
+def broadcast_message_reaction(
+    message,
+    reaction=None,
+    active=None,
+):
+    """
+    Изпраща reaction_updated към двата браузъра.
+
+    Frontend-ът след това взема server-authoritative
+    message fragment.
+    """
+
+    extra = {}
+
+    if reaction is not None:
+        extra['reaction'] = reaction
+
+    if active is not None:
+        extra['active'] = bool(active)
+
+    broadcast_message_event(
+        message,
+        'reaction_updated',
+        extra,
+    )
+
+
+# ============================================================
+# MESSAGE DELETED
+# ============================================================
+
+def broadcast_message_deleted(message):
+    """
+    Съобщава на двата браузъра, че съобщението е изтрито.
+    """
+
+    broadcast_message_event(
+        message,
+        'message_deleted',
+        {
+            'is_removed': True,
+        },
+    )
+
+
+# ============================================================
+# MESSAGE UPDATED
+# ============================================================
+
+def broadcast_message_updated(message):
+    """
+    Използва се при edit.
+    """
+
+    broadcast_message_event(
+        message,
+        'message_updated',
+    )
 
 
 # ============================================================
@@ -205,10 +345,6 @@ def broadcast_message_created(message):
 # ============================================================
 
 def _same_conversation(message_a, message_b):
-    """
-    Проверява дали две съобщения принадлежат към една и съща
-    conversation.
-    """
 
     if not message_a or not message_b:
         return False
@@ -227,9 +363,11 @@ def _same_conversation(message_a, message_b):
         return False
 
     return (
-        message_a.product_type == message_b.product_type
+        message_a.product_type
+        == message_b.product_type
         and
-        message_a.product_id == message_b.product_id
+        message_a.product_id
+        == message_b.product_id
     )
 
 
@@ -238,9 +376,6 @@ def _same_conversation(message_a, message_b):
 # ============================================================
 
 def get_conversation_messages(root_message):
-    """
-    Връща всички messages от конкретната conversation.
-    """
 
     if not root_message:
         return []
@@ -274,13 +409,10 @@ def get_conversation_messages(root_message):
 # MESSAGE VISIBILITY
 # ============================================================
 
-def is_message_visible_for_user(message, user):
-    """
-    Съобщението е видимо ако:
-
-        - user е sender или recipient
-        - user няма MessageStatus.is_deleted=True
-    """
+def is_message_visible_for_user(
+    message,
+    user,
+):
 
     if not user or not user.is_authenticated:
         return False
@@ -311,11 +443,10 @@ def is_message_visible_for_user(message, user):
 # GET CONVERSATION MESSAGES FOR USER
 # ============================================================
 
-def get_conversation_messages_for_user(root_message, user):
-    """
-    Връща всички messages от conversation-а,
-    които текущият user може да вижда.
-    """
+def get_conversation_messages_for_user(
+    root_message,
+    user,
+):
 
     if not root_message:
         return []
@@ -368,23 +499,21 @@ def get_conversation_messages_for_user(root_message, user):
         )
     )
 
-    visible_messages = [
+    return [
         message
         for message in messages
         if message.pk not in deleted_ids
     ]
-
-    return visible_messages
 
 
 # ============================================================
 # DELIVERY / READ STATUS
 # ============================================================
 
-def add_message_delivery_status(messages, current_user):
-    """
-    Добавя delivery/read информация към съобщенията.
-    """
+def add_message_delivery_status(
+    messages,
+    current_user,
+):
 
     if not messages:
         return messages
@@ -410,6 +539,7 @@ def add_message_delivery_status(messages, current_user):
     status_map = {}
 
     for status in statuses:
+
         status_map[
             (
                 status.message_id,
@@ -424,6 +554,7 @@ def add_message_delivery_status(messages, current_user):
         if message.is_removed:
             continue
 
+        # Само sender вижда delivery/read отметките.
         if message.sender_id != current_user.pk:
             continue
 
@@ -435,12 +566,15 @@ def add_message_delivery_status(messages, current_user):
         )
 
         if recipient_status is None:
+
             message.delivery_status = 'sent'
 
         elif recipient_status.is_read:
+
             message.delivery_status = 'read'
 
         else:
+
             message.delivery_status = 'delivered'
 
     return messages
@@ -451,9 +585,6 @@ def add_message_delivery_status(messages, current_user):
 # ============================================================
 
 def get_admin_user():
-    """
-    Връща първия superuser или staff user.
-    """
 
     return (
         User.objects
@@ -474,16 +605,17 @@ def get_admin_user():
 # SAFE REDIRECT
 # ============================================================
 
-def safe_next_url(request, fallback='message-inbox'):
-    """
-    Позволява redirect към next само ако URL-ът
-    е към текущия host.
-    """
+def safe_next_url(
+    request,
+    fallback='message-inbox',
+):
 
     next_url = (
         request.POST.get('next')
-        or request.GET.get('next')
-        or request.META.get('HTTP_REFERER')
+        or
+        request.GET.get('next')
+        or
+        request.META.get('HTTP_REFERER')
     )
 
     if next_url and url_has_allowed_host_and_scheme(
@@ -502,7 +634,11 @@ def safe_next_url(request, fallback='message-inbox'):
 # REACTION HELPERS
 # ============================================================
 
-def get_reaction_reactors(message, reaction):
+def get_reaction_reactors(
+    message,
+    reaction,
+):
+
     reactors = []
 
     reactions = (
@@ -549,7 +685,8 @@ def get_reaction_reactors(message, reaction):
                 'id': user.pk,
                 'photo': (
                     photo
-                    or '/static/images/profile_picture.webp'
+                    or
+                    '/static/images/profile_picture.webp'
                 ),
                 'username': username,
             }
@@ -559,6 +696,7 @@ def get_reaction_reactors(message, reaction):
 
 
 def is_valid_reaction(reaction):
+
     return reaction in (
         MessageReaction.LIKE,
         MessageReaction.HEART,
@@ -570,6 +708,7 @@ def is_valid_reaction(reaction):
 # ============================================================
 
 def message_has_content(request):
+
     body = (
         request.POST.get('body')
         or ''
@@ -586,10 +725,12 @@ def message_has_content(request):
 
 
 def validate_message_attachments(request):
+
     image_file = request.FILES.get('image')
     video_file = request.FILES.get('video')
 
     if image_file and video_file:
+
         raise ValidationError(
             "Please attach either an image or a video, not both."
         )
@@ -597,6 +738,7 @@ def validate_message_attachments(request):
     if image_file:
 
         if image_file.size > MAX_IMAGE_SIZE:
+
             raise ValidationError(
                 "Image is too large. Maximum size is 10 MB."
             )
@@ -611,6 +753,7 @@ def validate_message_attachments(request):
         )
 
         if not content_type.startswith('image/'):
+
             raise ValidationError(
                 "Invalid image file."
             )
@@ -618,6 +761,7 @@ def validate_message_attachments(request):
     if video_file:
 
         if video_file.size > MAX_VIDEO_SIZE:
+
             raise ValidationError(
                 "Video is too large. Maximum size is 100 MB."
             )
@@ -632,6 +776,7 @@ def validate_message_attachments(request):
         )
 
         if not content_type.startswith('video/'):
+
             raise ValidationError(
                 "Invalid video file."
             )
@@ -641,7 +786,12 @@ def validate_message_attachments(request):
 # SYSTEM MESSAGE
 # ============================================================
 
-def send_system_message(recipient, title, body):
+def send_system_message(
+    recipient,
+    title,
+    body,
+):
+
     if not recipient:
         return
 
@@ -667,14 +817,14 @@ def send_system_message(recipient, title, body):
     MessageStatus.objects.create(
         message=message,
         profile=recipient,
+        is_read=False,
     )
 
     admin_status = MessageStatus.objects.create(
         message=message,
         profile=admin,
+        is_read=True,
     )
-
-    admin_status.mark_as_read()
 
     broadcast_message_created(
         message
@@ -686,7 +836,10 @@ def send_system_message(recipient, title, body):
 # ============================================================
 
 @login_required
-def send_message(request, pk=None):
+def send_message(
+    request,
+    pk=None,
+):
 
     recipient = (
         get_object_or_404(
@@ -697,29 +850,33 @@ def send_message(request, pk=None):
         else None
     )
 
-    # =========================================================
-    # PRODUCT
-    # =========================================================
+    product_id = request.GET.get(
+        'product_id'
+    )
 
-    product_id = request.GET.get('product_id')
-    product_type = request.GET.get('product_type')
+    product_type = request.GET.get(
+        'product_type'
+    )
 
     if request.method == 'POST':
+
         product_id = (
             request.POST.get('product_id')
-            or product_id
+            or
+            product_id
         )
 
         product_type = (
             request.POST.get('product_type')
-            or product_type
+            or
+            product_type
         )
 
     product = None
 
-    # =========================================================
-    # VALIDATE PRODUCT
-    # =========================================================
+    # ========================================================
+    # PRODUCT
+    # ========================================================
 
     if recipient and product_id:
 
@@ -745,9 +902,9 @@ def send_message(request, pk=None):
                 .first()
             )
 
-    # =========================================================
+    # ========================================================
     # BLOCK STATUS
-    # =========================================================
+    # ========================================================
 
     is_blocked = False
     is_blocked_by_other = False
@@ -772,15 +929,16 @@ def send_message(request, pk=None):
             .exists()
         )
 
-    # =========================================================
+    # ========================================================
     # POST
-    # =========================================================
+    # ========================================================
 
     if request.method == 'POST':
 
         if not recipient:
 
             if is_ajax_request(request):
+
                 return JsonResponse(
                     {
                         'ok': False,
@@ -801,6 +959,7 @@ def send_message(request, pk=None):
         if is_blocked_by_other:
 
             if is_ajax_request(request):
+
                 return JsonResponse(
                     {
                         'ok': False,
@@ -824,6 +983,7 @@ def send_message(request, pk=None):
         if is_blocked:
 
             if is_ajax_request(request):
+
                 return JsonResponse(
                     {
                         'ok': False,
@@ -854,6 +1014,7 @@ def send_message(request, pk=None):
             if not message_has_content(request):
 
                 if is_ajax_request(request):
+
                     return JsonResponse(
                         {
                             'ok': False,
@@ -874,12 +1035,13 @@ def send_message(request, pk=None):
             try:
 
                 validate_message_attachments(
-                    request,
+                    request
                 )
 
             except ValidationError as exc:
 
                 if is_ajax_request(request):
+
                     return JsonResponse(
                         {
                             'ok': False,
@@ -898,14 +1060,14 @@ def send_message(request, pk=None):
                 )
 
             message = form.save(
-                commit=False,
+                commit=False
             )
 
             message.sender = request.user
             message.recipient = recipient
 
             # =================================================
-            # PRODUCT CONTEXT
+            # PRODUCT
             # =================================================
 
             if product:
@@ -972,15 +1134,19 @@ def send_message(request, pk=None):
                         temp_message,
                         parent_message,
                     ):
-                        message.parent_message = parent_message
+
+                        message.parent_message = (
+                            parent_message
+                        )
 
             # =================================================
             # MARKDOWN
             # =================================================
 
             if message.body:
+
                 message.body = markdown.markdown(
-                    message.body,
+                    message.body
                 )
 
             # =================================================
@@ -994,29 +1160,32 @@ def send_message(request, pk=None):
                 MessageStatus.objects.create(
                     message=message,
                     profile=recipient,
+                    is_read=False,
                 )
 
-                if recipient != request.user:
-
-                    sender_status = (
-                        MessageStatus.objects.create(
-                            message=message,
-                            profile=request.user,
-                        )
+                sender_status = (
+                    MessageStatus.objects.create(
+                        message=message,
+                        profile=request.user,
+                        is_read=True,
                     )
-
-                    sender_status.mark_as_read()
+                )
 
             # =================================================
-            # WEBSOCKET BROADCAST
+            # WEBSOCKET
             # =================================================
 
             broadcast_message_created(
                 message
             )
 
+            broadcast_message_status(
+                message,
+                'delivered',
+            )
+
             # =================================================
-            # AJAX RESPONSE
+            # AJAX
             # =================================================
 
             if is_ajax_request(request):
@@ -1042,24 +1211,24 @@ def send_message(request, pk=None):
                     }
                 )
 
-            # =================================================
-            # NORMAL POST
-            # =================================================
-
             return redirect(
                 'read-message',
                 pk=message.pk,
             )
 
         # =====================================================
-        # INVALID FORM
+        # FORM ERRORS
         # =====================================================
 
         if is_ajax_request(request):
 
             errors = {}
 
-            for field_name, field_errors in form.errors.items():
+            for (
+                field_name,
+                field_errors,
+            ) in form.errors.items():
+
                 errors[field_name] = [
                     str(error)
                     for error in field_errors
@@ -1068,7 +1237,9 @@ def send_message(request, pk=None):
             return JsonResponse(
                 {
                     'ok': False,
-                    'error': 'Please correct the form errors.',
+                    'error': (
+                        'Please correct the form errors.'
+                    ),
                     'errors': errors,
                 },
                 status=400,
@@ -1117,7 +1288,10 @@ def send_message(request, pk=None):
 # ============================================================
 
 @login_required
-def message_fragment(request, pk):
+def message_fragment(
+    request,
+    pk,
+):
 
     message = get_object_or_404(
         Message.objects.select_related(
@@ -1143,26 +1317,28 @@ def message_fragment(request, pk):
         and
         message.recipient_id != current_user.pk
     ):
+
         return HttpResponse(
             "Not authorized",
             status=403,
         )
 
     # ========================================================
-    # USER-SPECIFIC VISIBILITY
+    # VISIBILITY
     # ========================================================
 
     if not is_message_visible_for_user(
         message,
         current_user,
     ):
+
         return HttpResponse(
             "Not found",
             status=404,
         )
 
     # ========================================================
-    # DELIVERY STATUS
+    # DELIVERY
     # ========================================================
 
     add_message_delivery_status(
@@ -1171,7 +1347,7 @@ def message_fragment(request, pk):
     )
 
     # ========================================================
-    # RENDER EXACT MESSAGE HTML
+    # HTML
     # ========================================================
 
     html = render_to_string(
@@ -1196,7 +1372,10 @@ def message_fragment(request, pk):
 # ============================================================
 
 @login_required
-def read_message(request, pk):
+def read_message(
+    request,
+    pk,
+):
 
     message = get_object_or_404(
         Message.objects.select_related(
@@ -1218,6 +1397,7 @@ def read_message(request, pk):
         and
         message.recipient_id != current_user.pk
     ):
+
         return HttpResponse(
             "Not authorized",
             status=403,
@@ -1235,21 +1415,18 @@ def read_message(request, pk):
     )
 
     if not conversation_messages:
-        return redirect(
-            'message-inbox',
-        )
 
-    # ========================================================
-    # ROOT MESSAGE
-    # ========================================================
+        return redirect(
+            'message-inbox'
+        )
 
     root_message = conversation_messages[0]
 
     # ========================================================
-    # MARK AS READ
+    # MARK READ
     # ========================================================
 
-    unread_statuses = (
+    unread_statuses = list(
         MessageStatus.objects
         .filter(
             message__in=conversation_messages,
@@ -1258,18 +1435,53 @@ def read_message(request, pk):
             is_read=False,
             message__is_removed=False,
         )
+        .select_related(
+            'message',
+        )
     )
 
-    for status in unread_statuses:
-        status.mark_as_read()
+    read_message_objects = []
+
+    with transaction.atomic():
+
+        for status in unread_statuses:
+
+            status.mark_as_read()
+
+            read_message_objects.append(
+                status.message
+            )
+
+    # ========================================================
+    # REALTIME READ EVENTS
+    # ========================================================
+
+    already_sent = set()
+
+    for read_msg in read_message_objects:
+
+        if read_msg.pk in already_sent:
+            continue
+
+        already_sent.add(
+            read_msg.pk
+        )
+
+        broadcast_message_status(
+            read_msg,
+            'read',
+        )
 
     # ========================================================
     # OTHER USER
     # ========================================================
 
     if message.sender_id == current_user.pk:
+
         other_user = message.recipient
+
     else:
+
         other_user = message.sender
 
     # ========================================================
@@ -1300,7 +1512,7 @@ def read_message(request, pk):
         )
 
     # ========================================================
-    # SYSTEM MESSAGE
+    # SYSTEM
     # ========================================================
 
     is_system = bool(
@@ -1312,7 +1524,7 @@ def read_message(request, pk):
     )
 
     # ========================================================
-    # REPLY / SEND
+    # POST REPLY
     # ========================================================
 
     if request.method == 'POST' and not is_system:
@@ -1327,10 +1539,13 @@ def read_message(request, pk):
             if not message_has_content(request):
 
                 if is_ajax_request(request):
+
                     return JsonResponse(
                         {
                             'ok': False,
-                            'error': 'Message cannot be empty.',
+                            'error': (
+                                'Message cannot be empty.'
+                            ),
                         },
                         status=400,
                     )
@@ -1348,12 +1563,13 @@ def read_message(request, pk):
             try:
 
                 validate_message_attachments(
-                    request,
+                    request
                 )
 
             except ValidationError as exc:
 
                 if is_ajax_request(request):
+
                     return JsonResponse(
                         {
                             'ok': False,
@@ -1378,17 +1594,21 @@ def read_message(request, pk):
 
             recipient = (
                 message.recipient
-                if message.sender_id == current_user.pk
+                if message.sender_id
+                == current_user.pk
                 else message.sender
             )
 
             if not recipient:
 
                 if is_ajax_request(request):
+
                     return JsonResponse(
                         {
                             'ok': False,
-                            'error': 'Recipient not found.',
+                            'error': (
+                                'Recipient not found.'
+                            ),
                         },
                         status=400,
                     )
@@ -1399,11 +1619,11 @@ def read_message(request, pk):
                 )
 
                 return redirect(
-                    'message-inbox',
+                    'message-inbox'
                 )
 
             # =================================================
-            # BLOCKED BY OTHER
+            # BLOCK CHECK
             # =================================================
 
             if (
@@ -1416,6 +1636,7 @@ def read_message(request, pk):
             ):
 
                 if is_ajax_request(request):
+
                     return JsonResponse(
                         {
                             'ok': False,
@@ -1437,10 +1658,6 @@ def read_message(request, pk):
                     pk=pk,
                 )
 
-            # =================================================
-            # CURRENT USER BLOCKED OTHER
-            # =================================================
-
             if (
                 BlockedUser.objects
                 .filter(
@@ -1451,6 +1668,7 @@ def read_message(request, pk):
             ):
 
                 if is_ajax_request(request):
+
                     return JsonResponse(
                         {
                             'ok': False,
@@ -1497,16 +1715,13 @@ def read_message(request, pk):
                     .first()
                 )
 
-            # =================================================
-            # SECURITY CHECK
-            # =================================================
-
             if reply_to is not None:
 
                 if not _same_conversation(
                     message,
                     reply_to,
                 ):
+
                     reply_to = None
 
             # =================================================
@@ -1514,33 +1729,32 @@ def read_message(request, pk):
             # =================================================
 
             reply = form.save(
-                commit=False,
+                commit=False
             )
 
             reply.sender = current_user
             reply.recipient = recipient
 
-            # =================================================
-            # INHERIT PRODUCT CONTEXT
-            # =================================================
+            reply.product_type = (
+                message.product_type
+            )
 
-            reply.product_type = message.product_type
-            reply.product_id = message.product_id
+            reply.product_id = (
+                message.product_id
+            )
 
             reply.title = (
                 message.title
-                or "Direct conversation"
+                or
+                "Direct conversation"
             )
 
             reply.parent_message = reply_to
 
-            # =================================================
-            # MARKDOWN
-            # =================================================
-
             if reply.body:
+
                 reply.body = markdown.markdown(
-                    reply.body,
+                    reply.body
                 )
 
             # =================================================
@@ -1554,29 +1768,30 @@ def read_message(request, pk):
                 MessageStatus.objects.create(
                     message=reply,
                     profile=recipient,
+                    is_read=False,
                 )
 
-                if recipient != current_user:
-
-                    sender_status = (
-                        MessageStatus.objects.create(
-                            message=reply,
-                            profile=current_user,
-                        )
-                    )
-
-                    sender_status.mark_as_read()
+                MessageStatus.objects.create(
+                    message=reply,
+                    profile=current_user,
+                    is_read=True,
+                )
 
             # =================================================
-            # WEBSOCKET BROADCAST
+            # WEBSOCKET
             # =================================================
 
             broadcast_message_created(
                 reply
             )
 
+            broadcast_message_status(
+                reply,
+                'delivered',
+            )
+
             # =================================================
-            # AJAX RESPONSE
+            # AJAX
             # =================================================
 
             if is_ajax_request(request):
@@ -1602,24 +1817,24 @@ def read_message(request, pk):
                     }
                 )
 
-            # =================================================
-            # NORMAL POST
-            # =================================================
-
             return redirect(
                 'read-message',
                 pk=reply.pk,
             )
 
         # =====================================================
-        # INVALID FORM
+        # FORM ERRORS
         # =====================================================
 
         if is_ajax_request(request):
 
             errors = {}
 
-            for field_name, field_errors in form.errors.items():
+            for (
+                field_name,
+                field_errors,
+            ) in form.errors.items():
+
                 errors[field_name] = [
                     str(error)
                     for error in field_errors
@@ -1628,7 +1843,9 @@ def read_message(request, pk):
             return JsonResponse(
                 {
                     'ok': False,
-                    'error': 'Please correct the form errors.',
+                    'error': (
+                        'Please correct the form errors.'
+                    ),
                     'errors': errors,
                 },
                 status=400,
@@ -1649,7 +1866,7 @@ def read_message(request, pk):
         form = MessageForm()
 
     # ========================================================
-    # DELIVERY / READ STATUS
+    # DELIVERY / READ
     # ========================================================
 
     conversation_messages = (
@@ -1675,12 +1892,16 @@ def read_message(request, pk):
         {
             'message': message,
             'root_message': root_message,
-            'conversation_messages': conversation_messages,
+            'conversation_messages': (
+                conversation_messages
+            ),
             'last_message': last_message,
             'form': form,
             'other_user': other_user,
             'is_blocked': is_blocked,
-            'is_blocked_by_other': is_blocked_by_other,
+            'is_blocked_by_other': (
+                is_blocked_by_other
+            ),
             'is_system': is_system,
         },
     )
@@ -1691,26 +1912,67 @@ def read_message(request, pk):
 # ============================================================
 
 @login_required
-def delete_one_message(request, pk):
+def delete_one_message(
+    request,
+    pk,
+):
 
     msg = get_object_or_404(
-        Message,
+        Message.objects.select_related(
+            'sender',
+            'recipient',
+        ),
         pk=pk,
     )
 
+    # Само авторът може да изтрие съобщението.
     if msg.sender_id != request.user.pk:
+
+        if is_ajax_request(request):
+
+            return JsonResponse(
+                {
+                    'ok': False,
+                    'error': 'Not allowed',
+                },
+                status=403,
+            )
+
         return HttpResponse(
             "Not allowed",
             status=403,
         )
 
     if request.method != 'POST':
+
+        if is_ajax_request(request):
+
+            return JsonResponse(
+                {
+                    'ok': False,
+                    'error': 'POST required',
+                },
+                status=405,
+            )
+
         return HttpResponse(
             "POST required",
             status=405,
         )
 
-    if not msg.is_removed:
+    # ========================================================
+    # SAVE ORIGINAL STATE
+    # ========================================================
+
+    was_removed = bool(
+        msg.is_removed
+    )
+
+    # ========================================================
+    # GLOBAL MESSAGE DELETE
+    # ========================================================
+
+    if not was_removed:
 
         msg.is_removed = True
 
@@ -1720,6 +1982,10 @@ def delete_one_message(request, pk):
             ]
         )
 
+    # ========================================================
+    # MARK RECIPIENT STATUS
+    # ========================================================
+
     MessageStatus.objects.filter(
         message=msg,
         profile_id=msg.recipient_id,
@@ -1727,21 +1993,48 @@ def delete_one_message(request, pk):
         is_read=True,
     )
 
-    broadcast_message_created(
-        msg
-    )
+    # ========================================================
+    # REALTIME DELETE
+    # ========================================================
+
+    if not was_removed:
+
+        broadcast_message_deleted(
+            msg
+        )
+
+    # ========================================================
+    # AJAX
+    # ========================================================
+
+    if is_ajax_request(request):
+
+        return JsonResponse(
+            {
+                'ok': True,
+                'message_id': msg.pk,
+                'deleted': True,
+            }
+        )
+
+    # ========================================================
+    # NORMAL REQUEST
+    # ========================================================
 
     return redirect(
-        safe_next_url(request),
+        safe_next_url(request)
     )
 
 
 # ============================================================
-# DELETE CONVERSATION
+# DELETE CONVERSATION FOR CURRENT USER
 # ============================================================
 
 @login_required
-def delete_message(request, pk):
+def delete_message(
+    request,
+    pk,
+):
 
     message = get_object_or_404(
         Message,
@@ -1755,6 +2048,7 @@ def delete_message(request, pk):
         and
         message.recipient_id != user.pk
     ):
+
         return HttpResponse(
             "Not allowed",
             status=403,
@@ -1762,8 +2056,10 @@ def delete_message(request, pk):
 
     filter_type = (
         request.POST.get('filter')
-        or request.GET.get('filter')
-        or 'inbox'
+        or
+        request.GET.get('filter')
+        or
+        'inbox'
     )
 
     if filter_type not in (
@@ -1772,6 +2068,7 @@ def delete_message(request, pk):
         'unread',
         'all',
     ):
+
         filter_type = 'inbox'
 
     conversation = list(
@@ -1828,8 +2125,22 @@ def delete_message(request, pk):
                 is_read=True,
             )
 
+    # Това е delete само за CURRENT USER.
+    # Не изпращаме message_deleted към другия човек,
+    # защото той все още трябва да вижда conversation-а.
+
+    if is_ajax_request(request):
+
+        return JsonResponse(
+            {
+                'ok': True,
+                'deleted': True,
+            }
+        )
+
     return redirect(
-        f"{reverse('message-inbox')}?filter={filter_type}"
+        f"{reverse('message-inbox')}"
+        f"?filter={filter_type}"
     )
 
 
@@ -1838,7 +2149,11 @@ def delete_message(request, pk):
 # ============================================================
 
 @login_required
-def react_message(request, pk, reaction):
+def react_message(
+    request,
+    pk,
+    reaction,
+):
 
     if request.method != 'POST':
 
@@ -1851,9 +2166,16 @@ def react_message(request, pk, reaction):
         )
 
     msg = get_object_or_404(
-        Message,
+        Message.objects.select_related(
+            'sender',
+            'recipient',
+        ),
         pk=pk,
     )
+
+    # ========================================================
+    # AUTHORIZATION
+    # ========================================================
 
     if (
         msg.sender_id != request.user.pk
@@ -1869,15 +2191,25 @@ def react_message(request, pk, reaction):
             status=403,
         )
 
+    # ========================================================
+    # REMOVED
+    # ========================================================
+
     if msg.is_removed:
 
         return JsonResponse(
             {
                 'ok': False,
-                'error': 'Message has been deleted.',
+                'error': (
+                    'Message has been deleted.'
+                ),
             },
             status=400,
         )
+
+    # ========================================================
+    # SYSTEM
+    # ========================================================
 
     if getattr(
         msg,
@@ -1888,12 +2220,20 @@ def react_message(request, pk, reaction):
         return JsonResponse(
             {
                 'ok': False,
-                'error': 'System messages cannot be reacted to.',
+                'error': (
+                    'System messages cannot be reacted to.'
+                ),
             },
             status=400,
         )
 
-    if not is_valid_reaction(reaction):
+    # ========================================================
+    # REACTION VALIDATION
+    # ========================================================
+
+    if not is_valid_reaction(
+        reaction
+    ):
 
         return JsonResponse(
             {
@@ -1902,6 +2242,10 @@ def react_message(request, pk, reaction):
             },
             status=400,
         )
+
+    # ========================================================
+    # TOGGLE
+    # ========================================================
 
     with transaction.atomic():
 
@@ -1918,6 +2262,7 @@ def react_message(request, pk, reaction):
         if existing:
 
             existing.delete()
+
             active = False
 
         else:
@@ -1930,10 +2275,45 @@ def react_message(request, pk, reaction):
 
             active = True
 
+    # ========================================================
+    # REACTORS
+    # ========================================================
+
     reactors = get_reaction_reactors(
         msg,
         reaction,
     )
+
+    # ========================================================
+    # REALTIME BROADCAST
+    # ========================================================
+
+    broadcast_message_reaction(
+        msg,
+        reaction=reaction,
+        active=active,
+    )
+
+    # ========================================================
+    # SERVER-AUTHORITATIVE HTML
+    # ========================================================
+
+    add_message_delivery_status(
+        [msg],
+        request.user,
+    )
+
+    html = render_to_string(
+        'messages/_message.html',
+        {
+            'item': msg,
+        },
+        request=request,
+    )
+
+    # ========================================================
+    # RESPONSE
+    # ========================================================
 
     return JsonResponse(
         {
@@ -1942,6 +2322,7 @@ def react_message(request, pk, reaction):
             'active': active,
             'message_id': msg.pk,
             'reactors': reactors,
+            'html': html,
         }
     )
 
@@ -1951,7 +2332,10 @@ def react_message(request, pk, reaction):
 # ============================================================
 
 @login_required
-def report_message(request, pk):
+def report_message(
+    request,
+    pk,
+):
 
     message = get_object_or_404(
         Message,
@@ -2021,7 +2405,7 @@ def report_message(request, pk):
         )
 
     return redirect(
-        'message-inbox',
+        'message-inbox'
     )
 
 
@@ -2030,9 +2414,13 @@ def report_message(request, pk):
 # ============================================================
 
 @login_required
-def block_user(request, pk):
+def block_user(
+    request,
+    pk,
+):
 
     if request.method != 'POST':
+
         return HttpResponse(
             "POST required",
             status=405,
@@ -2051,7 +2439,7 @@ def block_user(request, pk):
         )
 
         return redirect(
-            safe_next_url(request),
+            safe_next_url(request)
         )
 
     obj, created = (
@@ -2066,7 +2454,10 @@ def block_user(request, pk):
 
         django_messages.success(
             request,
-            f"You have successfully blocked {user_to_block.username}.",
+            (
+                f"You have successfully blocked "
+                f"{user_to_block.username}."
+            ),
         )
 
     else:
@@ -2077,7 +2468,7 @@ def block_user(request, pk):
         )
 
     return redirect(
-        safe_next_url(request),
+        safe_next_url(request)
     )
 
 
@@ -2086,9 +2477,13 @@ def block_user(request, pk):
 # ============================================================
 
 @login_required
-def unblock_user(request, pk):
+def unblock_user(
+    request,
+    pk,
+):
 
     if request.method != 'POST':
+
         return HttpResponse(
             "POST required",
             status=405,
@@ -2112,7 +2507,10 @@ def unblock_user(request, pk):
 
         django_messages.success(
             request,
-            f"You have successfully unblocked {user_to_unblock.username}.",
+            (
+                f"You have successfully unblocked "
+                f"{user_to_unblock.username}."
+            ),
         )
 
     else:
@@ -2123,7 +2521,7 @@ def unblock_user(request, pk):
         )
 
     return redirect(
-        safe_next_url(request),
+        safe_next_url(request)
     )
 
 
@@ -2132,7 +2530,9 @@ def unblock_user(request, pk):
 # ============================================================
 
 @login_required
-def message_inbox(request):
+def message_inbox(
+    request,
+):
 
     filter_type = request.GET.get(
         'filter',
@@ -2145,6 +2545,7 @@ def message_inbox(request):
         'unread',
         'all',
     ):
+
         filter_type = 'inbox'
 
     conversations = get_user_conversations(
@@ -2176,7 +2577,10 @@ def message_inbox(request):
 # ============================================================
 
 @login_required
-def edit_message(request, pk):
+def edit_message(
+    request,
+    pk,
+):
 
     message = get_object_or_404(
         Message.objects.select_related(
@@ -2186,35 +2590,57 @@ def edit_message(request, pk):
         pk=pk,
     )
 
+    # ========================================================
+    # AUTHORIZATION
+    # ========================================================
+
     if message.sender != request.user:
 
         return JsonResponse(
             {
                 'ok': False,
-                'error': 'You can only edit your own messages.',
+                'error': (
+                    'You can only edit your own messages.'
+                ),
             },
             status=403,
         )
+
+    # ========================================================
+    # SYSTEM
+    # ========================================================
 
     if message.is_system:
 
         return JsonResponse(
             {
                 'ok': False,
-                'error': 'System messages cannot be edited.',
+                'error': (
+                    'System messages cannot be edited.'
+                ),
             },
             status=403,
         )
+
+    # ========================================================
+    # DELETED
+    # ========================================================
 
     if message.is_removed:
 
         return JsonResponse(
             {
                 'ok': False,
-                'error': 'Deleted messages cannot be edited.',
+                'error': (
+                    'Deleted messages cannot be edited.'
+                ),
             },
             status=400,
         )
+
+    # ========================================================
+    # METHOD
+    # ========================================================
 
     if request.method != 'POST':
 
@@ -2226,6 +2652,10 @@ def edit_message(request, pk):
             status=405,
         )
 
+    # ========================================================
+    # BODY
+    # ========================================================
+
     new_body = (
         request.POST.get('body')
         or ''
@@ -2236,10 +2666,16 @@ def edit_message(request, pk):
         return JsonResponse(
             {
                 'ok': False,
-                'error': 'Message cannot be empty.',
+                'error': (
+                    'Message cannot be empty.'
+                ),
             },
             status=400,
         )
+
+    # ========================================================
+    # UPDATE
+    # ========================================================
 
     message.body = markdown.markdown(
         new_body,
@@ -2251,10 +2687,36 @@ def edit_message(request, pk):
         ]
     )
 
+    # ========================================================
+    # REALTIME UPDATE
+    # ========================================================
+
+    broadcast_message_updated(
+        message
+    )
+
+    # ========================================================
+    # SERVER HTML
+    # ========================================================
+
+    add_message_delivery_status(
+        [message],
+        request.user,
+    )
+
+    html = render_to_string(
+        'messages/_message.html',
+        {
+            'item': message,
+        },
+        request=request,
+    )
+
     return JsonResponse(
         {
             'ok': True,
             'message_id': message.pk,
             'body': message.body,
+            'html': html,
         }
     )
