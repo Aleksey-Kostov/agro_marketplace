@@ -9,6 +9,10 @@ from django.db import transaction
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.core.exceptions import ValidationError
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
+import hashlib
 import markdown
 
 from .forms import MessageForm
@@ -27,9 +31,7 @@ from ..accounts.models import AppUser
 from ..buyers.models import BuyerItems
 from ..sellers.models import SellerItems
 
-
 User = get_user_model()
-
 
 # ============================================================
 # CONSTANTS
@@ -37,6 +39,154 @@ User = get_user_model()
 
 MAX_IMAGE_SIZE = 10 * 1024 * 1024
 MAX_VIDEO_SIZE = 100 * 1024 * 1024
+
+
+# ============================================================
+# WEBSOCKET HELPERS
+# ============================================================
+
+def build_message_group_name(
+        sender_id,
+        recipient_id,
+        product_type,
+        product_id,
+):
+    """
+    Builds the exact same WebSocket group name used by
+    MessageConsumer.
+
+    Conversation identity:
+
+        participants
+        +
+        product_type
+        +
+        product_id
+
+    Direction does not matter.
+    """
+
+    user_ids = sorted(
+        [
+            int(sender_id),
+            int(recipient_id),
+        ]
+    )
+
+    raw = (
+        f"{user_ids[0]}:{user_ids[1]}:"
+        f"{product_type or ''}:{product_id or ''}"
+    )
+
+    digest = hashlib.sha256(
+        raw.encode("utf-8")
+    ).hexdigest()[:32]
+
+    return f"chat_{digest}"
+
+
+def serialize_message_for_websocket(message):
+    """
+    Converts a Message instance into JSON-safe data for
+    WebSocket delivery.
+
+    Attachments are included because HTTP uploads are already
+    handled before this function is called.
+    """
+
+    image_url = None
+    video_url = None
+
+    try:
+        if message.image:
+            image_url = message.image.url
+    except Exception:
+        image_url = None
+
+    try:
+        if message.video:
+            video_url = message.video.url
+    except Exception:
+        video_url = None
+
+    parent_message = getattr(
+        message,
+        'parent_message',
+        None,
+    )
+
+    reply_data = None
+
+    if parent_message:
+        reply_data = {
+            'id': parent_message.pk,
+            'body': parent_message.body or '',
+            'sender_id': parent_message.sender_id,
+        }
+
+    return {
+        'id': message.pk,
+        'sender_id': message.sender_id,
+        'recipient_id': message.recipient_id,
+        'body': message.body or '',
+        'title': message.title or '',
+        'product_type': message.product_type,
+        'product_id': message.product_id,
+        'timestamp': message.timestamp.isoformat(),
+        'is_system': bool(message.is_system),
+        'is_removed': bool(message.is_removed),
+        'image_url': image_url,
+        'video_url': video_url,
+        'reply': reply_data,
+    }
+
+
+def broadcast_message_created(message):
+    """
+    Broadcasts a newly created message to all WebSocket clients
+    connected to this exact conversation.
+
+    This function is intentionally synchronous because it is called
+    from normal Django views.
+    """
+
+    try:
+        channel_layer = get_channel_layer()
+
+        if channel_layer is None:
+            return
+
+        group_name = build_message_group_name(
+            sender_id=message.sender_id,
+            recipient_id=message.recipient_id,
+            product_type=message.product_type,
+            product_id=message.product_id,
+        )
+
+        async_to_sync(
+            channel_layer.group_send
+        )(
+            group_name,
+            {
+                'type': 'chat_message',
+                'data': {
+                    'type': 'message_created',
+                    'message': serialize_message_for_websocket(
+                        message
+                    ),
+                },
+            },
+        )
+
+    except Exception:
+        """
+        WebSocket delivery must never break normal HTTP message
+        creation.
+
+        The database message has already been saved successfully.
+        If Redis/WebSocket delivery fails, the message remains stored.
+        """
+        return
 
 
 # ============================================================
@@ -55,24 +205,12 @@ def _same_conversation(message_a, message_b):
         product_type
         product_id
 
-    Посоката няма значение:
+    Посоката няма значение.
 
-        A -> B
-        B -> A
+    A -> B
+    B -> A
 
     са една и съща conversation.
-
-    Пример:
-
-        A <-> B + seller #15
-
-    НЕ е същото като:
-
-        A <-> B + seller #20
-
-    и:
-
-        A <-> B + buyer #15
     """
 
     if not message_a or not message_b:
@@ -92,9 +230,9 @@ def _same_conversation(message_a, message_b):
         return False
 
     return (
-        message_a.product_type == message_b.product_type
-        and
-        message_a.product_id == message_b.product_id
+            message_a.product_type == message_b.product_type
+            and
+            message_a.product_id == message_b.product_id
     )
 
 
@@ -104,7 +242,7 @@ def _same_conversation(message_a, message_b):
 
 def get_conversation_messages(root_message):
     """
-    Връща ВСИЧКИ съобщения от конкретната conversation.
+    Връща всички messages от конкретната conversation.
 
     Conversation се определя от:
 
@@ -116,12 +254,7 @@ def get_conversation_messages(root_message):
 
     parent_message НЕ определя conversation-а.
 
-    is_removed=True НЕ се изключва.
-
-    Това е важно, защото deleted message трябва да остане
-    в conversation-а и template-ът да може да покаже:
-
-        This message was deleted
+    is_removed=True остава в conversation-а.
     """
 
     if not root_message:
@@ -163,23 +296,16 @@ def is_message_visible_for_user(message, user):
         - user е sender или recipient
         - user няма MessageStatus.is_deleted=True
 
-    Message.is_removed НЕ прави message invisible.
-
-    is_removed означава:
-        съобщението е изтрито като съдържание,
-        но placeholder-ът остава в conversation-а.
-
-    MessageStatus.is_deleted означава:
-        конкретният user е изтрил message-а за себе си.
+    Message.is_removed НЕ скрива placeholder-а.
     """
 
     if not user or not user.is_authenticated:
         return False
 
     if (
-        message.sender_id != user.pk
-        and
-        message.recipient_id != user.pk
+            message.sender_id != user.pk
+            and
+            message.recipient_id != user.pk
     ):
         return False
 
@@ -204,18 +330,8 @@ def is_message_visible_for_user(message, user):
 
 def get_conversation_messages_for_user(root_message, user):
     """
-    Връща всички съобщения от конкретната conversation,
+    Връща всички messages от конкретната conversation,
     които текущият user може да вижда.
-
-    Conversation се определя от:
-
-        participants
-        +
-        product_type
-        +
-        product_id
-
-    parent_message е само Reply reference.
 
     is_removed=True messages остават.
 
@@ -291,13 +407,9 @@ def add_message_delivery_status(messages, current_user):
     """
     Добавя delivery/read информация към съобщенията.
 
-    Само собствените съобщения получават delivery status:
-
-        няма recipient status -> sent
-        има recipient status -> delivered
-        recipient status.is_read=True -> read
-
-    Deleted placeholder съобщенията не получават delivery status.
+        sent
+        delivered
+        read
     """
 
     if not messages:
@@ -373,17 +485,17 @@ def get_admin_user():
     """
 
     return (
-        User.objects
-        .filter(
-            is_superuser=True,
-        )
-        .first()
-        or
-        User.objects
-        .filter(
-            is_staff=True,
-        )
-        .first()
+            User.objects
+            .filter(
+                is_superuser=True,
+            )
+            .first()
+            or
+            User.objects
+            .filter(
+                is_staff=True,
+            )
+            .first()
     )
 
 
@@ -398,17 +510,17 @@ def safe_next_url(request, fallback='message-inbox'):
     """
 
     next_url = (
-        request.POST.get('next')
-        or request.GET.get('next')
-        or request.META.get('HTTP_REFERER')
+            request.POST.get('next')
+            or request.GET.get('next')
+            or request.META.get('HTTP_REFERER')
     )
 
     if next_url and url_has_allowed_host_and_scheme(
-        next_url,
-        allowed_hosts={
-            request.get_host(),
-        },
-        require_https=request.is_secure(),
+            next_url,
+            allowed_hosts={
+                request.get_host(),
+            },
+            require_https=request.is_secure(),
     ):
         return next_url
 
@@ -420,10 +532,6 @@ def safe_next_url(request, fallback='message-inbox'):
 # ============================================================
 
 def get_reaction_reactors(message, reaction):
-    """
-    Връща reactor информацията за JS.
-    """
-
     reactors = []
 
     reactions = (
@@ -452,22 +560,25 @@ def get_reaction_reactors(message, reaction):
         if profile:
 
             try:
+
                 if profile.profile_photo:
                     photo = profile.profile_photo.url
+
             except Exception:
+
                 photo = ''
 
             username = (
-                profile.username_in_marketplace
-                or user.username
+                    profile.username_in_marketplace
+                    or user.username
             )
 
         reactors.append(
             {
                 'id': user.pk,
                 'photo': (
-                    photo
-                    or '/static/images/profile_picture.webp'
+                        photo
+                        or '/static/images/profile_picture.webp'
                 ),
                 'username': username,
             }
@@ -488,28 +599,9 @@ def is_valid_reaction(reaction):
 # ============================================================
 
 def message_has_content(request):
-    """
-    Проверява дали message има съдържание.
-
-    Позволено:
-
-        text
-        image only
-        video only
-        text + image
-        text + video
-
-    Непозволено:
-
-        empty
-        spaces only
-        newline only
-        attachment-less empty message
-    """
-
     body = (
-        request.POST.get('body')
-        or ''
+            request.POST.get('body')
+            or ''
     ).strip()
 
     image_file = request.FILES.get('image')
@@ -523,12 +615,6 @@ def message_has_content(request):
 
 
 def validate_message_attachments(request):
-    """
-    Backend validation за message attachments.
-
-    Позволява максимум един attachment.
-    """
-
     image_file = request.FILES.get('image')
     video_file = request.FILES.get('video')
 
@@ -545,12 +631,12 @@ def validate_message_attachments(request):
             )
 
         content_type = (
-            getattr(
-                image_file,
-                'content_type',
-                '',
-            )
-            or ''
+                getattr(
+                    image_file,
+                    'content_type',
+                    '',
+                )
+                or ''
         )
 
         if not content_type.startswith('image/'):
@@ -566,12 +652,12 @@ def validate_message_attachments(request):
             )
 
         content_type = (
-            getattr(
-                video_file,
-                'content_type',
-                '',
-            )
-            or ''
+                getattr(
+                    video_file,
+                    'content_type',
+                    '',
+                )
+                or ''
         )
 
         if not content_type.startswith('video/'):
@@ -585,15 +671,6 @@ def validate_message_attachments(request):
 # ============================================================
 
 def send_system_message(recipient, title, body):
-    """
-    Изпраща автоматично system message.
-
-    System messages нямат product context:
-
-        product_type = None
-        product_id = None
-    """
-
     if not recipient:
         return
 
@@ -628,6 +705,14 @@ def send_system_message(recipient, title, body):
 
     admin_status.mark_as_read()
 
+    # ========================================================
+    # WEBSOCKET BROADCAST
+    # ========================================================
+
+    broadcast_message_created(
+        message
+    )
+
 
 # ============================================================
 # SEND MESSAGE
@@ -635,7 +720,6 @@ def send_system_message(recipient, title, body):
 
 @login_required
 def send_message(request, pk=None):
-
     recipient = (
         get_object_or_404(
             AppUser,
@@ -653,15 +737,14 @@ def send_message(request, pk=None):
     product_type = request.GET.get('product_type')
 
     if request.method == 'POST':
-
         product_id = (
-            request.POST.get('product_id')
-            or product_id
+                request.POST.get('product_id')
+                or product_id
         )
 
         product_type = (
-            request.POST.get('product_type')
-            or product_type
+                request.POST.get('product_type')
+                or product_type
         )
 
     product = None
@@ -702,7 +785,6 @@ def send_message(request, pk=None):
     is_blocked_by_other = False
 
     if recipient:
-
         is_blocked = (
             BlockedUser.objects
             .filter(
@@ -728,7 +810,6 @@ def send_message(request, pk=None):
     if request.method == 'POST':
 
         if not recipient:
-
             django_messages.error(
                 request,
                 "Recipient is required.",
@@ -739,7 +820,6 @@ def send_message(request, pk=None):
             )
 
         if is_blocked_by_other:
-
             django_messages.error(
                 request,
                 "You cannot send messages to this user because you have been blocked.",
@@ -750,7 +830,6 @@ def send_message(request, pk=None):
             )
 
         if is_blocked:
-
             django_messages.error(
                 request,
                 "You cannot send messages to a blocked user. Please unblock them first.",
@@ -768,7 +847,6 @@ def send_message(request, pk=None):
         if form.is_valid():
 
             if not message_has_content(request):
-
                 django_messages.error(
                     request,
                     "Message cannot be empty.",
@@ -821,9 +899,9 @@ def send_message(request, pk=None):
             # =================================================
 
             if product and getattr(
-                product,
-                'title',
-                None,
+                    product,
+                    'title',
+                    None,
             ):
 
                 message.title = product.title
@@ -837,8 +915,8 @@ def send_message(request, pk=None):
             # =================================================
 
             reply_to_id = (
-                request.POST.get('reply_to')
-                or ''
+                    request.POST.get('reply_to')
+                    or ''
             ).strip()
 
             message.parent_message = None
@@ -867,10 +945,9 @@ def send_message(request, pk=None):
                     )
 
                     if _same_conversation(
-                        temp_message,
-                        parent_message,
+                            temp_message,
+                            parent_message,
                     ):
-
                         message.parent_message = parent_message
 
             # =================================================
@@ -878,7 +955,6 @@ def send_message(request, pk=None):
             # =================================================
 
             if message.body:
-
                 message.body = markdown.markdown(
                     message.body,
                 )
@@ -897,7 +973,6 @@ def send_message(request, pk=None):
                 )
 
                 if recipient != request.user:
-
                     sender_status = (
                         MessageStatus.objects.create(
                             message=message,
@@ -906,6 +981,14 @@ def send_message(request, pk=None):
                     )
 
                     sender_status.mark_as_read()
+
+            # =================================================
+            # WEBSOCKET BROADCAST
+            # =================================================
+
+            broadcast_message_created(
+                message
+            )
 
             return redirect(
                 'read-message',
@@ -949,7 +1032,6 @@ def send_message(request, pk=None):
 
 @login_required
 def read_message(request, pk):
-
     message = get_object_or_404(
         Message.objects.select_related(
             'sender__profile',
@@ -966,11 +1048,10 @@ def read_message(request, pk):
     # ========================================================
 
     if (
-        message.sender_id != current_user.pk
-        and
-        message.recipient_id != current_user.pk
+            message.sender_id != current_user.pk
+            and
+            message.recipient_id != current_user.pk
     ):
-
         return HttpResponse(
             "Not authorized",
             status=403,
@@ -988,7 +1069,6 @@ def read_message(request, pk):
     )
 
     if not conversation_messages:
-
         return redirect(
             'message-inbox',
         )
@@ -1037,7 +1117,6 @@ def read_message(request, pk):
     is_blocked_by_other = False
 
     if other_user:
-
         is_blocked = (
             BlockedUser.objects
             .filter(
@@ -1082,7 +1161,6 @@ def read_message(request, pk):
         if form.is_valid():
 
             if not message_has_content(request):
-
                 django_messages.error(
                     request,
                     "Message cannot be empty.",
@@ -1122,7 +1200,6 @@ def read_message(request, pk):
             )
 
             if not recipient:
-
                 django_messages.error(
                     request,
                     "Recipient not found.",
@@ -1137,14 +1214,13 @@ def read_message(request, pk):
             # =================================================
 
             if (
-                BlockedUser.objects
-                .filter(
-                    blocker=recipient,
-                    blocked=current_user,
-                )
-                .exists()
+                    BlockedUser.objects
+                            .filter(
+                        blocker=recipient,
+                        blocked=current_user,
+                    )
+                            .exists()
             ):
-
                 django_messages.error(
                     request,
                     "You cannot send messages to this user because you have been blocked.",
@@ -1160,14 +1236,13 @@ def read_message(request, pk):
             # =================================================
 
             if (
-                BlockedUser.objects
-                .filter(
-                    blocker=current_user,
-                    blocked=recipient,
-                )
-                .exists()
+                    BlockedUser.objects
+                            .filter(
+                        blocker=current_user,
+                        blocked=recipient,
+                    )
+                            .exists()
             ):
-
                 django_messages.error(
                     request,
                     "You cannot send messages to a blocked user. Please unblock them first.",
@@ -1183,14 +1258,13 @@ def read_message(request, pk):
             # =================================================
 
             reply_to_id = (
-                request.POST.get('reply_to')
-                or ''
+                    request.POST.get('reply_to')
+                    or ''
             ).strip()
 
             reply_to = None
 
             if reply_to_id.isdigit():
-
                 reply_to = (
                     Message.objects
                     .select_related(
@@ -1210,10 +1284,9 @@ def read_message(request, pk):
             if reply_to is not None:
 
                 if not _same_conversation(
-                    message,
-                    reply_to,
+                        message,
+                        reply_to,
                 ):
-
                     reply_to = None
 
             # =================================================
@@ -1235,8 +1308,8 @@ def read_message(request, pk):
             reply.product_id = message.product_id
 
             reply.title = (
-                message.title
-                or "Direct conversation"
+                    message.title
+                    or "Direct conversation"
             )
 
             reply.parent_message = reply_to
@@ -1246,7 +1319,6 @@ def read_message(request, pk):
             # =================================================
 
             if reply.body:
-
                 reply.body = markdown.markdown(
                     reply.body,
                 )
@@ -1265,7 +1337,6 @@ def read_message(request, pk):
                 )
 
                 if recipient != current_user:
-
                     sender_status = (
                         MessageStatus.objects.create(
                             message=reply,
@@ -1274,6 +1345,14 @@ def read_message(request, pk):
                     )
 
                     sender_status.mark_as_read()
+
+            # =================================================
+            # WEBSOCKET BROADCAST
+            # =================================================
+
+            broadcast_message_created(
+                reply
+            )
 
             return redirect(
                 'read-message',
@@ -1328,21 +1407,18 @@ def read_message(request, pk):
 
 @login_required
 def delete_one_message(request, pk):
-
     msg = get_object_or_404(
         Message,
         pk=pk,
     )
 
     if msg.sender_id != request.user.pk:
-
         return HttpResponse(
             "Not allowed",
             status=403,
         )
 
     if request.method != 'POST':
-
         return HttpResponse(
             "POST required",
             status=405,
@@ -1353,7 +1429,6 @@ def delete_one_message(request, pk):
     # ========================================================
 
     if not msg.is_removed:
-
         msg.is_removed = True
 
         msg.save(
@@ -1363,11 +1438,7 @@ def delete_one_message(request, pk):
         )
 
     # ========================================================
-    # ONLY RECIPIENT'S MESSAGE STATUS
-    # ========================================================
-    #
-    # Не маркираме статуса на sender-а.
-    # Sender status вече е read по принцип.
+    # RECIPIENT STATUS
     # ========================================================
 
     MessageStatus.objects.filter(
@@ -1375,6 +1446,14 @@ def delete_one_message(request, pk):
         profile_id=msg.recipient_id,
     ).update(
         is_read=True,
+    )
+
+    # ========================================================
+    # WEBSOCKET BROADCAST
+    # ========================================================
+
+    broadcast_message_created(
+        msg
     )
 
     return redirect(
@@ -1388,25 +1467,6 @@ def delete_one_message(request, pk):
 
 @login_required
 def delete_message(request, pk):
-    """
-    Delete / hide entire conversation for current user.
-
-    GET:
-        Shows message-delete.html confirmation page.
-
-    POST:
-        Marks all messages from the SAME conversation as
-        deleted for the current user.
-
-    Conversation identity:
-
-        participants
-        +
-        product_type
-        +
-        product_id
-    """
-
     message = get_object_or_404(
         Message,
         pk=pk,
@@ -1419,11 +1479,10 @@ def delete_message(request, pk):
     # ========================================================
 
     if (
-        message.sender_id != user.pk
-        and
-        message.recipient_id != user.pk
+            message.sender_id != user.pk
+            and
+            message.recipient_id != user.pk
     ):
-
         return HttpResponse(
             "Not allowed",
             status=403,
@@ -1434,21 +1493,21 @@ def delete_message(request, pk):
     # ========================================================
 
     filter_type = (
-        request.POST.get('filter')
-        or request.GET.get('filter')
-        or 'inbox'
+            request.POST.get('filter')
+            or request.GET.get('filter')
+            or 'inbox'
     )
 
     if filter_type not in (
-        'inbox',
-        'sent',
-        'unread',
-        'all',
+            'inbox',
+            'sent',
+            'unread',
+            'all',
     ):
         filter_type = 'inbox'
 
     # ========================================================
-    # ALL MESSAGES IN THIS EXACT CONVERSATION
+    # CONVERSATION
     # ========================================================
 
     conversation = list(
@@ -1467,7 +1526,6 @@ def delete_message(request, pk):
     # ========================================================
 
     if request.method == 'GET':
-
         return render(
             request,
             'messages/message-delete.html',
@@ -1490,7 +1548,6 @@ def delete_message(request, pk):
     # ========================================================
 
     if request.method != 'POST':
-
         return HttpResponse(
             "Method not allowed",
             status=405,
@@ -1506,9 +1563,7 @@ def delete_message(request, pk):
     ]
 
     if message_ids:
-
         with transaction.atomic():
-
             MessageStatus.objects.filter(
                 message_id__in=message_ids,
                 profile=user,
@@ -1532,9 +1587,7 @@ def delete_message(request, pk):
 
 @login_required
 def react_message(request, pk, reaction):
-
     if request.method != 'POST':
-
         return JsonResponse(
             {
                 'ok': False,
@@ -1549,11 +1602,10 @@ def react_message(request, pk, reaction):
     )
 
     if (
-        msg.sender_id != request.user.pk
-        and
-        msg.recipient_id != request.user.pk
+            msg.sender_id != request.user.pk
+            and
+            msg.recipient_id != request.user.pk
     ):
-
         return JsonResponse(
             {
                 'ok': False,
@@ -1563,7 +1615,6 @@ def react_message(request, pk, reaction):
         )
 
     if msg.is_removed:
-
         return JsonResponse(
             {
                 'ok': False,
@@ -1573,11 +1624,10 @@ def react_message(request, pk, reaction):
         )
 
     if getattr(
-        msg,
-        'is_system',
-        False,
+            msg,
+            'is_system',
+            False,
     ):
-
         return JsonResponse(
             {
                 'ok': False,
@@ -1587,7 +1637,6 @@ def react_message(request, pk, reaction):
         )
 
     if not is_valid_reaction(reaction):
-
         return JsonResponse(
             {
                 'ok': False,
@@ -1645,25 +1694,22 @@ def react_message(request, pk, reaction):
 
 @login_required
 def report_message(request, pk):
-
     message = get_object_or_404(
         Message,
         pk=pk,
     )
 
     if (
-        message.sender_id != request.user.pk
-        and
-        message.recipient_id != request.user.pk
+            message.sender_id != request.user.pk
+            and
+            message.recipient_id != request.user.pk
     ):
-
         return HttpResponse(
             "Not authorized",
             status=403,
         )
 
     if request.method != 'POST':
-
         return redirect(
             'read-message',
             pk=message.pk,
@@ -1724,9 +1770,7 @@ def report_message(request, pk):
 
 @login_required
 def block_user(request, pk):
-
     if request.method != 'POST':
-
         return HttpResponse(
             "POST required",
             status=405,
@@ -1738,7 +1782,6 @@ def block_user(request, pk):
     )
 
     if user_to_block == request.user:
-
         django_messages.error(
             request,
             "You cannot block yourself.",
@@ -1781,9 +1824,7 @@ def block_user(request, pk):
 
 @login_required
 def unblock_user(request, pk):
-
     if request.method != 'POST':
-
         return HttpResponse(
             "POST required",
             status=405,
@@ -1828,46 +1869,16 @@ def unblock_user(request, pk):
 
 @login_required
 def message_inbox(request):
-    """
-    Показва списъка с conversations.
-
-    ВАЖНО:
-
-    get_user_conversations() вече връща:
-
-        {
-            'root': ...,
-            'last_message': ...,
-            'other_user': ...,
-            'messages_count': ...,
-            'has_unread': ...,
-            'delivery_status': ...,
-        }
-
-    Следователно НЕ трябва да подаваме item обратно към
-    get_conversation_messages_for_user().
-
-    Старият код правеше точно това и третираше dict като Message,
-    след което exception-ът беше поглъщан от try/except.
-
-    Резултат:
-
-        message counts = има
-        inbox rows = няма
-
-    Тук просто пагинираме готовия списък.
-    """
-
     filter_type = request.GET.get(
         'filter',
         'inbox',
     )
 
     if filter_type not in (
-        'inbox',
-        'sent',
-        'unread',
-        'all',
+            'inbox',
+            'sent',
+            'unread',
+            'all',
     ):
         filter_type = 'inbox'
 
@@ -1901,7 +1912,6 @@ def message_inbox(request):
 
 @login_required
 def edit_message(request, pk):
-
     message = get_object_or_404(
         Message.objects.select_related(
             'sender',
@@ -1915,7 +1925,6 @@ def edit_message(request, pk):
     # ========================================================
 
     if message.sender != request.user:
-
         return JsonResponse(
             {
                 'ok': False,
@@ -1929,7 +1938,6 @@ def edit_message(request, pk):
     # ========================================================
 
     if message.is_system:
-
         return JsonResponse(
             {
                 'ok': False,
@@ -1943,7 +1951,6 @@ def edit_message(request, pk):
     # ========================================================
 
     if message.is_removed:
-
         return JsonResponse(
             {
                 'ok': False,
@@ -1957,7 +1964,6 @@ def edit_message(request, pk):
     # ========================================================
 
     if request.method != 'POST':
-
         return JsonResponse(
             {
                 'ok': False,
@@ -1971,12 +1977,11 @@ def edit_message(request, pk):
     # ========================================================
 
     new_body = (
-        request.POST.get('body')
-        or ''
+            request.POST.get('body')
+            or ''
     ).strip()
 
     if not new_body:
-
         return JsonResponse(
             {
                 'ok': False,
