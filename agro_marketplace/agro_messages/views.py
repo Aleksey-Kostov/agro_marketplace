@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.db import transaction
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.core.exceptions import ValidationError
+from django.template.loader import render_to_string
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -1027,6 +1028,84 @@ def send_message(request, pk=None):
 
 
 # ============================================================
+# MESSAGE HTML FRAGMENT
+# ============================================================
+
+@login_required
+def message_fragment(request, pk):
+    message = get_object_or_404(
+        Message.objects.select_related(
+            'sender__profile',
+            'recipient__profile',
+            'parent_message__sender__profile',
+            'parent_message__recipient__profile',
+        ).prefetch_related(
+            'statuses',
+            'reactions',
+        ),
+        pk=pk,
+    )
+
+    current_user = request.user
+
+    # ========================================================
+    # AUTHORIZATION
+    # ========================================================
+
+    if (
+            message.sender_id != current_user.pk
+            and
+            message.recipient_id != current_user.pk
+    ):
+        return HttpResponse(
+            "Not authorized",
+            status=403,
+        )
+
+    # ========================================================
+    # USER-SPECIFIC VISIBILITY
+    # ========================================================
+
+    if not is_message_visible_for_user(
+            message,
+            current_user,
+    ):
+        return HttpResponse(
+            "Not found",
+            status=404,
+        )
+
+    # ========================================================
+    # DELIVERY STATUS
+    # ========================================================
+
+    add_message_delivery_status(
+        [message],
+        current_user,
+    )
+
+    # ========================================================
+    # RENDER EXACT MESSAGE HTML
+    # ========================================================
+
+    html = render_to_string(
+        'messages/_message.html',
+        {
+            'item': message,
+        },
+        request=request,
+    )
+
+    return JsonResponse(
+        {
+            'ok': True,
+            'message_id': message.pk,
+            'html': html,
+        }
+    )
+
+
+# ============================================================
 # READ MESSAGE + REPLY
 # ============================================================
 
@@ -1353,6 +1432,32 @@ def read_message(request, pk):
             broadcast_message_created(
                 reply
             )
+
+            # =========================================================
+            # AJAX RESPONSE
+            # =========================================================
+
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                add_message_delivery_status(
+                    [reply],
+                    current_user,
+                )
+
+                html = render_to_string(
+                    'messages/_message.html',
+                    {
+                        'item': reply,
+                    },
+                    request=request,
+                )
+
+                return JsonResponse(
+                    {
+                        'ok': True,
+                        'message_id': reply.pk,
+                        'html': html,
+                    }
+                )
 
             return redirect(
                 'read-message',
