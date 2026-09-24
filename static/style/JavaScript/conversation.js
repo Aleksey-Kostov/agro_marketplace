@@ -2753,45 +2753,6 @@ document.addEventListener('DOMContentLoaded', function () {
        RECEIVE NEW MESSAGES WITHOUT REFRESH
     ========================================================== */
 
-    function escapeHtml(value) {
-
-        return String(value ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-
-    }
-
-
-    function formatMessageDate(timestamp) {
-
-        if (!timestamp) {
-            return '';
-        }
-
-        const date =
-            new Date(timestamp);
-
-        if (Number.isNaN(date.getTime())) {
-            return '';
-        }
-
-        return date.toLocaleString(
-            'en-GB',
-            {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }
-        );
-
-    }
-
-
     function getWebSocketUrl() {
 
         if (!chatWindow) {
@@ -2825,6 +2786,45 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
+    function getMessageFragmentUrl(messageId) {
+
+        if (!chatWindow) {
+            return null;
+        }
+
+        const template =
+            chatWindow.dataset.messageFragmentUrl;
+
+        if (!template) {
+
+            console.error(
+                'WebSocket: data-message-fragment-url is missing.'
+            );
+
+            return null;
+
+        }
+
+        /*
+         * In message-read.html we have:
+         *
+         * data-message-fragment-url="{% url 'message-fragment' 0 %}"
+         *
+         * Example:
+         *
+         * /messages/0/fragment/
+         *
+         * Replace only the trailing /0/ part.
+         */
+
+        return template.replace(
+            /\/0\/?$/,
+            `/${encodeURIComponent(messageId)}/`
+        );
+
+    }
+
+
     function isUserAtBottom() {
 
         if (!chatWindow) {
@@ -2842,16 +2842,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    function appendIncomingMessage(message) {
+    async function appendIncomingMessage(message) {
 
         if (!chatMessages || !message) {
             return;
         }
 
         const messageId =
-            message.id;
+            Number(message.id);
 
         if (!messageId) {
+            console.warn(
+                'WebSocket: message id is missing.'
+            );
             return;
         }
 
@@ -2870,13 +2873,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         /*
-         * Do not append our own message.
+         * Current architecture:
          *
-         * Current architecture still sends normal text
-         * messages through Django HTTP POST.
-         *
-         * Therefore the sender already gets the message
-         * from the normal redirect/HTTP response.
+         * - normal text messages are created through HTTP POST;
+         * - Django then broadcasts the created message through
+         *   WebSocket;
+         * - sender receives the HTTP response/page redirect;
+         * - therefore we must not append our own WebSocket copy.
          */
 
         const currentUserId =
@@ -2899,255 +2902,149 @@ document.addEventListener('DOMContentLoaded', function () {
             isUserAtBottom();
 
 
-        const wrapper =
-            document.createElement('div');
+        const fragmentUrl =
+            getMessageFragmentUrl(messageId);
 
-        wrapper.id =
-            `msg-${messageId}`;
-
-        wrapper.className =
-            'conversation-message mb-3';
+        if (!fragmentUrl) {
+            return;
+        }
 
 
-        /*
-         * Message direction.
-         */
+        try {
 
-        wrapper.classList.add(
-            'received'
-        );
+            const response =
+                await fetch(
+                    fragmentUrl,
+                    {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With':
+                                'XMLHttpRequest',
+                            'Accept':
+                                'application/json'
+                        }
+                    }
+                );
 
 
-        const senderUsername =
-            message.sender_username ||
-            'User';
+            if (!response.ok) {
+
+                throw new Error(
+                    `Unable to load message fragment (${response.status}).`
+                );
+
+            }
 
 
-        const profilePhoto =
-            message.sender_profile_photo ||
-            defaultAvatar;
+            let data;
+
+            try {
+
+                data =
+                    await response.json();
+
+            } catch (error) {
+
+                throw new Error(
+                    'Message fragment returned invalid JSON.'
+                );
+
+            }
 
 
-        const timestamp =
-            formatMessageDate(
-                message.timestamp
+            if (
+                !data ||
+                !data.ok ||
+                !data.html
+            ) {
+
+                throw new Error(
+                    'Invalid message fragment response.'
+                );
+
+            }
+
+
+            /*
+             * Check again after the asynchronous request.
+             *
+             * This prevents duplicates if two WebSocket events
+             * or another request add the message while we are
+             * waiting for Django.
+             */
+
+            if (
+                document.getElementById(
+                    `msg-${messageId}`
+                )
+            ) {
+                return;
+            }
+
+
+            /*
+             * Django rendered messages/_message.html.
+             *
+             * Therefore this HTML is exactly the same structure
+             * as the messages rendered during the initial page load.
+             */
+
+            chatMessages.insertAdjacentHTML(
+                'beforeend',
+                data.html
             );
 
 
-        /*
-         * Build message HTML.
-         *
-         * body is server-generated/sanitized HTML
-         * from the WebSocket consumer.
-         */
+            /*
+             * Verify that Django actually returned the expected
+             * message element.
+             */
 
-        let html = '';
+            const insertedMessage =
+                document.getElementById(
+                    `msg-${messageId}`
+                );
 
+            if (!insertedMessage) {
 
-        html += `
-            <div class="d-flex align-items-start gap-2">
-                <div class="flex-shrink-0">
-                    <img
-                        src="${escapeHtml(profilePhoto)}"
-                        alt="${escapeHtml(senderUsername)}"
-                        class="rounded-circle"
-                        width="40"
-                        height="40"
-                        loading="lazy"
-                    >
-                </div>
+                console.warn(
+                    'Message fragment inserted, but expected message element was not found:',
+                    messageId
+                );
 
-                <div class="flex-grow-1 min-width-0">
-
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <strong>
-                            ${escapeHtml(senderUsername)}
-                        </strong>
-
-                        ${
-                            timestamp
-                                ? `
-                                    <small class="text-muted">
-                                        ${escapeHtml(timestamp)}
-                                    </small>
-                                `
-                                : ''
-                        }
-                    </div>
-        `;
+            }
 
 
-        /*
-         * Reply preview.
-         */
+            /*
+             * Scroll only when the user was already at the bottom.
+             */
 
-        if (message.parent_message) {
+            if (shouldScroll) {
 
-            const parentBody =
-                message.parent_message.body || '';
+                requestAnimationFrame(function () {
 
-            const parentSender =
-                message.parent_message.sender_username ||
-                'User';
+                    chatWindow.scrollTo({
+                        top: chatWindow.scrollHeight,
+                        behavior: 'smooth'
+                    });
 
-            const parentId =
-                message.parent_message.id;
-
-            html += `
-                <a
-                    href="#msg-${escapeHtml(parentId)}"
-                    class="text-decoration-none"
-                >
-                    <div class="reply-preview mb-2">
-                        <strong>
-                            ${escapeHtml(parentSender)}
-                        </strong>
-
-                        <div>
-                            ${escapeHtml(
-                                getMessagePreview(parentBody)
-                            )}
-                        </div>
-                    </div>
-                </a>
-            `;
-
-        }
-
-
-        /*
-         * Message bubble.
-         */
-
-        html += `
-                    <div class="message-bubble">
-        `;
-
-
-        /*
-         * Body.
-         *
-         * The consumer sends the server-processed body.
-         */
-
-        if (message.body) {
-
-            html += `
-                        <div class="message-body">
-                            ${message.body}
-                        </div>
-            `;
-
-        }
-
-
-        /*
-         * Image.
-         */
-
-        if (message.image_url) {
-
-            html += `
-                        <div class="message-media mt-2">
-                            <img
-                                src="${escapeHtml(message.image_url)}"
-                                alt="Message image"
-                                class="img-fluid rounded"
-                                loading="lazy"
-                            >
-                        </div>
-            `;
-
-        }
-
-
-        /*
-         * Video.
-         */
-
-        if (message.video_url) {
-
-            html += `
-                        <div class="message-media mt-2">
-                            <video
-                                controls
-                                preload="metadata"
-                                class="img-fluid rounded"
-                            >
-                                <source
-                                    src="${escapeHtml(message.video_url)}"
-                                >
-                            </video>
-                        </div>
-            `;
-
-        }
-
-
-        html += `
-                    </div>
-        `;
-
-
-        /*
-         * Reply button.
-         *
-         * We intentionally keep this independent from the
-         * server-side reaction URLs.
-         */
-
-        html += `
-                    <div class="message-actions mt-1">
-                        <button
-                            type="button"
-                            class="btn btn-sm reply-message-side-btn"
-                            data-message-id="${escapeHtml(messageId)}"
-                            data-message-body="${escapeHtml(message.body || '')}"
-                            data-reply-image="${escapeHtml(message.image_url || '')}"
-                            data-reply-video="${escapeHtml(message.video_url || '')}"
-                        >
-                            Reply
-                        </button>
-                    </div>
-        `;
-
-
-        html += `
-                </div>
-            </div>
-        `;
-
-
-        wrapper.innerHTML =
-            html;
-
-
-        chatMessages.appendChild(
-            wrapper
-        );
-
-
-        /*
-         * Scroll only if user was already at bottom.
-         *
-         * This prevents a new message from jumping the user
-         * away from an older part of the conversation.
-         */
-
-        if (shouldScroll) {
-
-            requestAnimationFrame(function () {
-
-                chatWindow.scrollTo({
-                    top: chatWindow.scrollHeight,
-                    behavior: 'smooth'
                 });
 
-            });
+            }
+
+
+            updateScrollButtons();
+
+
+        } catch (error) {
+
+            console.error(
+                'Unable to append WebSocket message:',
+                error
+            );
 
         }
-
-        updateScrollButtons();
 
     }
 
@@ -3204,7 +3101,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 appendIncomingMessage(
                     data.message
-                );
+                ).catch(function (error) {
+
+                    console.error(
+                        'WebSocket message rendering error:',
+                        error
+                    );
+
+                });
 
             }
 
