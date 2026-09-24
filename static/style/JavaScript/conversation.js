@@ -182,7 +182,20 @@ document.addEventListener('DOMContentLoaded', function () {
        MESSAGE FRAGMENT STATE
     ========================================================== */
 
+    /*
+     * Messages currently being inserted because of
+     * message_created.
+     */
     const pendingMessageFragments = new Set();
+
+    /*
+     * Messages currently being refreshed because of:
+     * - reaction
+     * - read status
+     * - edit
+     * - status update
+     */
+    const pendingMessageRefreshes = new Set();
 
 
     /* =========================================================
@@ -288,24 +301,66 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /*
-     * Replace an existing message with the
-     * server-rendered _message.html.
-     *
-     * This is used after:
-     * - editing
-     * - reactions
-     *
-     * Therefore Django remains the single source
-     * of truth for the message DOM.
-     */
-    async function replaceMessageWithFragment(messageId) {
-        if (!messageId) {
-            throw new Error(
-                'Message ID is missing.'
-            );
+    /* =========================================================
+       MESSAGE FRAGMENT URL
+    ========================================================== */
+
+    function getMessageFragmentUrl(messageId) {
+        if (!chatWindow || !messageId) {
+            return null;
         }
 
+        const template =
+            chatWindow.dataset.messageFragmentUrl;
+
+        if (!template) {
+            console.error(
+                'data-message-fragment-url is missing.'
+            );
+
+            return null;
+        }
+
+        try {
+            const url =
+                new URL(
+                    template,
+                    window.location.origin
+                );
+
+            /*
+             * Template is expected to be:
+             *
+             * /messages/fragment/0/
+             *
+             * and becomes:
+             *
+             * /messages/fragment/123/
+             */
+            url.pathname =
+                url.pathname.replace(
+                    /\/0\/?$/,
+                    `/${encodeURIComponent(messageId)}/`
+                );
+
+            return url.toString();
+
+        } catch (error) {
+            console.error(
+                'Unable to build message fragment URL:',
+                error
+            );
+
+            return null;
+        }
+    }
+
+
+    /* =========================================================
+       FETCH MESSAGE FRAGMENT
+    ========================================================== */
+
+    async function fetchMessageFragment(messageId) {
         const fragmentUrl =
             getMessageFragmentUrl(messageId);
 
@@ -334,7 +389,8 @@ document.addEventListener('DOMContentLoaded', function () {
         let data;
 
         try {
-            data = await response.json();
+            data =
+                await response.json();
         } catch (error) {
             throw new Error(
                 `Invalid message fragment response (${response.status}).`
@@ -352,45 +408,116 @@ document.addEventListener('DOMContentLoaded', function () {
             );
         }
 
-        const currentMessage =
-            getMessageElement(messageId);
+        return data;
+    }
+
+
+    /* =========================================================
+       REFRESH MESSAGE FRAGMENT
+    ========================================================== */
+
+    async function refreshMessageFragment(
+        messageId,
+        options = {}
+    ) {
+        const id =
+            Number(messageId);
+
+        if (!id) {
+            return false;
+        }
 
         /*
-         * If the message disappeared while we were
-         * loading the fragment, append it instead.
+         * Do not start two status/reaction refreshes
+         * for the same message at the same time.
          */
-        if (!currentMessage) {
-            appendRenderedMessage(
-                data.html,
-                data.message_id || messageId,
-                false
-            );
-
-            return data;
+        if (
+            pendingMessageRefreshes.has(id)
+        ) {
+            return false;
         }
 
-        const wrapper =
-            document.createElement('div');
+        pendingMessageRefreshes.add(id);
 
-        wrapper.innerHTML =
-            data.html.trim();
+        const preserveScroll =
+            options.preserveScroll !== false;
 
-        const newMessage =
-            wrapper.firstElementChild;
+        const oldScrollTop =
+            chatWindow
+                ? chatWindow.scrollTop
+                : 0;
 
-        if (!newMessage) {
-            throw new Error(
-                'Server returned empty message HTML.'
+        try {
+            const data =
+                await fetchMessageFragment(id);
+
+            const currentMessage =
+                getMessageElement(id);
+
+            /*
+             * If message does not exist anymore in the DOM,
+             * append it.
+             */
+            if (!currentMessage) {
+                return appendRenderedMessage(
+                    data.html,
+                    data.message_id || id,
+                    false
+                );
+            }
+
+            const wrapper =
+                document.createElement('div');
+
+            wrapper.innerHTML =
+                data.html.trim();
+
+            const newMessage =
+                wrapper.firstElementChild;
+
+            if (!newMessage) {
+                throw new Error(
+                    'Server returned empty message HTML.'
+                );
+            }
+
+            currentMessage.replaceWith(
+                newMessage
             );
-        }
 
-        currentMessage.replaceWith(
-            newMessage
+            /*
+             * Restore exact scroll position.
+             */
+            if (
+                preserveScroll &&
+                chatWindow
+            ) {
+                chatWindow.scrollTop =
+                    oldScrollTop;
+            }
+
+            updateScrollButtons();
+
+            return true;
+
+        } finally {
+            pendingMessageRefreshes.delete(id);
+        }
+    }
+
+
+    /*
+     * Backwards-compatible helper used by edit logic.
+     */
+    async function replaceMessageWithFragment(
+        messageId
+    ) {
+        return refreshMessageFragment(
+            messageId,
+            {
+                preserveScroll: true
+            }
         );
-
-        updateScrollButtons();
-
-        return data;
     }
 
 
@@ -2154,18 +2281,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
             }
 
-            /*
-             * Prefer the server-rendered fragment.
-             */
-            if (data.message_id) {
-                await replaceMessageWithFragment(
-                    data.message_id
-                );
-            } else {
-                await replaceMessageWithFragment(
-                    messageId
-                );
-            }
+            await replaceMessageWithFragment(
+                data.message_id || messageId
+            );
 
             document
                 .querySelectorAll(
@@ -2602,9 +2720,6 @@ document.addEventListener('DOMContentLoaded', function () {
         replyForm.addEventListener(
             'submit',
             function (event) {
-                /*
-                 * NEVER allow normal browser form submission.
-                 */
                 event.preventDefault();
 
                 if (
@@ -2779,21 +2894,10 @@ document.addEventListener('DOMContentLoaded', function () {
        REACTIONS
     ========================================================== */
 
-    /*
-     * Avatar fallback comes from the template.
-     */
     const defaultAvatar =
         chatWindow?.dataset.defaultAvatar || '';
 
 
-    /*
-     * Reaction URL:
-     *
-     * The preferred source is the href already generated
-     * by Django inside _message.html.
-     *
-     * This means JS does not need to know the project prefix.
-     */
     function getReactionUrl(button) {
         if (!button) {
             return null;
@@ -2806,9 +2910,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return href;
         }
 
-        /*
-         * Fallback if the button does not have href.
-         */
         const messageId =
             button.dataset.msg ||
             button.closest(
@@ -2851,11 +2952,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /*
-     * Update reaction UI immediately from the response.
-     *
-     * This gives instant visual feedback.
-     */
     function updateReactionUI(
         button,
         data
@@ -2884,9 +2980,6 @@ document.addEventListener('DOMContentLoaded', function () {
             active
         );
 
-        /*
-         * Some templates use aria-pressed.
-         */
         button.setAttribute(
             'aria-pressed',
             active
@@ -2894,10 +2987,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 : 'false'
         );
 
-        /*
-         * Update avatars locally if backend
-         * supplied them.
-         */
         let avatarBox =
             button.querySelector(
                 '[data-react-avatars]'
@@ -2918,10 +3007,14 @@ document.addEventListener('DOMContentLoaded', function () {
             messageId &&
             reaction
         ) {
-            avatarBox =
-                document.querySelector(
-                    `[data-react-avatars="${CSS.escape(reaction)}-${CSS.escape(String(messageId))}"]`
-                );
+            try {
+                avatarBox =
+                    document.querySelector(
+                        `[data-react-avatars="${CSS.escape(reaction)}-${CSS.escape(String(messageId))}"]`
+                    );
+            } catch (error) {
+                // Ignore CSS.escape issues.
+            }
         }
 
         if (avatarBox) {
@@ -2984,16 +3077,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /*
-     * REACTION CLICK
-     *
-     * 1. POST reaction immediately.
-     * 2. Update button immediately.
-     * 3. Fetch _message.html from Django.
-     * 4. Replace only this message.
-     *
-     * No page reload.
-     */
     document.addEventListener(
         'click',
         async function (event) {
@@ -3025,6 +3108,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const messageId =
+                messageElement.dataset.messageId ||
                 messageElement.id.replace(
                     'msg-',
                     ''
@@ -3073,10 +3157,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             button.disabled = true;
 
-            /*
-             * Remember current scroll state.
-             * Reaction replacement must not move the user.
-             */
             const scrollTop =
                 chatWindow
                     ? chatWindow.scrollTop
@@ -3122,7 +3202,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 /*
-                 * Immediate visual feedback.
+                 * Instant UI.
                  */
                 updateReactionUI(
                     button,
@@ -3130,37 +3210,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
                 /*
-                 * Now get the authoritative server-rendered
-                 * message. This updates:
-                 *
-                 * - reaction state
-                 * - reaction count
-                 * - avatars
-                 * - ❤️
-                 * - 👍
-                 * - any other message metadata
+                 * Then get authoritative Django HTML.
                  */
-                try {
-                    await replaceMessageWithFragment(
-                        data.message_id ||
-                        messageId
-                    );
+                await refreshMessageFragment(
+                    data.message_id ||
+                    messageId,
+                    {
+                        preserveScroll: true
+                    }
+                );
 
-                } catch (fragmentError) {
-                    /*
-                     * Reaction itself succeeded.
-                     * Do not report the whole action as failed
-                     * just because the visual refresh failed.
-                     */
-                    console.error(
-                        'Unable to refresh reacted message:',
-                        fragmentError
-                    );
-                }
-
-                /*
-                 * Preserve the user's exact scroll position.
-                 */
                 if (chatWindow) {
                     chatWindow.scrollTop =
                         scrollTop;
@@ -3174,38 +3233,29 @@ document.addEventListener('DOMContentLoaded', function () {
                     error
                 );
 
-                /*
-                 * We intentionally do not reload the page.
-                 */
             } finally {
                 button.dataset.loading =
                     '0';
 
-                /*
-                 * The old button may have been replaced
-                 * by replaceMessageWithFragment().
-                 */
+                button.disabled = false;
+
                 const currentMessage =
                     getMessageElement(
                         messageId
                     );
 
-                const currentButton =
+                if (currentMessage) {
                     currentMessage
-                        ? currentMessage.querySelector(
-                            `.js-react[data-reaction="${CSS.escape(reaction)}"]`
+                        .querySelectorAll(
+                            '.js-react'
                         )
-                        : null;
+                        .forEach(function (reactionButton) {
+                            reactionButton.disabled =
+                                false;
 
-                if (currentButton) {
-                    currentButton.disabled =
-                        false;
-
-                    currentButton.dataset.loading =
-                        '0';
-                } else {
-                    button.disabled =
-                        false;
+                            reactionButton.dataset.loading =
+                                '0';
+                        });
                 }
             }
         }
@@ -3245,50 +3295,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    function getMessageFragmentUrl(
-        messageId
-    ) {
-        if (!chatWindow) {
-            return null;
-        }
-
-        const template =
-            chatWindow.dataset.messageFragmentUrl;
-
-        if (!template) {
-            console.error(
-                'WebSocket: data-message-fragment-url is missing.'
-            );
-
-            return null;
-        }
-
-        try {
-            const url =
-                new URL(
-                    template,
-                    window.location.origin
-                );
-
-            url.pathname =
-                url.pathname.replace(
-                    /\/0\/?$/,
-                    `/${encodeURIComponent(messageId)}/`
-                );
-
-            return url.toString();
-
-        } catch (error) {
-            console.error(
-                'Unable to build message fragment URL:',
-                error
-            );
-
-            return null;
-        }
-    }
-
-
     async function appendIncomingMessage(
         message
     ) {
@@ -3310,18 +3316,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        /*
-         * Already rendered.
-         */
         if (
             getMessageElement(messageId)
         ) {
             return;
         }
 
-        /*
-         * Already being fetched.
-         */
         if (
             pendingMessageFragments.has(
                 messageId
@@ -3330,78 +3330,22 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        /*
-         * IMPORTANT:
-         *
-         * Do NOT ignore own messages here.
-         *
-         * AJAX and WebSocket can arrive in either order:
-         *
-         * AJAX -> DOM -> WebSocket sees DOM -> no duplicate
-         *
-         * WebSocket -> DOM -> AJAX sees DOM -> no duplicate
-         *
-         * This is safer than simply ignoring own messages.
-         */
-
         const shouldScroll =
             isUserAtBottom();
-
-        const fragmentUrl =
-            getMessageFragmentUrl(
-                messageId
-            );
-
-        if (!fragmentUrl) {
-            return;
-        }
 
         pendingMessageFragments.add(
             messageId
         );
 
         try {
-            const response =
-                await fetch(
-                    fragmentUrl,
-                    {
-                        method: 'GET',
-                        credentials: 'same-origin',
-                        cache: 'no-store',
-                        headers: {
-                            'X-Requested-With':
-                                'XMLHttpRequest',
-                            'Accept':
-                                'application/json'
-                        }
-                    }
+            const data =
+                await fetchMessageFragment(
+                    messageId
                 );
-
-            let data;
-
-            try {
-                data =
-                    await response.json();
-            } catch (jsonError) {
-                throw new Error(
-                    `Message fragment returned invalid JSON (${response.status}).`
-                );
-            }
-
-            if (
-                !response.ok ||
-                !data.ok ||
-                !data.html
-            ) {
-                throw new Error(
-                    data.error ||
-                    `Unable to load message fragment (${response.status}).`
-                );
-            }
 
             /*
-             * The message may have appeared while the
-             * fragment request was running.
+             * It could have been inserted while
+             * the request was running.
              */
             if (
                 getMessageElement(messageId)
@@ -3429,6 +3373,48 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
+    /* =========================================================
+       REFRESH STATUS MESSAGE
+    ========================================================== */
+
+    async function refreshStatusMessages(
+        messageIds
+    ) {
+        if (!Array.isArray(messageIds)) {
+            return;
+        }
+
+        /*
+         * Refresh sequentially.
+         *
+         * This prevents multiple replacements of the same
+         * message from happening simultaneously.
+         */
+        for (
+            const messageId of messageIds
+        ) {
+            try {
+                await refreshMessageFragment(
+                    messageId,
+                    {
+                        preserveScroll: true
+                    }
+                );
+            } catch (error) {
+                console.error(
+                    'Unable to refresh message status:',
+                    messageId,
+                    error
+                );
+            }
+        }
+    }
+
+
+    /* =========================================================
+       WEBSOCKET MESSAGE HANDLER
+    ========================================================== */
+
     function handleWebSocketMessage(
         event
     ) {
@@ -3449,6 +3435,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+
+        /* -----------------------------------------------------
+           CONNECTION
+        ------------------------------------------------------ */
+
         if (
             data.type ===
             'connection_established'
@@ -3457,8 +3448,37 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Message WebSocket connected.'
             );
 
+            /*
+             * Tell backend that this user has opened
+             * the conversation and wants unread messages
+             * marked as read.
+             */
+            if (
+                messageWebSocket &&
+                messageWebSocket.readyState ===
+                    WebSocket.OPEN
+            ) {
+                try {
+                    messageWebSocket.send(
+                        JSON.stringify({
+                            type: 'mark_read'
+                        })
+                    );
+                } catch (error) {
+                    console.error(
+                        'Unable to send mark_read:',
+                        error
+                    );
+                }
+            }
+
             return;
         }
+
+
+        /* -----------------------------------------------------
+           NEW MESSAGE
+        ------------------------------------------------------ */
 
         if (
             data.type ===
@@ -3479,6 +3499,95 @@ document.addEventListener('DOMContentLoaded', function () {
 
             return;
         }
+
+
+        /* -----------------------------------------------------
+           READ / DELIVERY STATUS
+        ------------------------------------------------------ */
+
+        if (
+            data.type ===
+                'message_status_updated' ||
+            data.type ===
+                'message_delivery_updated'
+        ) {
+            /*
+             * New consumer sends:
+             *
+             * {
+             *   type: "message_status_updated",
+             *   message_ids: [1, 2, 3],
+             *   status: "read",
+             *   reader_id: 5
+             * }
+             */
+
+            if (
+                Array.isArray(
+                    data.message_ids
+                )
+            ) {
+                refreshStatusMessages(
+                    data.message_ids
+                );
+
+                return;
+            }
+
+            /*
+             * Support a single message too.
+             */
+            const singleMessageId =
+                data.message_id ||
+                data.id ||
+                data.message?.id;
+
+            if (singleMessageId) {
+                refreshStatusMessages([
+                    singleMessageId
+                ]);
+            }
+
+            return;
+        }
+
+
+        /* -----------------------------------------------------
+           GENERIC MESSAGE UPDATE
+        ------------------------------------------------------ */
+
+        if (
+            data.type ===
+                'message_updated' ||
+            data.type ===
+                'reaction_updated' ||
+            data.type ===
+                'message_reacted'
+        ) {
+            const payload =
+                data.message ||
+                data.data ||
+                data;
+
+            const messageId =
+                payload.message_id ||
+                payload.id ||
+                data.message_id ||
+                data.id;
+
+            if (messageId) {
+                refreshStatusMessages([
+                    messageId
+                ]);
+            }
+
+            return;
+        }
+
+
+        /* -----------------------------------------------------
+           ERROR
+        ------------------------------------------------------ */
 
         if (
             data.type ===
@@ -3563,6 +3672,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log(
                     'Message WebSocket connected.'
                 );
+
+                /*
+                 * Explicitly request read status update
+                 * when socket opens.
+                 */
+                try {
+                    messageWebSocket.send(
+                        JSON.stringify({
+                            type: 'mark_read'
+                        })
+                    );
+                } catch (error) {
+                    console.error(
+                        'Unable to send initial mark_read:',
+                        error
+                    );
+                }
             }
         );
 

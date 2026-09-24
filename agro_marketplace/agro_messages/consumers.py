@@ -51,23 +51,32 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
             "message": "WebSocket connection established.",
         })
 
+        # Когато потребителят отвори разговора,
+        # маркираме получените съобщения като прочетени.
+        result = await self.mark_conversation_as_read()
+
+        if result:
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "message_status_updated",
+                    "data": result,
+                },
+            )
 
     async def disconnect(self, close_code):
 
         if hasattr(self, "group_name"):
-
             await self.channel_layer.group_discard(
                 self.group_name,
                 self.channel_name,
             )
-
 
     async def receive_json(self, content, **kwargs):
 
         message_type = content.get("type")
 
         if message_type == "ping":
-
             await self.send_json({
                 "type": "pong",
             })
@@ -75,8 +84,22 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
             return
 
         if message_type == "send_message":
-
             await self.handle_send_message(content)
+
+            return
+
+        if message_type == "mark_read":
+
+            result = await self.mark_conversation_as_read()
+
+            if result:
+                await self.channel_layer.group_send(
+                    self.group_name,
+                    {
+                        "type": "message_status_updated",
+                        "data": result,
+                    },
+                )
 
             return
 
@@ -86,13 +109,11 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
             "message": "Unsupported WebSocket message type.",
         })
 
-
     async def handle_send_message(self, content):
 
         body = content.get("body")
 
         if not isinstance(body, str):
-
             await self.send_json({
                 "type": "error",
                 "code": "invalid_body",
@@ -104,7 +125,6 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
         body = body.strip()
 
         if not body:
-
             await self.send_json({
                 "type": "error",
                 "code": "empty_body",
@@ -114,7 +134,6 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
             return
 
         if len(body) > 10000:
-
             await self.send_json({
                 "type": "error",
                 "code": "body_too_long",
@@ -126,7 +145,6 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
         result = await self.create_message(body)
 
         if result is None:
-
             await self.send_json({
                 "type": "error",
                 "code": "message_creation_failed",
@@ -142,7 +160,6 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
                 "data": result,
             },
         )
-
 
     @database_sync_to_async
     def create_message(self, body):
@@ -178,9 +195,7 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
                     is_read=True,
                 )
 
-                return self.serialize_message(
-                    message
-                )
+                return self.serialize_message(message)
 
         except Exception as error:
 
@@ -191,6 +206,60 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
 
             return None
 
+    @database_sync_to_async
+    def mark_conversation_as_read(self):
+
+        try:
+
+            unread_statuses = list(
+                MessageStatus.objects.filter(
+                    profile_id=self.user.pk,
+                    is_read=False,
+                    message__sender_id__in=[
+                        self.sender_id,
+                        self.recipient_id,
+                    ],
+                    message__recipient_id__in=[
+                        self.sender_id,
+                        self.recipient_id,
+                    ],
+                    message__product_type=self.product_type,
+                    message__product_id=self.product_id,
+                ).select_related("message")
+            )
+
+            if not unread_statuses:
+                return None
+
+            message_ids = [
+                status.message_id
+                for status in unread_statuses
+            ]
+
+            MessageStatus.objects.filter(
+                pk__in=[
+                    status.pk
+                    for status in unread_statuses
+                ]
+            ).update(
+                is_read=True
+            )
+
+            return {
+                "type": "message_status_updated",
+                "message_ids": message_ids,
+                "status": "read",
+                "reader_id": self.user.pk,
+            }
+
+        except Exception as error:
+
+            print(
+                "WebSocket mark read error:",
+                error,
+            )
+
+            return None
 
     @database_sync_to_async
     def get_conversation(self):
@@ -218,7 +287,6 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
             root_message.sender_id,
             root_message.recipient_id,
         }:
-
             return None
 
         return {
@@ -227,7 +295,6 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
             "product_type": root_message.product_type,
             "product_id": root_message.product_id,
         }
-
 
     @staticmethod
     def serialize_message(message):
@@ -241,12 +308,12 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
         )
 
         username = (
-            getattr(
-                profile,
-                "username_in_marketplace",
-                None,
-            )
-            or sender.username
+                getattr(
+                    profile,
+                    "username_in_marketplace",
+                    None,
+                )
+                or sender.username
         )
 
         profile_photo = ""
@@ -284,12 +351,12 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
                 )
 
                 parent_username = (
-                    getattr(
-                        parent_profile,
-                        "username_in_marketplace",
-                        None,
-                    )
-                    or parent_message.sender.username
+                        getattr(
+                            parent_profile,
+                            "username_in_marketplace",
+                            None,
+                        )
+                        or parent_message.sender.username
                 )
 
                 parent_image_url = ""
@@ -378,20 +445,24 @@ class MessageConsumer(AsyncJsonWebsocketConsumer):
             },
         }
 
-
     async def chat_message(self, event):
 
         await self.send_json(
             event["data"]
         )
 
+    async def message_status_updated(self, event):
+
+        await self.send_json(
+            event["data"]
+        )
 
     @staticmethod
     def build_group_name(
-        sender_id,
-        recipient_id,
-        product_type,
-        product_id,
+            sender_id,
+            recipient_id,
+            product_type,
+            product_id,
     ):
 
         user_ids = sorted([
