@@ -38,9 +38,7 @@ body {
     background-position: top center;
     background-size: cover;
     background-attachment: fixed;
-
     color: #333;
-
     transition: background-image 1s ease;
 }
 
@@ -95,9 +93,7 @@ img {
 .header {
     display: flex;
     align-items: center;
-
     padding: 30px;
-
     background-color: #2e8b57;
     color: white;
 }
@@ -110,11 +106,8 @@ img {
 .header img.logo {
     width: 100px;
     height: 100px;
-
     margin-right: 10px;
-
     border-radius: 50%;
-
     object-fit: cover;
 }
 
@@ -143,18 +136,14 @@ img {
     font-weight: 500;
     line-height: 1.35;
     text-align: right;
-
-    background-color: rgba(46, 139, 87, 0.9);
-
+    background-color: rgba(139 85 46 / 90%);
     padding: 7px 12px;
-
     border-radius: 8px;
-
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .welcome-text {
-    font-size: 0.95rem;
+    font-size: 0.80rem;
     font-weight: 500;
 }
 
@@ -164,10 +153,8 @@ img {
 
 .current-date-time {
     margin-top: 2px;
-
-    font-size: 0.78rem;
+    font-size: 0.60rem;
     font-weight: 400;
-
     color: #e8f5e9;
 }
 
@@ -181,15 +168,11 @@ img {
 
 .profile-picture {
     display: block;
-
     width: 44px;
     height: 44px;
-
     object-fit: cover;
-
     border-radius: 50%;
     border: 2px solid #fff;
-
     transition: transform 0.2s ease;
 }
 
@@ -206,35 +189,29 @@ img {
 
     .user-welcome-item {
         width: 100%;
-
         margin-left: 0;
         margin-top: 10px;
     }
 
     .user-welcome {
         width: 100%;
-
         justify-content: flex-start;
-
         gap: 8px;
     }
 
     .welcome-container {
         flex: 0 1 auto;
-
         min-width: 0;
-
         font-size: 0.9rem;
-
         text-align: left;
     }
 
     .welcome-text {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
 
     .current-date-time {
-        font-size: 0.72rem;
+        font-size: 0.6rem;
     }
 
     .profile-picture {
@@ -249,34 +226,23 @@ img {
 
 .section-title {
     position: relative;
-
     margin: 20px 0;
-
     padding: 0;
-
     font-size: 1.5em;
     font-weight: 500;
-
     color: #fcf6f6;
-
     text-align: center;
-
     background-color: rgba(102, 161, 110, 0.4);
-
     border-radius: 5px;
 }
 
 .section-title::before,
 .section-title::after {
     content: "";
-
     position: absolute;
-
     top: 50%;
-
     width: 37%;
     height: 1px;
-
     background-color: #0a0a0a;
 }
 
@@ -295,21 +261,13 @@ img {
 
 .feed-card-wrapper {
     position: relative;
-
     width: 100%;
-
     margin-bottom: 10px;
-
     padding: 0;
-
     background-color: rgba(255, 255, 255, 0.8);
-
     border-radius: 8px;
-
     overflow: visible;
-
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-
     transition: transform 0.2s ease;
 }
 
@@ -322,16 +280,11 @@ img {
 
     align-items: flex-start;
     justify-content: space-between;
-
     width: 100%;
-
     padding: 15px;
-
     background-color: #fff;
-
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -349,14 +302,10 @@ img {
 
 .category-note {
     width: fit-content;
-
     padding: 2px 6px;
-
     background-color: #28a745;
     color: #fff;
-
     border-radius: 5px;
-
     font-size: 0.7rem;
 }
 
@@ -382,9 +331,7 @@ img {
 
 .card-footer {
     display: flex;
-
     justify-content: space-between;
-
     font-size: 0.8rem;
     color: #777;
 }
@@ -396,38 +343,28 @@ img {
 
 .image-wrapper {
     position: absolute;
-
     top: 50%;
     right: 15px;
-
     overflow: visible;
-
     transform: translateY(-50%);
 }
 
 .product-image-container {
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     flex-shrink: 0;
-
     width: 70px;
     height: 70px;
-
     margin-left: 15px;
-
     border: 1px solid #5eac68;
     border-radius: 8px;
-
     overflow: hidden;
 }
 
 .product-picture {
     width: 100%;
     height: 100%;
-
     object-fit: cover;
 }
 
@@ -438,24 +375,18 @@ img {
 
 .photo-container {
     position: relative;
-
     overflow: hidden;
 }
 
 .product-photo {
     width: 200px;
     height: 200px;
-
     object-fit: cover;
-
     border-radius: 10px;
-
     box-shadow:
         0 4px 8px rgba(0, 0, 0, 0.2),
         0 6px 20px rgba(0, 0, 0, 0.19);
-
     transform-origin: center center;
-
     transition:
         transform 0.3s ease,
         z-index 0.3s ease;
@@ -463,7 +394,6 @@ img {
 
 .product-photo:hover {
     z-index: 10;
-
     transform: scale(1.5);
 }
 
@@ -478,19 +408,13 @@ img {
 
 .text-truncate {
     max-width: 332px;
-
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
-
     overflow: hidden;
-
     font-size: 0.7rem;
     line-height: 1rem;
-
     color: dimgray;
-
     text-overflow: ellipsis;
-
     white-space: normal;
     word-wrap: break-word;
 }
@@ -504,16 +428,12 @@ img {
 
     margin: 0;
     padding: 0;
-
     font-family: "Poppins", sans-serif;
     font-size: 0.8rem;
     font-weight: 400;
     line-height: 1.5;
-
     color: #333;
-
     text-align: left;
-
     border-top: 1px solid rgba(10, 10, 10, 0.3);
     border-bottom: 1px solid rgba(10, 10, 10, 0.3);
 }
@@ -526,9 +446,7 @@ img {
 .profile-picture {
     width: 40px;
     height: 40px;
-
     object-fit: cover;
-
     border: 1px solid #bdc7d1;
     border-radius: 50%;
 }
@@ -585,12 +503,9 @@ img {
 
 .btn-view {
     padding: 5px 15px;
-
     background-color: #2e8b57;
     color: rgb(212, 76, 76);
-
     border-radius: 20px;
-
     font-size: 0.9rem;
 }
 
@@ -607,15 +522,11 @@ img {
 
 .back-button {
     display: inline-flex;
-
     align-items: center;
     justify-content: center;
-
     min-width: 94px;
     max-height: 45px;
-
     font-size: 18px;
-
     white-space: nowrap;
 }
 
@@ -646,9 +557,7 @@ img {
 
 .text-danger {
     margin-top: 5px;
-
     color: red;
-
     font-size: 0.9em;
 }
 
@@ -659,23 +568,17 @@ img {
 
 .divider {
     margin: 10px 0;
-
     border: 0;
     border-top: 1px solid #ddd;
 }
 
 .vertical-line {
     position: relative;
-
     top: 10%;
-
     width: 2px;
     height: 90%;
-
     margin: 0 auto;
-
     background-color: #000;
-
     border-radius: 1px;
 }
 
@@ -686,29 +589,20 @@ img {
 
 .pagination-container {
     display: flex;
-
     justify-content: center;
-
     margin-top: 20px;
-
     text-align: center;
 }
 
 .pagination {
     display: inline-flex;
-
     flex-wrap: wrap;
-
     align-items: center;
     justify-content: center;
-
     gap: 0.4rem;
-
     margin: 0;
     padding-left: 0;
-
     list-style: none;
-
     font-size: 0.9rem;
 }
 
@@ -718,17 +612,12 @@ img {
 
 .page-link {
     display: inline-block;
-
     padding: 10px 15px;
-
     background-color: #fff;
     color: #007bff;
-
     border: 1px solid #ddd;
     border-radius: 50%;
-
     font-size: 18px;
-
     transition:
         background-color 0.3s ease,
         color 0.3s ease,
@@ -738,32 +627,26 @@ img {
 .page-link:hover {
     background-color: #52914c;
     color: #fff;
-
     border-color: #007bff;
 }
 
 .page-item.active .page-link {
     background-color: #6b6d70;
     color: #fff;
-
     border-color: #007bff;
-
     font-weight: bold;
 }
 
 .page-item.disabled .page-link {
     background-color: #f8f9fa;
     color: #aaa;
-
     border-color: #ddd;
-
     cursor: not-allowed;
 }
 
 .page-item.disabled .page-link:hover {
     background-color: #f8f9fa;
     color: #aaa;
-
     border-color: #ddd;
 }
 
@@ -773,10 +656,8 @@ img {
 
 .paginator-page {
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     min-width: 120px;
     max-width: 130px;
 }
@@ -798,9 +679,7 @@ img {
 .message {
     width: 100%;
     max-width: 630px;
-
     background-color: rgba(249, 249, 249, 0.95);
-
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -817,24 +696,17 @@ img {
     margin-top: 20px;
     margin-bottom: 30px;
     padding: 0;
-
     background-color: rgba(196, 212, 196, 0.9);
     color: #333;
-
     border-radius: 8px;
-
     text-align: center;
-
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-
     font-family: Arial, sans-serif;
 }
 
 .latest-news-header h2 {
     margin: 0;
-
     font-size: 2rem;
-
     letter-spacing: 1px;
 }
 
@@ -845,14 +717,10 @@ img {
 
 footer {
     flex-shrink: 0;
-
     width: 100%;
-
     padding: 20px;
-
     background-color: #2e8b57;
     color: #fff;
-
     text-align: center;
 }
 
@@ -863,7 +731,6 @@ footer ul.list-inline {
 
 footer ul.list-inline li {
     display: inline;
-
     margin-right: 15px;
 }
 
@@ -879,7 +746,6 @@ footer ul.list-inline a {
 
 .conversation-box {
     width: 100%;
-
     padding: 20px;
 }
 
@@ -889,31 +755,22 @@ footer ul.list-inline a {
 
 .conversation-title {
     display: flex;
-
     align-items: center;
     justify-content: space-between;
-
     gap: 0.75rem;
-
     margin-bottom: 25px;
     padding-bottom: 15px;
-
     border-bottom: 1px solid #ddd;
-
     text-align: left;
 }
 
 .conversation-title h3 {
     flex: 1;
-
     min-width: 0;
-
     margin: 0;
-
     font-size: 1.15rem;
     font-weight: 600;
     line-height: 1.3;
-
     word-break: break-word;
 }
 
@@ -924,20 +781,15 @@ footer ul.list-inline a {
 
 .conversation-actions {
     display: flex !important;
-
     align-items: center;
-
     flex-shrink: 0;
-
     margin: 0 !important;
     padding: 0 !important;
-
     gap: 0 !important;
 }
 
 .conversation-actions form {
     display: flex !important;
-
     margin: 0 !important;
     padding: 0 !important;
 }
@@ -945,18 +797,13 @@ footer ul.list-inline a {
 .conversation-actions .btn,
 .conversation-actions form .btn {
     display: inline-flex !important;
-
     align-items: center;
     justify-content: center;
-
     width: 36px !important;
     height: 34px !important;
-
     margin: 0 !important;
     padding: 0 !important;
-
     border-radius: 0 !important;
-
     font-size: 0.85rem;
 }
 
@@ -983,22 +830,16 @@ footer ul.list-inline a {
 
 .conversation-message {
     display: flex;
-
     align-items: flex-start;
-
     width: 100%;
-
     min-width: 0;
-
     margin-bottom: 25px;
 }
 
 .conversation-message-body {
     flex: 0 1 auto;
-
     width: fit-content;
     max-width: calc(100% - 60px);
-
     min-width: 0;
 }
 
@@ -1009,20 +850,15 @@ footer ul.list-inline a {
 
 .conversation-avatar {
     flex: 0 0 48px;
-
     width: 48px;
-
     margin-right: 12px;
 }
 
 .message-avatar {
     display: block;
-
     width: 48px;
     height: 48px;
-
     object-fit: cover;
-
     border: 1px solid #ccc;
     border-radius: 50%;
 }
@@ -1042,27 +878,21 @@ footer ul.list-inline a {
 
 .conversation-meta {
     display: flex;
-
     align-items: baseline;
-
     gap: 8px;
-
     width: fit-content;
     max-width: 100%;
-
     margin-bottom: 4px;
 }
 
 .conversation-name {
     color: #222;
-
     font-size: 15px;
     font-weight: 600;
 }
 
 .conversation-date {
     color: #777;
-
     font-size: 12px;
 }
 
@@ -1073,38 +903,26 @@ footer ul.list-inline a {
 
 .message-bubble {
     position: relative;
-
     display: block;
-
     width: fit-content;
     max-width: 100%;
-
     padding: 11px 15px;
-
     background-color: #f0f2f5;
-
     border-radius: 4px 18px 18px 18px;
-
     font-size: 15px;
     line-height: 1.5;
-
     word-wrap: break-word;
     overflow-wrap: break-word;
-
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .message-bubble::before {
     content: "";
-
     position: absolute;
-
     top: 12px;
     left: -8px;
-
     width: 0;
     height: 0;
-
     border-top: 7px solid transparent;
     border-bottom: 7px solid transparent;
     border-right: 9px solid #f0f2f5;
@@ -1134,16 +952,13 @@ footer ul.list-inline a {
 
 .own-message .message-bubble {
     background-color: #d9fdd3;
-
     border-radius: 18px 4px 18px 18px;
-
     text-align: left;
 }
 
 .own-message .message-bubble::before {
     right: -8px;
     left: auto;
-
     border-right: none;
     border-left: 9px solid #d9fdd3;
 }
@@ -1155,12 +970,9 @@ footer ul.list-inline a {
 
 .chat-message-content:has(.media-wrap) {
     display: block;
-
     width: min(100%, 520px);
     max-width: 520px;
-
     min-width: 0;
-
     box-sizing: border-box;
 }
 
@@ -1170,19 +982,13 @@ footer ul.list-inline a {
 
 .chat-message-content:has(.media-wrap) .message-bubble {
     display: flex;
-
     flex-direction: column;
     align-items: stretch;
-
     width: 100%;
     max-width: 100%;
-
     min-width: 0;
-
     padding: 5px;
-
     overflow: hidden;
-
     border-radius: 14px;
 }
 
@@ -1201,32 +1007,22 @@ footer ul.list-inline a {
 
 .media-wrap {
     position: relative;
-
     display: flex;
-
     flex-direction: column;
     align-items: stretch;
-
     width: fit-content;
     max-width: 100%;
-
     min-width: 0;
-
     overflow: hidden;
-
     border-radius: 14px;
 }
 
 .media-wrap > a {
     display: block;
-
     width: fit-content;
     max-width: 100%;
-
     min-width: 0;
-
     overflow: hidden;
-
     line-height: 0;
 }
 
@@ -1238,17 +1034,12 @@ footer ul.list-inline a {
 .message-image,
 .message-video {
     display: block;
-
     width: auto;
     height: auto;
-
     max-width: 100%;
     max-height: 65vh;
-
     min-width: 0;
-
     object-fit: contain;
-
     border-radius: 12px;
 }
 
@@ -1261,12 +1052,9 @@ footer ul.list-inline a {
 .message-video[data-orientation="landscape"] {
     width: 100%;
     height: auto;
-
     max-width: 100%;
     max-height: none;
-
     aspect-ratio: 16 / 9;
-
     object-fit: cover;
 }
 
@@ -1274,10 +1062,8 @@ footer ul.list-inline a {
 .message-video[data-orientation="portrait"] {
     width: auto;
     height: auto;
-
     max-width: 100%;
     max-height: min(65vh, 560px);
-
     object-fit: contain;
 }
 
@@ -1285,12 +1071,9 @@ footer ul.list-inline a {
 .message-video[data-orientation="square"] {
     width: auto;
     height: auto;
-
     max-width: 100%;
     max-height: 65vh;
-
     aspect-ratio: 1 / 1;
-
     object-fit: cover;
 }
 
@@ -1302,17 +1085,12 @@ footer ul.list-inline a {
 .chat-message-content:has(.media-wrap)
 .message-bubble .message-body-html {
     display: block;
-
     width: 100%;
     max-width: 100%;
-
     min-width: 0;
-
     margin-top: 5px;
-
     overflow-wrap: anywhere;
     word-break: break-word;
-
     white-space: normal;
 }
 
@@ -1323,45 +1101,32 @@ footer ul.list-inline a {
 
 .media-share-btn {
     position: absolute;
-
     top: 8px;
     right: 8px;
-
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     width: 34px;
     height: 34px;
-
     padding: 0;
-
     background: rgba(0, 0, 0, 0.65);
     color: #fff;
-
     border: none;
     border-radius: 50%;
-
     opacity: 0;
     visibility: hidden;
-
     transform: scale(0.85);
-
     transition:
         opacity 0.2s ease,
         visibility 0.2s ease,
         transform 0.2s ease;
-
     z-index: 5;
-
     cursor: pointer;
 }
 
 .media-wrap:hover .media-share-btn {
     opacity: 1;
     visibility: visible;
-
     transform: scale(1);
 }
 
@@ -1377,36 +1142,28 @@ footer ul.list-inline a {
 
 .message-actions {
     display: flex;
-
     align-items: center;
-
     width: fit-content;
     max-width: 100%;
-
     margin-top: 5px;
 }
 
 .message-reactions {
     display: flex;
-
     align-items: center;
-
     gap: 4px;
-
     width: fit-content;
     max-width: 100%;
 }
 
 .message-reactions .tg-reaction {
     display: inline-flex;
-
     align-items: center;
     justify-content: center;
 }
 
 .own-message .message-actions {
     margin-left: auto;
-
     justify-content: flex-end;
 }
 
@@ -1417,11 +1174,8 @@ footer ul.list-inline a {
 
 .react-btn {
     opacity: 0.25;
-
     filter: grayscale(100%);
-
     text-decoration: none;
-
     transition:
         opacity 0.15s ease,
         filter 0.15s ease,
@@ -1436,7 +1190,6 @@ footer ul.list-inline a {
 .react-btn.active-like,
 .react-btn.active-heart {
     opacity: 1;
-
     filter: none;
 }
 
@@ -1457,19 +1210,14 @@ footer ul.list-inline a {
 
 .message-mini-actions {
     display: flex;
-
     gap: 0.5rem;
-
     font-size: 0.85rem;
 }
 
 .mini-btn {
     padding: 2px 6px;
-
     color: #666;
-
     text-decoration: none;
-
     border-radius: 6px;
 }
 
@@ -1490,19 +1238,14 @@ footer ul.list-inline a {
 .reply-form textarea,
 .reply-form .form-control {
     width: 100%;
-
     min-height: 120px;
-
     font-size: 0.95rem;
-
     border-radius: 10px;
-
     resize: vertical;
 }
 
 .reply-form .btn-primary {
     min-width: 120px;
-
     border-radius: 8px;
 }
 
@@ -1513,15 +1256,11 @@ footer ul.list-inline a {
 
 .attach-preview {
     display: block;
-
     width: auto;
     height: auto;
-
     max-width: 140px;
     max-height: 100px;
-
     object-fit: contain;
-
     border: 1px solid #ddd;
     border-radius: 8px;
 }
@@ -1533,7 +1272,6 @@ footer ul.list-inline a {
 
 .emoji-bar .emoji-btn {
     padding: 2px 6px;
-
     line-height: 1.2;
 }
 
@@ -1544,14 +1282,10 @@ footer ul.list-inline a {
 
 .message-box.conversation-box > .conv-separator {
     display: block !important;
-
     width: 100% !important;
     height: 1px !important;
-
     margin: 12px 0 18px !important;
-
     background-color: rgba(0, 0, 0, 0.15) !important;
-
     flex-shrink: 0 !important;
 }
 
@@ -1562,9 +1296,7 @@ footer ul.list-inline a {
 
 .message-preview {
     display: flex;
-
     align-items: flex-start;
-
     gap: 12px;
 }
 
@@ -1575,16 +1307,13 @@ footer ul.list-inline a {
 .message-preview-avatar img {
     width: 48px;
     height: 48px;
-
     object-fit: cover;
-
     border: 1px solid #ccc;
     border-radius: 50%;
 }
 
 .message-avatar-link {
     display: block;
-
     cursor: pointer;
 }
 
@@ -1608,24 +1337,19 @@ footer ul.list-inline a {
 
 .message-preview-header {
     display: flex;
-
     align-items: center;
     justify-content: space-between;
-
     gap: 10px;
 }
 
 .message-preview-name {
     color: #222;
-
     font-weight: 600;
 }
 
 .message-preview-date {
     color: #777;
-
     font-size: 12px;
-
     white-space: nowrap;
 }
 
@@ -1642,11 +1366,8 @@ footer ul.list-inline a {
 
     .header {
         display: flex;
-
         flex-direction: column;
-
         align-items: center;
-
         text-align: center;
     }
 
@@ -1673,30 +1394,25 @@ footer ul.list-inline a {
 
     .user-welcome-item {
         width: auto !important;
-
         margin-left: 0 !important;
         margin-top: 10px !important;
     }
 
     .user-welcome {
         width: auto !important;
-
         gap: 5px !important;
     }
 
     .user-welcome .welcome-container {
         width: auto !important;
         max-width: none !important;
-
         font-size: 10px !important;
-
         text-align: right !important;
     }
 
     .user-welcome .profile-picture-link {
         width: 40px !important;
         height: 40px !important;
-
         flex: 0 0 40px !important;
     }
 
@@ -1716,7 +1432,6 @@ footer ul.list-inline a {
     .product-photo {
         width: 120px;
         height: 120px;
-
         transition: all 0.3s ease;
     }
 
@@ -1724,16 +1439,13 @@ footer ul.list-inline a {
     .product-photo:active {
         width: 120px;
         height: 100px;
-
         transform: scale(2.5) translate(10%, -10%);
     }
 
     .back-button {
         min-width: 80px;
         max-height: 40px;
-
         font-size: 16px;
-
         white-space: nowrap;
     }
 }
@@ -1776,19 +1488,16 @@ footer ul.list-inline a {
 
     .conversation-title {
         flex-direction: column;
-
         align-items: flex-start !important;
     }
 
     .conversation-title h3 {
         width: 100%;
-
         font-size: 1.05rem;
     }
 
     .conversation-actions {
         justify-content: flex-end;
-
         margin-top: 0.25rem !important;
     }
 
@@ -1804,9 +1513,7 @@ footer ul.list-inline a {
 
     .conversation-avatar {
         flex: 0 0 40px;
-
         width: 40px;
-
         margin-right: 8px;
     }
 
@@ -1831,7 +1538,6 @@ footer ul.list-inline a {
 
     .conversation-meta {
         flex-wrap: wrap;
-
         gap: 5px;
     }
 
@@ -1850,7 +1556,6 @@ footer ul.list-inline a {
 
     .message-bubble {
         padding: 9px 12px;
-
         font-size: 14px;
     }
 
@@ -1868,7 +1573,6 @@ footer ul.list-inline a {
     .message-video {
         max-width: 100%;
         max-height: 200px;
-
         border-radius: 14px;
     }
 
@@ -1880,7 +1584,6 @@ footer ul.list-inline a {
     .media-share-btn {
         top: 6px;
         right: 6px;
-
         width: 32px;
         height: 32px;
     }
@@ -1888,7 +1591,6 @@ footer ul.list-inline a {
     .media-wrap:active .media-share-btn {
         opacity: 1;
         visibility: visible;
-
         transform: scale(1);
     }
 
@@ -1940,9 +1642,7 @@ footer ul.list-inline a {
 
     .message-preview-header {
         flex-direction: column;
-
         align-items: flex-start;
-
         gap: 2px;
     }
 
@@ -1962,7 +1662,6 @@ footer ul.list-inline a {
 
     #image-preview-wrap .d-flex {
         flex-direction: column;
-
         align-items: flex-start !important;
     }
 
@@ -1977,7 +1676,6 @@ footer ul.list-inline a {
 
     .emoji-bar {
         display: flex;
-
         flex-wrap: wrap;
     }
 }
@@ -1992,9 +1690,7 @@ footer ul.list-inline a {
     .product-photo {
         width: 60px;
         height: 60px;
-
         flex-grow: 1;
-
         transition: all 0.3s ease;
     }
 
@@ -2002,16 +1698,13 @@ footer ul.list-inline a {
     .product-photo:active {
         width: 100px;
         height: 60px;
-
         transform: scale(2.5) translate(-3%, 10%);
     }
 
     .back-button {
         min-width: 75px;
         max-height: 35px;
-
         font-size: 14px;
-
         white-space: nowrap;
     }
 
@@ -2052,7 +1745,6 @@ footer ul.list-inline a {
 
     .edit-profile {
         max-width: 1000px;
-
         margin: 0 auto 2.5rem;
     }
 
@@ -2069,7 +1761,6 @@ footer ul.list-inline a {
 
     .edit-profile {
         max-width: 1100px;
-
         margin: 0 auto 2.5rem;
     }
 
@@ -2086,7 +1777,6 @@ footer ul.list-inline a {
 
     .edit-profile {
         max-width: 1200px;
-
         margin: 0 auto 2.5rem;
     }
 
@@ -2103,7 +1793,6 @@ footer ul.list-inline a {
 
     .edit-profile {
         max-width: 1300px;
-
         margin: 0 auto 2.5rem;
     }
 
