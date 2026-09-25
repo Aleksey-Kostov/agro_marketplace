@@ -15,7 +15,6 @@
     ====================================================== -->
 
     <div class="conversation-avatar">
-
         {% if item.sender == request.user %}
         <a href="{% url 'profile-details' pk=item.sender.pk %}">
             {% if item.sender.profile.profile_photo %}
@@ -31,22 +30,19 @@
             {% endif %}
         </a>
         {% else %}
-
-            {% if item.sender.profile.profile_photo %}
-            <img src="{{ item.sender.profile.profile_photo.url }}"
-                 class="message-avatar"
-                 alt="{{ item.sender.profile.username_in_marketplace|default:item.sender.username }}"
-                 loading="lazy">
-            {% else %}
-            <img src="{% static 'images/profile_picture.webp' %}"
-                 class="message-avatar"
-                 alt="{{ item.sender.profile.username_in_marketplace|default:item.sender.username }}"
-                 loading="lazy">
-            {% endif %}
+        {% if item.sender.profile.profile_photo %}
+        <img src="{{ item.sender.profile.profile_photo.url }}"
+             class="message-avatar"
+             alt="{{ item.sender.profile.username_in_marketplace|default:item.sender.username }}"
+             loading="lazy">
+        {% else %}
+        <img src="{% static 'images/profile_picture.webp' %}"
+             class="message-avatar"
+             alt="{{ item.sender.profile.username_in_marketplace|default:item.sender.username }}"
+             loading="lazy">
         {% endif %}
-
+        {% endif %}
     </div>
-
 
     <!-- =====================================================
          MESSAGE BODY
@@ -128,7 +124,6 @@
                        title="Go to original message">
                         <div class="message-reply-line">
                         </div>
-
                         <div class="message-reply-content">
                             <div class="message-reply-name">
                                 {{ item.parent_message.sender.profile.username_in_marketplace|default:item.parent_message.sender.username }}
@@ -156,7 +151,6 @@
                                     Message
                                     {% endif %}
                                 </div>
-
 
                                 <!-- =================================
                                      REPLY MEDIA
@@ -187,7 +181,6 @@
                     </a>
                     {% endif %}
 
-
                     <!-- =============================================
                          MESSAGE CONTENT
                     ============================================== -->
@@ -204,7 +197,6 @@
                             {{ item.body|safe }}
                         </div>
                         {% endif %}
-
 
                         <!-- =================================
                              IMAGE
@@ -230,7 +222,6 @@
                             </button>
                         </div>
                         {% endif %}
-
 
                         <!-- =================================
                              VIDEO
@@ -258,11 +249,9 @@
                     {% endif %}
                 </div>
 
-
                 <!-- =================================================
                      REACTIONS
                 ================================================== -->
-
                 {% if not item.is_system and not item.is_removed %}
                 {% user_reacted item request.user 'like' as liked %}
                 {% user_reacted item request.user 'heart' as hearted %}
@@ -294,7 +283,6 @@
                             </span>
                         </a>
 
-
                         <!-- =================================
                              HEART
                         ================================== -->
@@ -318,13 +306,11 @@
                             </span>
                         </a>
 
-
                         <!-- =================================
                              DELETE
                         ================================== -->
 
                         {% if item.sender == request.user %}
-
                         <form method="post"
                               action="{% url 'delete-one-message' item.pk %}"
                               class="delete-message-form">
@@ -343,7 +329,6 @@
                 </div>
                 {% endif %}
             </div>
-
 
             <!-- =================================================
                  SIDE ACTIONS
@@ -365,18 +350,14 @@
                         data-reply-video="{% if item.video %}{{ item.video_url|default:item.video.url|escapejs }}{% endif %}"
                         title="Reply"
                         aria-label="Reply">
-
                     <i class="fas fa-reply"></i>
-
                 </button>
-
 
                 <!-- =================================
                      EDIT
                 ================================== -->
 
                 {% if item.sender == request.user and item.body %}
-
                 <button type="button"
                         class="message-side-btn edit-message-side-btn"
                         data-message-id="{{ item.pk }}"

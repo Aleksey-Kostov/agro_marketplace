@@ -2865,26 +2865,51 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 8px 12px;
+    min-height: 36px;
+    padding: 6px 12px;
     font-size: 0.9rem;
+    line-height: 1.2;
     color: #6c757d;
+    opacity: 0;
+    transform: translateY(4px);
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease;
 }
 
 .chat-typing-indicator.d-none {
     display: none !important;
 }
 
+.chat-typing-indicator.typing-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.chat-typing-indicator.typing-hiding {
+    opacity: 0;
+    transform: translateY(2px);
+}
+
 .chat-typing-name {
     font-weight: 600;
+    white-space: nowrap;
+}
+
+.chat-typing-text {
+    white-space: nowrap;
 }
 
 .chat-typing-dots {
     display: inline-flex;
+    align-items: center;
     min-width: 18px;
+    margin-left: 1px;
 }
 
 .chat-typing-dots span {
-    animation: chatTypingDot 1.4s infinite;
+    display: inline-block;
+    animation: chatTypingDot 1.4s infinite ease-in-out;
     opacity: 0.25;
 }
 
@@ -2901,9 +2926,23 @@
     60%,
     100% {
         opacity: 0.25;
+        transform: translateY(0);
     }
 
     30% {
         opacity: 1;
+        transform: translateY(-1px);
     }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-typing-indicator {
+        transition: none;
+    }
+
+    .chat-typing-dots span {
+        animation: none;
+        opacity: 1;
+    }
+}
+
