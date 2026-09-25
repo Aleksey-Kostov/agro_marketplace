@@ -9,8 +9,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const messageBodyField =
         replyForm
-            ? replyForm.querySelector(
-                'textarea[name="body"], input[name="body"]'
+            ? (
+                replyForm.querySelector(
+                    '[name="body"]'
+                ) ||
+                replyForm.querySelector(
+                    'textarea'
+                )
             )
             : null;
 
@@ -44,19 +49,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       SOCKET
+       WEBSOCKET MANAGER
        ========================================================= */
 
-    function getSocket() {
-        return window.agroMessageSocket || null;
+    function getWebSocketManager() {
+        return (
+            window.agroChatWebSocket ||
+            null
+        );
     }
 
+
     function isSocketOpen() {
-        const socket = getSocket();
+        const manager =
+            getWebSocketManager();
 
         return Boolean(
-            socket &&
-            socket.readyState === WebSocket.OPEN
+            manager &&
+            typeof manager.isOpen === 'function' &&
+            manager.isOpen()
         );
     }
 
@@ -66,31 +77,19 @@ document.addEventListener('DOMContentLoaded', function () {
        ========================================================= */
 
     function sendTypingEvent(type) {
-        const socket = getSocket();
+        const manager =
+            getWebSocketManager();
 
         if (
-            !socket ||
-            socket.readyState !== WebSocket.OPEN
+            !manager ||
+            typeof manager.send !== 'function'
         ) {
             return false;
         }
 
-        try {
-            socket.send(
-                JSON.stringify({
-                    type: type
-                })
-            );
-
-            return true;
-        } catch (error) {
-            console.error(
-                'Unable to send typing event:',
-                error
-            );
-
-            return false;
-        }
+        return manager.send({
+            type: type
+        });
     }
 
 
@@ -108,7 +107,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 {
                     detail: {
                         typing: Boolean(typing),
-                        username: username || 'User'
+                        username:
+                            username || 'User'
                     }
                 }
             )
@@ -121,13 +121,17 @@ document.addEventListener('DOMContentLoaded', function () {
        ========================================================= */
 
     function startTyping() {
-        const wasTyping = isTyping;
+        const wasTyping =
+            isTyping;
 
         isTyping = true;
 
         /*
-         * Socket may still be CONNECTING.
-         * agro:websocket-open will retry.
+         * The WebSocket manager owns the socket.
+         *
+         * If it is still CONNECTING, do not send anything now.
+         * agro:websocket-open will send typing_start after
+         * the connection becomes ready.
          */
         if (!isSocketOpen()) {
             return;
@@ -135,10 +139,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         /*
          * Send typing_start only once
-         * per typing session.
+         * during the current typing session.
          */
         if (!wasTyping) {
-            sendTypingEvent('typing_start');
+            sendTypingEvent(
+                'typing_start'
+            );
         }
     }
 
@@ -154,7 +160,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         isTyping = false;
 
-        sendTypingEvent('typing_stop');
+        /*
+         * If the socket is temporarily unavailable,
+         * sendTypingEvent() simply returns false.
+         *
+         * The important part is that the local typing
+         * state is reset.
+         */
+        sendTypingEvent(
+            'typing_stop'
+        );
     }
 
 
@@ -167,20 +182,26 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        clearTimeout(typingTimer);
+        clearTimeout(
+            typingTimer
+        );
+
         typingTimer = null;
     }
+
 
     function resetTypingTimer() {
         clearTypingTimer();
 
-        typingTimer = setTimeout(
-            function () {
-                typingTimer = null;
-                stopTyping();
-            },
-            TYPING_STOP_DELAY
-        );
+        typingTimer =
+            setTimeout(
+                function () {
+                    typingTimer = null;
+
+                    stopTyping();
+                },
+                TYPING_STOP_DELAY
+            );
     }
 
 
@@ -194,17 +215,25 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const value =
-            messageBodyField.value.trim();
+            String(
+                messageBodyField.value || ''
+            ).trim();
 
+        /*
+         * Empty composer means the user stopped typing.
+         */
         if (!value) {
             clearTypingTimer();
             stopTyping();
+
             return;
         }
 
         startTyping();
+
         resetTypingTimer();
     }
+
 
     if (messageBodyField) {
         messageBodyField.addEventListener(
@@ -216,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'blur',
             function () {
                 clearTypingTimer();
+
                 stopTyping();
             }
         );
@@ -230,6 +260,7 @@ document.addEventListener('DOMContentLoaded', function () {
         'agro:message-sent',
         function () {
             clearTypingTimer();
+
             stopTyping();
         }
     );
@@ -245,17 +276,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         /*
-         * Channels sends:
+         * Channels sends typing events as:
          *
          * {
          *     type: "chat_message",
          *     data: {
          *         type: "typing_start",
-         *         ...
+         *         user_id: 123,
+         *         username: "John"
          *     }
          * }
          *
-         * So we need the nested data object.
+         * The WebSocket manager already parses JSON.
+         * Therefore event.detail contains the object directly.
          */
         if (
             data.type === 'chat_message' &&
@@ -265,7 +298,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         /*
-         * Also support direct payloads.
+         * Also support direct payloads:
+         *
+         * {
+         *     type: "typing_start",
+         *     ...
+         * }
          */
         return data;
     }
@@ -286,7 +324,8 @@ document.addEventListener('DOMContentLoaded', function () {
             data.user?.id ??
             null;
 
-        const id = Number(raw);
+        const id =
+            Number(raw);
 
         return (
             Number.isFinite(id) &&
@@ -314,7 +353,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (
             incomingUserId &&
             currentUserId &&
-            incomingUserId === currentUserId
+            incomingUserId ===
+                currentUserId
         ) {
             return;
         }
@@ -322,11 +362,14 @@ document.addEventListener('DOMContentLoaded', function () {
         typingUserId =
             incomingUserId;
 
+        const username =
+            data.username ||
+            data.user?.username ||
+            'User';
+
         dispatchTypingState(
             true,
-            data.username ||
-                data.user?.username ||
-                'User'
+            username
         );
     }
 
@@ -339,17 +382,24 @@ document.addEventListener('DOMContentLoaded', function () {
         const incomingUserId =
             getIncomingUserId(data);
 
+        /*
+         * Ignore a stop event from another user
+         * if we currently display somebody else.
+         */
         if (
             typingUserId &&
             incomingUserId &&
-            typingUserId !== incomingUserId
+            typingUserId !==
+                incomingUserId
         ) {
             return;
         }
 
         typingUserId = null;
 
-        dispatchTypingState(false);
+        dispatchTypingState(
+            false
+        );
     }
 
 
@@ -368,7 +418,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const data =
-                getTypingPayload(rawData);
+                getTypingPayload(
+                    rawData
+                );
 
             if (!data) {
                 return;
@@ -383,7 +435,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 data.type ===
                 'typing_start'
             ) {
-                handleIncomingTypingStart(data);
+                handleIncomingTypingStart(
+                    data
+                );
+
                 return;
             }
 
@@ -396,23 +451,33 @@ document.addEventListener('DOMContentLoaded', function () {
                 data.type ===
                 'typing_stop'
             ) {
-                handleIncomingTypingStop(data);
+                handleIncomingTypingStop(
+                    data
+                );
+
+                return;
             }
         }
     );
 
 
     /* =========================================================
-       SOCKET OPEN / RECONNECT
+       WEBSOCKET OPEN / RECONNECT
        ========================================================= */
 
     window.addEventListener(
         'agro:websocket-open',
         function () {
+            /*
+             * If the user was already typing while the socket
+             * reconnected, tell the server again.
+             */
             if (
                 isTyping &&
                 messageBodyField &&
-                messageBodyField.value.trim()
+                String(
+                    messageBodyField.value || ''
+                ).trim()
             ) {
                 sendTypingEvent(
                     'typing_start'
@@ -431,6 +496,11 @@ document.addEventListener('DOMContentLoaded', function () {
         function () {
             clearTypingTimer();
 
+            /*
+             * Do NOT close the WebSocket here.
+             *
+             * chat_websocket.js owns WebSocket lifecycle.
+             */
             if (
                 isTyping &&
                 isSocketOpen()
