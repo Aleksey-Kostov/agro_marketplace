@@ -562,16 +562,14 @@
 ========================================================= */
 
 .conversation-scroll-buttons {
-    position: sticky;
-    float: right;
+    position: absolute;
     right: 12px;
     bottom: 12px;
-    z-index: 20;
+    z-index: 50;
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
     gap: 8px;
-    margin-right: 12px;
-    margin-top: -88px;
 }
 
 .scroll-navigation-btn {
@@ -590,6 +588,7 @@
         visibility .25s ease,
         transform .25s ease,
         box-shadow .15s ease;
+    position: relative;
 }
 
 .scroll-navigation-btn:hover {
@@ -2152,6 +2151,165 @@
 
 
 /* =========================================================
+   CHAT TYPING
+========================================================= */
+
+.chat-typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 0;
+    padding: 7px 12px;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    color: #6c757d;
+    position: absolute !important;
+    left: 50% !important;
+    bottom: 12px !important;
+    z-index: 40 !important;
+    width: max-content;
+    max-width: calc(100% - 30px);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.14);
+    opacity: 0;
+    transform: translate(-50%, 6px);
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.chat-typing-indicator.d-none {
+    display: none !important;
+}
+
+.chat-typing-indicator.typing-visible {
+    display: inline-flex !important;
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.chat-typing-indicator.typing-hiding {
+    display: inline-flex !important;
+    opacity: 0;
+    transform: translate(-50%, 4px);
+}
+
+.chat-typing-indicator.typing-floating {
+    position: absolute !important;
+    left: 50% !important;
+    bottom: 12px !important;
+    z-index: 40 !important;
+}
+
+.chat-typing-name {
+    display: inline;
+    margin-right: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.chat-typing-text {
+    display: inline;
+    white-space: nowrap;
+}
+
+.chat-typing-dots {
+    display: inline-flex;
+    align-items: center;
+    min-width: 18px;
+    margin-left: 3px;
+}
+
+.chat-typing-dots span {
+    display: inline-block;
+    animation:
+        chatTypingDot 1.4s infinite ease-in-out;
+    opacity: 0.25;
+}
+
+.chat-typing-dots span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.chat-typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.chat-typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes chatTypingDot {
+    0%,
+    60%,
+    100% {
+        opacity: 0.25;
+        transform: translateY(0);
+    }
+
+    30% {
+        opacity: 1;
+        transform: translateY(-2px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-typing-indicator {
+        transition: none;
+    }
+
+    .chat-typing-dots span {
+        animation: none;
+        opacity: 1;
+    }
+}
+
+
+/* =========================================================
+   UNREAD BADGE
+========================================================= */
+
+#scroll-top-btn .unread-message-count {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+#scroll-bottom-btn {
+    position: relative !important;
+}
+
+#scroll-bottom-btn > #unread-message-count {
+    position: absolute !important;
+    top: -7px !important;
+    right: -7px !important;
+    min-width: 19px !important;
+    height: 19px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1;
+    background: #dc3545;
+    color: #fff;
+    border: 2px solid #fff;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+#scroll-bottom-btn > #unread-message-count.d-none {
+    display: none !important;
+}
+
+
+/* =========================================================
    TABLET <= 768
 ========================================================= */
 
@@ -2860,324 +3018,12 @@
     }
 }
 
-/* -----------------------------------------------------
-       CHAT TYPING
------------------------------------------------------ */
-
-.chat-typing-indicator {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 36px;
-    padding: 6px 12px;
-    font-size: 0.9rem;
-    line-height: 1.2;
-    color: #6c757d;
-    opacity: 0;
-    transform: translateY(4px);
-    transition:
-        opacity 180ms ease,
-        transform 180ms ease;
-}
-
-.chat-typing-indicator.d-none {
-    display: none !important;
-}
-
-.chat-typing-indicator.typing-visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.chat-typing-indicator.typing-hiding {
-    opacity: 0;
-    transform: translateY(2px);
-}
-
-.chat-typing-name {
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.chat-typing-text {
-    white-space: nowrap;
-}
-
-.chat-typing-dots {
-    display: inline-flex;
-    align-items: center;
-    min-width: 18px;
-    margin-left: 1px;
-}
-
-.chat-typing-dots span {
-    display: inline-block;
-    animation: chatTypingDot 1.4s infinite ease-in-out;
-    opacity: 0.25;
-}
-
-.chat-typing-dots span:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.chat-typing-dots span:nth-child(3) {
-    animation-delay: 0.4s;
-}
-
-@keyframes chatTypingDot {
-    0%,
-    60%,
-    100% {
-        opacity: 0.25;
-        transform: translateY(0);
-    }
-
-    30% {
-        opacity: 1;
-        transform: translateY(-1px);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .chat-typing-indicator {
-        transition: none;
-    }
-
-    .chat-typing-dots span {
-        animation: none;
-        opacity: 1;
-    }
-}
-
 
 /* =========================================================
-   CHAT SCROLL CONTAINER
-   ========================================================= */
-
-.conversation-scroll {
-    position: relative;
-}
-
-
-/* =========================================================
-   SCROLL NAVIGATION BUTTONS
-   ========================================================= */
-
-.conversation-scroll-buttons {
-    position: absolute;
-    right: 12px;
-    bottom: 12px;
-    z-index: 50;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-}
-
-.scroll-navigation-btn {
-    position: relative;
-}
-
-.scroll-buttons-hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-
-/* =========================================================
-   UNREAD BADGE
-   ========================================================= */
-
-#scroll-top-btn .unread-message-count {
-    display: none !important;
-    visibility: hidden !important;
-}
-
-#scroll-bottom-btn {
-    position: relative !important;
-}
-
-#scroll-bottom-btn > #unread-message-count {
-    position: absolute !important;
-    top: -7px !important;
-    right: -7px !important;
-    min-width: 19px !important;
-    height: 19px !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 5px;
-    border-radius: 10px;
-    font-size: 0.68rem;
-    font-weight: 700;
-    line-height: 1;
-    background: #dc3545;
-    color: #fff;
-    border: 2px solid #fff;
-    pointer-events: none;
-    z-index: 1000;
-}
-
-#scroll-bottom-btn > #unread-message-count.d-none {
-    display: none !important;
-}
-
-
-/* =========================================================
-   TYPING INDICATOR
-   ========================================================= */
-
-#chat-typing-indicator {
-    position: absolute !important;
-    left: 50% !important;
-    bottom: 12px !important;
-    z-index: 40 !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: max-content;
-    max-width: calc(100% - 30px);
-    min-height: 0;
-    padding: 7px 12px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow:
-        0 3px 12px rgba(0, 0, 0, 0.14);
-
-    opacity: 0;
-
-    transform:
-        translate(-50%, 6px);
-    transition:
-        opacity 180ms ease,
-        transform 180ms ease;
-    pointer-events: none;
-    white-space: nowrap;
-}
-
-
-/* ---------------------------------------------------------
-   HIDDEN
-   --------------------------------------------------------- */
-
-#chat-typing-indicator.d-none {
-    display: none !important;
-}
-
-
-/* ---------------------------------------------------------
-   VISIBLE
-   --------------------------------------------------------- */
-
-#chat-typing-indicator.typing-visible {
-    display: inline-flex !important;
-    opacity: 1;
-    transform:
-        translate(-50%, 0);
-}
-
-
-/* ---------------------------------------------------------
-   FLOATING
-   --------------------------------------------------------- */
-
-#chat-typing-indicator.typing-floating {
-    position: absolute !important;
-    left: 50% !important;
-    bottom: 12px !important;
-    z-index: 40 !important;
-}
-
-
-/* ---------------------------------------------------------
-   HIDING
-   --------------------------------------------------------- */
-
-#chat-typing-indicator.typing-hiding {
-    display: inline-flex !important;
-    opacity: 0;
-    transform:
-        translate(-50%, 4px);
-}
-
-
-/* =========================================================
-   TYPING TEXT
-   ========================================================= */
-
-#chat-typing-indicator .chat-typing-name {
-    display: inline;
-    margin-right: 4px;
-    font-weight: 600;
-}
-
-#chat-typing-indicator .chat-typing-text {
-    display: inline;
-}
-
-#chat-typing-indicator .chat-typing-dots {
-    display: inline-flex;
-    align-items: center;
-    min-width: 18px;
-    margin-left: 3px;
-}
-
-#chat-typing-indicator .chat-typing-dots span {
-    display: inline-block;
-    animation:
-        chatTypingDot 1.4s infinite ease-in-out;
-
-    opacity: 0.25;
-}
-
-
-/* =========================================================
-   TYPING DOT ANIMATION
-   ========================================================= */
-
-#chat-typing-indicator
-.chat-typing-dots span:nth-child(1) {
-    animation-delay: 0s;
-}
-
-#chat-typing-indicator
-.chat-typing-dots span:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-#chat-typing-indicator
-.chat-typing-dots span:nth-child(3) {
-    animation-delay: 0.4s;
-}
-
-@keyframes chatTypingDot {
-    0%,
-    60%,
-    100% {
-        opacity: 0.25;
-        transform: translateY(0);
-    }
-
-    30% {
-        opacity: 1;
-        transform: translateY(-2px);
-    }
-}
-
-
-/* =========================================================
-   SMALL SCREENS
-   ========================================================= */
+   SCROLL NAVIGATION - MOBILE
+========================================================= */
 
 @media (max-width: 576px) {
-    #chat-typing-indicator {
-        max-width: calc(100% - 20px);
-
-        padding: 6px 10px;
-
-        font-size: 0.875rem;
-    }
-
     .conversation-scroll-buttons {
         right: 8px;
         bottom: 8px;

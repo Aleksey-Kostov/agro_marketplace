@@ -10,18 +10,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const messageBodyField =
         replyForm
             ? (
-                replyForm.querySelector(
-                    '[name="body"]'
-                ) ||
-                replyForm.querySelector(
-                    'textarea'
-                )
+                replyForm.querySelector('[name="body"]') ||
+                replyForm.querySelector('textarea')
             )
             : null;
 
+    const typingIndicator =
+        document.getElementById('chat-typing-indicator');
+
     const TYPING_STOP_DELAY = 1200;
+    const TYPING_HIDE_DELAY = 250;
 
     let typingTimer = null;
+    let typingHideTimer = null;
+
     let isTyping = false;
     let typingUserId = null;
 
@@ -35,28 +37,21 @@ document.addEventListener('DOMContentLoaded', function () {
             return null;
         }
 
-        const value = Number(
-            chatWindow.dataset.currentUserId
-        );
+        const value =
+            Number(chatWindow.dataset.currentUserId);
 
-        return (
-            Number.isFinite(value) &&
-            value > 0
-        )
+        return Number.isFinite(value) && value > 0
             ? value
             : null;
     }
 
 
     /* =========================================================
-       WEBSOCKET MANAGER
+       WEBSOCKET
        ========================================================= */
 
     function getWebSocketManager() {
-        return (
-            window.agroChatWebSocket ||
-            null
-        );
+        return window.agroChatWebSocket || null;
     }
 
 
@@ -71,10 +66,6 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     }
 
-
-    /* =========================================================
-       SEND TYPING EVENT
-       ========================================================= */
 
     function sendTypingEvent(type) {
         const manager =
@@ -94,30 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       TYPING UI EVENT
-       ========================================================= */
-
-    function dispatchTypingState(
-        typing,
-        username = ''
-    ) {
-        window.dispatchEvent(
-            new CustomEvent(
-                'agro:typing-state',
-                {
-                    detail: {
-                        typing: Boolean(typing),
-                        username:
-                            username || 'User'
-                    }
-                }
-            )
-        );
-    }
-
-
-    /* =========================================================
-       START TYPING
+       LOCAL TYPING STATE
        ========================================================= */
 
     function startTyping() {
@@ -127,20 +95,14 @@ document.addEventListener('DOMContentLoaded', function () {
         isTyping = true;
 
         /*
-         * The WebSocket manager owns the socket.
-         *
-         * If it is still CONNECTING, do not send anything now.
-         * agro:websocket-open will send typing_start after
-         * the connection becomes ready.
+         * If WebSocket is not connected yet,
+         * agro:websocket-open will send typing_start
+         * when the connection becomes available.
          */
         if (!isSocketOpen()) {
             return;
         }
 
-        /*
-         * Send typing_start only once
-         * during the current typing session.
-         */
         if (!wasTyping) {
             sendTypingEvent(
                 'typing_start'
@@ -149,10 +111,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /* =========================================================
-       STOP TYPING
-       ========================================================= */
-
     function stopTyping() {
         if (!isTyping) {
             return;
@@ -160,13 +118,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         isTyping = false;
 
-        /*
-         * If the socket is temporarily unavailable,
-         * sendTypingEvent() simply returns false.
-         *
-         * The important part is that the local typing
-         * state is reset.
-         */
         sendTypingEvent(
             'typing_stop'
         );
@@ -174,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       TIMER
+       TYPING TIMER
        ========================================================= */
 
     function clearTypingTimer() {
@@ -220,10 +171,11 @@ document.addEventListener('DOMContentLoaded', function () {
             ).trim();
 
         /*
-         * Empty composer means the user stopped typing.
+         * Empty composer means typing has stopped.
          */
         if (!value) {
             clearTypingTimer();
+
             stopTyping();
 
             return;
@@ -267,7 +219,156 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       NORMALIZE WEBSOCKET DATA
+       TYPING UI
+       ========================================================= */
+
+    function clearTypingHideTimer() {
+        if (!typingHideTimer) {
+            return;
+        }
+
+        clearTimeout(
+            typingHideTimer
+        );
+
+        typingHideTimer = null;
+    }
+
+
+    function showTypingIndicator(username) {
+        if (!typingIndicator) {
+            return;
+        }
+
+        clearTypingHideTimer();
+
+        const nameElement =
+            typingIndicator.querySelector(
+                '.chat-typing-name'
+            );
+
+        if (nameElement) {
+            nameElement.textContent =
+                username || 'User';
+        }
+
+        /*
+         * d-none prevents the indicator from
+         * being displayed.
+         */
+        typingIndicator.classList.remove(
+            'd-none'
+        );
+
+        typingIndicator.classList.remove(
+            'typing-hiding'
+        );
+
+        /*
+         * typing-floating is purely visual.
+         * The CSS positions the indicator as
+         * an overlay inside #chat-window.
+         */
+        typingIndicator.classList.add(
+            'typing-floating'
+        );
+
+        /*
+         * Force the visible state.
+         */
+        typingIndicator.classList.add(
+            'typing-visible'
+        );
+    }
+
+
+    function hideTypingIndicator() {
+        if (!typingIndicator) {
+            return;
+        }
+
+        clearTypingHideTimer();
+
+        /*
+         * Already hidden.
+         */
+        if (
+            typingIndicator.classList.contains(
+                'd-none'
+            ) &&
+            !typingIndicator.classList.contains(
+                'typing-visible'
+            )
+        ) {
+            return;
+        }
+
+        /*
+         * Start CSS fade-out.
+         */
+        typingIndicator.classList.remove(
+            'typing-visible'
+        );
+
+        typingIndicator.classList.add(
+            'typing-hiding'
+        );
+
+        typingHideTimer =
+            setTimeout(
+                function () {
+                    typingHideTimer = null;
+
+                    /*
+                     * Someone started typing again
+                     * while the fade-out was running.
+                     */
+                    if (
+                        typingIndicator.classList.contains(
+                            'typing-visible'
+                        )
+                    ) {
+                        return;
+                    }
+
+                    typingIndicator.classList.remove(
+                        'typing-hiding'
+                    );
+
+                    typingIndicator.classList.remove(
+                        'typing-floating'
+                    );
+
+                    typingIndicator.classList.add(
+                        'd-none'
+                    );
+                },
+                TYPING_HIDE_DELAY
+            );
+    }
+
+
+    function dispatchTypingState(
+        typing,
+        username = ''
+    ) {
+        window.dispatchEvent(
+            new CustomEvent(
+                'agro:typing-state',
+                {
+                    detail: {
+                        typing: Boolean(typing),
+                        username:
+                            username || 'User'
+                    }
+                }
+            )
+        );
+    }
+
+
+    /* =========================================================
+       INCOMING WEBSOCKET PAYLOAD
        ========================================================= */
 
     function getTypingPayload(data) {
@@ -276,19 +377,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         /*
-         * Channels sends typing events as:
+         * Supports both:
+         *
+         * {
+         *     type: "typing_start",
+         *     ...
+         * }
+         *
+         * and:
          *
          * {
          *     type: "chat_message",
          *     data: {
          *         type: "typing_start",
-         *         user_id: 123,
-         *         username: "John"
+         *         ...
          *     }
          * }
-         *
-         * The WebSocket manager already parses JSON.
-         * Therefore event.detail contains the object directly.
          */
         if (
             data.type === 'chat_message' &&
@@ -297,21 +401,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return data.data;
         }
 
-        /*
-         * Also support direct payloads:
-         *
-         * {
-         *     type: "typing_start",
-         *     ...
-         * }
-         */
         return data;
     }
 
-
-    /* =========================================================
-       INCOMING USER ID
-       ========================================================= */
 
     function getIncomingUserId(data) {
         if (!data) {
@@ -327,10 +419,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const id =
             Number(raw);
 
-        return (
-            Number.isFinite(id) &&
-            id > 0
-        )
+        return Number.isFinite(id) && id > 0
             ? id
             : null;
     }
@@ -348,13 +437,12 @@ document.addEventListener('DOMContentLoaded', function () {
             getIncomingUserId(data);
 
         /*
-         * Never show our own typing indicator.
+         * Never display our own typing event.
          */
         if (
             incomingUserId &&
             currentUserId &&
-            incomingUserId ===
-                currentUserId
+            incomingUserId === currentUserId
         ) {
             return;
         }
@@ -366,6 +454,10 @@ document.addEventListener('DOMContentLoaded', function () {
             data.username ||
             data.user?.username ||
             'User';
+
+        showTypingIndicator(
+            username
+        );
 
         dispatchTypingState(
             true,
@@ -383,19 +475,20 @@ document.addEventListener('DOMContentLoaded', function () {
             getIncomingUserId(data);
 
         /*
-         * Ignore a stop event from another user
-         * if we currently display somebody else.
+         * If we know who is currently typing,
+         * ignore a stop event belonging to another user.
          */
         if (
             typingUserId &&
             incomingUserId &&
-            typingUserId !==
-                incomingUserId
+            typingUserId !== incomingUserId
         ) {
             return;
         }
 
         typingUserId = null;
+
+        hideTypingIndicator();
 
         dispatchTypingState(
             false
@@ -426,14 +519,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-
-            /* ---------------------------------------------
-               TYPING START
-               --------------------------------------------- */
-
             if (
-                data.type ===
-                'typing_start'
+                data.type === 'typing_start'
             ) {
                 handleIncomingTypingStart(
                     data
@@ -442,14 +529,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-
-            /* ---------------------------------------------
-               TYPING STOP
-               --------------------------------------------- */
-
             if (
-                data.type ===
-                'typing_stop'
+                data.type === 'typing_stop'
             ) {
                 handleIncomingTypingStop(
                     data
@@ -462,15 +543,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       WEBSOCKET OPEN / RECONNECT
+       WEBSOCKET RECONNECTED
        ========================================================= */
 
     window.addEventListener(
         'agro:websocket-open',
         function () {
             /*
-             * If the user was already typing while the socket
-             * reconnected, tell the server again.
+             * If the user was already typing while
+             * the WebSocket reconnected, restore
+             * the typing state.
              */
             if (
                 isTyping &&
@@ -488,7 +570,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       CLEANUP
+       BEFORE UNLOAD
        ========================================================= */
 
     window.addEventListener(
@@ -496,10 +578,11 @@ document.addEventListener('DOMContentLoaded', function () {
         function () {
             clearTypingTimer();
 
+            clearTypingHideTimer();
+
             /*
-             * Do NOT close the WebSocket here.
-             *
-             * chat_websocket.js owns WebSocket lifecycle.
+             * Best effort: notify the other participant
+             * before the page disappears.
              */
             if (
                 isTyping &&
@@ -514,4 +597,17 @@ document.addEventListener('DOMContentLoaded', function () {
             typingUserId = null;
         }
     );
+
+
+    /* =========================================================
+       PUBLIC API
+       ========================================================= */
+
+    window.agroChatTyping = {
+        show: showTypingIndicator,
+        hide: hideTypingIndicator,
+        isTyping: function () {
+            return isTyping;
+        }
+    };
 });
