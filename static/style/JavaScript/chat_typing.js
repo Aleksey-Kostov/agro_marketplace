@@ -39,19 +39,39 @@ document.addEventListener('DOMContentLoaded', function () {
     function showTypingIndicator(username, userId) {
         if (!typingIndicator) return;
 
+        const wasAtBottom = chatWindow
+             ? Math.abs(
+                  chatWindow.scrollHeight -
+                  chatWindow.scrollTop -
+                  chatWindow.clientHeight
+             ) <= 20
+             : false;
+
         if (indicatorHideTimer) {
-            clearTimeout(indicatorHideTimer);
-            indicatorHideTimer = null;
+             clearTimeout(indicatorHideTimer);
+             indicatorHideTimer = null;
         }
 
         const nameElement = typingIndicator.querySelector('.chat-typing-name');
-        if (nameElement) nameElement.textContent = username || 'User';
+
+        if (nameElement) {
+            nameElement.textContent = username || 'User';
+        }
 
         typingUserId = userId ? Number(userId) : null;
 
         typingIndicator.classList.remove('d-none');
         typingIndicator.classList.remove('typing-hiding');
         typingIndicator.classList.add('typing-visible');
+
+        if (wasAtBottom && chatWindow) {
+            requestAnimationFrame(function () {
+                chatWindow.scrollTo({
+                    top: chatWindow.scrollHeight,
+                    behavior: 'smooth'
+                });
+            });
+        }
     }
 
     function hideTypingIndicator(immediate = false) {
