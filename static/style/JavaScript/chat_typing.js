@@ -1,57 +1,78 @@
 document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
-    const chatWindow = document.getElementById('chat-window');
-    const replyForm = document.getElementById('reply-form');
+    const chatWindow =
+        document.getElementById('chat-window');
 
-    const messageBodyField = replyForm
-        ? replyForm.querySelector(
-            'textarea[name="body"], input[name="body"]'
-        )
-        : null;
+    const replyForm =
+        document.getElementById('reply-form');
 
-    const typingIndicator =
-        document.getElementById(
-            'chat-typing-indicator'
-        );
+    const messageBodyField =
+        replyForm
+            ? replyForm.querySelector(
+                'textarea[name="body"], input[name="body"]'
+            )
+            : null;
 
     const TYPING_STOP_DELAY = 1200;
-    const INDICATOR_HIDE_DELAY = 250;
 
     let typingTimer = null;
-    let indicatorHideTimer = null;
     let isTyping = false;
+
     let typingUserId = null;
 
+
+    /* =========================================================
+       CURRENT USER
+       ========================================================= */
+
     function getCurrentUserId() {
-        if (!chatWindow) return null;
+        if (!chatWindow) {
+            return null;
+        }
 
-        const value = Number(
-            chatWindow.dataset.currentUserId
-        );
+        const value =
+            Number(
+                chatWindow.dataset.currentUserId
+            );
 
-        return Number.isFinite(value) && value > 0
+        return (
+            Number.isFinite(value) &&
+            value > 0
+        )
             ? value
             : null;
     }
 
+
+    /* =========================================================
+       SOCKET
+       ========================================================= */
+
     function getSocket() {
-        return window.agroMessageSocket || null;
+        return (
+            window.agroMessageSocket ||
+            null
+        );
     }
 
     function sendTypingEvent(type) {
-        const socket = getSocket();
+        const socket =
+            getSocket();
 
         if (
             !socket ||
-            socket.readyState !== WebSocket.OPEN
+            socket.readyState !==
+                WebSocket.OPEN
         ) {
             return;
         }
 
         try {
             socket.send(
-                JSON.stringify({ type })
+                JSON.stringify({
+                    type
+                })
             );
         } catch (error) {
             console.error(
@@ -60,6 +81,11 @@ document.addEventListener('DOMContentLoaded', function () {
             );
         }
     }
+
+
+    /* =========================================================
+       TYPING STATE EVENT
+       ========================================================= */
 
     function dispatchTypingState(
         typing,
@@ -78,57 +104,15 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     }
 
-    function showTypingIndicator(
-        username,
-        userId
-    ) {
-        if (!typingIndicator) return;
 
-        if (indicatorHideTimer) {
-            clearTimeout(indicatorHideTimer);
-            indicatorHideTimer = null;
-        }
-
-        typingUserId = userId
-            ? Number(userId)
-            : null;
-
-        dispatchTypingState(
-            true,
-            username || 'User'
-        );
-    }
-
-    function hideTypingIndicator(
-        immediate = false
-    ) {
-        if (!typingIndicator) return;
-
-        if (indicatorHideTimer) {
-            clearTimeout(indicatorHideTimer);
-            indicatorHideTimer = null;
-        }
-
-        typingUserId = null;
-
-        if (immediate) {
-            dispatchTypingState(false);
-
-            return;
-        }
-
-        dispatchTypingState(false);
-
-        indicatorHideTimer = setTimeout(
-            function () {
-                indicatorHideTimer = null;
-            },
-            INDICATOR_HIDE_DELAY
-        );
-    }
+    /* =========================================================
+       START / STOP LOCAL TYPING
+       ========================================================= */
 
     function startTyping() {
-        if (isTyping) return;
+        if (isTyping) {
+            return;
+        }
 
         isTyping = true;
 
@@ -138,7 +122,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function stopTyping() {
-        if (!isTyping) return;
+        if (!isTyping) {
+            return;
+        }
 
         isTyping = false;
 
@@ -147,36 +133,57 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     }
 
-    function clearTypingTimer() {
-        if (!typingTimer) return;
 
-        clearTimeout(typingTimer);
+    /* =========================================================
+       TIMER
+       ========================================================= */
+
+    function clearTypingTimer() {
+        if (!typingTimer) {
+            return;
+        }
+
+        clearTimeout(
+            typingTimer
+        );
+
         typingTimer = null;
     }
 
     function resetTypingTimer() {
         clearTypingTimer();
 
-        typingTimer = setTimeout(
-            function () {
-                stopTyping();
+        typingTimer =
+            setTimeout(function () {
                 typingTimer = null;
-            },
-            TYPING_STOP_DELAY
-        );
+
+                stopTyping();
+            }, TYPING_STOP_DELAY);
     }
 
-    function handleComposerInput() {
-        if (!messageBodyField) return;
 
-        if (!messageBodyField.value.trim()) {
+    /* =========================================================
+       COMPOSER
+       ========================================================= */
+
+    function handleComposerInput() {
+        if (!messageBodyField) {
+            return;
+        }
+
+        const value =
+            messageBodyField.value.trim();
+
+        if (!value) {
             clearTypingTimer();
+
             stopTyping();
 
             return;
         }
 
         startTyping();
+
         resetTypingTimer();
     }
 
@@ -190,38 +197,88 @@ document.addEventListener('DOMContentLoaded', function () {
             'blur',
             function () {
                 clearTypingTimer();
+
                 stopTyping();
             }
         );
     }
 
+
+    /* =========================================================
+       MESSAGE SENT
+       ========================================================= */
+
     window.addEventListener(
         'agro:message-sent',
         function () {
             clearTypingTimer();
+
             stopTyping();
-            hideTypingIndicator(true);
         }
     );
+
+
+    /* =========================================================
+       INCOMING USER ID
+       ========================================================= */
+
+    function getIncomingUserId(data) {
+        if (!data) {
+            return null;
+        }
+
+        const raw =
+            data.user_id ??
+            data.sender_id ??
+            data.user?.id ??
+            null;
+
+        const id =
+            Number(raw);
+
+        return (
+            Number.isFinite(id) &&
+            id > 0
+        )
+            ? id
+            : null;
+    }
+
+
+    /* =========================================================
+       WEBSOCKET EVENTS
+       ========================================================= */
 
     window.addEventListener(
         'agro:websocket-message',
         function (event) {
-            const data = event.detail;
+            const data =
+                event.detail;
 
-            if (!data) return;
+            if (!data) {
+                return;
+            }
+
+
+            /* -------------------------------------------------
+               TYPING START
+               ------------------------------------------------- */
 
             if (
-                data.type === 'typing_start'
+                data.type ===
+                'typing_start'
             ) {
                 const currentUserId =
                     getCurrentUserId();
 
                 const incomingUserId =
-                    data.user_id
-                        ? Number(data.user_id)
-                        : null;
+                    getIncomingUserId(
+                        data
+                    );
 
+                /*
+                 * Never show our own typing event.
+                 */
                 if (
                     incomingUserId &&
                     currentUserId &&
@@ -231,22 +288,37 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                showTypingIndicator(
-                    data.username || 'User',
-                    incomingUserId
+                typingUserId =
+                    incomingUserId;
+
+                dispatchTypingState(
+                    true,
+                    data.username ||
+                        data.user?.username ||
+                        'User'
                 );
 
                 return;
             }
 
+
+            /* -------------------------------------------------
+               TYPING STOP
+               ------------------------------------------------- */
+
             if (
-                data.type === 'typing_stop'
+                data.type ===
+                'typing_stop'
             ) {
                 const incomingUserId =
-                    data.user_id
-                        ? Number(data.user_id)
-                        : null;
+                    getIncomingUserId(
+                        data
+                    );
 
+                /*
+                 * If we know who is currently typing,
+                 * ignore a stop event from another user.
+                 */
                 if (
                     typingUserId &&
                     incomingUserId &&
@@ -256,27 +328,28 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                hideTypingIndicator();
+                typingUserId = null;
 
-                return;
+                dispatchTypingState(
+                    false
+                );
             }
         }
     );
+
+
+    /* =========================================================
+       CLEANUP
+       ========================================================= */
 
     window.addEventListener(
         'beforeunload',
         function () {
             clearTypingTimer();
 
-            if (indicatorHideTimer) {
-                clearTimeout(
-                    indicatorHideTimer
-                );
-
-                indicatorHideTimer = null;
-            }
-
             stopTyping();
+
+            typingUserId = null;
         }
     );
 });

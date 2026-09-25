@@ -2860,6 +2860,9 @@
     }
 }
 
+/* -----------------------------------------------------
+       CHAT TYPING
+----------------------------------------------------- */
 
 .chat-typing-indicator {
     display: flex;
@@ -2946,9 +2949,18 @@
     }
 }
 
+
+/* =========================================================
+   CHAT SCROLL CONTAINER
+   ========================================================= */
+
 .conversation-scroll {
     position: relative;
 }
+
+/* =========================================================
+   FLOATING TYPING INDICATOR
+   ========================================================= */
 
 .chat-typing-indicator.typing-floating {
     position: absolute;
@@ -2972,11 +2984,20 @@
     display: none;
 }
 
-.chat-typing-indicator.typing-floating
-.chat-typing-dots {
+.chat-typing-indicator.typing-floating .chat-typing-dots {
     margin: 0;
     min-width: 18px;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-typing-indicator.typing-floating {
+        transition: none;
+    }
+}
+
+/* =========================================================
+   UNREAD MESSAGE COUNT
+   ========================================================= */
 
 .unread-message-count {
     position: absolute;
@@ -3000,11 +3021,5 @@
 
 .unread-message-count.d-none {
     display: none !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .chat-typing-indicator.typing-floating {
-        transition: none;
-    }
 }
 

@@ -96,7 +96,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return window.agroChatNavigation.isAtBottom();
         }
 
-        if (!chatWindow) return true;
+        if (!chatWindow) {
+            return true;
+        }
 
         return (
             chatWindow.scrollTop +
@@ -125,7 +127,9 @@ document.addEventListener('DOMContentLoaded', function () {
        ========================================================= */
 
     function getCurrentUserId() {
-        if (!chatWindow) return null;
+        if (!chatWindow) {
+            return null;
+        }
 
         const value = Number(
             chatWindow.dataset.currentUserId
@@ -155,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
             return true;
+
         } catch (error) {
             console.error(
                 'Unable to send WebSocket payload:',
@@ -177,14 +182,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function getMessageIdFromElement(element) {
-        if (!element) return null;
+        if (!element) {
+            return null;
+        }
 
         if (element.dataset.messageId) {
             const id = Number(
                 element.dataset.messageId
             );
 
-            if (id) return id;
+            if (id) {
+                return id;
+            }
         }
 
         const rawId = element.id || '';
@@ -194,7 +203,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 rawId.substring(4)
             );
 
-            if (id) return id;
+            if (id) {
+                return id;
+            }
         }
 
         const child = element.querySelector(
@@ -206,14 +217,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 child.dataset.messageId
             );
 
-            if (id) return id;
+            if (id) {
+                return id;
+            }
         }
 
         return null;
     }
 
     function removeEmptyConversationMessage() {
-        if (!chatMessages) return;
+        if (!chatMessages) {
+            return;
+        }
 
         chatMessages
             .querySelectorAll('.alert.alert-info')
@@ -264,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         /*
-         * chat_navigation.js owns scrolling.
+         * chat_navigation.js owns all scrolling.
          */
         window.dispatchEvent(
             new CustomEvent(
@@ -358,6 +373,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             data = await response.json();
+
         } catch (error) {
             throw new Error(
                 `Invalid message fragment response (${response.status}).`
@@ -428,20 +444,21 @@ document.addEventListener('DOMContentLoaded', function () {
             newMessage
         );
 
+        /*
+         * Keep the user's exact scroll position.
+         * Navigation module will update its UI from
+         * the native scroll event.
+         */
         if (
             preserveScroll &&
             chatWindow
         ) {
             chatWindow.scrollTop =
                 oldScrollTop;
-        }
 
-        if (
-            window.agroChatNavigation &&
-            typeof window.agroChatNavigation.updateScrollButtons === 'function'
-        ) {
-            window.agroChatNavigation
-                .updateScrollButtons();
+            chatWindow.dispatchEvent(
+                new Event('scroll')
+            );
         }
 
         return true;
@@ -508,7 +525,9 @@ document.addEventListener('DOMContentLoaded', function () {
        ========================================================= */
 
     function getSendUrl() {
-        if (!replyForm) return null;
+        if (!replyForm) {
+            return null;
+        }
 
         return (
             replyForm.dataset.sendUrl ||
@@ -580,7 +599,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const emoji =
                 emojiButton.dataset.emoji || '';
 
-            if (!emoji) return;
+            if (!emoji) {
+                return;
+            }
 
             const start =
                 typeof messageBodyField.selectionStart === 'number'
@@ -651,7 +672,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function validateImageFile(file) {
-        if (!file) return false;
+        if (!file) {
+            return false;
+        }
 
         if (!file.type.startsWith('image/')) {
             alert(
@@ -673,7 +696,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function validateVideoFile(file) {
-        if (!file) return false;
+        if (!file) {
+            return false;
+        }
 
         if (!file.type.startsWith('video/')) {
             alert(
@@ -752,6 +777,7 @@ document.addEventListener('DOMContentLoaded', function () {
             replyImage
         ) {
             replyImage.src = imageUrl;
+
             replyImage.classList.remove(
                 'd-none'
             );
@@ -1045,7 +1071,9 @@ document.addEventListener('DOMContentLoaded', function () {
        ========================================================= */
 
     function showDropOverlay() {
-        if (!dropOverlay) return;
+        if (!dropOverlay) {
+            return;
+        }
 
         dropOverlay.classList.add(
             'active',
@@ -1059,7 +1087,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function hideDropOverlay() {
-        if (!dropOverlay) return;
+        if (!dropOverlay) {
+            return;
+        }
 
         dropOverlay.classList.remove(
             'active',
@@ -1184,6 +1214,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                             imageInput.files =
                                 dt.files;
+
                         } catch (err) {
                             console.error(
                                 'Unable to assign image file:',
@@ -1219,6 +1250,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                             videoInput.files =
                                 dt.files;
+
                         } catch (err) {
                             console.error(
                                 'Unable to assign video file:',
@@ -1267,7 +1299,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 e.clipboardData &&
                 e.clipboardData.items;
 
-            if (!items) return;
+            if (!items) {
+                return;
+            }
 
             for (
                 let i = 0;
@@ -1305,6 +1339,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         imageInput.files =
                             dt.files;
                     }
+
                 } catch (err) {
                     console.error(
                         'Unable to assign pasted image:',
@@ -1329,7 +1364,9 @@ document.addEventListener('DOMContentLoaded', function () {
        ========================================================= */
 
     function showUploadProgress() {
-        if (!uploadProgressWrap) return;
+        if (!uploadProgressWrap) {
+            return;
+        }
 
         uploadProgressWrap.classList.remove(
             'd-none'
@@ -1468,7 +1505,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function setSendingState(isSending) {
-        if (!submitBtn) return;
+        if (!submitBtn) {
+            return;
+        }
 
         if (isSending) {
             submitBtn.disabled = true;
@@ -1660,7 +1699,9 @@ document.addEventListener('DOMContentLoaded', function () {
             button.dataset.replyVideo ||
             '';
 
-        if (!messageId) return;
+        if (!messageId) {
+            return;
+        }
 
         if (editingMessageId) {
             editingMessageId.value = '';
@@ -1754,7 +1795,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     '.edit-message-side-btn'
                 );
 
-            if (!button) return;
+            if (!button) {
+                return;
+            }
 
             e.preventDefault();
 
@@ -1778,7 +1821,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     '.reply-message-side-btn'
                 );
 
-            if (!button) return;
+            if (!button) {
+                return;
+            }
 
             e.preventDefault();
 
@@ -1807,7 +1852,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     '.delete-message-form'
                 );
 
-            if (!form) return;
+            if (!form) {
+                return;
+            }
 
             event.preventDefault();
             event.stopPropagation();
@@ -1965,14 +2012,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (chatWindow) {
                     chatWindow.scrollTop =
                         oldScrollTop;
-                }
 
-                if (
-                    window.agroChatNavigation &&
-                    typeof window.agroChatNavigation.updateScrollButtons === 'function'
-                ) {
-                    window.agroChatNavigation
-                        .updateScrollButtons();
+                    /*
+                     * Let chat_navigation.js update
+                     * its buttons/state.
+                     */
+                    chatWindow.dispatchEvent(
+                        new Event('scroll')
+                    );
                 }
 
             } catch (error) {
@@ -2053,7 +2100,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const body =
             messageBodyField.value.trim();
 
-        if (!messageId) return;
+        if (!messageId) {
+            return;
+        }
 
         if (!editUrl) {
             alert(
@@ -2125,6 +2174,7 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
                 data =
                     await response.json();
+
             } catch (jsonError) {
                 throw new Error(
                     `Invalid server response (${response.status}).`
@@ -2286,6 +2336,7 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
                 data =
                     await response.json();
+
             } catch (jsonError) {
                 throw new Error(
                     `Invalid server response (${response.status}).`
@@ -2436,6 +2487,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             JSON.parse(
                                 xhr.responseText
                             );
+
                     } catch (err) {
                         console.error(
                             'Invalid attachment response:',
@@ -2644,12 +2696,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     '.media-share-btn, .share-btn'
                 );
 
-            if (!button) return;
+            if (!button) {
+                return;
+            }
 
             const url =
                 button.dataset.url;
 
-            if (!url) return;
+            if (!url) {
+                return;
+            }
 
             e.preventDefault();
 
@@ -2727,6 +2783,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.execCommand(
                     'copy'
                 );
+
             } catch (err) {
                 console.error(
                     'Copy failed:',
@@ -2748,12 +2805,16 @@ document.addEventListener('DOMContentLoaded', function () {
         '';
 
     function getReactionUrl(button) {
-        if (!button) return null;
+        if (!button) {
+            return null;
+        }
 
         const href =
             button.getAttribute('href');
 
-        if (href) return href;
+        if (href) {
+            return href;
+        }
 
         const messageElement =
             button.closest(
@@ -2779,7 +2840,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const template =
             chatWindow?.dataset.reactionUrl;
 
-        if (!template) return null;
+        if (!template) {
+            return null;
+        }
 
         try {
             const url =
@@ -2811,7 +2874,9 @@ document.addEventListener('DOMContentLoaded', function () {
         reaction,
         messageId
     ) {
-        if (!button) return null;
+        if (!button) {
+            return null;
+        }
 
         let avatarBox =
             button.querySelector(
@@ -2850,7 +2915,9 @@ document.addEventListener('DOMContentLoaded', function () {
         button,
         data
     ) {
-        if (!button) return;
+        if (!button) {
+            return;
+        }
 
         const reaction =
             data.reaction ||
@@ -2964,7 +3031,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     '.js-react'
                 );
 
-            if (!button) return;
+            if (!button) {
+                return;
+            }
 
             e.preventDefault();
             e.stopPropagation();
@@ -2990,7 +3059,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     messageElement
                 );
 
-            if (!messageId) return;
+            if (!messageId) {
+                return;
+            }
 
             const csrfToken =
                 getCsrfToken();
@@ -3059,6 +3130,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 try {
                     data =
                         await response.json();
+
                 } catch (jsonError) {
                     throw new Error(
                         `Invalid reaction response (${response.status}).`
@@ -3091,14 +3163,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (chatWindow) {
                     chatWindow.scrollTop =
                         scrollTop;
-                }
 
-                if (
-                    window.agroChatNavigation &&
-                    typeof window.agroChatNavigation.updateScrollButtons === 'function'
-                ) {
-                    window.agroChatNavigation
-                        .updateScrollButtons();
+                    /*
+                     * chat_navigation.js owns
+                     * navigation UI.
+                     */
+                    chatWindow.dispatchEvent(
+                        new Event('scroll')
+                    );
                 }
 
             } catch (error) {
@@ -3114,6 +3186,16 @@ document.addEventListener('DOMContentLoaded', function () {
                             preserveScroll: true
                         }
                     );
+
+                    if (chatWindow) {
+                        chatWindow.scrollTop =
+                            scrollTop;
+
+                        chatWindow.dispatchEvent(
+                            new Event('scroll')
+                        );
+                    }
+
                 } catch (refreshError) {
                     console.error(
                         'Unable to restore reaction state:',
@@ -3164,7 +3246,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const id =
             Number(messageId);
 
-        if (!id) return false;
+        if (!id) {
+            return false;
+        }
 
         if (
             !force &&
@@ -3187,12 +3271,24 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function markExistingReceivedMessagesAsRead() {
-        if (!chatMessages) return;
+        if (!chatMessages) {
+            return;
+        }
+
+        /*
+         * Do not mark messages as read when the user
+         * is currently reading older messages.
+         */
+        if (!isChatAtBottom()) {
+            return;
+        }
 
         const currentUserId =
             getCurrentUserId();
 
-        if (!currentUserId) return;
+        if (!currentUserId) {
+            return;
+        }
 
         chatMessages
             .querySelectorAll(
@@ -3214,8 +3310,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /*
-     * When the navigation module detects that the user
-     * reached the bottom, mark all received messages as read.
+     * chat_navigation.js dispatches this when the
+     * user reaches the bottom of the conversation.
      */
     window.addEventListener(
         'agro:chat-bottom-reached',
@@ -3230,7 +3326,9 @@ document.addEventListener('DOMContentLoaded', function () {
        ========================================================= */
 
     function getWebSocketUrl() {
-        if (!chatWindow) return null;
+        if (!chatWindow) {
+            return null;
+        }
 
         const rootMessageId =
             chatWindow.dataset.rootMessageId;
@@ -3281,10 +3379,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         /*
-         * If the message already exists, it was most likely
-         * created locally first and then echoed back through WS.
-         *
-         * Do not increment unread count here.
+         * Message may already have been rendered locally.
+         * Do not increment unread counter in this case.
          */
         if (
             getMessageElement(messageId)
@@ -3308,8 +3404,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         /*
          * IMPORTANT:
-         * Check BEFORE fetching/inserting because insertion
-         * changes scrollHeight.
+         * Determine this BEFORE fetching/inserting because
+         * inserting the message changes scrollHeight.
          */
         const shouldScroll =
             isChatAtBottom();
@@ -3351,8 +3447,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (shouldScroll) {
                 /*
-                 * User is already at the bottom.
-                 * Message is immediately considered read.
+                 * User was already at the bottom.
+                 * Navigation will keep the conversation there.
                  */
                 markMessageAsRead(
                     messageId
@@ -3360,12 +3456,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             } else if (
                 window.agroChatNavigation &&
-                typeof window.agroChatNavigation.addUnreadMessage === 'function'
+                typeof window.agroChatNavigation.addUnreadMessage ===
+                    'function'
             ) {
                 /*
                  * User is reading older messages.
-                 * Do NOT mark it as read.
-                 * Increase the Viber-style counter.
+                 * Keep the message unread and increment
+                 * the navigation counter.
                  */
                 window.agroChatNavigation
                     .addUnreadMessage();
@@ -3415,6 +3512,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         preserveScroll: true
                     }
                 );
+
             } catch (error) {
                 console.error(
                     'Unable to refresh message status:',
@@ -3431,7 +3529,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const id =
             Number(messageId);
 
-        if (!id) return;
+        if (!id) {
+            return;
+        }
 
         refreshMessageFragment(
             id,
@@ -3462,6 +3562,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 JSON.parse(
                     event.data
                 );
+
         } catch (error) {
             console.error(
                 'WebSocket invalid JSON:',
@@ -3472,7 +3573,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         /*
-         * chat_typing.js listens here.
+         * chat_typing.js listens for this event.
          */
         window.dispatchEvent(
             new CustomEvent(
@@ -3492,11 +3593,12 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
             /*
-             * Initial page position is bottom,
-             * so existing received messages can be
-             * marked read.
+             * Only mark existing messages as read
+             * if the user is actually at the bottom.
              */
-            markExistingReceivedMessagesAsRead();
+            if (isChatAtBottom()) {
+                markExistingReceivedMessagesAsRead();
+            }
 
             return;
         }
@@ -3664,12 +3766,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function connectWebSocket() {
-        if (!chatWindow) return;
+        if (!chatWindow) {
+            return;
+        }
 
         const url =
             getWebSocketUrl();
 
-        if (!url) return;
+        if (!url) {
+            return;
+        }
 
         if (
             messageWebSocket &&
@@ -3691,7 +3797,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 new WebSocket(url);
 
             /*
-             * chat_typing.js uses this.
+             * chat_typing.js uses this socket.
              */
             window.agroMessageSocket =
                 messageWebSocket;
@@ -3717,7 +3823,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     'Message WebSocket connected.'
                 );
 
-                markExistingReceivedMessagesAsRead();
+                /*
+                 * Only mark messages as read if
+                 * the user is currently at bottom.
+                 */
+                if (isChatAtBottom()) {
+                    markExistingReceivedMessagesAsRead();
+                }
             }
         );
 
@@ -3785,13 +3897,11 @@ document.addEventListener('DOMContentLoaded', function () {
             null;
     }
 
-
     /* =========================================================
        START WEBSOCKET
        ========================================================= */
 
     connectWebSocket();
-
 
     /* =========================================================
        CLEANUP

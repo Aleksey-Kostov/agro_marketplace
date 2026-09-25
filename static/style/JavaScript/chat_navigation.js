@@ -17,43 +17,84 @@ document.addEventListener('DOMContentLoaded', function () {
     let scrollButtonHideTimer = null;
     let unreadCount = 0;
 
+    let typingHideTimer = null;
+
+
+    /* =========================================================
+       SCROLL STATE
+       ========================================================= */
+
     function getMaxScrollTop() {
-        if (!chatWindow) return 0;
+        if (!chatWindow) {
+            return 0;
+        }
 
         return Math.max(
             0,
-            chatWindow.scrollHeight - chatWindow.clientHeight
+            chatWindow.scrollHeight -
+                chatWindow.clientHeight
+        );
+    }
+
+    function isAtTop() {
+        if (!chatWindow) {
+            return true;
+        }
+
+        return (
+            chatWindow.scrollTop <=
+            SCROLL_EPSILON
         );
     }
 
     function isAtBottom() {
-        if (!chatWindow) return true;
+        if (!chatWindow) {
+            return true;
+        }
 
         return (
-            chatWindow.scrollTop + chatWindow.clientHeight
+            chatWindow.scrollTop +
+            chatWindow.clientHeight
         ) >= (
-            chatWindow.scrollHeight - BOTTOM_THRESHOLD
+            chatWindow.scrollHeight -
+            BOTTOM_THRESHOLD
         );
     }
 
+
+    /* =========================================================
+       UNREAD
+       ========================================================= */
+
     function updateUnreadBadge() {
-        if (!unreadMessageCount) return;
+        if (!unreadMessageCount) {
+            return;
+        }
 
         if (unreadCount <= 0) {
             unreadMessageCount.textContent = '0';
-            unreadMessageCount.classList.add('d-none');
+
+            unreadMessageCount.classList.add(
+                'd-none'
+            );
         } else {
             unreadMessageCount.textContent =
-                unreadCount > 99 ? '99+' : String(unreadCount);
+                unreadCount > 99
+                    ? '99+'
+                    : String(unreadCount);
 
-            unreadMessageCount.classList.remove('d-none');
+            unreadMessageCount.classList.remove(
+                'd-none'
+            );
         }
 
         updateBottomButtonLabel();
     }
 
     function updateBottomButtonLabel() {
-        if (!scrollBottomBtn) return;
+        if (!scrollBottomBtn) {
+            return;
+        }
 
         if (unreadCount > 0) {
             scrollBottomBtn.setAttribute(
@@ -69,31 +110,45 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function clearUnreadMessages() {
-        if (unreadCount === 0) return;
+        if (unreadCount === 0) {
+            return;
+        }
 
         unreadCount = 0;
+
         updateUnreadBadge();
     }
 
     function addUnreadMessage() {
         unreadCount += 1;
+
         updateUnreadBadge();
+
         updateScrollButtons();
     }
 
+
+    /* =========================================================
+       BUTTON VISIBILITY
+       ========================================================= */
+
     function updateScrollButtons() {
-        if (!chatWindow) return;
+        if (!chatWindow) {
+            return;
+        }
 
-        const currentScrollTop = chatWindow.scrollTop;
-        const maxScrollTop = getMaxScrollTop();
+        const atTop = isAtTop();
+        const atBottom = isAtBottom();
 
-        const atTop =
-            currentScrollTop <= SCROLL_EPSILON;
-
-        const atBottom =
-            currentScrollTop >=
-            maxScrollTop - SCROLL_EPSILON;
-
+        /*
+         * TOP BUTTON
+         *
+         * Only appears when the user has actually moved
+         * away from the top.
+         *
+         * IMPORTANT:
+         * unread messages alone never show this button.
+         */
         if (scrollTopBtn) {
             scrollTopBtn.classList.toggle(
                 'd-none',
@@ -101,19 +156,42 @@ document.addEventListener('DOMContentLoaded', function () {
             );
         }
 
+        /*
+         * BOTTOM BUTTON
+         *
+         * Show it when:
+         *
+         * 1. User is not at bottom
+         * OR
+         * 2. There are unread messages.
+         *
+         * This is the important distinction:
+         *
+         * unread messages can show the DOWN button even
+         * when the user has not manually scrolled.
+         */
         if (scrollBottomBtn) {
+            const shouldShowBottom =
+                !atBottom ||
+                unreadCount > 0;
+
             scrollBottomBtn.classList.toggle(
                 'd-none',
-                atBottom
+                !shouldShowBottom
             );
         }
 
-        if (atBottom) {
-            clearUnreadMessages();
-        }
+        updateUnreadBadge();
 
-        updateTypingIndicatorPosition(atBottom);
+        updateTypingIndicatorPosition(
+            atBottom
+        );
     }
+
+
+    /* =========================================================
+       HOVER VISIBILITY
+       ========================================================= */
 
     function showScrollButtons() {
         if (scrollTopBtn) {
@@ -131,26 +209,51 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function scheduleScrollButtonHide() {
         if (scrollButtonHideTimer) {
-            clearTimeout(scrollButtonHideTimer);
+            clearTimeout(
+                scrollButtonHideTimer
+            );
         }
 
-        scrollButtonHideTimer = setTimeout(function () {
-            if (scrollTopBtn) {
-                scrollTopBtn.classList.add(
-                    'scroll-buttons-hidden'
-                );
-            }
+        scrollButtonHideTimer =
+            setTimeout(function () {
+                scrollButtonHideTimer = null;
 
-            if (scrollBottomBtn) {
-                scrollBottomBtn.classList.add(
-                    'scroll-buttons-hidden'
-                );
-            }
-        }, SCROLL_BUTTON_HIDE_DELAY);
+                /*
+                 * NEVER hide the DOWN button while there
+                 * are unread messages.
+                 */
+                if (
+                    scrollBottomBtn &&
+                    unreadCount <= 0
+                ) {
+                    scrollBottomBtn.classList.add(
+                        'scroll-buttons-hidden'
+                    );
+                }
+
+                /*
+                 * TOP button can be hidden after inactivity.
+                 */
+                if (
+                    scrollTopBtn &&
+                    isAtTop()
+                ) {
+                    scrollTopBtn.classList.add(
+                        'scroll-buttons-hidden'
+                    );
+                }
+            }, SCROLL_BUTTON_HIDE_DELAY);
     }
 
+
+    /* =========================================================
+       SCROLL ACTIONS
+       ========================================================= */
+
     function scrollToTop() {
-        if (!chatWindow) return;
+        if (!chatWindow) {
+            return;
+        }
 
         chatWindow.scrollTo({
             top: 0,
@@ -159,40 +262,82 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function scrollToBottom(smooth = true) {
-        if (!chatWindow) return;
+        if (!chatWindow) {
+            return;
+        }
 
         chatWindow.scrollTo({
             top: chatWindow.scrollHeight,
-            behavior: smooth ? 'smooth' : 'auto'
+            behavior: smooth
+                ? 'smooth'
+                : 'auto'
         });
 
         /*
-         * The actual reset also happens from the scroll event
-         * when we reach the bottom.
+         * For an instant scroll we can immediately reset
+         * unread state.
+         *
+         * For smooth scrolling the scroll event will clear
+         * it once the real bottom is reached.
          */
         if (!smooth) {
             clearUnreadMessages();
+
+            window.dispatchEvent(
+                new CustomEvent(
+                    'agro:chat-bottom-reached'
+                )
+            );
         }
     }
 
+
+    /* =========================================================
+       INITIAL POSITION
+       ========================================================= */
+
     function initializeChatPosition() {
-        if (!chatWindow) return;
+        if (!chatWindow) {
+            return;
+        }
 
         requestAnimationFrame(function () {
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+            chatWindow.scrollTop =
+                chatWindow.scrollHeight;
+
+            /*
+             * Initial page load is considered read.
+             */
+            clearUnreadMessages();
+
             updateScrollButtons();
+
+            window.dispatchEvent(
+                new CustomEvent(
+                    'agro:chat-bottom-reached'
+                )
+            );
         });
     }
 
-    function updateTypingIndicatorPosition(atBottom = isAtBottom()) {
-        if (!typingIndicator) return;
 
-        const isTypingVisible =
+    /* =========================================================
+       TYPING INDICATOR
+       ========================================================= */
+
+    function updateTypingIndicatorPosition(
+        atBottom = isAtBottom()
+    ) {
+        if (!typingIndicator) {
+            return;
+        }
+
+        const isVisible =
             typingIndicator.classList.contains(
                 'typing-visible'
             );
 
-        if (!isTypingVisible) {
+        if (!isVisible) {
             typingIndicator.classList.remove(
                 'typing-floating'
             );
@@ -201,8 +346,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         /*
-         * At bottom:
-         * show full "Username is typing..."
+         * Keep typing indicator in normal flow when
+         * the user is at the bottom.
          */
         if (atBottom) {
             const wasFloating =
@@ -215,13 +360,14 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
             /*
-             * Removing the floating position puts the
-             * indicator back into normal document flow.
-             *
-             * If we were already at bottom, keep the chat
-             * visually pinned to the bottom.
+             * If we were previously floating and the user
+             * reached the bottom, keep the conversation
+             * visually pinned.
              */
-            if (wasFloating && chatWindow) {
+            if (
+                wasFloating &&
+                chatWindow
+            ) {
                 requestAnimationFrame(function () {
                     if (isAtBottom()) {
                         chatWindow.scrollTop =
@@ -234,42 +380,59 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         /*
-         * Not at bottom:
-         * turn it into a small floating typing bubble.
+         * User is reading older messages.
+         * Keep typing indicator floating instead of
+         * changing the scroll position.
          */
         typingIndicator.classList.add(
             'typing-floating'
         );
     }
 
-    function handleTypingState(event) {
-        const detail = event.detail || {};
-
-        if (!typingIndicator) return;
-
-        if (detail.typing) {
-            const nameElement =
-                typingIndicator.querySelector(
-                    '.chat-typing-name'
-                );
-
-            if (nameElement) {
-                nameElement.textContent =
-                    detail.username || 'User';
-            }
-
-            typingIndicator.classList.remove(
-                'd-none',
-                'typing-hiding'
-            );
-
-            typingIndicator.classList.add(
-                'typing-visible'
-            );
-
-            updateTypingIndicatorPosition();
-
+    function showTypingIndicator(username) {
+        if (!typingIndicator) {
             return;
+        }
+
+        if (typingHideTimer) {
+            clearTimeout(
+                typingHideTimer
+            );
+
+            typingHideTimer = null;
+        }
+
+        const nameElement =
+            typingIndicator.querySelector(
+                '.chat-typing-name'
+            );
+
+        if (nameElement) {
+            nameElement.textContent =
+                username || 'User';
+        }
+
+        typingIndicator.classList.remove(
+            'd-none',
+            'typing-hiding'
+        );
+
+        typingIndicator.classList.add(
+            'typing-visible'
+        );
+
+        updateTypingIndicatorPosition();
+    }
+
+    function hideTypingIndicator() {
+        if (!typingIndicator) {
+            return;
+        }
+
+        if (typingHideTimer) {
+            clearTimeout(
+                typingHideTimer
+            );
         }
 
         typingIndicator.classList.remove(
@@ -281,27 +444,54 @@ document.addEventListener('DOMContentLoaded', function () {
             'typing-hiding'
         );
 
-        setTimeout(function () {
-            if (
-                !typingIndicator.classList.contains(
-                    'typing-visible'
-                )
-            ) {
-                typingIndicator.classList.remove(
-                    'typing-hiding'
-                );
+        typingHideTimer =
+            setTimeout(function () {
+                typingHideTimer = null;
 
-                typingIndicator.classList.add(
-                    'd-none'
-                );
-            }
-        }, 250);
+                if (
+                    !typingIndicator.classList.contains(
+                        'typing-visible'
+                    )
+                ) {
+                    typingIndicator.classList.remove(
+                        'typing-hiding'
+                    );
+
+                    typingIndicator.classList.add(
+                        'd-none'
+                    );
+                }
+            }, 250);
     }
 
-    function handleMessageRendered(event) {
-        const detail = event.detail || {};
+    function handleTypingState(event) {
+        const detail =
+            event.detail || {};
 
-        if (!detail.shouldScroll || !chatWindow) {
+        if (detail.typing) {
+            showTypingIndicator(
+                detail.username || 'User'
+            );
+
+            return;
+        }
+
+        hideTypingIndicator();
+    }
+
+
+    /* =========================================================
+       MESSAGE RENDERED
+       ========================================================= */
+
+    function handleMessageRendered(event) {
+        const detail =
+            event.detail || {};
+
+        if (
+            !detail.shouldScroll ||
+            !chatWindow
+        ) {
             updateScrollButtons();
             return;
         }
@@ -312,25 +502,34 @@ document.addEventListener('DOMContentLoaded', function () {
                 behavior: 'smooth'
             });
 
+            /*
+             * Do not manually clear unread here.
+             * The scroll event decides when the actual
+             * bottom has been reached.
+             */
             updateScrollButtons();
         });
     }
+
+
+    /* =========================================================
+       CHAT SCROLL
+       ========================================================= */
 
     if (chatWindow) {
         chatWindow.addEventListener(
             'scroll',
             function () {
-                const wasAtBottom = isAtBottom();
+                const atBottom =
+                    isAtBottom();
 
                 updateScrollButtons();
-                showScrollButtons();
-                scheduleScrollButtonHide();
 
                 /*
-                 * When the user reaches the bottom,
-                 * the unread counter is cleared.
+                 * Only reaching the actual bottom clears
+                 * unread messages.
                  */
-                if (wasAtBottom) {
+                if (atBottom) {
                     clearUnreadMessages();
 
                     window.dispatchEvent(
@@ -339,8 +538,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         )
                     );
                 }
+
+                showScrollButtons();
+
+                scheduleScrollButtonHide();
             },
-            { passive: true }
+            {
+                passive: true
+            }
         );
 
         window.addEventListener(
@@ -348,25 +553,39 @@ document.addEventListener('DOMContentLoaded', function () {
             updateScrollButtons
         );
 
-        if ('ResizeObserver' in window) {
+        if (
+            'ResizeObserver' in window
+        ) {
             const resizeObserver =
-                new ResizeObserver(function () {
-                    updateScrollButtons();
-                });
+                new ResizeObserver(
+                    function () {
+                        updateScrollButtons();
+                    }
+                );
 
-            resizeObserver.observe(chatWindow);
+            resizeObserver.observe(
+                chatWindow
+            );
 
             if (chatMessages) {
-                resizeObserver.observe(chatMessages);
+                resizeObserver.observe(
+                    chatMessages
+                );
             }
         }
     }
+
+
+    /* =========================================================
+       BUTTON EVENTS
+       ========================================================= */
 
     if (scrollTopBtn) {
         scrollTopBtn.addEventListener(
             'click',
             function (event) {
                 event.preventDefault();
+
                 scrollToTop();
             }
         );
@@ -378,11 +597,15 @@ document.addEventListener('DOMContentLoaded', function () {
             function (event) {
                 event.preventDefault();
 
-                clearUnreadMessages();
                 scrollToBottom(true);
             }
         );
     }
+
+
+    /* =========================================================
+       EVENTS
+       ========================================================= */
 
     window.addEventListener(
         'agro:message-rendered',
@@ -394,24 +617,59 @@ document.addEventListener('DOMContentLoaded', function () {
         handleTypingState
     );
 
-    /*
-     * Public API used by conversation.js
-     */
+
+    /* =========================================================
+       PUBLIC API
+       ========================================================= */
+
     window.agroChatNavigation = {
         isAtBottom,
         addUnreadMessage,
         clearUnreadMessages,
         scrollToBottom,
+        scrollToTop,
         updateScrollButtons
     };
 
+
+    /* =========================================================
+       INIT
+       ========================================================= */
+
     initializeChatPosition();
+
     updateUnreadBadge();
+
     updateScrollButtons();
+
 
     window.addEventListener(
         'load',
         initializeChatPosition,
-        { once: true }
+        {
+            once: true
+        }
+    );
+
+
+    window.addEventListener(
+        'beforeunload',
+        function () {
+            if (scrollButtonHideTimer) {
+                clearTimeout(
+                    scrollButtonHideTimer
+                );
+
+                scrollButtonHideTimer = null;
+            }
+
+            if (typingHideTimer) {
+                clearTimeout(
+                    typingHideTimer
+                );
+
+                typingHideTimer = null;
+            }
+        }
     );
 });
