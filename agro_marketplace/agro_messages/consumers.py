@@ -175,25 +175,17 @@ class MessageConsumer(AsyncWebsocketConsumer):
     def get_user_display_name(self):
         user = self.user
 
-        full_name = (
-            user.get_full_name()
-            if hasattr(user, "get_full_name")
-            else ""
-        )
+        try:
+            username_in_marketplace = (
+                user.profile.username_in_marketplace
+            )
+        except AttributeError:
+            username_in_marketplace = ""
 
-        if full_name:
-            return full_name
+        if username_in_marketplace:
+            return username_in_marketplace
 
-        username = getattr(
-            user,
-            "username",
-            None,
-        )
-
-        if username:
-            return username
-
-        return str(user)
+        return ""
 
     # =========================================================
     # SEND MESSAGE
