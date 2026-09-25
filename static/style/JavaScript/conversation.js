@@ -3820,15 +3820,31 @@ document.addEventListener('DOMContentLoaded', function () {
             'open',
             function () {
                 console.log(
-                    'Message WebSocket connected.'
+                     'Message WebSocket connected.'
                 );
 
-                /*
-                 * Only mark messages as read if
-                 * the user is currently at bottom.
-                 */
+               /*
+                * Make the socket available to chat_typing.js.
+                */
+                window.agroMessageSocket =
+                     messageWebSocket;
+
+               /*
+                * Tell chat_typing.js that the socket is
+                * actually OPEN and can now send typing events.
+                */
+                window.dispatchEvent(
+                     new CustomEvent(
+                         'agro:websocket-open'
+                     )
+                );
+
+               /*
+                * Only mark messages as read if
+                * the user is currently at bottom.
+                */
                 if (isChatAtBottom()) {
-                    markExistingReceivedMessagesAsRead();
+                     markExistingReceivedMessagesAsRead();
                 }
             }
         );
