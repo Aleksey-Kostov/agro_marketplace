@@ -68,11 +68,10 @@ document.addEventListener('DOMContentLoaded', function () {
     function sendTypingEvent(type) {
         const socket = getSocket();
 
-        if (!socket) {
-            return false;
-        }
-
-        if (socket.readyState !== WebSocket.OPEN) {
+        if (
+            !socket ||
+            socket.readyState !== WebSocket.OPEN
+        ) {
             return false;
         }
 
@@ -96,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       TYPING STATE EVENT
+       TYPING UI EVENT
        ========================================================= */
 
     function dispatchTypingState(
@@ -122,28 +121,21 @@ document.addEventListener('DOMContentLoaded', function () {
        ========================================================= */
 
     function startTyping() {
-        /*
-         * Remember whether this is a NEW typing session.
-         *
-         * We must NOT send typing_start on every keypress.
-         */
         const wasTyping = isTyping;
 
         isTyping = true;
 
         /*
          * Socket may still be CONNECTING.
-         *
-         * Keep isTyping=true so that agro:websocket-open
-         * can send typing_start once the socket is ready.
+         * agro:websocket-open will retry.
          */
         if (!isSocketOpen()) {
             return;
         }
 
         /*
-         * Only send typing_start when entering the
-         * typing state.
+         * Send typing_start only once
+         * per typing session.
          */
         if (!wasTyping) {
             sendTypingEvent('typing_start');
@@ -162,9 +154,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         isTyping = false;
 
-        /*
-         * If the socket is open, tell the other user.
-         */
         sendTypingEvent('typing_stop');
     }
 
@@ -188,7 +177,6 @@ document.addEventListener('DOMContentLoaded', function () {
         typingTimer = setTimeout(
             function () {
                 typingTimer = null;
-
                 stopTyping();
             },
             TYPING_STOP_DELAY
@@ -208,9 +196,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const value =
             messageBodyField.value.trim();
 
-        /*
-         * Empty composer means the user stopped typing.
-         */
         if (!value) {
             clearTypingTimer();
             stopTyping();
@@ -251,6 +236,42 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
+       NORMALIZE WEBSOCKET DATA
+       ========================================================= */
+
+    function getTypingPayload(data) {
+        if (!data) {
+            return null;
+        }
+
+        /*
+         * Channels sends:
+         *
+         * {
+         *     type: "chat_message",
+         *     data: {
+         *         type: "typing_start",
+         *         ...
+         *     }
+         * }
+         *
+         * So we need the nested data object.
+         */
+        if (
+            data.type === 'chat_message' &&
+            data.data
+        ) {
+            return data.data;
+        }
+
+        /*
+         * Also support direct payloads.
+         */
+        return data;
+    }
+
+
+    /* =========================================================
        INCOMING USER ID
        ========================================================= */
 
@@ -277,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       HANDLE INCOMING TYPING START
+       INCOMING TYPING START
        ========================================================= */
 
     function handleIncomingTypingStart(data) {
@@ -288,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
             getIncomingUserId(data);
 
         /*
-         * Never show our own typing event.
+         * Never show our own typing indicator.
          */
         if (
             incomingUserId &&
@@ -311,16 +332,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       HANDLE INCOMING TYPING STOP
+       INCOMING TYPING STOP
        ========================================================= */
 
     function handleIncomingTypingStop(data) {
         const incomingUserId =
             getIncomingUserId(data);
 
-        /*
-         * Ignore a stop event from another user.
-         */
         if (
             typingUserId &&
             incomingUserId &&
@@ -336,18 +354,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       INCOMING WEBSOCKET EVENTS
+       WEBSOCKET MESSAGE
        ========================================================= */
 
     window.addEventListener(
         'agro:websocket-message',
         function (event) {
-            const data =
+            const rawData =
                 event.detail;
+
+            if (!rawData) {
+                return;
+            }
+
+            const data =
+                getTypingPayload(rawData);
 
             if (!data) {
                 return;
             }
+
 
             /* ---------------------------------------------
                TYPING START
@@ -383,13 +409,6 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener(
         'agro:websocket-open',
         function () {
-            /*
-             * The user may have started typing while the
-             * WebSocket was CONNECTING.
-             *
-             * Now that it is definitely OPEN, send the
-             * typing_start event.
-             */
             if (
                 isTyping &&
                 messageBodyField &&
@@ -412,7 +431,10 @@ document.addEventListener('DOMContentLoaded', function () {
         function () {
             clearTypingTimer();
 
-            if (isTyping && isSocketOpen()) {
+            if (
+                isTyping &&
+                isSocketOpen()
+            ) {
                 sendTypingEvent(
                     'typing_stop'
                 );

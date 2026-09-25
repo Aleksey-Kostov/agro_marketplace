@@ -1,14 +1,23 @@
 document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
-    const chatWindow = document.getElementById('chat-window');
-    const chatMessages = document.getElementById('chat-messages');
+    const chatWindow =
+        document.getElementById('chat-window');
 
-    const scrollTopBtn = document.getElementById('scroll-top-btn');
-    const scrollBottomBtn = document.getElementById('scroll-bottom-btn');
-    const unreadMessageCount = document.getElementById('unread-message-count');
+    const chatMessages =
+        document.getElementById('chat-messages');
 
-    const typingIndicator = document.getElementById('chat-typing-indicator');
+    const scrollTopBtn =
+        document.getElementById('scroll-top-btn');
+
+    const scrollBottomBtn =
+        document.getElementById('scroll-bottom-btn');
+
+    const unreadMessageCount =
+        document.getElementById('unread-message-count');
+
+    const typingIndicator =
+        document.getElementById('chat-typing-indicator');
 
     const SCROLL_EPSILON = 2;
     const BOTTOM_THRESHOLD = 20;
@@ -16,8 +25,50 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let scrollButtonHideTimer = null;
     let unreadCount = 0;
-
     let typingHideTimer = null;
+
+
+    /* =========================================================
+       FORCE UNREAD BADGE TO DOWN BUTTON
+       ========================================================= */
+
+    function ensureUnreadBadgePosition() {
+        if (
+            !unreadMessageCount ||
+            !scrollBottomBtn
+        ) {
+            return;
+        }
+
+        /*
+         * The unread badge MUST be a child of the
+         * down button.
+         */
+        if (
+            unreadMessageCount.parentElement !==
+            scrollBottomBtn
+        ) {
+            scrollBottomBtn.appendChild(
+                unreadMessageCount
+            );
+        }
+
+        /*
+         * Defensive protection:
+         * never allow the badge to exist inside
+         * the top button.
+         */
+        if (
+            scrollTopBtn &&
+            scrollTopBtn.contains(
+                unreadMessageCount
+            )
+        ) {
+            scrollBottomBtn.appendChild(
+                unreadMessageCount
+            );
+        }
+    }
 
 
     /* =========================================================
@@ -67,6 +118,8 @@ document.addEventListener('DOMContentLoaded', function () {
        ========================================================= */
 
     function updateUnreadBadge() {
+        ensureUnreadBadgePosition();
+
         if (!unreadMessageCount) {
             return;
         }
@@ -111,6 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function clearUnreadMessages() {
         if (unreadCount === 0) {
+            updateUnreadBadge();
             return;
         }
 
@@ -123,7 +177,6 @@ document.addEventListener('DOMContentLoaded', function () {
         unreadCount += 1;
 
         updateUnreadBadge();
-
         updateScrollButtons();
     }
 
@@ -137,39 +190,47 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const atTop = isAtTop();
-        const atBottom = isAtBottom();
+        ensureUnreadBadgePosition();
 
-        /*
-         * TOP BUTTON
-         *
-         * Only appears when the user has actually moved
-         * away from the top.
-         *
-         * IMPORTANT:
-         * unread messages alone never show this button.
-         */
+        const atTop =
+            isAtTop();
+
+        const atBottom =
+            isAtBottom();
+
+
+        /* ---------------------------------------------
+           TOP BUTTON
+           --------------------------------------------- */
+
         if (scrollTopBtn) {
             scrollTopBtn.classList.toggle(
                 'd-none',
                 atTop
             );
+
+            /*
+             * Extra protection:
+             * the top button can NEVER contain
+             * the unread badge.
+             */
+            if (
+                unreadMessageCount &&
+                scrollTopBtn.contains(
+                    unreadMessageCount
+                )
+            ) {
+                scrollBottomBtn.appendChild(
+                    unreadMessageCount
+                );
+            }
         }
 
-        /*
-         * BOTTOM BUTTON
-         *
-         * Show it when:
-         *
-         * 1. User is not at bottom
-         * OR
-         * 2. There are unread messages.
-         *
-         * This is the important distinction:
-         *
-         * unread messages can show the DOWN button even
-         * when the user has not manually scrolled.
-         */
+
+        /* ---------------------------------------------
+           BOTTOM BUTTON
+           --------------------------------------------- */
+
         if (scrollBottomBtn) {
             const shouldShowBottom =
                 !atBottom ||
@@ -219,8 +280,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 scrollButtonHideTimer = null;
 
                 /*
-                 * NEVER hide the DOWN button while there
-                 * are unread messages.
+                 * Never hide the DOWN button while
+                 * unread messages exist.
                  */
                 if (
                     scrollBottomBtn &&
@@ -232,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 /*
-                 * TOP button can be hidden after inactivity.
+                 * TOP button may hide after inactivity.
                  */
                 if (
                     scrollTopBtn &&
@@ -274,11 +335,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         /*
-         * For an instant scroll we can immediately reset
-         * unread state.
-         *
-         * For smooth scrolling the scroll event will clear
-         * it once the real bottom is reached.
+         * For an instant scroll we know that the user
+         * reached the bottom.
          */
         if (!smooth) {
             clearUnreadMessages();
@@ -346,8 +404,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         /*
-         * Keep typing indicator in normal flow when
-         * the user is at the bottom.
+         * At bottom:
+         * typing indicator stays in normal document flow.
          */
         if (atBottom) {
             const wasFloating =
@@ -360,9 +418,8 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
             /*
-             * If we were previously floating and the user
-             * reached the bottom, keep the conversation
-             * visually pinned.
+             * If it was floating while the user was
+             * reading older messages, restore the bottom.
              */
             if (
                 wasFloating &&
@@ -381,13 +438,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         /*
          * User is reading older messages.
-         * Keep typing indicator floating instead of
-         * changing the scroll position.
+         *
+         * Do NOT change scroll position.
+         * Make typing indicator float above the chat.
          */
         typingIndicator.classList.add(
             'typing-floating'
         );
     }
+
 
     function showTypingIndicator(username) {
         if (!typingIndicator) {
@@ -412,6 +471,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 username || 'User';
         }
 
+        /*
+         * IMPORTANT:
+         *
+         * d-none must be removed BEFORE typing-visible
+         * so CSS can actually render the indicator.
+         */
         typingIndicator.classList.remove(
             'd-none',
             'typing-hiding'
@@ -423,6 +488,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         updateTypingIndicatorPosition();
     }
+
 
     function hideTypingIndicator() {
         if (!typingIndicator) {
@@ -464,11 +530,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 250);
     }
 
+
     function handleTypingState(event) {
         const detail =
             event.detail || {};
 
-        if (detail.typing) {
+        if (detail.typing === true) {
             showTypingIndicator(
                 detail.username || 'User'
             );
@@ -502,11 +569,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 behavior: 'smooth'
             });
 
-            /*
-             * Do not manually clear unread here.
-             * The scroll event decides when the actual
-             * bottom has been reached.
-             */
             updateScrollButtons();
         });
     }
@@ -526,8 +588,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateScrollButtons();
 
                 /*
-                 * Only reaching the actual bottom clears
-                 * unread messages.
+                 * Only actual bottom clears unread.
                  */
                 if (atBottom) {
                     clearUnreadMessages();
@@ -550,7 +611,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         window.addEventListener(
             'resize',
-            updateScrollButtons
+            function () {
+                updateScrollButtons();
+            }
         );
 
         if (
@@ -636,21 +699,37 @@ document.addEventListener('DOMContentLoaded', function () {
        INIT
        ========================================================= */
 
+    /*
+     * FIRST:
+     * guarantee badge placement.
+     */
+    ensureUnreadBadgePosition();
+
+    /*
+     * THEN:
+     * initialize the chat.
+     */
     initializeChatPosition();
 
     updateUnreadBadge();
-
     updateScrollButtons();
 
 
     window.addEventListener(
         'load',
-        initializeChatPosition,
+        function () {
+            ensureUnreadBadgePosition();
+            initializeChatPosition();
+        },
         {
             once: true
         }
     );
 
+
+    /* =========================================================
+       CLEANUP
+       ========================================================= */
 
     window.addEventListener(
         'beforeunload',

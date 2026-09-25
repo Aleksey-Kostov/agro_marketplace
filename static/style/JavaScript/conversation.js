@@ -2,8 +2,12 @@ document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
     const replyForm = document.getElementById('reply-form');
+
     const messageBodyField = replyForm
-        ? replyForm.querySelector('textarea[name="body"], input[name="body"]')
+        ? (
+            replyForm.querySelector('[name="body"]') ||
+            replyForm.querySelector('textarea')
+        )
         : null;
 
     const imageInput = document.getElementById('id_image');
@@ -50,7 +54,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
     const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
-    const WEBSOCKET_RECONNECT_DELAY = 3000;
 
     const normalFormAction = replyForm
         ? (
@@ -69,19 +72,36 @@ document.addEventListener('DOMContentLoaded', function () {
     let isSubmittingEdit = false;
     let isSubmittingMessage = false;
 
-    let messageWebSocket = null;
-
-    /*
-     * Used by chat_typing.js
-     */
-    window.agroMessageSocket = null;
-
-    let websocketReconnectTimer = null;
-    let websocketManuallyClosed = false;
-
     const pendingMessageFragments = new Set();
     const pendingMessageRefreshes = new Map();
     const readMessagesSent = new Set();
+
+
+    /* =========================================================
+       WEBSOCKET BRIDGE
+       ========================================================= */
+
+    function sendWebSocketPayload(payload) {
+        if (
+            !window.agroChatWebSocket ||
+            typeof window.agroChatWebSocket.send !== 'function'
+        ) {
+            return false;
+        }
+
+        return window.agroChatWebSocket.send(payload);
+    }
+
+    function isWebSocketOpen() {
+        if (
+            !window.agroChatWebSocket ||
+            typeof window.agroChatWebSocket.isOpen !== 'function'
+        ) {
+            return false;
+        }
+
+        return window.agroChatWebSocket.isOpen();
+    }
 
 
     /* =========================================================
@@ -138,36 +158,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return Number.isFinite(value) && value > 0
             ? value
             : null;
-    }
-
-
-    /* =========================================================
-       WEBSOCKET SEND
-       ========================================================= */
-
-    function sendWebSocketPayload(payload) {
-        if (
-            !messageWebSocket ||
-            messageWebSocket.readyState !== WebSocket.OPEN
-        ) {
-            return false;
-        }
-
-        try {
-            messageWebSocket.send(
-                JSON.stringify(payload)
-            );
-
-            return true;
-
-        } catch (error) {
-            console.error(
-                'Unable to send WebSocket payload:',
-                error
-            );
-
-            return false;
-        }
     }
 
 
@@ -278,9 +268,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
-        /*
-         * chat_navigation.js owns all scrolling.
-         */
         window.dispatchEvent(
             new CustomEvent(
                 'agro:message-rendered',
@@ -444,11 +431,6 @@ document.addEventListener('DOMContentLoaded', function () {
             newMessage
         );
 
-        /*
-         * Keep the user's exact scroll position.
-         * Navigation module will update its UI from
-         * the native scroll event.
-         */
         if (
             preserveScroll &&
             chatWindow
@@ -2013,10 +1995,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     chatWindow.scrollTop =
                         oldScrollTop;
 
-                    /*
-                     * Let chat_navigation.js update
-                     * its buttons/state.
-                     */
                     chatWindow.dispatchEvent(
                         new Event('scroll')
                     );
@@ -3164,10 +3142,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     chatWindow.scrollTop =
                         scrollTop;
 
-                    /*
-                     * chat_navigation.js owns
-                     * navigation UI.
-                     */
                     chatWindow.dispatchEvent(
                         new Event('scroll')
                     );
@@ -3257,6 +3231,10 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
+        if (!isWebSocketOpen()) {
+            return false;
+        }
+
         const sent =
             sendWebSocketPayload({
                 type: 'mark_read',
@@ -3275,10 +3253,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        /*
-         * Do not mark messages as read when the user
-         * is currently reading older messages.
-         */
         if (!isChatAtBottom()) {
             return;
         }
@@ -3309,48 +3283,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /*
-     * chat_navigation.js dispatches this when the
-     * user reaches the bottom of the conversation.
-     */
     window.addEventListener(
         'agro:chat-bottom-reached',
         function () {
             markExistingReceivedMessagesAsRead();
         }
     );
-
-
-    /* =========================================================
-       WEBSOCKET URL
-       ========================================================= */
-
-    function getWebSocketUrl() {
-        if (!chatWindow) {
-            return null;
-        }
-
-        const rootMessageId =
-            chatWindow.dataset.rootMessageId;
-
-        if (!rootMessageId) {
-            console.warn(
-                'WebSocket: data-root-message-id is missing.'
-            );
-
-            return null;
-        }
-
-        const protocol =
-            window.location.protocol === 'https:'
-                ? 'wss:'
-                : 'ws:';
-
-        return (
-            `${protocol}//${window.location.host}` +
-            `/ws/messages/${encodeURIComponent(rootMessageId)}/`
-        );
-    }
 
 
     /* =========================================================
@@ -3378,10 +3316,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        /*
-         * Message may already have been rendered locally.
-         * Do not increment unread counter in this case.
-         */
         if (
             getMessageElement(messageId)
         ) {
@@ -3402,11 +3336,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        /*
-         * IMPORTANT:
-         * Determine this BEFORE fetching/inserting because
-         * inserting the message changes scrollHeight.
-         */
         const shouldScroll =
             isChatAtBottom();
 
@@ -3446,10 +3375,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (shouldScroll) {
-                /*
-                 * User was already at the bottom.
-                 * Navigation will keep the conversation there.
-                 */
                 markMessageAsRead(
                     messageId
                 );
@@ -3459,11 +3384,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 typeof window.agroChatNavigation.addUnreadMessage ===
                     'function'
             ) {
-                /*
-                 * User is reading older messages.
-                 * Keep the message unread and increment
-                 * the navigation counter.
-                 */
                 window.agroChatNavigation
                     .addUnreadMessage();
             }
@@ -3549,375 +3469,223 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       WEBSOCKET MESSAGE
+       WEBSOCKET EVENTS
+       =========================================================
+
+       The separate WebSocket manager owns:
+       - WebSocket creation
+       - connection lifecycle
+       - reconnect
+       - close
+       - error
+       - URL
+       - socket instance
+
+       This file only consumes the events emitted by it.
        ========================================================= */
 
-    function handleWebSocketMessage(
-        event
-    ) {
-        let data;
-
-        try {
-            data =
-                JSON.parse(
-                    event.data
-                );
-
-        } catch (error) {
-            console.error(
-                'WebSocket invalid JSON:',
-                error
-            );
-
-            return;
-        }
-
-        /*
-         * chat_typing.js listens for this event.
-         */
-        window.dispatchEvent(
-            new CustomEvent(
-                'agro:websocket-message',
-                {
-                    detail: data
-                }
-            )
-        );
-
-        if (
-            data.type ===
-            'connection_established'
-        ) {
-            console.log(
-                'Message WebSocket connected.'
-            );
-
-            /*
-             * Only mark existing messages as read
-             * if the user is actually at the bottom.
-             */
+    window.addEventListener(
+        'agro:websocket-open',
+        function () {
             if (isChatAtBottom()) {
                 markExistingReceivedMessagesAsRead();
             }
-
-            return;
         }
+    );
 
-        if (
-            data.type ===
-            'message_created'
-        ) {
-            if (data.message) {
-                appendIncomingMessage(
-                    data.message
-                ).catch(function (err) {
-                    console.error(
-                        'WebSocket message rendering error:',
-                        err
-                    );
-                });
-            }
+    window.addEventListener(
+        'agro:websocket-message',
+        function (event) {
+            const data =
+                event.detail;
 
-            return;
-        }
-
-        if (
-            data.type ===
-                'message_status_updated' ||
-            data.type ===
-                'message_delivery_updated'
-        ) {
-            if (
-                Array.isArray(
-                    data.message_ids
-                )
-            ) {
-                refreshStatusMessages(
-                    data.message_ids
-                );
-
+            if (!data) {
                 return;
             }
-
-            const singleId =
-                data.message_id ||
-                data.id ||
-                data.message?.id;
-
-            if (singleId) {
-                refreshStatusMessages(
-                    [singleId]
-                );
-            }
-
-            return;
-        }
-
-        if (
-            data.type ===
-                'reaction_updated' ||
-            data.type ===
-                'message_reacted'
-        ) {
-            const payload =
-                data.message ||
-                data.data ||
-                data;
-
-            const messageId =
-                payload.message_id ||
-                payload.id ||
-                data.message_id ||
-                data.id;
-
-            if (messageId) {
-                refreshWebSocketMessage(
-                    messageId
-                );
-            }
-
-            return;
-        }
-
-        if (
-            data.type ===
-            'message_updated'
-        ) {
-            const payload =
-                data.message ||
-                data.data ||
-                data;
-
-            const messageId =
-                payload.message_id ||
-                payload.id ||
-                data.message_id ||
-                data.id;
-
-            if (messageId) {
-                refreshWebSocketMessage(
-                    messageId
-                );
-            }
-
-            return;
-        }
-
-        if (
-            data.type ===
-            'message_deleted'
-        ) {
-            const messageId =
-                data.message_id ||
-                data.id ||
-                data.message?.id ||
-                data.data?.message_id ||
-                data.data?.id;
-
-            if (!messageId) {
-                console.warn(
-                    'WebSocket message_deleted: message ID is missing.'
-                );
-
-                return;
-            }
-
-            refreshWebSocketMessage(
-                messageId
-            );
-
-            return;
-        }
-
-        if (
-            data.type === 'error'
-        ) {
-            console.error(
-                'WebSocket server error:',
-                data.code,
-                data.message
-            );
-        }
-    }
-
-
-    /* =========================================================
-       WEBSOCKET RECONNECT
-       ========================================================= */
-
-    function scheduleWebSocketReconnect() {
-        if (
-            websocketManuallyClosed ||
-            websocketReconnectTimer
-        ) {
-            return;
-        }
-
-        websocketReconnectTimer =
-            setTimeout(
-                function () {
-                    websocketReconnectTimer =
-                        null;
-
-                    connectWebSocket();
-                },
-                WEBSOCKET_RECONNECT_DELAY
-            );
-    }
-
-    function connectWebSocket() {
-        if (!chatWindow) {
-            return;
-        }
-
-        const url =
-            getWebSocketUrl();
-
-        if (!url) {
-            return;
-        }
-
-        if (
-            messageWebSocket &&
-            (
-                messageWebSocket.readyState ===
-                    WebSocket.OPEN ||
-                messageWebSocket.readyState ===
-                    WebSocket.CONNECTING
-            )
-        ) {
-            return;
-        }
-
-        websocketManuallyClosed =
-            false;
-
-        try {
-            messageWebSocket =
-                new WebSocket(url);
 
             /*
-             * chat_typing.js uses this socket.
+             * Server connection acknowledgement.
+             *
+             * The actual socket "open" event is already
+             * handled by the separate WebSocket manager.
+             *
+             * We intentionally do not create, close or
+             * reconnect anything here.
              */
-            window.agroMessageSocket =
-                messageWebSocket;
-
-        } catch (error) {
-            console.error(
-                'Unable to create WebSocket:',
-                error
-            );
-
-            messageWebSocket = null;
-            window.agroMessageSocket = null;
-
-            scheduleWebSocketReconnect();
-
-            return;
-        }
-
-        messageWebSocket.addEventListener(
-            'open',
-            function () {
-                console.log(
-                     'Message WebSocket connected.'
-                );
-
-               /*
-                * Make the socket available to chat_typing.js.
-                */
-                window.agroMessageSocket =
-                     messageWebSocket;
-
-               /*
-                * Tell chat_typing.js that the socket is
-                * actually OPEN and can now send typing events.
-                */
-                window.dispatchEvent(
-                     new CustomEvent(
-                         'agro:websocket-open'
-                     )
-                );
-
-               /*
-                * Only mark messages as read if
-                * the user is currently at bottom.
-                */
+            if (
+                data.type ===
+                'connection_established'
+            ) {
                 if (isChatAtBottom()) {
-                     markExistingReceivedMessagesAsRead();
+                    markExistingReceivedMessagesAsRead();
                 }
+
+                return;
             }
-        );
 
-        messageWebSocket.addEventListener(
-            'message',
-            handleWebSocketMessage
-        );
+            /*
+             * New message
+             */
+            if (
+                data.type ===
+                'message_created'
+            ) {
+                if (data.message) {
+                    appendIncomingMessage(
+                        data.message
+                    ).catch(function (error) {
+                        console.error(
+                            'WebSocket message rendering error:',
+                            error
+                        );
+                    });
+                }
 
-        messageWebSocket.addEventListener(
-            'error',
-            function (err) {
+                return;
+            }
+
+            /*
+             * Message status
+             */
+            if (
+                data.type ===
+                    'message_status_updated' ||
+                data.type ===
+                    'message_delivery_updated'
+            ) {
+                if (
+                    Array.isArray(
+                        data.message_ids
+                    )
+                ) {
+                    refreshStatusMessages(
+                        data.message_ids
+                    );
+
+                    return;
+                }
+
+                const singleId =
+                    data.message_id ||
+                    data.id ||
+                    data.message?.id;
+
+                if (singleId) {
+                    refreshStatusMessages(
+                        [singleId]
+                    );
+                }
+
+                return;
+            }
+
+            /*
+             * Reaction
+             */
+            if (
+                data.type ===
+                    'reaction_updated' ||
+                data.type ===
+                    'message_reacted'
+            ) {
+                const payload =
+                    data.message ||
+                    data.data ||
+                    data;
+
+                const messageId =
+                    payload.message_id ||
+                    payload.id ||
+                    data.message_id ||
+                    data.id;
+
+                if (messageId) {
+                    refreshWebSocketMessage(
+                        messageId
+                    );
+                }
+
+                return;
+            }
+
+            /*
+             * Message updated
+             */
+            if (
+                data.type ===
+                'message_updated'
+            ) {
+                const payload =
+                    data.message ||
+                    data.data ||
+                    data;
+
+                const messageId =
+                    payload.message_id ||
+                    payload.id ||
+                    data.message_id ||
+                    data.id;
+
+                if (messageId) {
+                    refreshWebSocketMessage(
+                        messageId
+                    );
+                }
+
+                return;
+            }
+
+            /*
+             * Message deleted
+             */
+            if (
+                data.type ===
+                'message_deleted'
+            ) {
+                const messageId =
+                    data.message_id ||
+                    data.id ||
+                    data.message?.id ||
+                    data.data?.message_id ||
+                    data.data?.id;
+
+                if (!messageId) {
+                    console.warn(
+                        'WebSocket message_deleted: message ID is missing.'
+                    );
+
+                    return;
+                }
+
+                refreshWebSocketMessage(
+                    messageId
+                );
+
+                return;
+            }
+
+            /*
+             * Server error
+             */
+            if (
+                data.type === 'error'
+            ) {
                 console.error(
-                    'Message WebSocket error:',
-                    err
+                    'WebSocket server error:',
+                    data.code,
+                    data.message
                 );
             }
-        );
 
-        messageWebSocket.addEventListener(
-            'close',
-            function (event) {
-                console.warn(
-                    'Message WebSocket closed:',
-                    event.code,
-                    event.reason
-                );
-
-                messageWebSocket =
-                    null;
-
-                window.agroMessageSocket =
-                    null;
-
-                scheduleWebSocketReconnect();
-            }
-        );
-    }
-
-    function closeWebSocket() {
-        websocketManuallyClosed =
-            true;
-
-        if (websocketReconnectTimer) {
-            clearTimeout(
-                websocketReconnectTimer
-            );
-
-            websocketReconnectTimer =
-                null;
+            /*
+             * typing_start / typing_stop are deliberately
+             * NOT handled here.
+             *
+             * chat_typing.js listens to the same event.
+             */
         }
+    );
 
-        if (messageWebSocket) {
-            try {
-                messageWebSocket.close(
-                    1000,
-                    'Page unloading'
-                );
-            } catch (e) {}
-
-            messageWebSocket =
-                null;
-        }
-
-        window.agroMessageSocket =
-            null;
-    }
-
-    /* =========================================================
-       START WEBSOCKET
-       ========================================================= */
-
-    connectWebSocket();
 
     /* =========================================================
        CLEANUP
@@ -3926,9 +3694,12 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener(
         'beforeunload',
         function () {
+            /*
+             * The separate WebSocket manager owns socket
+             * cleanup. We only release local media URLs.
+             */
             revokeImageUrl();
             revokeVideoUrl();
-            closeWebSocket();
         }
     );
 });

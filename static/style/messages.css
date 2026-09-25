@@ -2999,7 +2999,15 @@
    UNREAD MESSAGE COUNT
    ========================================================= */
 
-.unread-message-count {
+#scroll-top-btn .unread-message-count {
+    display: none !important;
+}
+
+#scroll-bottom-btn {
+    position: relative;
+}
+
+#scroll-bottom-btn .unread-message-count {
     position: absolute;
     top: -7px;
     right: -7px;
@@ -3017,9 +3025,9 @@
     color: #fff;
     border: 2px solid #fff;
     pointer-events: none;
+    z-index: 100;
 }
 
-.unread-message-count.d-none {
+#scroll-bottom-btn .unread-message-count.d-none {
     display: none !important;
 }
-
