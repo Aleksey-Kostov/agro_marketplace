@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
             !html ||
             !messageId
         ) {
-            return false;
+        return false;
         }
 
         if (getMessageElement(messageId)) {
@@ -196,30 +196,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
         removeEmptyConversationMessage();
 
-        /*
-         * Respect the actual visual direction of the
-         * message container.
-         *
-         * Normal column:
-         *   newest message -> beforeend
-         *
-         * column-reverse:
-         *   newest message -> afterbegin
-         */
         const computedStyle =
             window.getComputedStyle(chatMessages);
 
         const isColumnReverse =
             computedStyle.flexDirection === 'column-reverse';
 
+        /*
+         * Messages are displayed newest at the bottom.
+         *
+         * With column-reverse, the first DOM element is
+         * displayed at the visual bottom.
+         *
+         * Therefore:
+         *   column-reverse -> afterbegin
+         *   normal         -> beforeend
+         */
         if (isColumnReverse) {
             chatMessages.insertAdjacentHTML(
-                'afterbegin',
+               'afterbegin',
                 html
             );
         } else {
             chatMessages.insertAdjacentHTML(
-                'beforeend',
+               'beforeend',
                 html
             );
         }
@@ -228,29 +228,41 @@ document.addEventListener('DOMContentLoaded', function () {
             getMessageElement(messageId);
 
         if (!inserted) {
-            console.warn(
-                'Rendered message HTML did not contain expected message:',
-                messageId
-            );
+             console.warn(
+                 'Rendered message HTML did not contain expected message:',
+                  messageId
+             );
 
-            return false;
+             return false;
         }
 
-        window.dispatchEvent(
-            new CustomEvent(
-                'agro:message-rendered',
-                {
-                    detail: {
-                        messageId,
-                        shouldScroll: Boolean(
-                            shouldScroll
-                        )
-                    }
-                }
-            )
-        );
+        /*
+         * Tell chat_navigation.js that a new message
+         * has been rendered.
+         *
+         * shouldScroll is true when the user was already
+         * at the bottom, so the navigation layer can keep
+         * the conversation at the bottom.
+         *
+         * When false, the user is reading older messages,
+         * so their current scroll position is preserved
+         * and unread handling remains active.
+         */
+         window.dispatchEvent(
+             new CustomEvent(
+                 'agro:message-rendered',
+                 {
+                     detail: {
+                         messageId,
+                         shouldScroll: Boolean(
+                             shouldScroll
+                         )
+                     }
+                 }
+             )
+         );
 
-        return true;
+         return true;
     }
 
 

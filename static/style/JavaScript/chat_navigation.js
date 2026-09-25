@@ -130,15 +130,50 @@ document.addEventListener('DOMContentLoaded', function () {
        SCROLL STATE
        ========================================================= */
 
+    function isColumnReverse() {
+    if (!chatMessages) {
+        return false;
+    }
+
+    return (
+        window.getComputedStyle(
+            chatMessages
+        ).flexDirection === 'column-reverse'
+    );
+}
+
     function getMaxScrollTop() {
-        return Math.max(
-            0,
-            chatWindow.scrollHeight -
-            chatWindow.clientHeight
-        );
+         return Math.max(
+             0,
+             chatWindow.scrollHeight -
+             chatWindow.clientHeight
+         );
+    }
+
+    function getBottomScrollTop() {
+         /*
+          * With column-reverse, the visual bottom of the
+          * conversation is scrollTop = 0.
+          *
+          * With normal column direction, the visual bottom
+          * is the maximum scrollTop.
+          */
+        if (isColumnReverse()) {
+             return 0;
+        }
+
+        return getMaxScrollTop();
     }
 
     function isAtTop() {
+        if (isColumnReverse()) {
+            return (
+                chatWindow.scrollTop >=
+                getMaxScrollTop() -
+                SCROLL_EPSILON
+            );
+        }
+
         return (
             chatWindow.scrollTop <=
             SCROLL_EPSILON
@@ -146,6 +181,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function isAtBottom() {
+        if (isColumnReverse()) {
+            return (
+                chatWindow.scrollTop <=
+                BOTTOM_THRESHOLD
+            );
+        }
+
         return (
             chatWindow.scrollTop +
             chatWindow.clientHeight
@@ -296,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function () {
         showScrollButtons();
 
         chatWindow.scrollTo({
-            top: getMaxScrollTop(),
+            top: getBottomScrollTop(),
             behavior: smooth
                 ? 'smooth'
                 : 'auto'
@@ -353,7 +395,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 showScrollButtons();
 
                 chatWindow.scrollTo({
-                    top: getMaxScrollTop(),
+                    top: getBottomScrollTop(),
                     behavior: 'smooth'
                 });
 
@@ -529,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function () {
         requestAnimationFrame(
             function () {
                 chatWindow.scrollTop =
-                    getMaxScrollTop();
+                    getBottomScrollTop();
 
                 clearUnreadMessages();
 
