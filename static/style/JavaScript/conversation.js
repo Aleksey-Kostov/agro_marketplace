@@ -1481,35 +1481,35 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function handleMessageAcknowledged(event) {
-    const detail = event.detail || {};
-    const messageId = Number(detail.messageId);
+        const detail = event.detail || {};
+        const messageId = Number(detail.messageId);
 
-    if (!messageId || !isSubmittingMessage) {
-        return;
+        if (!messageId || !isSubmittingMessage) {
+            return;
+        }
+
+        /*
+         * The WebSocket controller has confirmed that our message
+         * was created and rendered. The HTTP request may still be
+         * waiting for its response, so the visual Sending... state
+         * must not depend on fetch() finishing.
+         */
+        isSubmittingMessage = false;
+        activeMessageSendToken += 1;
+
+        setSendingState(false);
+
+        window.dispatchEvent(
+            new CustomEvent('agro:message-sent')
+        );
+
+        resetComposerAfterSend();
     }
 
-    /*
-     * The WebSocket controller has confirmed that our message
-     * was created and rendered. The HTTP request may still be
-     * waiting for its response, so the visual Sending... state
-     * must not depend on fetch() finishing.
-     */
-    isSubmittingMessage = false;
-    activeMessageSendToken += 1;
-
-    setSendingState(false);
-
-    window.dispatchEvent(
-        new CustomEvent('agro:message-sent')
+    window.addEventListener(
+        'agro:message-acknowledged',
+         handleMessageAcknowledged
     );
-
-    resetComposerAfterSend();
-}
-
-window.addEventListener(
-    'agro:message-acknowledged',
-    handleMessageAcknowledged
-);
 
 
 /* =========================================================
@@ -2239,13 +2239,11 @@ window.addEventListener(
     }
 
 
-    /* =========================================================
+        /* =========================================================
        TEXT MESSAGE AJAX
        ========================================================= */
 
-    async function handleTextMessageSubmit(
-        event
-    ) {
+    async function handleTextMessageSubmit(event) {
         event.preventDefault();
 
         if (
@@ -2257,21 +2255,16 @@ window.addEventListener(
             return;
         }
 
-        const sendUrl =
-            getSendUrl();
+        const sendUrl = getSendUrl();
 
         if (!sendUrl) {
-            alert(
-                'Message send URL is missing.'
-            );
-
+            alert('Message send URL is missing.');
             return;
         }
 
-        const body =
-            messageBodyField
-                ? messageBodyField.value.trim()
-                : '';
+        const body = messageBodyField
+            ? messageBodyField.value.trim()
+            : '';
 
         const imageFile =
             imageInput &&
@@ -2283,20 +2276,12 @@ window.addEventListener(
             videoInput.files &&
             videoInput.files[0];
 
-        if (
-            imageFile ||
-            videoFile
-        ) {
-            if (
-                !validateAttachmentsBeforeSubmit()
-            ) {
+        if (imageFile || videoFile) {
+            if (!validateAttachmentsBeforeSubmit()) {
                 return;
             }
 
-            handleAttachmentSubmit(
-                event
-            );
-
+            handleAttachmentSubmit(event);
             return;
         }
 
@@ -2308,49 +2293,35 @@ window.addEventListener(
             return;
         }
 
-        const shouldScroll =
-            isChatAtBottom();
-
-        const formData =
-            new FormData(replyForm);
+        const shouldScroll = isChatAtBottom();
+        const formData = new FormData(replyForm);
 
         isSubmittingMessage = true;
+        const sendToken = ++activeMessageSendToken;
 
         setSendingState(true);
 
         try {
-            const response =
-                await fetch(
-                    sendUrl,
-                    {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'same-origin',
-                        headers: {
-                            'X-Requested-With':
-                                'XMLHttpRequest',
-                            'Accept':
-                                'application/json'
-                        }
+            const response = await fetch(
+                sendUrl,
+                {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
                     }
-                );
+                }
+            );
 
-            /*
-             * Read text first so a malformed JSON response
-             * does not leave the UI in an inconsistent state.
-             */
-            const responseText =
-                await response.text();
+            const responseText = await response.text();
 
             let data = null;
 
             if (responseText) {
                 try {
-                    data =
-                        JSON.parse(
-                            responseText
-                        );
-
+                    data = JSON.parse(responseText);
                 } catch (jsonError) {
                     console.warn(
                         'Send message: invalid JSON response:',
@@ -2366,10 +2337,7 @@ window.addEventListener(
                 );
             }
 
-            if (
-                data &&
-                data.ok === false
-            ) {
+            if (data && data.ok === false) {
                 throw new Error(
                     data.error ||
                     'Unable to send message.'
@@ -2400,9 +2368,7 @@ window.addEventListener(
              * has been successfully sent.
              */
             window.dispatchEvent(
-                new CustomEvent(
-                    'agro:message-sent'
-                )
+                new CustomEvent('agro:message-sent')
             );
 
             resetComposerAfterSend();
@@ -2420,11 +2386,14 @@ window.addEventListener(
 
         } finally {
             /*
-             * NEVER leave the composer stuck in Sending...
+             * If the WebSocket acknowledgement already completed
+             * this send, do not let the HTTP request's finally block
+             * reset the state of a newer send operation.
              */
-            isSubmittingMessage = false;
-
-            setSendingState(false);
+            if (activeMessageSendToken === sendToken) {
+                isSubmittingMessage = false;
+                setSendingState(false);
+            }
         }
     }
 
@@ -2433,9 +2402,7 @@ window.addEventListener(
        ATTACHMENT AJAX
        ========================================================= */
 
-    function handleAttachmentSubmit(
-        event
-    ) {
+    function handleAttachmentSubmit(event) {
         event.preventDefault();
 
         if (
@@ -2447,31 +2414,20 @@ window.addEventListener(
             return;
         }
 
-        if (
-            !validateAttachmentsBeforeSubmit()
-        ) {
+        if (!validateAttachmentsBeforeSubmit()) {
             return;
         }
 
-        const sendUrl =
-            getSendUrl();
+        const sendUrl = getSendUrl();
 
         if (!sendUrl) {
-            alert(
-                'Message send URL is missing.'
-            );
-
+            alert('Message send URL is missing.');
             return;
         }
 
-        const shouldScroll =
-            isChatAtBottom();
-
-        const formData =
-            new FormData(replyForm);
-
-        const xhr =
-            new XMLHttpRequest();
+        const shouldScroll = isChatAtBottom();
+        const formData = new FormData(replyForm);
+        const xhr = new XMLHttpRequest();
 
         isSubmittingAttachment = true;
 
@@ -2496,8 +2452,7 @@ window.addEventListener(
 
                 updateUploadProgress(
                     Math.round(
-                        (e.loaded / e.total) *
-                        100
+                        (e.loaded / e.total) * 100
                     )
                 );
             }
@@ -2510,9 +2465,7 @@ window.addEventListener(
                     xhr.status >= 200 &&
                     xhr.status < 300
                 ) {
-                    updateUploadProgress(
-                        100
-                    );
+                    updateUploadProgress(100);
 
                     if (uploadProgressText) {
                         uploadProgressText.textContent =
@@ -2522,11 +2475,9 @@ window.addEventListener(
                     let data;
 
                     try {
-                        data =
-                            JSON.parse(
-                                xhr.responseText
-                            );
-
+                        data = JSON.parse(
+                            xhr.responseText
+                        );
                     } catch (err) {
                         console.error(
                             'Invalid attachment response:',
@@ -2538,7 +2489,6 @@ window.addEventListener(
                         );
 
                         resetUploadButton();
-
                         return;
                     }
 
@@ -2553,7 +2503,6 @@ window.addEventListener(
                         );
 
                         resetUploadButton();
-
                         return;
                     }
 
@@ -2584,20 +2533,16 @@ window.addEventListener(
                     'Upload failed. Please try again.';
 
                 try {
-                    const data =
-                        JSON.parse(
-                            xhr.responseText
-                        );
+                    const data = JSON.parse(
+                        xhr.responseText
+                    );
 
                     if (data.error) {
-                        errorMessage =
-                            data.error;
+                        errorMessage = data.error;
                     }
-
                 } catch (e) {}
 
                 alert(errorMessage);
-
                 resetUploadButton();
             }
         );
@@ -2624,8 +2569,7 @@ window.addEventListener(
             true
         );
 
-        const csrfToken =
-            getCsrfToken();
+        const csrfToken = getCsrfToken();
 
         if (csrfToken) {
             xhr.setRequestHeader(
@@ -2650,15 +2594,14 @@ window.addEventListener(
     function resetUploadButton() {
         hideUploadProgress();
 
-        isSubmittingAttachment =
-            false;
+        isSubmittingAttachment = false;
 
         if (submitBtn) {
             submitBtn.disabled = false;
 
             submitBtn.innerHTML =
                 submitBtn.dataset.originalHtml ||
-                '<i class="fas fa-paper-plane me-1"></i> Send';
+                '<i class="fas fa-paper-plane fa-paper-plane me-1"></i> Send';
 
             delete submitBtn.dataset.originalHtml;
         }
@@ -2688,7 +2631,6 @@ window.addEventListener(
                     editingMessageId.value
                 ) {
                     handleEditSubmit(e);
-
                     return;
                 }
 
@@ -2702,10 +2644,7 @@ window.addEventListener(
                     videoInput.files &&
                     videoInput.files[0];
 
-                if (
-                    imageFile ||
-                    videoFile
-                ) {
+                if (imageFile || videoFile) {
                     if (
                         !validateAttachmentsBeforeSubmit()
                     ) {
@@ -2713,7 +2652,6 @@ window.addEventListener(
                     }
 
                     handleAttachmentSubmit(e);
-
                     return;
                 }
 
@@ -2739,8 +2677,7 @@ window.addEventListener(
                 return;
             }
 
-            const url =
-                button.dataset.url;
+            const url = button.dataset.url;
 
             if (!url) {
                 return;
@@ -2761,8 +2698,7 @@ window.addEventListener(
                 } catch (err) {
                     if (
                         err &&
-                        err.name ===
-                            'AbortError'
+                        err.name === 'AbortError'
                     ) {
                         return;
                     }
@@ -2802,27 +2738,20 @@ window.addEventListener(
             }
 
             const textarea =
-                document.createElement(
-                    'textarea'
-                );
+                document.createElement('textarea');
 
             textarea.value = url;
 
             textarea.style.cssText =
                 'position:fixed;left:-9999px;top:-9999px;opacity:0';
 
-            document.body.appendChild(
-                textarea
-            );
+            document.body.appendChild(textarea);
 
             textarea.focus();
             textarea.select();
 
             try {
-                document.execCommand(
-                    'copy'
-                );
-
+                document.execCommand('copy');
             } catch (err) {
                 console.error(
                     'Copy failed:',
@@ -2884,11 +2813,10 @@ window.addEventListener(
         }
 
         try {
-            const url =
-                new URL(
-                    template,
-                    window.location.origin
-                );
+            const url = new URL(
+                template,
+                window.location.origin
+            );
 
             url.pathname =
                 url.pathname.replace(
@@ -3008,16 +2936,12 @@ window.addEventListener(
             avatarBox.replaceChildren();
 
             (
-                Array.isArray(
-                    data.reactors
-                )
+                Array.isArray(data.reactors)
                     ? data.reactors
                     : []
             ).forEach(function (reactor) {
                 const img =
-                    document.createElement(
-                        'img'
-                    );
+                    document.createElement('img');
 
                 img.className =
                     'react-avatar';
@@ -3033,17 +2957,11 @@ window.addEventListener(
                     reactor.photo ||
                     defaultAvatar;
 
-                avatarBox.appendChild(
-                    img
-                );
+                avatarBox.appendChild(img);
             });
         }
 
-        if (
-            Array.isArray(
-                data.reactors
-            )
-        ) {
+        if (Array.isArray(data.reactors)) {
             const names =
                 data.reactors
                     .map(
@@ -3066,9 +2984,7 @@ window.addEventListener(
         'click',
         async function (e) {
             const button =
-                e.target.closest(
-                    '.js-react'
-                );
+                e.target.closest('.js-react');
 
             if (!button) {
                 return;
@@ -3078,8 +2994,7 @@ window.addEventListener(
             e.stopPropagation();
 
             if (
-                button.dataset.loading ===
-                '1'
+                button.dataset.loading === '1'
             ) {
                 return;
             }
@@ -3136,9 +3051,7 @@ window.addEventListener(
                 return;
             }
 
-            button.dataset.loading =
-                '1';
-
+            button.dataset.loading = '1';
             button.disabled = true;
 
             const scrollTop =
@@ -3239,11 +3152,8 @@ window.addEventListener(
                 }
 
             } finally {
-                button.dataset.loading =
-                    '0';
-
-                button.disabled =
-                    false;
+                button.dataset.loading = '0';
+                button.disabled = false;
 
                 const currentMessage =
                     getMessageElement(
@@ -3252,16 +3162,11 @@ window.addEventListener(
 
                 if (currentMessage) {
                     currentMessage
-                        .querySelectorAll(
-                            '.js-react'
-                        )
+                        .querySelectorAll('.js-react')
                         .forEach(
                             function (btn) {
-                                btn.disabled =
-                                    false;
-
-                                btn.dataset.loading =
-                                    '0';
+                                btn.disabled = false;
+                                btn.dataset.loading = '0';
                             }
                         );
                 }
