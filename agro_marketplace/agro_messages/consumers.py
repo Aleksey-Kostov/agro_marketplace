@@ -63,15 +63,13 @@ class MessageConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
-        # -----------------------------------------------------
-        # CONNECTION CONFIRMATION
-        # -----------------------------------------------------
-
         await self.send(
-            text_data=json.dumps({
-                "type": "connection_established",
-                "user_id": self.user.pk,
-            })
+            text_data=json.dumps(
+                {
+                    "type": "connection_established",
+                    "user_id": self.user.pk,
+                }
+            )
         )
 
     async def disconnect(self, close_code):
@@ -94,47 +92,53 @@ class MessageConsumer(AsyncWebsocketConsumer):
         except (TypeError, ValueError):
             return
 
+        if not isinstance(content, dict):
+            return
+
         message_type = content.get("type")
 
-        # -----------------------------------------------------
+        # =====================================================
         # PING
-        # -----------------------------------------------------
+        # =====================================================
 
         if message_type == "ping":
             await self.send(
-                text_data=json.dumps({
-                    "type": "pong",
-                })
+                text_data=json.dumps(
+                    {
+                        "type": "pong",
+                    }
+                )
             )
+
             return
 
-        # -----------------------------------------------------
+        # =====================================================
         # TYPING START
-        # -----------------------------------------------------
+        # =====================================================
 
         if message_type == "typing_start":
             await self.handle_typing_start()
             return
 
-        # -----------------------------------------------------
+        # =====================================================
         # TYPING STOP
-        # -----------------------------------------------------
+        # =====================================================
 
         if message_type == "typing_stop":
             await self.handle_typing_stop()
             return
 
-        # -----------------------------------------------------
+        # =====================================================
         # SEND MESSAGE
-        # -----------------------------------------------------
+        # =====================================================
 
         if message_type == "send_message":
             await self.handle_send_message(content)
             return
 
-        # -----------------------------------------------------
+        # =====================================================
         # MARK READ
-        # -----------------------------------------------------
+        # =====================================================
 
         if message_type == "mark_read":
             await self.handle_mark_read(content)
@@ -185,7 +189,18 @@ class MessageConsumer(AsyncWebsocketConsumer):
         if username_in_marketplace:
             return username_in_marketplace
 
-        return ""
+        full_name = (
+            user.get_full_name()
+            or ""
+        ).strip()
+
+        if full_name:
+            return full_name
+
+        if getattr(user, "username", None):
+            return user.username
+
+        return "User"
 
     # =========================================================
     # SEND MESSAGE
@@ -200,24 +215,13 @@ class MessageConsumer(AsyncWebsocketConsumer):
         if not body:
             return
 
-        # -----------------------------------------------------
-        # STOP TYPING
-        # -----------------------------------------------------
-
+        # Sending a message always ends local typing.
         await self.handle_typing_stop()
-
-        # -----------------------------------------------------
-        # CREATE MESSAGE
-        # -----------------------------------------------------
 
         result = await self.create_message(body)
 
         if not result:
             return
-
-        # -----------------------------------------------------
-        # MESSAGE CREATED
-        # -----------------------------------------------------
 
         await self.channel_layer.group_send(
             self.group_name,
@@ -229,10 +233,6 @@ class MessageConsumer(AsyncWebsocketConsumer):
                 },
             },
         )
-
-        # -----------------------------------------------------
-        # DELIVERED
-        # -----------------------------------------------------
 
         await self.channel_layer.group_send(
             self.group_name,
@@ -290,12 +290,10 @@ class MessageConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         data = event.get("data") or {}
 
-        # -----------------------------------------------------
-        # IMPORTANT:
-        # Не изпращаме typing event обратно към самия sender.
-        # -----------------------------------------------------
+        event_type = data.get("type")
 
-        if data.get("type") in {
+        # Never echo our own typing events back to us.
+        if event_type in {
             "typing_start",
             "typing_stop",
         }:
@@ -394,10 +392,6 @@ class MessageConsumer(AsyncWebsocketConsumer):
             title=root_message.title,
         )
 
-        # -----------------------------------------------------
-        # SENDER = READ
-        # -----------------------------------------------------
-
         MessageStatus.objects.update_or_create(
             message=message,
             profile_id=self.user.pk,
@@ -405,10 +399,6 @@ class MessageConsumer(AsyncWebsocketConsumer):
                 "is_read": True,
             },
         )
-
-        # -----------------------------------------------------
-        # RECIPIENT = UNREAD
-        # -----------------------------------------------------
 
         MessageStatus.objects.update_or_create(
             message=message,

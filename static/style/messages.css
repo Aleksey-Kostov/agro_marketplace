@@ -2181,21 +2181,39 @@
     font-size: 0.9rem;
     line-height: 1.2;
     color: #6c757d;
+
+    /*
+     * IMPORTANT:
+     * The indicator is now a sibling of .conversation-scroll
+     * inside .conversation-scroll-wrap.
+     *
+     * Therefore it is anchored to the bottom of the whole
+     * chat area instead of being positioned inside the
+     * scrolling message content.
+     */
     position: absolute !important;
     left: 50% !important;
     bottom: 12px !important;
+
     z-index: 40 !important;
+
     width: max-content;
     max-width: calc(100% - 30px);
+
     border-radius: 18px;
     background: rgba(255, 255, 255, 0.96);
+
     box-shadow:
         0 3px 12px rgba(0, 0, 0, 0.14);
+
     opacity: 0;
+
     transform: translate(-50%, 6px);
+
     transition:
         opacity 180ms ease,
         transform 180ms ease;
+
     pointer-events: none;
     white-space: nowrap;
 }
@@ -2214,6 +2232,34 @@
     display: inline-flex !important;
     opacity: 0;
     transform: translate(-50%, 4px);
+}
+
+
+/*
+ * When the user has scrolled upward:
+ *
+ *   "John is typing ..."
+ *
+ * becomes only:
+ *
+ *   ...
+ *
+ * This is handled purely by CSS using the class added
+ * by chat_typing.js to .conversation-scroll-wrap.
+ */
+.conversation-scroll-wrap.typing-scrolled-up
+.chat-typing-name,
+.conversation-scroll-wrap.typing-scrolled-up
+.chat-typing-text {
+    display: none !important;
+}
+
+.conversation-scroll-wrap.typing-scrolled-up
+.chat-typing-indicator {
+    gap: 0;
+    min-width: 42px;
+    min-height: 30px;
+    padding: 6px 10px;
 }
 
 .chat-typing-indicator.typing-floating {
@@ -2238,8 +2284,15 @@
 .chat-typing-dots {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     min-width: 18px;
     margin-left: 3px;
+}
+
+.conversation-scroll-wrap.typing-scrolled-up
+.chat-typing-dots {
+    min-width: 20px;
+    margin-left: 0;
 }
 
 .chat-typing-dots span {
