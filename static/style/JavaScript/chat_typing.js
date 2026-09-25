@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const TYPING_STOP_DELAY = 1200;
     const INDICATOR_HIDE_DELAY = 250;
+    const BOTTOM_THRESHOLD = 20;
 
     let typingTimer = null;
     let indicatorHideTimer = null;
@@ -18,8 +19,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function getCurrentUserId() {
         if (!chatWindow) return null;
+
         const value = Number(chatWindow.dataset.currentUserId);
-        return Number.isFinite(value) && value > 0 ? value : null;
+
+        return Number.isFinite(value) && value > 0
+            ? value
+            : null;
     }
 
     function getSocket() {
@@ -28,7 +33,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function sendTypingEvent(type) {
         const socket = getSocket();
-        if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            return;
+        }
+
         try {
             socket.send(JSON.stringify({ type }));
         } catch (error) {
@@ -36,23 +45,40 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function showTypingIndicator(username, userId) {
-        if (!typingIndicator) return;
-
-        const wasAtBottom = chatWindow
-             ? Math.abs(
-                  chatWindow.scrollHeight -
-                  chatWindow.scrollTop -
-                  chatWindow.clientHeight
-             ) <= 20
-             : false;
-
-        if (indicatorHideTimer) {
-             clearTimeout(indicatorHideTimer);
-             indicatorHideTimer = null;
+    function isChatAtBottom() {
+        if (!chatWindow) {
+            return true;
         }
 
-        const nameElement = typingIndicator.querySelector('.chat-typing-name');
+        return Math.abs(
+            chatWindow.scrollHeight -
+            chatWindow.scrollTop -
+            chatWindow.clientHeight
+        ) <= BOTTOM_THRESHOLD;
+    }
+
+    function showTypingIndicator(username, userId) {
+        if (!typingIndicator) {
+            return;
+        }
+
+        /*
+         * Important:
+         * If the indicator is already visible, this is another
+         * typing_start event from the same typing session.
+         *
+         * We update the state/name, but DO NOT scroll again.
+         */
+        const alreadyVisible =
+            typingIndicator.classList.contains('typing-visible');
+
+        if (indicatorHideTimer) {
+            clearTimeout(indicatorHideTimer);
+            indicatorHideTimer = null;
+        }
+
+        const nameElement =
+            typingIndicator.querySelector('.chat-typing-name');
 
         if (nameElement) {
             nameElement.textContent = username || 'User';
@@ -64,18 +90,34 @@ document.addEventListener('DOMContentLoaded', function () {
         typingIndicator.classList.remove('typing-hiding');
         typingIndicator.classList.add('typing-visible');
 
-        if (wasAtBottom && chatWindow) {
-            requestAnimationFrame(function () {
-                chatWindow.scrollTo({
-                    top: chatWindow.scrollHeight,
-                    behavior: 'smooth'
-                });
-            });
+        if (alreadyVisible) {
+            return;
         }
+
+        /*
+         * Only the first typing_start can trigger the automatic scroll.
+         *
+         * If the user is already reading the bottom of the conversation,
+         * bring the newly visible typing indicator into view.
+         *
+         * If the user is reading older messages, do not interrupt them.
+         */
+        if (!isChatAtBottom() || !chatWindow) {
+            return;
+        }
+
+        requestAnimationFrame(function () {
+            chatWindow.scrollTo({
+                top: chatWindow.scrollHeight,
+                behavior: 'smooth'
+            });
+        });
     }
 
     function hideTypingIndicator(immediate = false) {
-        if (!typingIndicator) return;
+        if (!typingIndicator) {
+            return;
+        }
 
         if (indicatorHideTimer) {
             clearTimeout(indicatorHideTimer);
@@ -83,43 +125,68 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (immediate) {
-            typingIndicator.classList.remove('typing-visible', 'typing-hiding');
+            typingIndicator.classList.remove(
+                'typing-visible',
+                'typing-hiding'
+            );
+
             typingIndicator.classList.add('d-none');
+
             typingUserId = null;
+
             return;
         }
 
+        /*
+         * Start the CSS fade-out.
+         */
         typingIndicator.classList.remove('typing-visible');
         typingIndicator.classList.add('typing-hiding');
 
+        /*
+         * Remove display:none only after the fade-out has finished.
+         */
         indicatorHideTimer = setTimeout(function () {
             typingIndicator.classList.remove('typing-hiding');
             typingIndicator.classList.add('d-none');
+
             typingUserId = null;
             indicatorHideTimer = null;
         }, INDICATOR_HIDE_DELAY);
     }
 
     function startTyping() {
-        if (isTyping) return;
+        if (isTyping) {
+            return;
+        }
+
         isTyping = true;
+
         sendTypingEvent('typing_start');
     }
 
     function stopTyping() {
-        if (!isTyping) return;
+        if (!isTyping) {
+            return;
+        }
+
         isTyping = false;
+
         sendTypingEvent('typing_stop');
     }
 
     function clearTypingTimer() {
-        if (!typingTimer) return;
+        if (!typingTimer) {
+            return;
+        }
+
         clearTimeout(typingTimer);
         typingTimer = null;
     }
 
     function resetTypingTimer() {
         clearTypingTimer();
+
         typingTimer = setTimeout(function () {
             stopTyping();
             typingTimer = null;
@@ -127,8 +194,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function handleComposerInput() {
-        if (!messageBodyField) return;
+        if (!messageBodyField) {
+            return;
+        }
 
+        /*
+         * Empty composer = definitely not typing.
+         */
         if (!messageBodyField.value.trim()) {
             clearTypingTimer();
             stopTyping();
@@ -139,8 +211,14 @@ document.addEventListener('DOMContentLoaded', function () {
         resetTypingTimer();
     }
 
+    /*
+     * Composer typing detection.
+     */
     if (messageBodyField) {
-        messageBodyField.addEventListener('input', handleComposerInput);
+        messageBodyField.addEventListener(
+            'input',
+            handleComposerInput
+        );
 
         messageBodyField.addEventListener('blur', function () {
             clearTypingTimer();
@@ -148,62 +226,114 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /*
+     * Our own message was successfully sent.
+     *
+     * Stop local typing state immediately and hide any remote
+     * typing indicator without animation/scrolling.
+     *
+     * conversation.js owns the actual message scroll.
+     */
     window.addEventListener('agro:message-sent', function () {
         clearTypingTimer();
         stopTyping();
         hideTypingIndicator(true);
     });
 
-    window.addEventListener('agro:websocket-message', function (event) {
-        const data = event.detail;
-        if (!data) return;
+    /*
+     * WebSocket events forwarded by conversation.js.
+     */
+    window.addEventListener(
+        'agro:websocket-message',
+        function (event) {
+            const data = event.detail;
 
-        if (data.type === 'typing_start') {
-            const currentUserId = getCurrentUserId();
-            const incomingUserId = data.user_id ? Number(data.user_id) : null;
-
-            if (
-                incomingUserId &&
-                currentUserId &&
-                incomingUserId === currentUserId
-            ) {
+            if (!data) {
                 return;
             }
 
-            showTypingIndicator(
-                data.username || 'User',
-                incomingUserId
-            );
-            return;
-        }
+            /*
+             * Someone started typing.
+             */
+            if (data.type === 'typing_start') {
+                const currentUserId = getCurrentUserId();
+                const incomingUserId = data.user_id
+                    ? Number(data.user_id)
+                    : null;
 
-        if (data.type === 'typing_stop') {
-            const incomingUserId = data.user_id ? Number(data.user_id) : null;
+                /*
+                 * Never show our own typing indicator.
+                 */
+                if (
+                    incomingUserId &&
+                    currentUserId &&
+                    incomingUserId === currentUserId
+                ) {
+                    return;
+                }
 
-            if (
-                typingUserId &&
-                incomingUserId &&
-                typingUserId !== incomingUserId
-            ) {
+                showTypingIndicator(
+                    data.username || 'User',
+                    incomingUserId
+                );
+
                 return;
             }
 
-            hideTypingIndicator();
+            /*
+             * Someone stopped typing.
+             */
+            if (data.type === 'typing_stop') {
+                const incomingUserId = data.user_id
+                    ? Number(data.user_id)
+                    : null;
+
+                /*
+                 * If we know who is currently typing and the stop event
+                 * belongs to another user, ignore it.
+                 */
+                if (
+                    typingUserId &&
+                    incomingUserId &&
+                    typingUserId !== incomingUserId
+                ) {
+                    return;
+                }
+
+                hideTypingIndicator();
+
+                return;
+            }
         }
-    });
+    );
 
-    window.addEventListener('agro:message-rendered', function (event) {
-        const detail = event.detail || {};
-        if (!detail.shouldScroll || !chatWindow) return;
+    /*
+     * conversation.js dispatches this after a message has been rendered.
+     *
+     * conversation.js decides whether scrolling is appropriate.
+     * This file only performs the requested scroll.
+     */
+    window.addEventListener(
+        'agro:message-rendered',
+        function (event) {
+            const detail = event.detail || {};
 
-        requestAnimationFrame(function () {
-            chatWindow.scrollTo({
-                top: chatWindow.scrollHeight,
-                behavior: 'smooth'
+            if (!detail.shouldScroll || !chatWindow) {
+                return;
+            }
+
+            requestAnimationFrame(function () {
+                chatWindow.scrollTo({
+                    top: chatWindow.scrollHeight,
+                    behavior: 'smooth'
+                });
             });
-        });
-    });
+        }
+    );
 
+    /*
+     * Clean up before leaving the page.
+     */
     window.addEventListener('beforeunload', function () {
         clearTypingTimer();
 
