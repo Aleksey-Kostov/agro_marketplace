@@ -2946,3 +2946,65 @@
     }
 }
 
+.conversation-scroll {
+    position: relative;
+}
+
+.chat-typing-indicator.typing-floating {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-height: 0;
+    padding: 7px 11px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
+    transform: translateX(-50%);
+}
+
+.chat-typing-indicator.typing-floating .chat-typing-name,
+.chat-typing-indicator.typing-floating .chat-typing-text {
+    display: none;
+}
+
+.chat-typing-indicator.typing-floating
+.chat-typing-dots {
+    margin: 0;
+    min-width: 18px;
+}
+
+.unread-message-count {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    min-width: 19px;
+    height: 19px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1;
+    background: #dc3545;
+    color: #fff;
+    border: 2px solid #fff;
+    pointer-events: none;
+}
+
+.unread-message-count.d-none {
+    display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-typing-indicator.typing-floating {
+        transition: none;
+    }
+}
+
