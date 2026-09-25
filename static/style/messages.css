@@ -542,6 +542,18 @@
 
 
 /* =========================================================
+   CONVERSATION SCROLL WRAP
+========================================================= */
+
+.conversation-scroll-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+
+/* =========================================================
    CONVERSATION SCROLL
 ========================================================= */
 
@@ -570,6 +582,11 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 8px;
+    pointer-events: none;
+}
+
+.conversation-scroll-buttons .scroll-navigation-btn {
+    pointer-events: auto;
 }
 
 .scroll-navigation-btn {
@@ -2371,10 +2388,6 @@
 
 @media (max-width: 576px) {
 
-    /* -----------------------------------------------------
-       GENERAL
-    ----------------------------------------------------- */
-
     .message-box {
         width: 100%;
         max-width: 100%;
@@ -2399,11 +2412,6 @@
         padding: 12px;
         box-sizing: border-box;
     }
-
-
-    /* -----------------------------------------------------
-       CONVERSATION
-    ----------------------------------------------------- */
 
     .conversation-title {
         flex-direction: column;
@@ -2450,11 +2458,6 @@
         min-width: 0;
     }
 
-
-    /* -----------------------------------------------------
-       META
-    ----------------------------------------------------- */
-
     .conversation-meta {
         gap: 5px;
     }
@@ -2467,11 +2470,6 @@
         font-size: 11px;
     }
 
-
-    /* -----------------------------------------------------
-       NORMAL BUBBLE
-    ----------------------------------------------------- */
-
     .chat-message-content {
         width: fit-content;
         max-width: 100%;
@@ -2483,11 +2481,6 @@
         padding: 9px 12px;
         max-width: 100%;
     }
-
-
-    /* -----------------------------------------------------
-       MEDIA
-    ----------------------------------------------------- */
 
     .chat-message-content:has(.media-wrap) {
         display: block;
@@ -2525,11 +2518,6 @@
         margin-top: 5px;
     }
 
-
-    /* -----------------------------------------------------
-       SHARE
-    ----------------------------------------------------- */
-
     .chat-message-content .media-share-btn {
         top: 6px;
         right: 6px;
@@ -2543,11 +2531,6 @@
         transform: scale(1);
     }
 
-
-    /* -----------------------------------------------------
-       REACTIONS
-    ----------------------------------------------------- */
-
     .chat-message-content .message-actions {
         margin-top: 4px;
     }
@@ -2556,19 +2539,9 @@
         gap: 3px;
     }
 
-
-    /* -----------------------------------------------------
-       REPLY FORM
-    ----------------------------------------------------- */
-
     .reply-form .btn-primary {
         width: 100%;
     }
-
-
-    /* -----------------------------------------------------
-       ATTACHMENT PREVIEW
-    ----------------------------------------------------- */
 
     .attach-preview {
         max-width: 100%;
@@ -2583,11 +2556,6 @@
     #remove-image-btn {
         width: 100%;
     }
-
-
-    /* -----------------------------------------------------
-       DROP
-    ----------------------------------------------------- */
 
     .chat-drop-overlay {
         border-width: 2px;
@@ -2608,11 +2576,6 @@
         font-size: 12px;
     }
 
-
-    /* -----------------------------------------------------
-       PAGINATION
-    ----------------------------------------------------- */
-
     .pagination {
         font-size: .8rem;
     }
@@ -2621,11 +2584,6 @@
     .pagination span {
         padding: .3rem .55rem;
     }
-
-
-    /* -----------------------------------------------------
-       EDIT / REPLY
-    ----------------------------------------------------- */
 
     .editing-message-bar,
     .replying-message-bar {
@@ -2649,11 +2607,6 @@
         font-size: .72rem;
     }
 
-
-    /* -----------------------------------------------------
-       REPLY MEDIA
-    ----------------------------------------------------- */
-
     .replying-message-media {
         flex-basis: 40px;
         width: 40px;
@@ -2669,11 +2622,6 @@
         min-width: 40px !important;
         min-height: 40px !important;
     }
-
-
-    /* -----------------------------------------------------
-       SENT REPLY PREVIEW
-    ----------------------------------------------------- */
 
     .message-reply-preview {
         max-width: 100%;
@@ -2698,11 +2646,6 @@
         min-width: 40px !important;
         min-height: 40px !important;
     }
-
-
-    /* -----------------------------------------------------
-       INBOX
-    ----------------------------------------------------- */
 
     .inbox-list {
         padding: 0;
@@ -2782,6 +2725,11 @@
         height: 28px;
         opacity: 1;
     }
+
+    .conversation-scroll-buttons {
+        right: 8px;
+        bottom: 8px;
+    }
 }
 
 
@@ -2813,11 +2761,6 @@
         max-width: 100%;
     }
 
-
-    /* -----------------------------------------------------
-       SIDE ACTIONS
-    ----------------------------------------------------- */
-
     .message-side-actions {
         display: flex;
         align-items: center;
@@ -2847,21 +2790,11 @@
         color: #212529;
     }
 
-
-    /* -----------------------------------------------------
-       MESSAGE TEXT SAFETY
-    ----------------------------------------------------- */
-
     .message-bubble,
     .message-body-html {
         overflow-wrap: anywhere;
         word-break: break-word;
     }
-
-
-    /* -----------------------------------------------------
-       EDIT / REPLY
-    ----------------------------------------------------- */
 
     .editing-message-bar,
     .replying-message-bar {
@@ -2911,11 +2844,6 @@
         flex-shrink: 0;
     }
 
-
-    /* -----------------------------------------------------
-       REPLY THUMBNAIL
-    ----------------------------------------------------- */
-
     .replying-message-media {
         flex: 0 0 38px;
         width: 38px;
@@ -2940,11 +2868,6 @@
     .replying-message-video span i {
         font-size: 11px;
     }
-
-
-    /* -----------------------------------------------------
-       SENT REPLY THUMBNAIL
-    ----------------------------------------------------- */
 
     .message-reply-media-thumb {
         flex: 0 0 38px;
@@ -2973,19 +2896,9 @@
         font-size: 10px;
     }
 
-
-    /* -----------------------------------------------------
-       EMOJI
-    ----------------------------------------------------- */
-
     .emoji-picker {
         z-index: 1055;
     }
-
-
-    /* -----------------------------------------------------
-       MEDIA FALLBACK
-    ----------------------------------------------------- */
 
     .media-wrap {
         position: relative;
@@ -3015,17 +2928,5 @@
 
     .media-share-btn:hover {
         background: rgba(0, 0, 0, .85);
-    }
-}
-
-
-/* =========================================================
-   SCROLL NAVIGATION - MOBILE
-========================================================= */
-
-@media (max-width: 576px) {
-    .conversation-scroll-buttons {
-        right: 8px;
-        bottom: 8px;
     }
 }

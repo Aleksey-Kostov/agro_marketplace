@@ -131,54 +131,57 @@
             </div>
 
             <!-- =====================================================
-                 CHAT WINDOW
+                 CHAT WINDOW WRAPPER
             ====================================================== -->
 
-            <div class="conversation-scroll"
-                 id="chat-window"
-                 data-root-message-id="{{ root_message.pk }}"
-                 data-current-user-id="{{ request.user.pk }}"
-                 data-message-fragment-url="{% url 'message-fragment' 0 %}"
-                 data-default-avatar="{% static 'images/profile_picture.webp' %}">
+            <div class="conversation-scroll-wrap">
 
-                <!-- =================================================
-                     MESSAGES
-                ================================================== -->
+                <div class="conversation-scroll"
+                     id="chat-window"
+                     data-root-message-id="{{ root_message.pk }}"
+                     data-current-user-id="{{ request.user.pk }}"
+                     data-message-fragment-url="{% url 'message-fragment' 0 %}"
+                     data-default-avatar="{% static 'images/profile_picture.webp' %}">
 
-                <div class="conversation"
-                     id="chat-messages">
-                    {% for item in conversation_messages %}
-                    {% include 'messages/_message.html' with item=item %}
-                    {% empty %}
-                    <div class="alert alert-info"
-                         id="no-messages-placeholder">
-                        No messages in this conversation.
+                    <!-- =================================================
+                         MESSAGES
+                    ================================================== -->
+
+                    <div class="conversation"
+                         id="chat-messages">
+                        {% for item in conversation_messages %}
+                        {% include 'messages/_message.html' with item=item %}
+                        {% empty %}
+                        <div class="alert alert-info"
+                             id="no-messages-placeholder">
+                            No messages in this conversation.
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
+
+                    <!-- =================================================
+                         TYPING INDICATOR
+                    ================================================== -->
+
+                    <div id="chat-typing-indicator"
+                         class="chat-typing-indicator d-none"
+                         aria-live="polite"
+                         aria-atomic="true">
+                        <span class="chat-typing-name"></span>
+                        <span class="chat-typing-text">
+                            is typing
+                        </span>
+                        <span class="chat-typing-dots"
+                              aria-hidden="true">
+                            <span>.</span>
+                            <span>.</span>
+                            <span>.</span>
+                        </span>
+                    </div>
                 </div>
 
                 <!-- =================================================
-                     TYPING INDICATOR
-                ================================================== -->
-
-                <div id="chat-typing-indicator"
-                     class="chat-typing-indicator d-none"
-                     aria-live="polite"
-                     aria-atomic="true">
-                    <span class="chat-typing-name"></span>
-                    <span class="chat-typing-text">
-                        is typing
-                    </span>
-                    <span class="chat-typing-dots"
-                          aria-hidden="true">
-                        <span>.</span>
-                        <span>.</span>
-                        <span>.</span>
-                    </span>
-                </div>
-
-                <!-- =================================================
-                     SCROLL BUTTONS
+                     SCROLL BUTTONS (outside scroll container)
                 ================================================== -->
 
                 <div class="conversation-scroll-buttons">
@@ -232,10 +235,6 @@
             {% else %}
             <div class="reply-form">
 
-                <!-- =================================================
-                     MESSAGE FORM
-                ================================================== -->
-
                 <form method="post"
                       action="{% url 'read-message' root_message.pk %}"
                       enctype="multipart/form-data"
@@ -244,10 +243,6 @@
                       autocomplete="off">
                     {% csrf_token %}
 
-                    <!-- =================================================
-                         PRODUCT CONTEXT
-                    ================================================== -->
-
                     <input type="hidden"
                            name="product_type"
                            value="{{ root_message.product_type|default:'' }}">
@@ -255,36 +250,23 @@
                            name="product_id"
                            value="{{ root_message.product_id|default:'' }}">
 
-                    <!-- =================================================
-                         REPLY TARGET
-                    ================================================== -->
-
                     <input type="hidden"
                            name="reply_to"
                            id="reply-to"
                            value="">
-
-                    <!-- =================================================
-                         EDIT TARGET
-                    ================================================== -->
 
                     <input type="hidden"
                            name="editing_message_id"
                            id="editing-message-id"
                            value="">
 
-                    <!-- =================================================
-                         EDIT BAR
-                    ================================================== -->
-
+                    <!-- EDIT BAR -->
                     <div id="editing-message-bar"
                          class="editing-message-bar d-none">
                         <div class="editing-message-info">
                             <i class="fas fa-edit"></i>
                             <div>
-                                <strong>
-                                    Editing message
-                                </strong>
+                                <strong>Editing message</strong>
                                 <small id="editing-message-preview">
                                     Edit your message
                                 </small>
@@ -299,10 +281,7 @@
                         </button>
                     </div>
 
-                    <!-- =================================================
-                         REPLY BAR
-                    ================================================== -->
-
+                    <!-- REPLY BAR -->
                     <div id="replying-message-bar"
                          class="replying-message-bar d-none">
                         <div class="replying-message-info">
@@ -325,10 +304,7 @@
                         </button>
                     </div>
 
-                    <!-- =================================================
-                         MESSAGE BODY
-                    ================================================== -->
-
+                    <!-- MESSAGE BODY -->
                     <div class="mb-2 position-relative">
                         {{ form.body }}
                         <div id="chat-drop-overlay"
@@ -338,45 +314,29 @@
                                 <div class="chat-drop-icon">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                 </div>
-                                <strong>
-                                    Drop image or video here
-                                </strong>
-                                <small>
-                                    Release to attach
-                                </small>
+                                <strong>Drop image or video here</strong>
+                                <small>Release to attach</small>
                             </div>
                         </div>
                     </div>
 
-
-                    <!-- =================================================
-                         IMAGE PREVIEW
-                    ================================================== -->
-
-                    <div id="image-preview-wrap"
-                         class="mb-2 d-none">
+                    <!-- IMAGE PREVIEW -->
+                    <div id="image-preview-wrap" class="mb-2 d-none">
                         <img id="image-preview"
                              src=""
                              alt="Preview"
                              class="attach-preview">
                     </div>
 
-                    <!-- =================================================
-                         VIDEO PREVIEW
-                    ================================================== -->
-
-                    <div id="video-preview-wrap"
-                         class="mb-2 d-none">
+                    <!-- VIDEO PREVIEW -->
+                    <div id="video-preview-wrap" class="mb-2 d-none">
                         <video id="video-preview"
                                class="attach-preview"
                                controls>
                         </video>
                     </div>
 
-                    <!-- =================================================
-                         FILE INPUTS
-                    ================================================== -->
-
+                    <!-- FILE INPUTS -->
                     <input type="file"
                            name="image"
                            id="id_image"
@@ -388,19 +348,12 @@
                            accept="video/*"
                            hidden>
 
-                    <!-- =================================================
-                         UPLOAD PROGRESS
-                    ================================================== -->
-
+                    <!-- UPLOAD PROGRESS -->
                     <div id="upload-progress-wrap"
                          class="upload-progress-wrap d-none mb-2">
                         <div class="d-flex justify-content-between align-items-center mb-1">
-                            <small id="upload-progress-text">
-                                Uploading...
-                            </small>
-                            <small id="upload-progress-percent">
-                                0%
-                            </small>
+                            <small id="upload-progress-text">Uploading...</small>
+                            <small id="upload-progress-percent">0%</small>
                         </div>
                         <div class="progress"
                              role="progressbar"
@@ -415,19 +368,9 @@
                         </div>
                     </div>
 
-
-                    <!-- =================================================
-                         COMPOSER ACTIONS
-                    ================================================== -->
-
+                    <!-- COMPOSER ACTIONS -->
                     <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
-                        <div class="btn-group"
-                             role="group">
-
-                            <!-- =========================================
-                                 IMAGE
-                            ========================================== -->
-
+                        <div class="btn-group" role="group">
                             <button type="button"
                                     id="attach-image-btn"
                                     class="btn btn-outline-secondary btn-sm rounded-start"
@@ -435,11 +378,6 @@
                                     aria-label="Attach image">
                                 <i class="fas fa-image"></i>
                             </button>
-
-                            <!-- =========================================
-                                 VIDEO
-                            ========================================== -->
-
                             <button type="button"
                                     id="attach-video-btn"
                                     class="btn btn-outline-secondary btn-sm"
@@ -447,11 +385,6 @@
                                     aria-label="Attach video">
                                 <i class="fas fa-video"></i>
                             </button>
-
-                            <!-- =========================================
-                                 REMOVE MEDIA
-                            ========================================== -->
-
                             <button type="button"
                                     id="remove-media-btn"
                                     class="btn btn-outline-danger btn-sm d-none"
@@ -459,11 +392,6 @@
                                     aria-label="Remove attachment">
                                 <i class="fas fa-times"></i>
                             </button>
-
-                            <!-- =========================================
-                                 EMOJI
-                            ========================================== -->
-
                             <button type="button"
                                     id="emoji-toggle-btn"
                                     class="btn btn-outline-secondary btn-sm rounded-end"
@@ -473,146 +401,53 @@
                                     aria-label="Emoji">
                                 😊
                             </button>
-
-                            <!-- =========================================
-                                 EMOJI MENU
-                            ========================================== -->
-
                             <div class="dropdown-menu p-2 emoji-picker">
                                 <div class="emoji-grid">
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😊">😊</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😂">😂</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😍">😍</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😘">😘</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😉">😉</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😎">😎</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😢">😢</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😡">😡</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="👍">👍</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="👎">👎</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="👏">👏</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🙏">🙏</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="❤️">❤️</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🔥">🔥</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="⭐">⭐</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🎉">🎉</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="✅">✅</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="❌">❌</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🍎">🍎</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🍐">🍐</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🍇">🍇</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🥕">🥕</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="📦">📦</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="💰">💰</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🤣">🤣</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😅">😅</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😇">😇</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🤔">🤔</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🙄">🙄</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="😴">😴</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🤗">🤗</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🥰">🥰</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="💔">💔</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="💯">💯</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🎈">🎈</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🎁">🎁</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🌞">🌞</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🌸">🌸</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🐶">🐶</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🐱">🐱</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="☕">☕</button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-light emoji-btn"
-                                            data-emoji="🍕">🍕</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😊">😊</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😂">😂</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😍">😍</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😘">😘</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😉">😉</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😎">😎</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😢">😢</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😡">😡</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👍">👍</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👎">👎</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👏">👏</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🙏">🙏</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❤️">❤️</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🔥">🔥</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="⭐">⭐</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🎉">🎉</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="✅">✅</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❌">❌</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍎">🍎</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍐">🍐</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍇">🍇</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🥕">🥕</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="📦">📦</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="💰">💰</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🤣">🤣</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😅">😅</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😇">😇</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🤔">🤔</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🙄">🙄</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😴">😴</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🤗">🤗</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🥰">🥰</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="💔">💔</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="💯">💯</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🎈">🎈</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🎁">🎁</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🌞">🌞</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🌸">🌸</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🐶">🐶</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🐱">🐱</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="☕">☕</button>
+                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍕">🍕</button>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- =================================================
-                             SEND / SAVE
-                        ================================================== -->
 
                         <button type="submit"
                                 class="btn btn-primary px-4"
