@@ -1470,14 +1470,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
         submitBtn.disabled = false;
 
+        /*
+         * IMPORTANT:
+         *
+         * setSendingState(true) replaces submitBtn.innerHTML,
+         * which removes the original #message-submit-icon and
+         * #message-submit-text elements from the DOM.
+         *
+         * Therefore we must rebuild the button HTML here instead
+         * of calling setSubmitMode(), which would operate on the
+         * old detached DOM references.
+         */
+
         if (
             editingMessageId &&
             editingMessageId.value
         ) {
-            setSubmitMode('edit');
-        } else {
-            setSubmitMode('send');
+            submitBtn.innerHTML =
+                '<i class="fas fa-save me-1" id="message-submit-icon"></i>' +
+                '<span id="message-submit-text">Save changes</span>';
+
+            return;
         }
+
+        submitBtn.innerHTML =
+            '<i class="fas fa-paper-plane me-1" id="message-submit-icon"></i>' +
+            '<span id="message-submit-text">Send</span>';
     }
 
     function handleMessageAcknowledged(event) {
@@ -1533,14 +1551,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
         submitBtn.disabled = false;
 
+        /*
+         * setSavingState(true) replaces submitBtn.innerHTML,
+         * which removes the original #message-submit-icon and
+         * #message-submit-text elements from the DOM.
+         *
+         * Rebuild the button instead of using the old DOM references.
+         */
+
         if (
             editingMessageId &&
             editingMessageId.value
         ) {
-            setSubmitMode('edit');
-        } else {
-            setSubmitMode('send');
+            submitBtn.innerHTML =
+                '<i class="fas fa-save me-1" id="message-submit-icon"></i>' +
+                '<span id="message-submit-text">Save changes</span>';
+
+            return;
         }
+
+        submitBtn.innerHTML =
+            '<i class="fas fa-paper-plane me-1" id="message-submit-icon"></i>' +
+            '<span id="message-submit-text">Send</span>';
     }
 
     function getMessagePreview(text) {
