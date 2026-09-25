@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let isSubmittingAttachment = false;
     let isSubmittingEdit = false;
     let isSubmittingMessage = false;
+    let activeMessageSendToken = 0;
 
     const pendingMessageRefreshes = new Map();
 
@@ -1478,6 +1479,43 @@ document.addEventListener('DOMContentLoaded', function () {
             setSubmitMode('send');
         }
     }
+
+    function handleMessageAcknowledged(event) {
+    const detail = event.detail || {};
+    const messageId = Number(detail.messageId);
+
+    if (!messageId || !isSubmittingMessage) {
+        return;
+    }
+
+    /*
+     * The WebSocket controller has confirmed that our message
+     * was created and rendered. The HTTP request may still be
+     * waiting for its response, so the visual Sending... state
+     * must not depend on fetch() finishing.
+     */
+    isSubmittingMessage = false;
+    activeMessageSendToken += 1;
+
+    setSendingState(false);
+
+    window.dispatchEvent(
+        new CustomEvent('agro:message-sent')
+    );
+
+    resetComposerAfterSend();
+}
+
+window.addEventListener(
+    'agro:message-acknowledged',
+    handleMessageAcknowledged
+);
+
+
+/* =========================================================
+   SAVING STATE
+   ========================================================= */
+
 
     function setSavingState(isSaving) {
         if (!submitBtn) {
