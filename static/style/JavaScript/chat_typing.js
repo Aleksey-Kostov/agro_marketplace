@@ -8,9 +8,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const chatWindow =
         document.getElementById('chat-window');
 
-    const chatMessages =
-        document.getElementById('chat-messages');
-
     const replyForm =
         document.getElementById('reply-form');
 
@@ -20,6 +17,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 'textarea[name="body"], input[name="body"]'
             )
             : null;
+
+    /*
+     * IMPORTANT:
+     * The indicator already exists in message-read.html.
+     * We must NOT create another one dynamically.
+     */
+    const typingIndicator =
+        document.getElementById(
+            'chat-typing-indicator'
+        );
 
 
     /* =========================================================
@@ -36,13 +43,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let typingTimer = null;
     let isTyping = false;
-    let typingIndicator = null;
-
-    /*
-     * Remember whether the user was at the bottom
-     * BEFORE a new message is inserted.
-     */
-    let wasNearBottom = true;
 
 
     /* =========================================================
@@ -102,74 +102,24 @@ document.addEventListener('DOMContentLoaded', function () {
        TYPING INDICATOR
     ========================================================== */
 
-    function createTypingIndicator() {
-        if (typingIndicator) {
-            return typingIndicator;
-        }
-
-        typingIndicator =
-            document.createElement('div');
-
-        typingIndicator.id =
-            'chat-typing-indicator';
-
-        typingIndicator.className =
-            'chat-typing-indicator d-none';
-
-        typingIndicator.setAttribute(
-            'aria-live',
-            'polite'
-        );
-
-        typingIndicator.innerHTML = `
-            <span class="chat-typing-name"></span>
-            <span class="chat-typing-text">пише</span>
-            <span class="chat-typing-dots" aria-hidden="true">
-                <span>.</span>
-                <span>.</span>
-                <span>.</span>
-            </span>
-        `;
-
-        if (chatMessages) {
-            chatMessages.appendChild(
-                typingIndicator
-            );
-        } else if (chatWindow) {
-            chatWindow.appendChild(
-                typingIndicator
-            );
-        }
-
-        return typingIndicator;
-    }
-
-
     function showTypingIndicator(username) {
-        const indicator =
-            createTypingIndicator();
-
-        if (!indicator) {
+        if (!typingIndicator) {
             return;
         }
 
         const nameElement =
-            indicator.querySelector(
+            typingIndicator.querySelector(
                 '.chat-typing-name'
             );
 
         if (nameElement) {
             nameElement.textContent =
-                username || 'Потребителят';
+                username || 'User';
         }
 
-        indicator.classList.remove(
+        typingIndicator.classList.remove(
             'd-none'
         );
-
-        if (isNearBottom()) {
-            scrollToBottom(false);
-        }
     }
 
 
@@ -298,6 +248,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 typingTimer = null;
             }
+
+            hideTypingIndicator();
         }
     );
 
@@ -315,6 +267,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!data) {
                 return;
             }
+
+
+            /* -----------------------------------------------
+               USER STARTED TYPING
+            ------------------------------------------------ */
 
             if (
                 data.type ===
@@ -337,14 +294,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 showTypingIndicator(
                     data.username ||
-                    data.user_name ||
-                    data.name ||
-                    'Потребителят'
+                    'User'
                 );
 
                 return;
             }
 
+
+            /* -----------------------------------------------
+               USER STOPPED TYPING
+            ------------------------------------------------ */
 
             if (
                 data.type ===
@@ -357,165 +316,49 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     );
 
-
     /* =========================================================
-       AUTO SCROLL
+       MESSAGE SENT / RENDERED
+
+       IMPORTANT:
+       conversation.js is responsible for deciding
+       whether the user was at the bottom.
+
+       chat_typing.js ONLY performs the scroll requested
+       by conversation.js.
+
+       MutationObserver is intentionally NOT used.
     ========================================================== */
 
-    function isNearBottom() {
-        if (!chatWindow) {
-            return true;
-        }
+    window.addEventListener(
+        'agro:message-rendered',
+        function (event) {
+            const detail =
+                event.detail || {};
 
-        return (
-            chatWindow.scrollTop +
-            chatWindow.clientHeight
-        ) >= (
-            chatWindow.scrollHeight -
-            BOTTOM_THRESHOLD
-        );
-    }
-
-
-    function scrollToBottom(smooth = true) {
-        if (!chatWindow) {
-            return;
-        }
-
-        chatWindow.scrollTo({
-            top: chatWindow.scrollHeight,
-            behavior: smooth
-                ? 'smooth'
-                : 'auto'
-        });
-    }
-
-
-    /*
-     * Track the position BEFORE a new message arrives.
-     */
-    if (chatWindow) {
-        chatWindow.addEventListener(
-            'scroll',
-            function () {
-                wasNearBottom =
-                    isNearBottom();
+            if (
+                !detail.shouldScroll ||
+                !chatWindow
+            ) {
+                return;
             }
-        );
 
-        /*
-         * Initial state.
-         */
-        wasNearBottom =
-            isNearBottom();
-    }
-
-
-    /* =========================================================
-       NEW MESSAGE AUTO SCROLL
-    ========================================================== */
-
-    if (chatMessages) {
-        const observer =
-            new MutationObserver(
-                function (mutations) {
-
-                    let newMessageAdded =
-                        false;
-
-                    for (
-                        const mutation of mutations
-                    ) {
-                        if (
-                            mutation.type !==
-                            'childList'
-                        ) {
-                            continue;
-                        }
-
-                        for (
-                            const node of mutation.addedNodes
-                        ) {
-                            if (
-                                node.nodeType !==
-                                Node.ELEMENT_NODE
-                            ) {
-                                continue;
-                            }
-
-                            if (
-                                node.matches &&
-                                node.matches(
-                                    '.conversation-message'
-                                )
-                            ) {
-                                newMessageAdded = true;
-                                break;
-                            }
-
-                            if (
-                                node.querySelector &&
-                                node.querySelector(
-                                    '.conversation-message'
-                                )
-                            ) {
-                                newMessageAdded = true;
-                                break;
-                            }
-                        }
-
-                        if (newMessageAdded) {
-                            break;
-                        }
-                    }
-
-                    if (!newMessageAdded) {
-                        return;
-                    }
-
-                    /*
-                     * IMPORTANT:
-                     * Use the position from BEFORE
-                     * the message was inserted.
-                     */
-                    const shouldScroll =
-                        wasNearBottom;
-
-                    /*
-                     * Prepare for the next message.
-                     */
-                    wasNearBottom = false;
-
-                    if (!shouldScroll) {
-                        return;
-                    }
-
-                    requestAnimationFrame(
-                        function () {
-                            requestAnimationFrame(
-                                function () {
-                                    scrollToBottom(true);
-
-                                    /*
-                                     * We are at the bottom again.
-                                     */
-                                    wasNearBottom =
-                                        isNearBottom();
-                                }
-                            );
-                        }
-                    );
+            /*
+             * Wait until the newly inserted message
+             * has completed its DOM/layout update.
+             *
+             * Only ONE scroll operation.
+             */
+            requestAnimationFrame(
+                function () {
+                    chatWindow.scrollTo({
+                        top:
+                            chatWindow.scrollHeight,
+                        behavior: 'smooth'
+                    });
                 }
             );
-
-        observer.observe(
-            chatMessages,
-            {
-                childList: true,
-                subtree: false
-            }
-        );
-    }
+        }
+    );
 
 
     /* =========================================================

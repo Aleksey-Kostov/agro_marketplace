@@ -1,4408 +1,1329 @@
 document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
-    /* =========================================================
-       ELEMENTS
-    ========================================================== */
-
     const replyForm = document.getElementById('reply-form');
-
-    const messageBodyField = replyForm
-        ? replyForm.querySelector(
-            'textarea[name="body"], input[name="body"]'
-        )
-        : null;
-
+    const messageBodyField = replyForm ? replyForm.querySelector('textarea[name="body"], input[name="body"]') : null;
     const imageInput = document.getElementById('id_image');
     const videoInput = document.getElementById('id_video');
-
     const imagePreview = document.getElementById('image-preview');
     const videoPreview = document.getElementById('video-preview');
-
-    const imagePreviewWrap =
-        document.getElementById('image-preview-wrap');
-
-    const videoPreviewWrap =
-        document.getElementById('video-preview-wrap');
-
-    const attachImageBtn =
-        document.getElementById('attach-image-btn');
-
-    const attachVideoBtn =
-        document.getElementById('attach-video-btn');
-
-    const removeMediaBtn =
-        document.getElementById('remove-media-btn');
-
-    const chatWindow =
-        document.getElementById('chat-window');
-
-    const chatMessages =
-        document.getElementById('chat-messages');
-
-    const dropOverlay =
-        document.getElementById('chat-drop-overlay');
-
-    const scrollTopBtn =
-        document.getElementById('scroll-top-btn');
-
-    const scrollBottomBtn =
-        document.getElementById('scroll-bottom-btn');
-
-    const uploadProgressWrap =
-        document.getElementById('upload-progress-wrap');
-
-    const uploadProgressBar =
-        document.getElementById('upload-progress-bar');
-
-    const uploadProgressText =
-        document.getElementById('upload-progress-text');
-
-    const uploadProgressPercent =
-        document.getElementById('upload-progress-percent');
-
-
-    /* =========================================================
-       EDIT
-    ========================================================== */
-
-    const editingBar =
-        document.getElementById('editing-message-bar');
-
-    const editingMessageId =
-        document.getElementById('editing-message-id');
-
-    const editingPreview =
-        document.getElementById('editing-message-preview');
-
-    const cancelEditBtn =
-        document.getElementById('cancel-edit-btn');
-
-
-    /* =========================================================
-       REPLY
-    ========================================================== */
-
-    const replyBar =
-        document.getElementById('replying-message-bar');
-
-    const replyPreview =
-        document.getElementById('replying-message-preview');
-
-    const cancelReplyBtn =
-        document.getElementById('cancel-reply-btn');
-
-    const replyToInput =
-        document.getElementById('reply-to');
-
-
-    /* =========================================================
-       REPLY MEDIA
-    ========================================================== */
-
-    const replyMedia =
-        document.getElementById('replying-message-media');
-
-    const replyImage =
-        document.getElementById('replying-message-image');
-
-    const replyVideo =
-        document.getElementById('replying-message-video');
-
-    const replyVideoPlayer =
-        document.getElementById('replying-message-video-player');
-
-
-    /* =========================================================
-       SUBMIT
-    ========================================================== */
-
-    const submitBtn =
-        document.getElementById('message-submit-btn');
-
-    const submitText =
-        document.getElementById('message-submit-text');
-
-    const submitIcon =
-        document.getElementById('message-submit-icon');
-
-
-    /* =========================================================
-       CONSTANTS
-    ========================================================== */
+    const imagePreviewWrap = document.getElementById('image-preview-wrap');
+    const videoPreviewWrap = document.getElementById('video-preview-wrap');
+    const attachImageBtn = document.getElementById('attach-image-btn');
+    const attachVideoBtn = document.getElementById('attach-video-btn');
+    const removeMediaBtn = document.getElementById('remove-media-btn');
+    const chatWindow = document.getElementById('chat-window');
+    const chatMessages = document.getElementById('chat-messages');
+    const dropOverlay = document.getElementById('chat-drop-overlay');
+    const scrollTopBtn = document.getElementById('scroll-top-btn');
+    const scrollBottomBtn = document.getElementById('scroll-bottom-btn');
+    const uploadProgressWrap = document.getElementById('upload-progress-wrap');
+    const uploadProgressBar = document.getElementById('upload-progress-bar');
+    const uploadProgressText = document.getElementById('upload-progress-text');
+    const uploadProgressPercent = document.getElementById('upload-progress-percent');
+    const editingBar = document.getElementById('editing-message-bar');
+    const editingMessageId = document.getElementById('editing-message-id');
+    const editingPreview = document.getElementById('editing-message-preview');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const replyBar = document.getElementById('replying-message-bar');
+    const replyPreview = document.getElementById('replying-message-preview');
+    const cancelReplyBtn = document.getElementById('cancel-reply-btn');
+    const replyToInput = document.getElementById('reply-to');
+    const replyMedia = document.getElementById('replying-message-media');
+    const replyImage = document.getElementById('replying-message-image');
+    const replyVideo = document.getElementById('replying-message-video');
+    const replyVideoPlayer = document.getElementById('replying-message-video-player');
+    const submitBtn = document.getElementById('message-submit-btn');
+    const submitText = document.getElementById('message-submit-text');
+    const submitIcon = document.getElementById('message-submit-icon');
 
     const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
     const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
-
     const SCROLL_EPSILON = 2;
     const SCROLL_BUTTON_HIDE_DELAY = 2000;
-
     const WEBSOCKET_RECONNECT_DELAY = 3000;
 
-
-    /* =========================================================
-       FORM URL
-    ========================================================== */
-
-    const normalFormAction = replyForm
-        ? (
-            replyForm.dataset.sendUrl ||
-            replyForm.getAttribute('action') ||
-            window.location.href
-        )
-        : window.location.href;
-
-
-    /* =========================================================
-       STATE
-    ========================================================== */
+    const normalFormAction = replyForm ? (replyForm.dataset.sendUrl || replyForm.getAttribute('action') || window.location.href) : window.location.href;
 
     let imageObjectUrl = null;
     let videoObjectUrl = null;
-
     let scrollButtonHideTimer = null;
-
     let dragCounter = 0;
-
     let isSubmittingAttachment = false;
     let isSubmittingEdit = false;
     let isSubmittingMessage = false;
-
-
-    /* =========================================================
-       WEBSOCKET STATE
-    ========================================================== */
-
     let messageWebSocket = null;
-
-    /*
-     * IMPORTANT:
-     *
-     * chat_typing.js uses this global reference.
-     */
-    window.agroMessageSocket = null;
-
+    window.agroMessageSocket = null; // used by chat_typing.js
     let websocketReconnectTimer = null;
     let websocketManuallyClosed = false;
-
-
-    /*
-     * Messages currently being fetched for insertion.
-     */
     const pendingMessageFragments = new Set();
-
-
-    /*
-     * IMPORTANT:
-     *
-     * This is a Map, not a Set.
-     *
-     * Multiple refresh requests for the same message are
-     * queued instead of being silently ignored.
-     */
-    const pendingMessageRefreshes = new Map();
-
-
-    /*
-     * Prevent repeatedly sending mark_read for the same
-     * message during the lifetime of this page.
-     */
+    const pendingMessageRefreshes = new Map(); // Map so multiple refreshes queue
     const readMessagesSent = new Set();
 
-
-    /* =========================================================
-       CSRF
-    ========================================================== */
-
     function getCsrfToken() {
-        const csrfInput = replyForm
-            ? replyForm.querySelector(
-                '[name="csrfmiddlewaretoken"]'
-            )
-            : document.querySelector(
-                '[name="csrfmiddlewaretoken"]'
-            );
-
-        return csrfInput
-            ? csrfInput.value
-            : '';
+        const csrfInput = replyForm ? replyForm.querySelector('[name="csrfmiddlewaretoken"]') : document.querySelector('[name="csrfmiddlewaretoken"]');
+        return csrfInput ? csrfInput.value : '';
     }
-
-
-    /* =========================================================
-       CURRENT USER
-    ========================================================== */
 
     function getCurrentUserId() {
-        if (!chatWindow) {
-            return null;
-        }
-
-        const value =
-            Number(
-                chatWindow.dataset.currentUserId
-            );
-
-        return Number.isFinite(value) && value > 0
-            ? value
-            : null;
+        if (!chatWindow) return null;
+        const value = Number(chatWindow.dataset.currentUserId);
+        return Number.isFinite(value) && value > 0 ? value : null;
     }
-
-
-    /* =========================================================
-       WEBSOCKET SEND HELPER
-    ========================================================== */
 
     function sendWebSocketPayload(payload) {
-        if (
-            !messageWebSocket ||
-            messageWebSocket.readyState !==
-                WebSocket.OPEN
-        ) {
-            return false;
-        }
-
+        if (!messageWebSocket || messageWebSocket.readyState !== WebSocket.OPEN) return false;
         try {
-            messageWebSocket.send(
-                JSON.stringify(payload)
-            );
-
+            messageWebSocket.send(JSON.stringify(payload));
             return true;
-
         } catch (error) {
-            console.error(
-                'Unable to send WebSocket payload:',
-                error
-            );
-
+            console.error('Unable to send WebSocket payload:', error);
             return false;
         }
     }
-
-
-    /* =========================================================
-       GENERAL MESSAGE HELPERS
-    ========================================================== */
 
     function getMessageElement(messageId) {
-        if (!messageId) {
-            return null;
-        }
-
-        return document.getElementById(
-            `msg-${messageId}`
-        );
+        return messageId ? document.getElementById(`msg-${messageId}`) : null;
     }
 
-
     function getMessageIdFromElement(element) {
-        if (!element) {
-            return null;
-        }
-
+        if (!element) return null;
         if (element.dataset.messageId) {
-            const id =
-                Number(
-                    element.dataset.messageId
-                );
-
-            if (id) {
-                return id;
-            }
+            const id = Number(element.dataset.messageId);
+            if (id) return id;
         }
-
-        const rawId =
-            element.id || '';
-
-        if (
-            rawId.startsWith('msg-')
-        ) {
-            const id =
-                Number(
-                    rawId.substring(4)
-                );
-
-            if (id) {
-                return id;
-            }
+        const rawId = element.id || '';
+        if (rawId.startsWith('msg-')) {
+            const id = Number(rawId.substring(4));
+            if (id) return id;
         }
-
-        const childWithMessageId =
-            element.querySelector(
-                '[data-message-id]'
-            );
-
-        if (childWithMessageId) {
-            const id =
-                Number(
-                    childWithMessageId.dataset.messageId
-                );
-
-            if (id) {
-                return id;
-            }
+        const child = element.querySelector('[data-message-id]');
+        if (child) {
+            const id = Number(child.dataset.messageId);
+            if (id) return id;
         }
-
         return null;
     }
 
-
     function removeEmptyConversationMessage() {
-        if (!chatMessages) {
-            return;
-        }
-
-        chatMessages
-            .querySelectorAll('.alert.alert-info')
-            .forEach(function (element) {
-                element.remove();
-            });
+        if (!chatMessages) return;
+        chatMessages.querySelectorAll('.alert.alert-info').forEach(el => el.remove());
     }
 
-
-    /* =========================================================
-       APPEND RENDERED MESSAGE
-    ========================================================== */
-
-    function appendRenderedMessage(
-        html,
-        messageId,
-        shouldScroll = true
-    ) {
-        if (
-            !chatMessages ||
-            !html ||
-            !messageId
-        ) {
-            return false;
-        }
-
-        if (getMessageElement(messageId)) {
-            return false;
-        }
-
+    function appendRenderedMessage(html, messageId, shouldScroll = true) {
+        if (!chatMessages || !html || !messageId) return false;
+        if (getMessageElement(messageId)) return false;
         removeEmptyConversationMessage();
-
-        chatMessages.insertAdjacentHTML(
-            'beforeend',
-            html
-        );
-
-        const inserted =
-            getMessageElement(messageId);
-
+        chatMessages.insertAdjacentHTML('beforeend', html);
+        const inserted = getMessageElement(messageId);
         if (!inserted) {
-            console.warn(
-                'Rendered message HTML did not contain expected message:',
-                messageId
-            );
-
+            console.warn('Rendered message HTML did not contain expected message:', messageId);
             return false;
         }
-
-        /*
-         * IMPORTANT:
-         *
-         * chat_typing.js owns the actual auto-scroll.
-         *
-         * We only notify it that a new message was rendered.
-         */
-        window.dispatchEvent(
-            new CustomEvent(
-                'agro:message-rendered',
-                {
-                    detail: {
-                        messageId: messageId,
-                        shouldScroll: Boolean(
-                            shouldScroll
-                        )
-                    }
-                }
-            )
-        );
-
+        // chat_typing.js owns auto-scroll; we only notify
+        window.dispatchEvent(new CustomEvent('agro:message-rendered', {
+            detail: { messageId, shouldScroll: Boolean(shouldScroll) }
+        }));
         updateScrollButtons();
-
         return true;
     }
 
-
-    /* =========================================================
-       MESSAGE FRAGMENT URL
-    ========================================================== */
-
     function getMessageFragmentUrl(messageId) {
-        if (!chatWindow || !messageId) {
-            return null;
-        }
-
-        const template =
-            chatWindow.dataset.messageFragmentUrl;
-
+        if (!chatWindow || !messageId) return null;
+        const template = chatWindow.dataset.messageFragmentUrl;
         if (!template) {
-            console.error(
-                'data-message-fragment-url is missing.'
-            );
-
+            console.error('data-message-fragment-url is missing.');
             return null;
         }
-
         try {
-            const url =
-                new URL(
-                    template,
-                    window.location.origin
-                );
-
-            url.pathname =
-                url.pathname.replace(
-                    /\/0\/?$/,
-                    `/${encodeURIComponent(messageId)}/`
-                );
-
+            const url = new URL(template, window.location.origin);
+            url.pathname = url.pathname.replace(/\/0\/?$/, `/${encodeURIComponent(messageId)}/`);
             return url.toString();
-
         } catch (error) {
-            console.error(
-                'Unable to build message fragment URL:',
-                error
-            );
-
+            console.error('Unable to build message fragment URL:', error);
             return null;
         }
     }
 
-
-    /* =========================================================
-       FETCH MESSAGE FRAGMENT
-    ========================================================== */
-
     async function fetchMessageFragment(messageId) {
-        const fragmentUrl =
-            getMessageFragmentUrl(messageId);
-
-        if (!fragmentUrl) {
-            throw new Error(
-                'Message fragment URL is missing.'
-            );
-        }
-
-        const response =
-            await fetch(
-                fragmentUrl,
-                {
-                    method: 'GET',
-                    credentials: 'same-origin',
-                    cache: 'no-store',
-                    headers: {
-                        'X-Requested-With':
-                            'XMLHttpRequest',
-                        'Accept':
-                            'application/json'
-                    }
-                }
-            );
-
+        const fragmentUrl = getMessageFragmentUrl(messageId);
+        if (!fragmentUrl) throw new Error('Message fragment URL is missing.');
+        const response = await fetch(fragmentUrl, {
+            method: 'GET',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        });
         let data;
-
-        try {
-            data =
-                await response.json();
-
-        } catch (error) {
-            throw new Error(
-                `Invalid message fragment response (${response.status}).`
-            );
+        try { data = await response.json(); }
+        catch (error) { throw new Error(`Invalid message fragment response (${response.status}).`); }
+        if (!response.ok || !data.ok || !data.html) {
+            throw new Error(data.error || `Unable to load message fragment (${response.status}).`);
         }
-
-        if (
-            !response.ok ||
-            !data.ok ||
-            !data.html
-        ) {
-            throw new Error(
-                data.error ||
-                `Unable to load message fragment (${response.status}).`
-            );
-        }
-
         return data;
     }
 
-
-    /* =========================================================
-       PERFORM ONE MESSAGE REFRESH
-    ========================================================== */
-
-    async function performMessageFragmentRefresh(
-        id,
-        options = {}
-    ) {
-        const preserveScroll =
-            options.preserveScroll !== false;
-
-        const oldScrollTop =
-            chatWindow
-                ? chatWindow.scrollTop
-                : 0;
-
-        const data =
-            await fetchMessageFragment(id);
-
-        const currentMessage =
-            getMessageElement(id);
-
-        /*
-         * Message is not currently in DOM.
-         */
+    async function performMessageFragmentRefresh(id, options = {}) {
+        const preserveScroll = options.preserveScroll !== false;
+        const oldScrollTop = chatWindow ? chatWindow.scrollTop : 0;
+        const data = await fetchMessageFragment(id);
+        const currentMessage = getMessageElement(id);
         if (!currentMessage) {
-            return appendRenderedMessage(
-                data.html,
-                data.message_id || id,
-                false
-            );
+            return appendRenderedMessage(data.html, data.message_id || id, false);
         }
-
-        const wrapper =
-            document.createElement('div');
-
-        wrapper.innerHTML =
-            data.html.trim();
-
-        const newMessage =
-            wrapper.firstElementChild;
-
-        if (!newMessage) {
-            throw new Error(
-                'Server returned empty message HTML.'
-            );
-        }
-
-        currentMessage.replaceWith(
-            newMessage
-        );
-
-        if (
-            preserveScroll &&
-            chatWindow
-        ) {
-            chatWindow.scrollTop =
-                oldScrollTop;
-        }
-
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = data.html.trim();
+        const newMessage = wrapper.firstElementChild;
+        if (!newMessage) throw new Error('Server returned empty message HTML.');
+        currentMessage.replaceWith(newMessage);
+        if (preserveScroll && chatWindow) chatWindow.scrollTop = oldScrollTop;
         updateScrollButtons();
-
         return true;
     }
 
-
-    /* =========================================================
-       QUEUED MESSAGE REFRESH
-    ========================================================== */
-
-    function refreshMessageFragment(
-        messageId,
-        options = {}
-    ) {
-        const id =
-            Number(messageId);
-
-        if (!id) {
-            return Promise.resolve(false);
-        }
-
-        const previous =
-            pendingMessageRefreshes.get(id) ||
-            Promise.resolve();
-
-        const next =
-            previous
-                .catch(function () {
-                    /*
-                     * A failed previous refresh must not
-                     * block future refreshes.
-                     */
-                })
-                .then(function () {
-                    return performMessageFragmentRefresh(
-                        id,
-                        options
-                    );
-                });
-
+    function refreshMessageFragment(messageId, options = {}) {
+        const id = Number(messageId);
+        if (!id) return Promise.resolve(false);
+        const previous = pendingMessageRefreshes.get(id) || Promise.resolve();
+        const next = previous.catch(() => {}).then(() => performMessageFragmentRefresh(id, options));
         let trackedPromise;
-
-        trackedPromise =
-            next.finally(function () {
-                if (
-                    pendingMessageRefreshes.get(id) ===
-                    trackedPromise
-                ) {
-                    pendingMessageRefreshes.delete(id);
-                }
-            });
-
-        pendingMessageRefreshes.set(
-            id,
-            trackedPromise
-        );
-
+        trackedPromise = next.finally(() => {
+            if (pendingMessageRefreshes.get(id) === trackedPromise) pendingMessageRefreshes.delete(id);
+        });
+        pendingMessageRefreshes.set(id, trackedPromise);
         return trackedPromise;
     }
 
-
-    /*
-     * Backwards-compatible helper used by edit logic.
-     */
-    async function replaceMessageWithFragment(
-        messageId
-    ) {
-        return refreshMessageFragment(
-            messageId,
-            {
-                preserveScroll: true
-            }
-        );
+    async function replaceMessageWithFragment(messageId) {
+        return refreshMessageFragment(messageId, { preserveScroll: true });
     }
-
 
     function getSendUrl() {
-        if (!replyForm) {
-            return null;
-        }
-
-        return (
-            replyForm.dataset.sendUrl ||
-            replyForm.getAttribute('action') ||
-            normalFormAction
-        );
+        if (!replyForm) return null;
+        return replyForm.dataset.sendUrl || replyForm.getAttribute('action') || normalFormAction;
     }
 
-
     function resetComposerAfterSend() {
-        if (messageBodyField) {
-            messageBodyField.value = '';
-        }
-
-        if (replyToInput) {
-            replyToInput.value = '';
-        }
-
+        if (messageBodyField) messageBodyField.value = '';
+        if (replyToInput) replyToInput.value = '';
         clearReplyMedia();
         clearMediaInputs();
-
-        if (editingMessageId) {
-            editingMessageId.value = '';
-        }
-
-        if (editingBar) {
-            editingBar.classList.add('d-none');
-        }
-
-        if (replyBar) {
-            replyBar.classList.add('d-none');
-        }
-
-        if (replyForm) {
-            replyForm.setAttribute(
-                'action',
-                normalFormAction
-            );
-        }
-
+        if (editingMessageId) editingMessageId.value = '';
+        if (editingBar) editingBar.classList.add('d-none');
+        if (replyBar) replyBar.classList.add('d-none');
+        if (replyForm) replyForm.setAttribute('action', normalFormAction);
         setSubmitMode('send');
     }
 
-
-    /* =========================================================
-       EMOJI
-    ========================================================== */
-
-    document.addEventListener(
-        'click',
-        function (event) {
-            const emojiButton =
-                event.target.closest('.emoji-btn');
-
-            if (
-                !emojiButton ||
-                !messageBodyField
-            ) {
-                return;
-            }
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            const emoji =
-                emojiButton.dataset.emoji || '';
-
-            if (!emoji) {
-                return;
-            }
-
-            const start =
-                typeof messageBodyField.selectionStart === 'number'
-                    ? messageBodyField.selectionStart
-                    : messageBodyField.value.length;
-
-            const end =
-                typeof messageBodyField.selectionEnd === 'number'
-                    ? messageBodyField.selectionEnd
-                    : messageBodyField.value.length;
-
-            const currentValue =
-                messageBodyField.value;
-
-            messageBodyField.value =
-                currentValue.substring(0, start) +
-                emoji +
-                currentValue.substring(end);
-
-            const newPosition =
-                start + emoji.length;
-
-            messageBodyField.focus();
-
-            try {
-                messageBodyField.setSelectionRange(
-                    newPosition,
-                    newPosition
-                );
-            } catch (error) {
-                // Ignore.
-            }
-
-            const toggle =
-                document.getElementById(
-                    'emoji-toggle-btn'
-                );
-
-            if (
-                toggle &&
-                window.bootstrap
-            ) {
-                const instance =
-                    bootstrap.Dropdown.getInstance(
-                        toggle
-                    );
-
-                if (instance) {
-                    instance.hide();
-                }
-            }
+    // Emoji
+    document.addEventListener('click', function (event) {
+        const emojiButton = event.target.closest('.emoji-btn');
+        if (!emojiButton || !messageBodyField) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const emoji = emojiButton.dataset.emoji || '';
+        if (!emoji) return;
+        const start = typeof messageBodyField.selectionStart === 'number' ? messageBodyField.selectionStart : messageBodyField.value.length;
+        const end = typeof messageBodyField.selectionEnd === 'number' ? messageBodyField.selectionEnd : messageBodyField.value.length;
+        const currentValue = messageBodyField.value;
+        messageBodyField.value = currentValue.substring(0, start) + emoji + currentValue.substring(end);
+        const newPosition = start + emoji.length;
+        messageBodyField.focus();
+        try { messageBodyField.setSelectionRange(newPosition, newPosition); } catch (e) {}
+        const toggle = document.getElementById('emoji-toggle-btn');
+        if (toggle && window.bootstrap) {
+            const instance = bootstrap.Dropdown.getInstance(toggle);
+            if (instance) instance.hide();
         }
-    );
+    });
 
-
-    /* =========================================================
-       CHAT SCROLL
-    ========================================================== */
-
+    // Scroll helpers
     function getMaxScrollTop() {
-        if (!chatWindow) {
-            return 0;
-        }
-
-        return Math.max(
-            0,
-            chatWindow.scrollHeight -
-            chatWindow.clientHeight
-        );
+        return chatWindow ? Math.max(0, chatWindow.scrollHeight - chatWindow.clientHeight) : 0;
     }
-
 
     function updateScrollButtons() {
-        if (!chatWindow) {
-            return;
-        }
-
-        const currentScrollTop =
-            chatWindow.scrollTop;
-
-        const maxScrollTop =
-            getMaxScrollTop();
-
-        const atTop =
-            currentScrollTop <= SCROLL_EPSILON;
-
-        const atBottom =
-            currentScrollTop >=
-            maxScrollTop - SCROLL_EPSILON;
-
-        if (scrollTopBtn) {
-            scrollTopBtn.classList.toggle(
-                'd-none',
-                atTop
-            );
-        }
-
-        if (scrollBottomBtn) {
-            scrollBottomBtn.classList.toggle(
-                'd-none',
-                atBottom
-            );
-        }
+        if (!chatWindow) return;
+        const currentScrollTop = chatWindow.scrollTop;
+        const maxScrollTop = getMaxScrollTop();
+        const atTop = currentScrollTop <= SCROLL_EPSILON;
+        const atBottom = currentScrollTop >= maxScrollTop - SCROLL_EPSILON;
+        if (scrollTopBtn) scrollTopBtn.classList.toggle('d-none', atTop);
+        if (scrollBottomBtn) scrollBottomBtn.classList.toggle('d-none', atBottom);
     }
-
 
     function showScrollButtons() {
-        if (scrollTopBtn) {
-            scrollTopBtn.classList.remove(
-                'scroll-buttons-hidden'
-            );
-        }
-
-        if (scrollBottomBtn) {
-            scrollBottomBtn.classList.remove(
-                'scroll-buttons-hidden'
-            );
-        }
+        if (scrollTopBtn) scrollTopBtn.classList.remove('scroll-buttons-hidden');
+        if (scrollBottomBtn) scrollBottomBtn.classList.remove('scroll-buttons-hidden');
     }
-
 
     function scheduleScrollButtonHide() {
-        if (scrollButtonHideTimer) {
-            clearTimeout(
-                scrollButtonHideTimer
-            );
-        }
-
-        scrollButtonHideTimer =
-            setTimeout(function () {
-                if (scrollTopBtn) {
-                    scrollTopBtn.classList.add(
-                        'scroll-buttons-hidden'
-                    );
-                }
-
-                if (scrollBottomBtn) {
-                    scrollBottomBtn.classList.add(
-                        'scroll-buttons-hidden'
-                    );
-                }
-            }, SCROLL_BUTTON_HIDE_DELAY);
+        if (scrollButtonHideTimer) clearTimeout(scrollButtonHideTimer);
+        scrollButtonHideTimer = setTimeout(() => {
+            if (scrollTopBtn) scrollTopBtn.classList.add('scroll-buttons-hidden');
+            if (scrollBottomBtn) scrollBottomBtn.classList.add('scroll-buttons-hidden');
+        }, SCROLL_BUTTON_HIDE_DELAY);
     }
-
 
     function scrollToTop() {
-        if (!chatWindow) {
-            return;
-        }
-
-        chatWindow.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
+        if (chatWindow) chatWindow.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
 
     function scrollToBottom() {
-        if (!chatWindow) {
-            return;
-        }
-
-        chatWindow.scrollTo({
-            top: chatWindow.scrollHeight,
-            behavior: 'smooth'
-        });
+        if (chatWindow) chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
     }
-
 
     function initializeChatPosition() {
-        if (!chatWindow) {
-            return;
-        }
-
-        requestAnimationFrame(function () {
-            chatWindow.scrollTop =
-                chatWindow.scrollHeight;
-
+        if (!chatWindow) return;
+        requestAnimationFrame(() => {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
             updateScrollButtons();
-
-            requestAnimationFrame(function () {
-                chatWindow.scrollTop =
-                    chatWindow.scrollHeight;
-
-                updateScrollButtons();
-            });
         });
     }
 
-
     function isUserAtBottom() {
-        if (!chatWindow) {
-            return true;
-        }
-
-        return (
-            chatWindow.scrollTop +
-            chatWindow.clientHeight
-        ) >= (
-            chatWindow.scrollHeight - 50
-        );
+        if (!chatWindow) return true;
+        return (chatWindow.scrollTop + chatWindow.clientHeight) >= (chatWindow.scrollHeight - 50);
     }
-
 
     if (chatWindow) {
         updateScrollButtons();
-
-        chatWindow.addEventListener(
-            'scroll',
-            function () {
-                updateScrollButtons();
-                showScrollButtons();
-                scheduleScrollButtonHide();
-            },
-            {
-                passive: true
-            }
-        );
-
-        window.addEventListener(
-            'resize',
-            updateScrollButtons
-        );
-
+        chatWindow.addEventListener('scroll', () => {
+            updateScrollButtons();
+            showScrollButtons();
+            scheduleScrollButtonHide();
+        }, { passive: true });
+        window.addEventListener('resize', updateScrollButtons);
         if ('ResizeObserver' in window) {
-            const resizeObserver =
-                new ResizeObserver(function () {
-                    updateScrollButtons();
-                });
-
-            resizeObserver.observe(chatWindow);
-
-            if (chatMessages) {
-                resizeObserver.observe(
-                    chatMessages
-                );
-            }
+            const ro = new ResizeObserver(updateScrollButtons);
+            ro.observe(chatWindow);
+            if (chatMessages) ro.observe(chatMessages);
         }
     }
-
-
-    if (scrollTopBtn) {
-        scrollTopBtn.addEventListener(
-            'click',
-            function (event) {
-                event.preventDefault();
-                scrollToTop();
-            }
-        );
-    }
-
-
-    if (scrollBottomBtn) {
-        scrollBottomBtn.addEventListener(
-            'click',
-            function (event) {
-                event.preventDefault();
-                scrollToBottom();
-            }
-        );
-    }
-
-
+    if (scrollTopBtn) scrollTopBtn.addEventListener('click', e => { e.preventDefault(); scrollToTop(); });
+    if (scrollBottomBtn) scrollBottomBtn.addEventListener('click', e => { e.preventDefault(); scrollToBottom(); });
     initializeChatPosition();
-
-    window.addEventListener(
-        'load',
-        initializeChatPosition,
-        {
-            once: true
-        }
-    );
-
-
-    /* =========================================================
-       FILE SIZE
-    ========================================================== */
+    window.addEventListener('load', initializeChatPosition, { once: true });
 
     function formatFileSize(bytes) {
-        if (bytes < 1024) {
-            return `${bytes} B`;
-        }
-
-        if (bytes < 1024 * 1024) {
-            return `${(
-                bytes / 1024
-            ).toFixed(1)} KB`;
-        }
-
-        return `${(
-            bytes / 1024 / 1024
-        ).toFixed(1)} MB`;
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
     }
-
-
-    /* =========================================================
-       VALIDATE IMAGE
-    ========================================================== */
 
     function validateImageFile(file) {
-        if (!file) {
-            return false;
-        }
-
+        if (!file) return false;
         if (!file.type.startsWith('image/')) {
-            alert(
-                'Please select a valid image file.'
-            );
-
+            alert('Please select a valid image file.');
             return false;
         }
-
         if (file.size > MAX_IMAGE_SIZE) {
-            alert(
-                'Image is too large.\n\n' +
-                'Maximum size: 10 MB\n' +
-                `Selected: ${formatFileSize(file.size)}`
-            );
-
+            alert(`Image is too large.\n\nMaximum size: 10 MB\nSelected: ${formatFileSize(file.size)}`);
             return false;
         }
-
         return true;
     }
-
-
-    /* =========================================================
-       VALIDATE VIDEO
-    ========================================================== */
 
     function validateVideoFile(file) {
-        if (!file) {
-            return false;
-        }
-
+        if (!file) return false;
         if (!file.type.startsWith('video/')) {
-            alert(
-                'Please select a valid video file.'
-            );
-
+            alert('Please select a valid video file.');
             return false;
         }
-
         if (file.size > MAX_VIDEO_SIZE) {
-            alert(
-                'Video is too large.\n\n' +
-                'Maximum size: 100 MB\n' +
-                `Selected: ${formatFileSize(file.size)}`
-            );
-
+            alert(`Video is too large.\n\nMaximum size: 100 MB\nSelected: ${formatFileSize(file.size)}`);
             return false;
         }
-
         return true;
     }
 
-
-    /* =========================================================
-       OBJECT URL CLEANUP
-    ========================================================== */
-
     function revokeImageUrl() {
-        if (!imageObjectUrl) {
-            return;
+        if (imageObjectUrl) {
+            URL.revokeObjectURL(imageObjectUrl);
+            imageObjectUrl = null;
         }
-
-        URL.revokeObjectURL(
-            imageObjectUrl
-        );
-
-        imageObjectUrl = null;
     }
-
 
     function revokeVideoUrl() {
-        if (!videoObjectUrl) {
-            return;
+        if (videoObjectUrl) {
+            URL.revokeObjectURL(videoObjectUrl);
+            videoObjectUrl = null;
         }
-
-        URL.revokeObjectURL(
-            videoObjectUrl
-        );
-
-        videoObjectUrl = null;
     }
-
-
-    /* =========================================================
-       REPLY MEDIA
-    ========================================================== */
 
     function clearReplyMedia() {
-        if (replyMedia) {
-            replyMedia.classList.add(
-                'd-none'
-            );
-        }
-
+        if (replyMedia) replyMedia.classList.add('d-none');
         if (replyImage) {
-            replyImage.classList.add(
-                'd-none'
-            );
-
-            replyImage.removeAttribute(
-                'src'
-            );
+            replyImage.classList.add('d-none');
+            replyImage.removeAttribute('src');
         }
-
-        if (replyVideo) {
-            replyVideo.classList.add(
-                'd-none'
-            );
-        }
-
+        if (replyVideo) replyVideo.classList.add('d-none');
         if (replyVideoPlayer) {
             replyVideoPlayer.pause();
-            replyVideoPlayer.removeAttribute(
-                'src'
-            );
+            replyVideoPlayer.removeAttribute('src');
             replyVideoPlayer.load();
         }
     }
 
-
-    function setReplyMedia(
-        imageUrl,
-        videoUrl
-    ) {
+    function setReplyMedia(imageUrl, videoUrl) {
         clearReplyMedia();
-
-        if (
-            imageUrl &&
-            replyMedia &&
-            replyImage
-        ) {
-            replyImage.src =
-                imageUrl;
-
-            replyImage.classList.remove(
-                'd-none'
-            );
-
-            replyMedia.classList.remove(
-                'd-none'
-            );
-
+        if (imageUrl && replyMedia && replyImage) {
+            replyImage.src = imageUrl;
+            replyImage.classList.remove('d-none');
+            replyMedia.classList.remove('d-none');
             return;
         }
-
-        if (
-            videoUrl &&
-            replyMedia &&
-            replyVideo &&
-            replyVideoPlayer
-        ) {
-            replyVideoPlayer.src =
-                videoUrl;
-
+        if (videoUrl && replyMedia && replyVideo && replyVideoPlayer) {
+            replyVideoPlayer.src = videoUrl;
             replyVideoPlayer.load();
-
-            replyVideo.classList.remove(
-                'd-none'
-            );
-
-            replyMedia.classList.remove(
-                'd-none'
-            );
+            replyVideo.classList.remove('d-none');
+            replyMedia.classList.remove('d-none');
         }
     }
 
-
-    /* =========================================================
-       CLEAR MEDIA
-    ========================================================== */
-
     function clearMediaInputs() {
-        if (imageInput) {
-            imageInput.value = '';
-        }
-
-        if (videoInput) {
-            videoInput.value = '';
-        }
-
+        if (imageInput) imageInput.value = '';
+        if (videoInput) videoInput.value = '';
         revokeImageUrl();
         revokeVideoUrl();
-
-        if (imagePreview) {
-            imagePreview.removeAttribute(
-                'src'
-            );
-        }
-
+        if (imagePreview) imagePreview.removeAttribute('src');
         if (videoPreview) {
             videoPreview.pause();
-            videoPreview.removeAttribute(
-                'src'
-            );
+            videoPreview.removeAttribute('src');
             videoPreview.load();
         }
-
         hideMediaPreviews();
     }
 
-
     function hideMediaPreviews() {
-        if (imagePreviewWrap) {
-            imagePreviewWrap.classList.add(
-                'd-none'
-            );
-        }
-
-        if (videoPreviewWrap) {
-            videoPreviewWrap.classList.add(
-                'd-none'
-            );
-        }
-
-        if (removeMediaBtn) {
-            removeMediaBtn.classList.add(
-                'd-none'
-            );
-        }
+        if (imagePreviewWrap) imagePreviewWrap.classList.add('d-none');
+        if (videoPreviewWrap) videoPreviewWrap.classList.add('d-none');
+        if (removeMediaBtn) removeMediaBtn.classList.add('d-none');
     }
-
-
-    /* =========================================================
-       HANDLE IMAGE
-    ========================================================== */
 
     function handleImageFile(file) {
         if (!validateImageFile(file)) {
-            if (imageInput) {
-                imageInput.value = '';
-            }
-
+            if (imageInput) imageInput.value = '';
             return false;
         }
-
-        if (videoInput) {
-            videoInput.value = '';
-        }
-
+        if (videoInput) videoInput.value = '';
         revokeVideoUrl();
-
         if (videoPreview) {
             videoPreview.pause();
-            videoPreview.removeAttribute(
-                'src'
-            );
+            videoPreview.removeAttribute('src');
             videoPreview.load();
         }
-
-        if (!imagePreview) {
-            return false;
-        }
-
+        if (!imagePreview) return false;
         revokeImageUrl();
-
-        imageObjectUrl =
-            URL.createObjectURL(file);
-
-        imagePreview.src =
-            imageObjectUrl;
-
-        if (imagePreviewWrap) {
-            imagePreviewWrap.classList.remove(
-                'd-none'
-            );
-        }
-
-        if (videoPreviewWrap) {
-            videoPreviewWrap.classList.add(
-                'd-none'
-            );
-        }
-
-        if (removeMediaBtn) {
-            removeMediaBtn.classList.remove(
-                'd-none'
-            );
-        }
-
+        imageObjectUrl = URL.createObjectURL(file);
+        imagePreview.src = imageObjectUrl;
+        if (imagePreviewWrap) imagePreviewWrap.classList.remove('d-none');
+        if (videoPreviewWrap) videoPreviewWrap.classList.add('d-none');
+        if (removeMediaBtn) removeMediaBtn.classList.remove('d-none');
         return true;
     }
-
-
-    /* =========================================================
-       HANDLE VIDEO
-    ========================================================== */
 
     function handleVideoFile(file) {
         if (!validateVideoFile(file)) {
-            if (videoInput) {
-                videoInput.value = '';
-            }
-
+            if (videoInput) videoInput.value = '';
             return false;
         }
-
-        if (imageInput) {
-            imageInput.value = '';
-        }
-
+        if (imageInput) imageInput.value = '';
         revokeImageUrl();
-
-        if (imagePreview) {
-            imagePreview.removeAttribute(
-                'src'
-            );
-        }
-
-        if (!videoPreview) {
-            return false;
-        }
-
+        if (imagePreview) imagePreview.removeAttribute('src');
+        if (!videoPreview) return false;
         revokeVideoUrl();
-
-        videoObjectUrl =
-            URL.createObjectURL(file);
-
-        videoPreview.src =
-            videoObjectUrl;
-
+        videoObjectUrl = URL.createObjectURL(file);
+        videoPreview.src = videoObjectUrl;
         videoPreview.load();
-
-        if (videoPreviewWrap) {
-            videoPreviewWrap.classList.remove(
-                'd-none'
-            );
-        }
-
-        if (imagePreviewWrap) {
-            imagePreviewWrap.classList.add(
-                'd-none'
-            );
-        }
-
-        if (removeMediaBtn) {
-            removeMediaBtn.classList.remove(
-                'd-none'
-            );
-        }
-
+        if (videoPreviewWrap) videoPreviewWrap.classList.remove('d-none');
+        if (imagePreviewWrap) imagePreviewWrap.classList.add('d-none');
+        if (removeMediaBtn) removeMediaBtn.classList.remove('d-none');
         return true;
     }
 
-
-    /* =========================================================
-       FILE PICKERS
-    ========================================================== */
-
-    if (
-        attachImageBtn &&
-        imageInput
-    ) {
-        attachImageBtn.addEventListener(
-            'click',
-            function (event) {
-                event.preventDefault();
-
-                if (
-                    isSubmittingAttachment ||
-                    isSubmittingEdit ||
-                    isSubmittingMessage
-                ) {
-                    return;
-                }
-
-                imageInput.click();
-            }
-        );
+    if (attachImageBtn && imageInput) {
+        attachImageBtn.addEventListener('click', e => {
+            e.preventDefault();
+            if (isSubmittingAttachment || isSubmittingEdit || isSubmittingMessage) return;
+            imageInput.click();
+        });
     }
-
-
-    if (
-        attachVideoBtn &&
-        videoInput
-    ) {
-        attachVideoBtn.addEventListener(
-            'click',
-            function (event) {
-                event.preventDefault();
-
-                if (
-                    isSubmittingAttachment ||
-                    isSubmittingEdit ||
-                    isSubmittingMessage
-                ) {
-                    return;
-                }
-
-                videoInput.click();
-            }
-        );
+    if (attachVideoBtn && videoInput) {
+        attachVideoBtn.addEventListener('click', e => {
+            e.preventDefault();
+            if (isSubmittingAttachment || isSubmittingEdit || isSubmittingMessage) return;
+            videoInput.click();
+        });
     }
-
-
-    /* =========================================================
-       IMAGE CHANGE
-    ========================================================== */
-
     if (imageInput) {
-        imageInput.addEventListener(
-            'change',
-            function () {
-                const file =
-                    imageInput.files &&
-                    imageInput.files[0];
-
-                if (!file) {
-                    return;
-                }
-
-                handleImageFile(file);
-            }
-        );
+        imageInput.addEventListener('change', () => {
+            const file = imageInput.files && imageInput.files[0];
+            if (file) handleImageFile(file);
+        });
     }
-
-
-    /* =========================================================
-       VIDEO CHANGE
-    ========================================================== */
-
     if (videoInput) {
-        videoInput.addEventListener(
-            'change',
-            function () {
-                const file =
-                    videoInput.files &&
-                    videoInput.files[0];
-
-                if (!file) {
-                    return;
-                }
-
-                handleVideoFile(file);
-            }
-        );
+        videoInput.addEventListener('change', () => {
+            const file = videoInput.files && videoInput.files[0];
+            if (file) handleVideoFile(file);
+        });
     }
-
-
-    /* =========================================================
-       REMOVE MEDIA
-    ========================================================== */
-
     if (removeMediaBtn) {
-        removeMediaBtn.addEventListener(
-            'click',
-            function (event) {
-                event.preventDefault();
-                clearMediaInputs();
-            }
-        );
+        removeMediaBtn.addEventListener('click', e => {
+            e.preventDefault();
+            clearMediaInputs();
+        });
     }
 
-
-    /* =========================================================
-       DRAG & DROP
-    ========================================================== */
-
+    // Drag & Drop
     function showDropOverlay() {
-        if (!dropOverlay) {
-            return;
-        }
-
-        dropOverlay.classList.add('active');
-        dropOverlay.classList.add('show');
-
-        dropOverlay.setAttribute(
-            'aria-hidden',
-            'false'
-        );
+        if (!dropOverlay) return;
+        dropOverlay.classList.add('active', 'show');
+        dropOverlay.setAttribute('aria-hidden', 'false');
     }
-
-
     function hideDropOverlay() {
-        if (!dropOverlay) {
-            return;
-        }
-
-        dropOverlay.classList.remove('active');
-        dropOverlay.classList.remove('show');
-
-        dropOverlay.setAttribute(
-            'aria-hidden',
-            'true'
-        );
+        if (!dropOverlay) return;
+        dropOverlay.classList.remove('active', 'show');
+        dropOverlay.setAttribute('aria-hidden', 'true');
     }
-
 
     if (chatWindow) {
-        chatWindow.addEventListener(
-            'dragenter',
-            function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-
-                if (
-                    isSubmittingEdit ||
-                    isSubmittingAttachment ||
-                    isSubmittingMessage
-                ) {
-                    return;
-                }
-
-                dragCounter++;
-
-                showDropOverlay();
-            }
-        );
-
-
-        chatWindow.addEventListener(
-            'dragover',
-            function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-
-                if (
-                    isSubmittingEdit ||
-                    isSubmittingAttachment ||
-                    isSubmittingMessage
-                ) {
-                    return;
-                }
-
-                if (event.dataTransfer) {
-                    event.dataTransfer.dropEffect =
-                        'copy';
-                }
-
-                showDropOverlay();
-            }
-        );
-
-
-        chatWindow.addEventListener(
-            'dragleave',
-            function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-
-                dragCounter--;
-
-                if (dragCounter <= 0) {
-                    dragCounter = 0;
-                    hideDropOverlay();
-                }
-            }
-        );
-
-
-        chatWindow.addEventListener(
-            'drop',
-            function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-
+        chatWindow.addEventListener('dragenter', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isSubmittingEdit || isSubmittingAttachment || isSubmittingMessage) return;
+            dragCounter++;
+            showDropOverlay();
+        });
+        chatWindow.addEventListener('dragover', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isSubmittingEdit || isSubmittingAttachment || isSubmittingMessage) return;
+            if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+            showDropOverlay();
+        });
+        chatWindow.addEventListener('dragleave', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            dragCounter--;
+            if (dragCounter <= 0) {
                 dragCounter = 0;
                 hideDropOverlay();
-
-                if (
-                    isSubmittingEdit ||
-                    isSubmittingAttachment ||
-                    isSubmittingMessage
-                ) {
-                    return;
-                }
-
-                const files =
-                    event.dataTransfer &&
-                    event.dataTransfer.files;
-
-                if (
-                    !files ||
-                    !files.length
-                ) {
-                    return;
-                }
-
-                const file = files[0];
-
-                if (
-                    file.type.startsWith('image/')
-                ) {
-                    if (!validateImageFile(file)) {
-                        return;
-                    }
-
-                    if (imageInput) {
-                        try {
-                            const dataTransfer =
-                                new DataTransfer();
-
-                            dataTransfer.items.add(file);
-
-                            imageInput.files =
-                                dataTransfer.files;
-                        } catch (error) {
-                            console.error(
-                                'Unable to assign image file:',
-                                error
-                            );
-                        }
-                    }
-
-                    handleImageFile(file);
-                    return;
-                }
-
-                if (
-                    file.type.startsWith('video/')
-                ) {
-                    if (!validateVideoFile(file)) {
-                        return;
-                    }
-
-                    if (videoInput) {
-                        try {
-                            const dataTransfer =
-                                new DataTransfer();
-
-                            dataTransfer.items.add(file);
-
-                            videoInput.files =
-                                dataTransfer.files;
-                        } catch (error) {
-                            console.error(
-                                'Unable to assign video file:',
-                                error
-                            );
-                        }
-                    }
-
-                    handleVideoFile(file);
-                    return;
-                }
-
-                alert(
-                    'Only image and video files are allowed.'
-                );
             }
-        );
+        });
+        chatWindow.addEventListener('drop', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            dragCounter = 0;
+            hideDropOverlay();
+            if (isSubmittingEdit || isSubmittingAttachment || isSubmittingMessage) return;
+            const files = e.dataTransfer && e.dataTransfer.files;
+            if (!files || !files.length) return;
+            const file = files[0];
+            if (file.type.startsWith('image/')) {
+                if (!validateImageFile(file)) return;
+                if (imageInput) {
+                    try {
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        imageInput.files = dt.files;
+                    } catch (err) { console.error('Unable to assign image file:', err); }
+                }
+                handleImageFile(file);
+                return;
+            }
+            if (file.type.startsWith('video/')) {
+                if (!validateVideoFile(file)) return;
+                if (videoInput) {
+                    try {
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        videoInput.files = dt.files;
+                    } catch (err) { console.error('Unable to assign video file:', err); }
+                }
+                handleVideoFile(file);
+                return;
+            }
+            alert('Only image and video files are allowed.');
+        });
     }
 
-
-    /* =========================================================
-       PASTE IMAGE
-    ========================================================== */
-
-    document.addEventListener(
-        'paste',
-        function (event) {
-            if (!messageBodyField) {
+    // Paste image
+    document.addEventListener('paste', e => {
+        if (!messageBodyField || isSubmittingEdit || isSubmittingAttachment || isSubmittingMessage) return;
+        if (document.activeElement !== messageBodyField) return;
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.kind !== 'file' || !item.type.startsWith('image/')) continue;
+            const file = item.getAsFile();
+            if (!file || !validateImageFile(file)) return;
+            try {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                if (imageInput) imageInput.files = dt.files;
+            } catch (err) {
+                console.error('Unable to assign pasted image:', err);
                 return;
             }
-
-            if (
-                isSubmittingEdit ||
-                isSubmittingAttachment ||
-                isSubmittingMessage
-            ) {
-                return;
-            }
-
-            if (
-                document.activeElement !==
-                messageBodyField
-            ) {
-                return;
-            }
-
-            const clipboardItems =
-                event.clipboardData &&
-                event.clipboardData.items;
-
-            if (!clipboardItems) {
-                return;
-            }
-
-            for (
-                let i = 0;
-                i < clipboardItems.length;
-                i++
-            ) {
-                const item =
-                    clipboardItems[i];
-
-                if (
-                    item.kind !== 'file' ||
-                    !item.type.startsWith('image/')
-                ) {
-                    continue;
-                }
-
-                const file =
-                    item.getAsFile();
-
-                if (!file) {
-                    continue;
-                }
-
-                if (!validateImageFile(file)) {
-                    return;
-                }
-
-                try {
-                    const dataTransfer =
-                        new DataTransfer();
-
-                    dataTransfer.items.add(file);
-
-                    if (imageInput) {
-                        imageInput.files =
-                            dataTransfer.files;
-                    }
-                } catch (error) {
-                    console.error(
-                        'Unable to assign pasted image:',
-                        error
-                    );
-
-                    return;
-                }
-
-                handleImageFile(file);
-
-                event.preventDefault();
-
-                return;
-            }
-        }
-    );
-
-
-    /* =========================================================
-       UPLOAD PROGRESS
-    ========================================================== */
-
-    function showUploadProgress() {
-        if (!uploadProgressWrap) {
+            handleImageFile(file);
+            e.preventDefault();
             return;
         }
+    });
 
-        uploadProgressWrap.classList.remove(
-            'd-none'
-        );
-
+    // Upload progress
+    function showUploadProgress() {
+        if (!uploadProgressWrap) return;
+        uploadProgressWrap.classList.remove('d-none');
         if (uploadProgressBar) {
-            uploadProgressBar.style.width =
-                '0%';
-
-            uploadProgressBar.setAttribute(
-                'aria-valuenow',
-                '0'
-            );
+            uploadProgressBar.style.width = '0%';
+            uploadProgressBar.setAttribute('aria-valuenow', '0');
         }
-
-        if (uploadProgressPercent) {
-            uploadProgressPercent.textContent =
-                '0%';
-        }
-
-        if (uploadProgressText) {
-            uploadProgressText.textContent =
-                'Uploading...';
-        }
+        if (uploadProgressPercent) uploadProgressPercent.textContent = '0%';
+        if (uploadProgressText) uploadProgressText.textContent = 'Uploading...';
     }
-
-
     function updateUploadProgress(percent) {
-        percent = Math.max(
-            0,
-            Math.min(
-                100,
-                percent
-            )
-        );
-
+        percent = Math.max(0, Math.min(100, percent));
         if (uploadProgressBar) {
-            uploadProgressBar.style.width =
-                `${percent}%`;
-
-            uploadProgressBar.setAttribute(
-                'aria-valuenow',
-                String(percent)
-            );
+            uploadProgressBar.style.width = `${percent}%`;
+            uploadProgressBar.setAttribute('aria-valuenow', String(percent));
         }
-
-        if (uploadProgressPercent) {
-            uploadProgressPercent.textContent =
-                `${percent}%`;
-        }
+        if (uploadProgressPercent) uploadProgressPercent.textContent = `${percent}%`;
     }
-
-
     function hideUploadProgress() {
-        if (uploadProgressWrap) {
-            uploadProgressWrap.classList.add(
-                'd-none'
-            );
-        }
+        if (uploadProgressWrap) uploadProgressWrap.classList.add('d-none');
     }
-
-
-    /* =========================================================
-       ATTACHMENT VALIDATION
-    ========================================================== */
 
     function validateAttachmentsBeforeSubmit() {
-        const imageFile =
-            imageInput &&
-            imageInput.files &&
-            imageInput.files[0];
-
-        const videoFile =
-            videoInput &&
-            videoInput.files &&
-            videoInput.files[0];
-
-        if (
-            imageFile &&
-            videoFile
-        ) {
-            alert(
-                'Please attach either an image or a video, not both.'
-            );
-
+        const imageFile = imageInput && imageInput.files && imageInput.files[0];
+        const videoFile = videoInput && videoInput.files && videoInput.files[0];
+        if (imageFile && videoFile) {
+            alert('Please attach either an image or a video, not both.');
             return false;
         }
-
-        if (
-            imageFile &&
-            !validateImageFile(imageFile)
-        ) {
-            return false;
-        }
-
-        if (
-            videoFile &&
-            !validateVideoFile(videoFile)
-        ) {
-            return false;
-        }
-
+        if (imageFile && !validateImageFile(imageFile)) return false;
+        if (videoFile && !validateVideoFile(videoFile)) return false;
         return true;
     }
-
-
-    /* =========================================================
-       UI STATE
-    ========================================================== */
 
     function setSubmitMode(mode) {
         if (mode === 'edit') {
-            if (submitText) {
-                submitText.textContent =
-                    'Save changes';
-            }
-
+            if (submitText) submitText.textContent = 'Save changes';
             if (submitIcon) {
-                submitIcon.classList.remove(
-                    'fa-paper-plane'
-                );
-
-                submitIcon.classList.add(
-                    'fa-save'
-                );
+                submitIcon.classList.remove('fa-paper-plane');
+                submitIcon.classList.add('fa-save');
             }
-
             return;
         }
-
-        if (submitText) {
-            submitText.textContent =
-                'Send';
-        }
-
+        if (submitText) submitText.textContent = 'Send';
         if (submitIcon) {
-            submitIcon.classList.remove(
-                'fa-save'
-            );
-
-            submitIcon.classList.add(
-                'fa-paper-plane'
-            );
+            submitIcon.classList.remove('fa-save');
+            submitIcon.classList.add('fa-paper-plane');
         }
     }
 
-
     function setSendingState(isSending) {
-        if (!submitBtn) {
-            return;
-        }
-
+        if (!submitBtn) return;
         if (isSending) {
             submitBtn.disabled = true;
-
-            submitBtn.dataset.originalHtml =
-                submitBtn.innerHTML;
-
-            submitBtn.innerHTML =
-                '<i class="fas fa-spinner fa-spin me-1"></i> Sending...';
-
+            submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Sending...';
             return;
         }
-
         submitBtn.disabled = false;
-
-        submitBtn.innerHTML =
-            submitBtn.dataset.originalHtml ||
-            '<i class="fas fa-paper-plane me-1"></i> Send';
-
+        submitBtn.innerHTML = submitBtn.dataset.originalHtml || '<i class="fas fa-paper-plane me-1"></i> Send';
         delete submitBtn.dataset.originalHtml;
     }
 
-
     function getMessagePreview(text) {
-        let preview =
-            (text || '').trim();
-
-        if (preview.length > 100) {
-            preview =
-                preview.substring(0, 100) +
-                '...';
-        }
-
+        let preview = (text || '').trim();
+        if (preview.length > 100) preview = preview.substring(0, 100) + '...';
         return preview;
     }
 
-
-    /* =========================================================
-       EDIT MODE
-    ========================================================== */
-
+    // Edit mode
     function startEdit(button) {
-        if (
-            !replyForm ||
-            !messageBodyField ||
-            !editingMessageId
-        ) {
-            return;
-        }
-
-        const messageId =
-            button.dataset.messageId;
-
-        const editUrl =
-            button.dataset.editUrl;
-
-        const messageBody =
-            button.dataset.messageBody || '';
-
-        if (
-            !messageId ||
-            !editUrl
-        ) {
-            return;
-        }
-
+        if (!replyForm || !messageBodyField || !editingMessageId) return;
+        const messageId = button.dataset.messageId;
+        const editUrl = button.dataset.editUrl;
+        const messageBody = button.dataset.messageBody || '';
+        if (!messageId || !editUrl) return;
         clearMediaInputs();
-
-        if (replyToInput) {
-            replyToInput.value = '';
-        }
-
-        if (replyBar) {
-            replyBar.classList.add(
-                'd-none'
-            );
-        }
-
+        if (replyToInput) replyToInput.value = '';
+        if (replyBar) replyBar.classList.add('d-none');
         clearReplyMedia();
-
-        messageBodyField.value =
-            messageBody;
-
-        editingMessageId.value =
-            messageId;
-
-        replyForm.setAttribute(
-            'action',
-            editUrl
-        );
-
-        if (editingBar) {
-            editingBar.classList.remove(
-                'd-none'
-            );
-        }
-
-        if (editingPreview) {
-            editingPreview.textContent =
-                getMessagePreview(messageBody) ||
-                'Edit your message';
-        }
-
+        messageBodyField.value = messageBody;
+        editingMessageId.value = messageId;
+        replyForm.setAttribute('action', editUrl);
+        if (editingBar) editingBar.classList.remove('d-none');
+        if (editingPreview) editingPreview.textContent = getMessagePreview(messageBody) || 'Edit your message';
         setSubmitMode('edit');
-
         messageBodyField.focus();
-
         try {
-            const length =
-                messageBodyField.value.length;
-
-            messageBodyField.setSelectionRange(
-                length,
-                length
-            );
-        } catch (error) {
-            // Ignore.
-        }
-
-        replyForm.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-        });
+            const length = messageBodyField.value.length;
+            messageBodyField.setSelectionRange(length, length);
+        } catch (e) {}
+        replyForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-
-
-    /* =========================================================
-       CANCEL EDIT
-    ========================================================== */
 
     function cancelEdit(options = {}) {
-        const clearBody =
-            options.clearBody !== false;
-
-        if (editingMessageId) {
-            editingMessageId.value = '';
-        }
-
-        if (editingBar) {
-            editingBar.classList.add(
-                'd-none'
-            );
-        }
-
-        if (replyForm) {
-            replyForm.setAttribute(
-                'action',
-                normalFormAction
-            );
-        }
-
+        const clearBody = options.clearBody !== false;
+        if (editingMessageId) editingMessageId.value = '';
+        if (editingBar) editingBar.classList.add('d-none');
+        if (replyForm) replyForm.setAttribute('action', normalFormAction);
         setSubmitMode('send');
-
-        if (
-            clearBody &&
-            messageBodyField
-        ) {
-            messageBodyField.value = '';
-        }
-
-        if (replyToInput) {
-            replyToInput.value = '';
-        }
-
+        if (clearBody && messageBodyField) messageBodyField.value = '';
+        if (replyToInput) replyToInput.value = '';
         clearReplyMedia();
     }
 
-
-    /* =========================================================
-       REPLY MODE
-    ========================================================== */
-
+    // Reply mode
     function startReply(button) {
-        if (
-            !replyForm ||
-            !messageBodyField
-        ) {
-            return;
-        }
-
-        const messageId =
-            button.dataset.messageId;
-
-        const messageBody =
-            button.dataset.messageBody || '';
-
-        const imageUrl =
-            button.dataset.replyImage || '';
-
-        const videoUrl =
-            button.dataset.replyVideo || '';
-
-        if (!messageId) {
-            return;
-        }
-
-        if (editingMessageId) {
-            editingMessageId.value = '';
-        }
-
-        if (editingBar) {
-            editingBar.classList.add(
-                'd-none'
-            );
-        }
-
-        replyForm.setAttribute(
-            'action',
-            normalFormAction
-        );
-
-        if (replyToInput) {
-            replyToInput.value =
-                messageId;
-        }
-
+        if (!replyForm || !messageBodyField) return;
+        const messageId = button.dataset.messageId;
+        const messageBody = button.dataset.messageBody || '';
+        const imageUrl = button.dataset.replyImage || '';
+        const videoUrl = button.dataset.replyVideo || '';
+        if (!messageId) return;
+        if (editingMessageId) editingMessageId.value = '';
+        if (editingBar) editingBar.classList.add('d-none');
+        replyForm.setAttribute('action', normalFormAction);
+        if (replyToInput) replyToInput.value = messageId;
         if (replyPreview) {
-            replyPreview.textContent =
-                getMessagePreview(messageBody) ||
-                (
-                    imageUrl
-                        ? 'Photo'
-                        : videoUrl
-                            ? 'Video'
-                            : 'Reply to this message'
-                );
+            replyPreview.textContent = getMessagePreview(messageBody) || (imageUrl ? 'Photo' : videoUrl ? 'Video' : 'Reply to this message');
         }
-
-        setReplyMedia(
-            imageUrl,
-            videoUrl
-        );
-
-        if (replyBar) {
-            replyBar.classList.remove(
-                'd-none'
-            );
-        }
-
+        setReplyMedia(imageUrl, videoUrl);
+        if (replyBar) replyBar.classList.remove('d-none');
         setSubmitMode('send');
-
         messageBodyField.focus();
-
-        replyForm.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-        });
+        replyForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-
-
-    /* =========================================================
-       CANCEL REPLY
-    ========================================================== */
 
     function cancelReply(options = {}) {
-        const clearBody =
-            options.clearBody !== false;
-
-        if (replyToInput) {
-            replyToInput.value = '';
-        }
-
-        if (replyBar) {
-            replyBar.classList.add(
-                'd-none'
-            );
-        }
-
+        const clearBody = options.clearBody !== false;
+        if (replyToInput) replyToInput.value = '';
+        if (replyBar) replyBar.classList.add('d-none');
         clearReplyMedia();
-
-        if (
-            clearBody &&
-            messageBodyField
-        ) {
-            messageBodyField.value = '';
-        }
+        if (clearBody && messageBodyField) messageBodyField.value = '';
     }
 
+    document.addEventListener('click', e => {
+        const button = e.target.closest('.edit-message-side-btn');
+        if (!button) return;
+        e.preventDefault();
+        if (isSubmittingAttachment || isSubmittingEdit || isSubmittingMessage) return;
+        startEdit(button);
+    });
 
-    /* =========================================================
-       EDIT BUTTON
-    ========================================================== */
+    document.addEventListener('click', e => {
+        const button = e.target.closest('.reply-message-side-btn');
+        if (!button) return;
+        e.preventDefault();
+        if (isSubmittingAttachment || isSubmittingEdit || isSubmittingMessage) return;
+        startReply(button);
+    });
 
-    document.addEventListener(
-        'click',
-        function (event) {
-            const button =
-                event.target.closest(
-                    '.edit-message-side-btn'
-                );
+    // Delete message
+    document.addEventListener('submit', async function (event) {
+        const form = event.target.closest('.delete-message-form');
+        if (!form) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+        if (form.dataset.loading === '1') return;
 
-            if (!button) {
-                return;
-            }
-
-            event.preventDefault();
-
-            if (
-                isSubmittingAttachment ||
-                isSubmittingEdit ||
-                isSubmittingMessage
-            ) {
-                return;
-            }
-
-            startEdit(button);
+        const messageElement = form.closest('.conversation-message');
+        if (!messageElement) {
+            console.error('Delete: conversation-message element not found.');
+            return;
         }
-    );
-
-
-    /* =========================================================
-       REPLY BUTTON
-    ========================================================== */
-
-    document.addEventListener(
-        'click',
-        function (event) {
-            const button =
-                event.target.closest(
-                    '.reply-message-side-btn'
-                );
-
-            if (!button) {
-                return;
-            }
-
-            event.preventDefault();
-
-            if (
-                isSubmittingAttachment ||
-                isSubmittingEdit ||
-                isSubmittingMessage
-            ) {
-                return;
-            }
-
-            startReply(button);
+        const messageId = getMessageIdFromElement(messageElement);
+        if (!messageId) {
+            console.error('Delete: message ID not found.');
+            return;
         }
-    );
-
-
-    /* =========================================================
-       DELETE ONE MESSAGE
-    ========================================================== */
-
-    document.addEventListener(
-        'submit',
-        async function (event) {
-
-            const form =
-                event.target.closest(
-                    '.delete-message-form'
-                );
-
-            if (!form) {
-                return;
-            }
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            if (
-                typeof event.stopImmediatePropagation ===
-                'function'
-            ) {
-                event.stopImmediatePropagation();
-            }
-
-            if (
-                form.dataset.loading === '1'
-            ) {
-                return;
-            }
-
-            const messageElement =
-                form.closest(
-                    '.conversation-message'
-                );
-
-            if (!messageElement) {
-                console.error(
-                    'Delete: conversation-message element not found.'
-                );
-
-                return;
-            }
-
-            const messageId =
-                getMessageIdFromElement(
-                    messageElement
-                );
-
-            if (!messageId) {
-                console.error(
-                    'Delete: message ID not found.'
-                );
-
-                return;
-            }
-
-            const deleteUrl =
-                form.getAttribute(
-                    'action'
-                );
-
-            if (!deleteUrl) {
-                console.error(
-                    'Delete: form action is missing.'
-                );
-
-                return;
-            }
-
-            const csrfToken =
-                getCsrfToken();
-
-            if (!csrfToken) {
-                console.error(
-                    'Delete: CSRF token not found.'
-                );
-
-                alert(
-                    'CSRF token not found. Please refresh the page.'
-                );
-
-                return;
-            }
-
-            const confirmed =
-                window.confirm(
-                    'Are you sure you want to delete this message?'
-                );
-
-            if (!confirmed) {
-                return;
-            }
-
-            form.dataset.loading =
-                '1';
-
-            const submitButton =
-                form.querySelector(
-                    'button[type="submit"]'
-                );
-
-            if (submitButton) {
-                submitButton.disabled =
-                    true;
-            }
-
-            const oldScrollTop =
-                chatWindow
-                    ? chatWindow.scrollTop
-                    : 0;
-
-            try {
-                const formData =
-                    new FormData(form);
-
-                const response =
-                    await fetch(
-                        deleteUrl,
-                        {
-                            method: 'POST',
-                            body: formData,
-                            credentials:
-                                'same-origin',
-                            headers: {
-                                'X-Requested-With':
-                                    'XMLHttpRequest',
-                                'Accept':
-                                    'application/json'
-                            }
-                        }
-                    );
-
-                const responseText =
-                    await response.text();
-
-                let data = null;
-
-                if (responseText) {
-                    try {
-                        data =
-                            JSON.parse(
-                                responseText
-                            );
-
-                    } catch (jsonError) {
-                        console.error(
-                            'Delete: server did not return JSON:',
-                            responseText
-                        );
-                    }
-                }
-
-                if (!response.ok) {
-                    throw new Error(
-                        (
-                            data &&
-                            data.error
-                        ) ||
-                        `Unable to delete message (${response.status}).`
-                    );
-                }
-
-                if (
-                    data &&
-                    data.ok === false
-                ) {
-                    throw new Error(
-                        data.error ||
-                        'Unable to delete message.'
-                    );
-                }
-
-                console.log(
-                    'Message deleted successfully:',
-                    messageId
-                );
-
-                if (chatWindow) {
-                    chatWindow.scrollTop =
-                        oldScrollTop;
-                }
-
-                updateScrollButtons();
-
-            } catch (error) {
-                console.error(
-                    'Delete message error:',
-                    error
-                );
-
-                alert(
-                    error.message ||
-                    'Unable to delete message.'
-                );
-
-            } finally {
-                form.dataset.loading =
-                    '0';
-
-                if (
-                    submitButton &&
-                    submitButton.isConnected
-                ) {
-                    submitButton.disabled =
-                        false;
-                }
-            }
+        const deleteUrl = form.getAttribute('action');
+        if (!deleteUrl) {
+            console.error('Delete: form action is missing.');
+            return;
         }
-    );
+        const csrfToken = getCsrfToken();
+        if (!csrfToken) {
+            console.error('Delete: CSRF token not found.');
+            alert('CSRF token not found. Please refresh the page.');
+            return;
+        }
+        if (!window.confirm('Are you sure you want to delete this message?')) return;
 
+        form.dataset.loading = '1';
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) submitButton.disabled = true;
+        const oldScrollTop = chatWindow ? chatWindow.scrollTop : 0;
 
-    /* =========================================================
-       CANCEL EDIT
-    ========================================================== */
-
-    if (cancelEditBtn) {
-        cancelEditBtn.addEventListener(
-            'click',
-            function (event) {
-                event.preventDefault();
-
-                cancelEdit();
+        try {
+            const formData = new FormData(form);
+            const response = await fetch(deleteUrl, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            });
+            const responseText = await response.text();
+            let data = null;
+            if (responseText) {
+                try { data = JSON.parse(responseText); }
+                catch (jsonError) { console.error('Delete: server did not return JSON:', responseText); }
             }
-        );
-    }
+            if (!response.ok) throw new Error((data && data.error) || `Unable to delete message (${response.status}).`);
+            if (data && data.ok === false) throw new Error(data.error || 'Unable to delete message.');
+            console.log('Message deleted successfully:', messageId);
+            if (chatWindow) chatWindow.scrollTop = oldScrollTop;
+            updateScrollButtons();
+        } catch (error) {
+            console.error('Delete message error:', error);
+            alert(error.message || 'Unable to delete message.');
+        } finally {
+            form.dataset.loading = '0';
+            if (submitButton && submitButton.isConnected) submitButton.disabled = false;
+        }
+    });
 
+    if (cancelEditBtn) cancelEditBtn.addEventListener('click', e => { e.preventDefault(); cancelEdit(); });
+    if (cancelReplyBtn) cancelReplyBtn.addEventListener('click', e => { e.preventDefault(); cancelReply(); });
 
-    /* =========================================================
-       CANCEL REPLY
-    ========================================================== */
-
-    if (cancelReplyBtn) {
-        cancelReplyBtn.addEventListener(
-            'click',
-            function (event) {
-                event.preventDefault();
-
-                cancelReply();
-            }
-        );
-    }
-
-
-    /* =========================================================
-       EDIT AJAX
-    ========================================================== */
-
+    // Edit AJAX
     async function handleEditSubmit(event) {
         event.preventDefault();
-
-        if (isSubmittingEdit) {
-            return;
-        }
-
-        if (
-            !replyForm ||
-            !editingMessageId ||
-            !messageBodyField
-        ) {
-            return;
-        }
-
-        const messageId =
-            editingMessageId.value;
-
-        const editUrl =
-            replyForm.getAttribute('action');
-
-        const body =
-            messageBodyField.value.trim();
-
-        if (!messageId) {
-            return;
-        }
-
-        if (!editUrl) {
-            alert(
-                'Edit URL is missing.'
-            );
-
-            return;
-        }
-
-        if (!body) {
-            alert(
-                'Message cannot be empty.'
-            );
-
-            messageBodyField.focus();
-
-            return;
-        }
-
+        if (isSubmittingEdit || !replyForm || !editingMessageId || !messageBodyField) return;
+        const messageId = editingMessageId.value;
+        const editUrl = replyForm.getAttribute('action');
+        const body = messageBodyField.value.trim();
+        if (!messageId) return;
+        if (!editUrl) { alert('Edit URL is missing.'); return; }
+        if (!body) { alert('Message cannot be empty.'); messageBodyField.focus(); return; }
         clearMediaInputs();
-
-        if (replyToInput) {
-            replyToInput.value = '';
-        }
-
-        const formData =
-            new FormData();
-
-        formData.append(
-            'body',
-            body
-        );
-
-        const csrfToken =
-            getCsrfToken();
-
-        if (csrfToken) {
-            formData.append(
-                'csrfmiddlewaretoken',
-                csrfToken
-            );
-        }
-
+        if (replyToInput) replyToInput.value = '';
+        const formData = new FormData();
+        formData.append('body', body);
+        const csrfToken = getCsrfToken();
+        if (csrfToken) formData.append('csrfmiddlewaretoken', csrfToken);
         isSubmittingEdit = true;
-
-        if (submitBtn) {
-            submitBtn.disabled = true;
-        }
-
+        if (submitBtn) submitBtn.disabled = true;
         try {
-            const response =
-                await fetch(
-                    editUrl,
-                    {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'same-origin',
-                        headers: {
-                            'X-Requested-With':
-                                'XMLHttpRequest',
-                            'Accept':
-                                'application/json'
-                        }
-                    }
-                );
-
-            let data;
-
-            try {
-                data =
-                    await response.json();
-
-            } catch (jsonError) {
-                throw new Error(
-                    `Invalid server response (${response.status}).`
-                );
-            }
-
-            if (
-                !response.ok ||
-                !data.ok
-            ) {
-                throw new Error(
-                    data.error ||
-                    'Unable to edit message.'
-                );
-            }
-
-            await replaceMessageWithFragment(
-                data.message_id || messageId
-            );
-
-            document
-                .querySelectorAll(
-                    '.edit-message-side-btn, .reply-message-side-btn'
-                )
-                .forEach(function (button) {
-                    if (
-                        button.dataset.messageId ===
-                        String(messageId)
-                    ) {
-                        button.dataset.messageBody =
-                            body;
-                    }
-                });
-
-            cancelEdit({
-                clearBody: true
+            const response = await fetch(editUrl, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
             });
-
+            let data;
+            try { data = await response.json(); }
+            catch (jsonError) { throw new Error(`Invalid server response (${response.status}).`); }
+            if (!response.ok || !data.ok) throw new Error(data.error || 'Unable to edit message.');
+            await replaceMessageWithFragment(data.message_id || messageId);
+            document.querySelectorAll('.edit-message-side-btn, .reply-message-side-btn').forEach(btn => {
+                if (btn.dataset.messageId === String(messageId)) btn.dataset.messageBody = body;
+            });
+            cancelEdit({ clearBody: true });
         } catch (error) {
-            console.error(
-                'Edit message error:',
-                error
-            );
-
-            alert(
-                error.message ||
-                'Unable to edit message.'
-            );
-
+            console.error('Edit message error:', error);
+            alert(error.message || 'Unable to edit message.');
         } finally {
             isSubmittingEdit = false;
-
-            if (submitBtn) {
-                submitBtn.disabled = false;
-            }
+            if (submitBtn) submitBtn.disabled = false;
         }
     }
 
-
-    /* =========================================================
-       NORMAL TEXT MESSAGE AJAX
-    ========================================================== */
-
+    // Text message AJAX
     async function handleTextMessageSubmit(event) {
         event.preventDefault();
-
-        if (
-            isSubmittingMessage ||
-            isSubmittingEdit ||
-            isSubmittingAttachment
-        ) {
-            return;
-        }
-
-        if (!replyForm) {
-            return;
-        }
-
-        const sendUrl =
-            getSendUrl();
-
-        if (!sendUrl) {
-            alert(
-                'Message send URL is missing.'
-            );
-
-            return;
-        }
-
-        const body =
-            messageBodyField
-                ? messageBodyField.value.trim()
-                : '';
-
-        const imageFile =
-            imageInput &&
-            imageInput.files &&
-            imageInput.files[0];
-
-        const videoFile =
-            videoInput &&
-            videoInput.files &&
-            videoInput.files[0];
-
-        if (
-            imageFile ||
-            videoFile
-        ) {
-            if (
-                !validateAttachmentsBeforeSubmit()
-            ) {
-                return;
-            }
-
+        if (isSubmittingMessage || isSubmittingEdit || isSubmittingAttachment || !replyForm) return;
+        const sendUrl = getSendUrl();
+        if (!sendUrl) { alert('Message send URL is missing.'); return; }
+        const body = messageBodyField ? messageBodyField.value.trim() : '';
+        const imageFile = imageInput && imageInput.files && imageInput.files[0];
+        const videoFile = videoInput && videoInput.files && videoInput.files[0];
+        if (imageFile || videoFile) {
+            if (!validateAttachmentsBeforeSubmit()) return;
             handleAttachmentSubmit(event);
-
             return;
         }
-
         if (!body) {
-            if (messageBodyField) {
-                messageBodyField.focus();
-            }
-
+            if (messageBodyField) messageBodyField.focus();
             return;
         }
-
-        const shouldScroll =
-            isUserAtBottom();
-
-        const formData =
-            new FormData(replyForm);
-
+        const shouldScroll = isUserAtBottom();
+        const formData = new FormData(replyForm);
         isSubmittingMessage = true;
-
         setSendingState(true);
-
         try {
-            const response =
-                await fetch(
-                    sendUrl,
-                    {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'same-origin',
-                        headers: {
-                            'X-Requested-With':
-                                'XMLHttpRequest',
-                            'Accept':
-                                'application/json'
-                        }
-                    }
-                );
-
+            const response = await fetch(sendUrl, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            });
             let data;
-
-            try {
-                data =
-                    await response.json();
-
-            } catch (jsonError) {
-                throw new Error(
-                    `Invalid server response (${response.status}).`
-                );
+            try { data = await response.json(); }
+            catch (jsonError) { throw new Error(`Invalid server response (${response.status}).`); }
+            if (!response.ok || !data.ok) throw new Error(data.error || 'Unable to send message.');
+            if (data.html && data.message_id) {
+                appendRenderedMessage(data.html, data.message_id, shouldScroll);
+                window.dispatchEvent(new CustomEvent('agro:message-sent'));
             }
-
-            if (
-                !response.ok ||
-                !data.ok
-            ) {
-                throw new Error(
-                    data.error ||
-                    'Unable to send message.'
-                );
-            }
-
-            if (
-                data.html &&
-                data.message_id
-            ) {
-                appendRenderedMessage(
-                    data.html,
-                    data.message_id,
-                    shouldScroll
-                );
-
-                window.dispatchEvent(
-                    new CustomEvent(
-                        'agro:message-sent'
-                    )
-                );
-            }
-
             resetComposerAfterSend();
-
         } catch (error) {
-            console.error(
-                'Send message error:',
-                error
-            );
-
-            alert(
-                error.message ||
-                'Unable to send message.'
-            );
-
+            console.error('Send message error:', error);
+            alert(error.message || 'Unable to send message.');
         } finally {
             isSubmittingMessage = false;
-
             setSendingState(false);
         }
     }
 
-
-    /* =========================================================
-       ATTACHMENT AJAX SUBMIT
-    ========================================================== */
-
+    // Attachment AJAX
     function handleAttachmentSubmit(event) {
         event.preventDefault();
-
-        if (
-            !replyForm ||
-            isSubmittingAttachment ||
-            isSubmittingEdit ||
-            isSubmittingMessage
-        ) {
-            return;
-        }
-
-        if (
-            !validateAttachmentsBeforeSubmit()
-        ) {
-            return;
-        }
-
-        const sendUrl =
-            getSendUrl();
-
-        if (!sendUrl) {
-            alert(
-                'Message send URL is missing.'
-            );
-
-            return;
-        }
-
-        const shouldScroll =
-            isUserAtBottom();
-
-        const formData =
-            new FormData(replyForm);
-
-        const xhr =
-            new XMLHttpRequest();
-
+        if (!replyForm || isSubmittingAttachment || isSubmittingEdit || isSubmittingMessage) return;
+        if (!validateAttachmentsBeforeSubmit()) return;
+        const sendUrl = getSendUrl();
+        if (!sendUrl) { alert('Message send URL is missing.'); return; }
+        const shouldScroll = isUserAtBottom();
+        const formData = new FormData(replyForm);
+        const xhr = new XMLHttpRequest();
         isSubmittingAttachment = true;
-
         showUploadProgress();
-
         if (submitBtn) {
             submitBtn.disabled = true;
-
-            submitBtn.dataset.originalHtml =
-                submitBtn.innerHTML;
-
-            submitBtn.innerHTML =
-                '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
+            submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
         }
-
-        xhr.upload.addEventListener(
-            'progress',
-            function (event) {
-                if (!event.lengthComputable) {
-                    return;
-                }
-
-                const percent =
-                    Math.round(
-                        (
-                            event.loaded /
-                            event.total
-                        ) * 100
-                    );
-
-                updateUploadProgress(
-                    percent
-                );
-            }
-        );
-
-
-        xhr.addEventListener(
-            'load',
-            function () {
-                if (
-                    xhr.status >= 200 &&
-                    xhr.status < 300
-                ) {
-                    updateUploadProgress(100);
-
-                    if (uploadProgressText) {
-                        uploadProgressText.textContent =
-                            'Upload complete';
-                    }
-
-                    let data;
-
-                    try {
-                        data =
-                            JSON.parse(
-                                xhr.responseText
-                            );
-
-                    } catch (error) {
-                        console.error(
-                            'Invalid attachment response:',
-                            xhr.responseText
-                        );
-
-                        alert(
-                            'Server returned an invalid response.'
-                        );
-
-                        resetUploadButton();
-
-                        return;
-                    }
-
-                    if (
-                        !data.ok ||
-                        !data.html ||
-                        !data.message_id
-                    ) {
-                        alert(
-                            data.error ||
-                            'Message upload failed.'
-                        );
-
-                        resetUploadButton();
-
-                        return;
-                    }
-
-                    appendRenderedMessage(
-                        data.html,
-                        data.message_id,
-                        shouldScroll
-                    );
-
-                    window.dispatchEvent(
-                        new CustomEvent(
-                            'agro:message-sent'
-                        )
-                    );
-
-                    setTimeout(
-                        function () {
-                            hideUploadProgress();
-                        },
-                        300
-                    );
-
-                    resetComposerAfterSend();
-
+        xhr.upload.addEventListener('progress', e => {
+            if (!e.lengthComputable) return;
+            updateUploadProgress(Math.round((e.loaded / e.total) * 100));
+        });
+        xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                updateUploadProgress(100);
+                if (uploadProgressText) uploadProgressText.textContent = 'Upload complete';
+                let data;
+                try { data = JSON.parse(xhr.responseText); }
+                catch (err) {
+                    console.error('Invalid attachment response:', xhr.responseText);
+                    alert('Server returned an invalid response.');
                     resetUploadButton();
-
                     return;
                 }
-
-                let errorMessage =
-                    'Upload failed. Please try again.';
-
-                try {
-                    const data =
-                        JSON.parse(
-                            xhr.responseText
-                        );
-
-                    if (data.error) {
-                        errorMessage =
-                            data.error;
-                    }
-
-                } catch (error) {
-                    // Ignore.
+                if (!data.ok || !data.html || !data.message_id) {
+                    alert(data.error || 'Message upload failed.');
+                    resetUploadButton();
+                    return;
                 }
-
-                alert(errorMessage);
-
+                appendRenderedMessage(data.html, data.message_id, shouldScroll);
+                window.dispatchEvent(new CustomEvent('agro:message-sent'));
+                setTimeout(hideUploadProgress, 300);
+                resetComposerAfterSend();
                 resetUploadButton();
+                return;
             }
-        );
-
-
-        xhr.addEventListener(
-            'error',
-            function () {
-                alert(
-                    'Upload failed. Please check your connection and try again.'
-                );
-
-                resetUploadButton();
-            }
-        );
-
-
-        xhr.addEventListener(
-            'abort',
-            function () {
-                resetUploadButton();
-            }
-        );
-
-
-        xhr.open(
-            'POST',
-            sendUrl,
-            true
-        );
-
-        const csrfToken =
-            getCsrfToken();
-
-        if (csrfToken) {
-            xhr.setRequestHeader(
-                'X-CSRFToken',
-                csrfToken
-            );
-        }
-
-        xhr.setRequestHeader(
-            'X-Requested-With',
-            'XMLHttpRequest'
-        );
-
-        xhr.setRequestHeader(
-            'Accept',
-            'application/json'
-        );
-
+            let errorMessage = 'Upload failed. Please try again.';
+            try {
+                const data = JSON.parse(xhr.responseText);
+                if (data.error) errorMessage = data.error;
+            } catch (e) {}
+            alert(errorMessage);
+            resetUploadButton();
+        });
+        xhr.addEventListener('error', () => {
+            alert('Upload failed. Please check your connection and try again.');
+            resetUploadButton();
+        });
+        xhr.addEventListener('abort', resetUploadButton);
+        xhr.open('POST', sendUrl, true);
+        const csrfToken = getCsrfToken();
+        if (csrfToken) xhr.setRequestHeader('X-CSRFToken', csrfToken);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('Accept', 'application/json');
         xhr.send(formData);
     }
 
-
     function resetUploadButton() {
         hideUploadProgress();
-
         isSubmittingAttachment = false;
-
         if (submitBtn) {
             submitBtn.disabled = false;
-
-            submitBtn.innerHTML =
-                submitBtn.dataset.originalHtml ||
-                '<i class="fas fa-paper-plane me-1"></i> Send';
-
+            submitBtn.innerHTML = submitBtn.dataset.originalHtml || '<i class="fas fa-paper-plane me-1"></i> Send';
             delete submitBtn.dataset.originalHtml;
         }
     }
 
-
-    /* =========================================================
-       FORM SUBMIT
-    ========================================================== */
-
     if (replyForm) {
-        replyForm.addEventListener(
-            'submit',
-            function (event) {
-                event.preventDefault();
-
-                if (
-                    isSubmittingAttachment ||
-                    isSubmittingEdit ||
-                    isSubmittingMessage
-                ) {
-                    return;
-                }
-
-                const isEditing =
-                    editingMessageId &&
-                    editingMessageId.value;
-
-                if (isEditing) {
-                    handleEditSubmit(event);
-                    return;
-                }
-
-                const imageFile =
-                    imageInput &&
-                    imageInput.files &&
-                    imageInput.files[0];
-
-                const videoFile =
-                    videoInput &&
-                    videoInput.files &&
-                    videoInput.files[0];
-
-                if (
-                    imageFile ||
-                    videoFile
-                ) {
-                    if (
-                        !validateAttachmentsBeforeSubmit()
-                    ) {
-                        return;
-                    }
-
-                    handleAttachmentSubmit(event);
-                    return;
-                }
-
-                handleTextMessageSubmit(event);
-            }
-        );
-    }
-
-
-    /* =========================================================
-       SHARE MEDIA
-    ========================================================== */
-
-    document.addEventListener(
-        'click',
-        async function (event) {
-            const button =
-                event.target.closest(
-                    '.media-share-btn, .share-btn'
-                );
-
-            if (!button) {
+        replyForm.addEventListener('submit', e => {
+            e.preventDefault();
+            if (isSubmittingAttachment || isSubmittingEdit || isSubmittingMessage) return;
+            if (editingMessageId && editingMessageId.value) {
+                handleEditSubmit(e);
                 return;
             }
-
-            const url =
-                button.dataset.url;
-
-            if (!url) {
+            const imageFile = imageInput && imageInput.files && imageInput.files[0];
+            const videoFile = videoInput && videoInput.files && videoInput.files[0];
+            if (imageFile || videoFile) {
+                if (!validateAttachmentsBeforeSubmit()) return;
+                handleAttachmentSubmit(e);
                 return;
             }
-
-            event.preventDefault();
-
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'Shared media',
-                        text: 'Check this out',
-                        url: url
-                    });
-
-                    return;
-
-                } catch (error) {
-                    if (
-                        error &&
-                        error.name ===
-                            'AbortError'
-                    ) {
-                        return;
-                    }
-                }
-            }
-
-            try {
-                if (
-                    navigator.clipboard &&
-                    window.isSecureContext
-                ) {
-                    await navigator.clipboard.writeText(
-                        url
-                    );
-
-                    const oldHtml =
-                        button.innerHTML;
-
-                    button.innerHTML =
-                        '✓';
-
-                    setTimeout(
-                        function () {
-                            button.innerHTML =
-                                oldHtml;
-                        },
-                        1200
-                    );
-
-                    return;
-                }
-
-            } catch (error) {
-                console.error(
-                    'Clipboard failed:',
-                    error
-                );
-            }
-
-            const textarea =
-                document.createElement(
-                    'textarea'
-                );
-
-            textarea.value =
-                url;
-
-            textarea.style.position =
-                'fixed';
-
-            textarea.style.left =
-                '-9999px';
-
-            textarea.style.top =
-                '-9999px';
-
-            textarea.style.opacity =
-                '0';
-
-            document.body.appendChild(
-                textarea
-            );
-
-            textarea.focus();
-            textarea.select();
-
-            try {
-                document.execCommand(
-                    'copy'
-                );
-            } catch (error) {
-                console.error(
-                    'Copy failed:',
-                    error
-                );
-            }
-
-            textarea.remove();
-        }
-    );
-
-
-    /* =========================================================
-       REACTIONS
-    ========================================================== */
-
-    const defaultAvatar =
-        chatWindow?.dataset.defaultAvatar || '';
-
-
-    function getReactionUrl(button) {
-        if (!button) {
-            return null;
-        }
-
-        const href =
-            button.getAttribute('href');
-
-        if (href) {
-            return href;
-        }
-
-        const messageElement =
-            button.closest(
-                '.conversation-message'
-            );
-
-        const messageId =
-            button.dataset.msg ||
-            getMessageIdFromElement(
-                messageElement
-            );
-
-        const reaction =
-            button.dataset.reaction;
-
-        if (
-            !messageId ||
-            !reaction
-        ) {
-            return null;
-        }
-
-        const template =
-            chatWindow?.dataset.reactionUrl;
-
-        if (!template) {
-            return null;
-        }
-
-        try {
-            const url =
-                new URL(
-                    template,
-                    window.location.origin
-                );
-
-            url.pathname =
-                url.pathname.replace(
-                    /\/0\/REACTION\/?$/,
-                    `/${encodeURIComponent(messageId)}/${encodeURIComponent(reaction)}/`
-                );
-
-            return url.toString();
-
-        } catch (error) {
-            console.error(
-                'Unable to build reaction URL:',
-                error
-            );
-
-            return null;
-        }
-    }
-
-
-    function findReactionAvatarBox(
-        button,
-        reaction,
-        messageId
-    ) {
-        if (!button) {
-            return null;
-        }
-
-        let avatarBox =
-            button.querySelector(
-                '[data-react-avatars]'
-            );
-
-        if (avatarBox) {
-            return avatarBox;
-        }
-
-        if (
-            !reaction ||
-            !messageId
-        ) {
-            return null;
-        }
-
-        const allAvatarBoxes =
-            document.querySelectorAll(
-                '[data-react-avatars]'
-            );
-
-        for (
-            const box of allAvatarBoxes
-        ) {
-            if (
-                box.dataset.reactAvatars ===
-                `${reaction}-${messageId}`
-            ) {
-                return box;
-            }
-        }
-
-        return null;
-    }
-
-
-    function updateReactionUI(
-        button,
-        data
-    ) {
-        if (!button) {
-            return;
-        }
-
-        const reaction =
-            data.reaction ||
-            button.dataset.reaction ||
-            '';
-
-        const active =
-            Boolean(data.active);
-
-        button.classList.toggle(
-            'active-like',
-            reaction === 'like' &&
-            active
-        );
-
-        button.classList.toggle(
-            'active-heart',
-            reaction === 'heart' &&
-            active
-        );
-
-        button.setAttribute(
-            'aria-pressed',
-            active
-                ? 'true'
-                : 'false'
-        );
-
-        const messageElement =
-            button.closest(
-                '.conversation-message'
-            );
-
-        const messageId =
-            data.message_id ||
-            button.dataset.msg ||
-            getMessageIdFromElement(
-                messageElement
-            );
-
-        const avatarBox =
-            findReactionAvatarBox(
-                button,
-                reaction,
-                messageId
-            );
-
-        if (avatarBox) {
-            avatarBox.replaceChildren();
-
-            const reactors =
-                Array.isArray(data.reactors)
-                    ? data.reactors
-                    : [];
-
-            reactors.forEach(
-                function (reactor) {
-                    const img =
-                        document.createElement(
-                            'img'
-                        );
-
-                    img.className =
-                        'react-avatar';
-
-                    img.alt =
-                        reactor.username ||
-                        'User';
-
-                    img.loading =
-                        'lazy';
-
-                    img.src =
-                        reactor.photo ||
-                        defaultAvatar;
-
-                    avatarBox.appendChild(
-                        img
-                    );
-                }
-            );
-        }
-
-        if (
-            Array.isArray(data.reactors)
-        ) {
-            const names =
-                data.reactors
-                    .map(
-                        function (reactor) {
-                            return reactor.username;
-                        }
-                    )
-                    .filter(Boolean);
-
-            button.title =
-                names.length
-                    ? names.join(', ')
-                    : (
-                        reaction === 'heart'
-                            ? 'Heart'
-                            : 'Like'
-                    );
-        }
-    }
-
-
-    document.addEventListener(
-        'click',
-        async function (event) {
-            const button =
-                event.target.closest(
-                    '.js-react'
-                );
-
-            if (!button) {
-                return;
-            }
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            if (
-                button.dataset.loading === '1'
-            ) {
-                return;
-            }
-
-            const messageElement =
-                button.closest(
-                    '.conversation-message'
-                );
-
-            if (!messageElement) {
-                return;
-            }
-
-            const messageId =
-                getMessageIdFromElement(
-                    messageElement
-                );
-
-            if (!messageId) {
-                return;
-            }
-
-            const csrfToken =
-                getCsrfToken();
-
-            if (!csrfToken) {
-                console.error(
-                    'CSRF token not found.'
-                );
-
-                return;
-            }
-
-            const reaction =
-                button.dataset.reaction ||
-                '';
-
-            if (!reaction) {
-                console.error(
-                    'Reaction type is missing.'
-                );
-
-                return;
-            }
-
-            const url =
-                getReactionUrl(button);
-
-            if (!url) {
-                console.error(
-                    'Reaction URL not found.'
-                );
-
-                return;
-            }
-
-            button.dataset.loading =
-                '1';
-
-            button.disabled = true;
-
-            const scrollTop =
-                chatWindow
-                    ? chatWindow.scrollTop
-                    : 0;
-
-            try {
-                const response =
-                    await fetch(
-                        url,
-                        {
-                            method: 'POST',
-                            credentials: 'same-origin',
-                            headers: {
-                                'X-Requested-With':
-                                    'XMLHttpRequest',
-                                'Accept':
-                                    'application/json',
-                                'X-CSRFToken':
-                                    csrfToken
-                            }
-                        }
-                    );
-
-                let data;
-
-                try {
-                    data =
-                        await response.json();
-
-                } catch (jsonError) {
-                    throw new Error(
-                        `Invalid reaction response (${response.status}).`
-                    );
-                }
-
-                if (
-                    !response.ok ||
-                    !data.ok
-                ) {
-                    throw new Error(
-                        data.error ||
-                        `Reaction failed (${response.status}).`
-                    );
-                }
-
-                updateReactionUI(
-                    button,
-                    data
-                );
-
-                await refreshMessageFragment(
-                    data.message_id ||
-                    messageId,
-                    {
-                        preserveScroll: true
-                    }
-                );
-
-                if (chatWindow) {
-                    chatWindow.scrollTop =
-                        scrollTop;
-                }
-
-                updateScrollButtons();
-
-            } catch (error) {
-                console.error(
-                    'Reaction error:',
-                    error
-                );
-
-                try {
-                    await refreshMessageFragment(
-                        messageId,
-                        {
-                            preserveScroll: true
-                        }
-                    );
-                } catch (refreshError) {
-                    console.error(
-                        'Unable to restore reaction state:',
-                        refreshError
-                    );
-                }
-
-            } finally {
-                button.dataset.loading =
-                    '0';
-
-                button.disabled = false;
-
-                const currentMessage =
-                    getMessageElement(
-                        messageId
-                    );
-
-                if (currentMessage) {
-                    currentMessage
-                        .querySelectorAll(
-                            '.js-react'
-                        )
-                        .forEach(function (
-                            reactionButton
-                        ) {
-                            reactionButton.disabled =
-                                false;
-
-                            reactionButton.dataset.loading =
-                                '0';
-                        });
-                }
-            }
-        }
-    );
-
-
-    /* =========================================================
-       MARK MESSAGE AS READ
-    ========================================================== */
-
-    function markMessageAsRead(
-        messageId,
-        force = false
-    ) {
-        const id =
-            Number(messageId);
-
-        if (!id) {
-            return false;
-        }
-
-        if (
-            !force &&
-            readMessagesSent.has(id)
-        ) {
-            return false;
-        }
-
-        const sent =
-            sendWebSocketPayload({
-                type: 'mark_read',
-                message_id: id
-            });
-
-        if (sent) {
-            readMessagesSent.add(id);
-        }
-
-        return sent;
-    }
-
-
-    function markExistingReceivedMessagesAsRead() {
-        if (!chatMessages) {
-            return;
-        }
-
-        const currentUserId =
-            getCurrentUserId();
-
-        if (!currentUserId) {
-            return;
-        }
-
-        chatMessages
-            .querySelectorAll(
-                '.conversation-message.received-message'
-            )
-            .forEach(function (element) {
-                const messageId =
-                    getMessageIdFromElement(
-                        element
-                    );
-
-                if (messageId) {
-                    markMessageAsRead(
-                        messageId
-                    );
-                }
-            });
-    }
-
-
-    /* =========================================================
-       WEBSOCKET URL
-    ========================================================== */
-
-    function getWebSocketUrl() {
-        if (!chatWindow) {
-            return null;
-        }
-
-        const rootMessageId =
-            chatWindow.dataset.rootMessageId;
-
-        if (!rootMessageId) {
-            console.warn(
-                'WebSocket: data-root-message-id is missing.'
-            );
-
-            return null;
-        }
-
-        const protocol =
-            window.location.protocol === 'https:'
-                ? 'wss:'
-                : 'ws:';
-
-        return (
-            `${protocol}//` +
-            `${window.location.host}` +
-            `/ws/messages/${encodeURIComponent(rootMessageId)}/`
-        );
-    }
-
-
-    /* =========================================================
-       APPEND INCOMING MESSAGE
-    ========================================================== */
-
-    async function appendIncomingMessage(
-        message
-    ) {
-        if (
-            !chatMessages ||
-            !message
-        ) {
-            return;
-        }
-
-        const messageId =
-            Number(message.id);
-
-        if (!messageId) {
-            console.warn(
-                'WebSocket: message id is missing.'
-            );
-
-            return;
-        }
-
-        if (
-            getMessageElement(messageId)
-        ) {
-            markMessageAsRead(
-                messageId
-            );
-
-            return;
-        }
-
-        if (
-            pendingMessageFragments.has(
-                messageId
-            )
-        ) {
-            return;
-        }
-
-        /*
-         * IMPORTANT:
-         *
-         * Determine whether the user is at the bottom
-         * BEFORE fetching/inserting the new message.
-         */
-        const shouldScroll =
-            isUserAtBottom();
-
-        pendingMessageFragments.add(
-            messageId
-        );
-
-        try {
-            const data =
-                await fetchMessageFragment(
-                    messageId
-                );
-
-            if (
-                getMessageElement(messageId)
-            ) {
-                markMessageAsRead(
-                    messageId
-                );
-
-                return;
-            }
-
-            const inserted =
-                appendRenderedMessage(
-                    data.html,
-                    messageId,
-                    shouldScroll
-                );
-
-            if (inserted) {
-                markMessageAsRead(
-                    messageId
-                );
-            }
-
-        } catch (error) {
-            console.error(
-                'Unable to append WebSocket message:',
-                error
-            );
-
-        } finally {
-            pendingMessageFragments.delete(
-                messageId
-            );
-        }
-    }
-
-
-    /* =========================================================
-       REFRESH STATUS MESSAGES
-    ========================================================== */
-
-    async function refreshStatusMessages(
-        messageIds
-    ) {
-        if (!Array.isArray(messageIds)) {
-            return;
-        }
-
-        const uniqueIds = [
-            ...new Set(
-                messageIds
-                    .map(Number)
-                    .filter(Boolean)
-            )
-        ];
-
-        for (
-            const messageId of uniqueIds
-        ) {
-            try {
-                await refreshMessageFragment(
-                    messageId,
-                    {
-                        preserveScroll: true
-                    }
-                );
-
-            } catch (error) {
-                console.error(
-                    'Unable to refresh message status:',
-                    messageId,
-                    error
-                );
-            }
-        }
-    }
-
-
-    /* =========================================================
-       REFRESH ONE MESSAGE FROM WEBSOCKET
-    ========================================================== */
-
-    function refreshWebSocketMessage(
-        messageId
-    ) {
-        const id =
-            Number(messageId);
-
-        if (!id) {
-            return;
-        }
-
-        refreshMessageFragment(
-            id,
-            {
-                preserveScroll: true
-            }
-        ).catch(function (error) {
-            console.error(
-                'Unable to refresh WebSocket message:',
-                id,
-                error
-            );
+            handleTextMessageSubmit(e);
         });
     }
 
-
-    /* =========================================================
-       WEBSOCKET MESSAGE HANDLER
-    ========================================================== */
-
-    function handleWebSocketMessage(
-        event
-    ) {
-        let data;
-
+    // Share media
+    document.addEventListener('click', async e => {
+        const button = e.target.closest('.media-share-btn, .share-btn');
+        if (!button) return;
+        const url = button.dataset.url;
+        if (!url) return;
+        e.preventDefault();
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: 'Shared media', text: 'Check this out', url });
+                return;
+            } catch (err) {
+                if (err && err.name === 'AbortError') return;
+            }
+        }
         try {
-            data =
-                JSON.parse(
-                    event.data
-                );
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(url);
+                const oldHtml = button.innerHTML;
+                button.innerHTML = '✓';
+                setTimeout(() => { button.innerHTML = oldHtml; }, 1200);
+                return;
+            }
+        } catch (err) { console.error('Clipboard failed:', err); }
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        try { document.execCommand('copy'); } catch (err) { console.error('Copy failed:', err); }
+        textarea.remove();
+    });
 
+    // Reactions
+    const defaultAvatar = chatWindow?.dataset.defaultAvatar || '';
+
+    function getReactionUrl(button) {
+        if (!button) return null;
+        const href = button.getAttribute('href');
+        if (href) return href;
+        const messageElement = button.closest('.conversation-message');
+        const messageId = button.dataset.msg || getMessageIdFromElement(messageElement);
+        const reaction = button.dataset.reaction;
+        if (!messageId || !reaction) return null;
+        const template = chatWindow?.dataset.reactionUrl;
+        if (!template) return null;
+        try {
+            const url = new URL(template, window.location.origin);
+            url.pathname = url.pathname.replace(/\/0\/REACTION\/?$/, `/${encodeURIComponent(messageId)}/${encodeURIComponent(reaction)}/`);
+            return url.toString();
         } catch (error) {
-            console.error(
-                'WebSocket invalid JSON:',
-                error
-            );
-
-            return;
-        }
-
-
-        /*
-         * IMPORTANT:
-         *
-         * Notify other chat modules.
-         *
-         * chat_typing.js uses this event for:
-         *
-         *     typing_start
-         *     typing_stop
-         */
-        window.dispatchEvent(
-            new CustomEvent(
-                'agro:websocket-message',
-                {
-                    detail: data
-                }
-            )
-        );
-
-
-        /* -----------------------------------------------------
-           CONNECTION
-        ------------------------------------------------------ */
-
-        if (
-            data.type ===
-            'connection_established'
-        ) {
-            console.log(
-                'Message WebSocket connected.'
-            );
-
-            markExistingReceivedMessagesAsRead();
-
-            return;
-        }
-
-
-        /* -----------------------------------------------------
-           NEW MESSAGE
-        ------------------------------------------------------ */
-
-        if (
-            data.type ===
-            'message_created'
-        ) {
-            if (data.message) {
-                appendIncomingMessage(
-                    data.message
-                ).catch(
-                    function (error) {
-                        console.error(
-                            'WebSocket message rendering error:',
-                            error
-                        );
-                    }
-                );
-            }
-
-            return;
-        }
-
-
-        /* -----------------------------------------------------
-           READ / DELIVERY STATUS
-        ------------------------------------------------------ */
-
-        if (
-            data.type ===
-                'message_status_updated' ||
-            data.type ===
-                'message_delivery_updated'
-        ) {
-            if (
-                Array.isArray(
-                    data.message_ids
-                )
-            ) {
-                refreshStatusMessages(
-                    data.message_ids
-                );
-
-                return;
-            }
-
-            const singleMessageId =
-                data.message_id ||
-                data.id ||
-                data.message?.id;
-
-            if (singleMessageId) {
-                refreshStatusMessages([
-                    singleMessageId
-                ]);
-            }
-
-            return;
-        }
-
-
-        /* -----------------------------------------------------
-           REACTION UPDATE
-        ------------------------------------------------------ */
-
-        if (
-            data.type ===
-                'reaction_updated' ||
-            data.type ===
-                'message_reacted'
-        ) {
-            const payload =
-                data.message ||
-                data.data ||
-                data;
-
-            const messageId =
-                payload.message_id ||
-                payload.id ||
-                data.message_id ||
-                data.id;
-
-            if (messageId) {
-                refreshWebSocketMessage(
-                    messageId
-                );
-            }
-
-            return;
-        }
-
-
-        /* -----------------------------------------------------
-           MESSAGE UPDATED
-        ------------------------------------------------------ */
-
-        if (
-            data.type ===
-            'message_updated'
-        ) {
-            const payload =
-                data.message ||
-                data.data ||
-                data;
-
-            const messageId =
-                payload.message_id ||
-                payload.id ||
-                data.message_id ||
-                data.id;
-
-            if (messageId) {
-                refreshWebSocketMessage(
-                    messageId
-                );
-            }
-
-            return;
-        }
-
-
-        /* -----------------------------------------------------
-           MESSAGE DELETED
-        ------------------------------------------------------ */
-
-        if (
-            data.type ===
-            'message_deleted'
-        ) {
-            const messageId =
-                data.message_id ||
-                data.id ||
-                data.message?.id ||
-                data.data?.message_id ||
-                data.data?.id;
-
-            if (!messageId) {
-                console.warn(
-                    'WebSocket message_deleted: message ID is missing.'
-                );
-
-                return;
-            }
-
-            refreshWebSocketMessage(
-                messageId
-            );
-
-            return;
-        }
-
-
-        /* -----------------------------------------------------
-           ERROR
-        ------------------------------------------------------ */
-
-        if (
-            data.type ===
-            'error'
-        ) {
-            console.error(
-                'WebSocket server error:',
-                data.code,
-                data.message
-            );
+            console.error('Unable to build reaction URL:', error);
+            return null;
         }
     }
 
+    function findReactionAvatarBox(button, reaction, messageId) {
+        if (!button) return null;
+        let avatarBox = button.querySelector('[data-react-avatars]');
+        if (avatarBox) return avatarBox;
+        if (!reaction || !messageId) return null;
+        for (const box of document.querySelectorAll('[data-react-avatars]')) {
+            if (box.dataset.reactAvatars === `${reaction}-${messageId}`) return box;
+        }
+        return null;
+    }
 
-    /* =========================================================
-       WEBSOCKET RECONNECT
-    ========================================================== */
+    function updateReactionUI(button, data) {
+        if (!button) return;
+        const reaction = data.reaction || button.dataset.reaction || '';
+        const active = Boolean(data.active);
+        button.classList.toggle('active-like', reaction === 'like' && active);
+        button.classList.toggle('active-heart', reaction === 'heart' && active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        const messageElement = button.closest('.conversation-message');
+        const messageId = data.message_id || button.dataset.msg || getMessageIdFromElement(messageElement);
+        const avatarBox = findReactionAvatarBox(button, reaction, messageId);
+        if (avatarBox) {
+            avatarBox.replaceChildren();
+            (Array.isArray(data.reactors) ? data.reactors : []).forEach(reactor => {
+                const img = document.createElement('img');
+                img.className = 'react-avatar';
+                img.alt = reactor.username || 'User';
+                img.loading = 'lazy';
+                img.src = reactor.photo || defaultAvatar;
+                avatarBox.appendChild(img);
+            });
+        }
+        if (Array.isArray(data.reactors)) {
+            const names = data.reactors.map(r => r.username).filter(Boolean);
+            button.title = names.length ? names.join(', ') : (reaction === 'heart' ? 'Heart' : 'Like');
+        }
+    }
+
+    document.addEventListener('click', async e => {
+        const button = e.target.closest('.js-react');
+        if (!button) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (button.dataset.loading === '1') return;
+        const messageElement = button.closest('.conversation-message');
+        if (!messageElement) return;
+        const messageId = getMessageIdFromElement(messageElement);
+        if (!messageId) return;
+        const csrfToken = getCsrfToken();
+        if (!csrfToken) { console.error('CSRF token not found.'); return; }
+        const reaction = button.dataset.reaction || '';
+        if (!reaction) { console.error('Reaction type is missing.'); return; }
+        const url = getReactionUrl(button);
+        if (!url) { console.error('Reaction URL not found.'); return; }
+        button.dataset.loading = '1';
+        button.disabled = true;
+        const scrollTop = chatWindow ? chatWindow.scrollTop : 0;
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRFToken': csrfToken
+                }
+            });
+            let data;
+            try { data = await response.json(); }
+            catch (jsonError) { throw new Error(`Invalid reaction response (${response.status}).`); }
+            if (!response.ok || !data.ok) throw new Error(data.error || `Reaction failed (${response.status}).`);
+            updateReactionUI(button, data);
+            await refreshMessageFragment(data.message_id || messageId, { preserveScroll: true });
+            if (chatWindow) chatWindow.scrollTop = scrollTop;
+            updateScrollButtons();
+        } catch (error) {
+            console.error('Reaction error:', error);
+            try { await refreshMessageFragment(messageId, { preserveScroll: true }); }
+            catch (refreshError) { console.error('Unable to restore reaction state:', refreshError); }
+        } finally {
+            button.dataset.loading = '0';
+            button.disabled = false;
+            const currentMessage = getMessageElement(messageId);
+            if (currentMessage) {
+                currentMessage.querySelectorAll('.js-react').forEach(btn => {
+                    btn.disabled = false;
+                    btn.dataset.loading = '0';
+                });
+            }
+        }
+    });
+
+    // Mark as read
+    function markMessageAsRead(messageId, force = false) {
+        const id = Number(messageId);
+        if (!id) return false;
+        if (!force && readMessagesSent.has(id)) return false;
+        const sent = sendWebSocketPayload({ type: 'mark_read', message_id: id });
+        if (sent) readMessagesSent.add(id);
+        return sent;
+    }
+
+    function markExistingReceivedMessagesAsRead() {
+        if (!chatMessages) return;
+        const currentUserId = getCurrentUserId();
+        if (!currentUserId) return;
+        chatMessages.querySelectorAll('.conversation-message.received-message').forEach(el => {
+            const messageId = getMessageIdFromElement(el);
+            if (messageId) markMessageAsRead(messageId);
+        });
+    }
+
+    function getWebSocketUrl() {
+        if (!chatWindow) return null;
+        const rootMessageId = chatWindow.dataset.rootMessageId;
+        if (!rootMessageId) {
+            console.warn('WebSocket: data-root-message-id is missing.');
+            return null;
+        }
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        return `${protocol}//${window.location.host}/ws/messages/${encodeURIComponent(rootMessageId)}/`;
+    }
+
+    async function appendIncomingMessage(message) {
+        if (!chatMessages || !message) return;
+        const messageId = Number(message.id);
+        if (!messageId) {
+            console.warn('WebSocket: message id is missing.');
+            return;
+        }
+        if (getMessageElement(messageId)) {
+            markMessageAsRead(messageId);
+            return;
+        }
+        if (pendingMessageFragments.has(messageId)) return;
+        const shouldScroll = isUserAtBottom(); // check BEFORE fetch/insert
+        pendingMessageFragments.add(messageId);
+        try {
+            const data = await fetchMessageFragment(messageId);
+            if (getMessageElement(messageId)) {
+                markMessageAsRead(messageId);
+                return;
+            }
+            if (appendRenderedMessage(data.html, messageId, shouldScroll)) {
+                markMessageAsRead(messageId);
+            }
+        } catch (error) {
+            console.error('Unable to append WebSocket message:', error);
+        } finally {
+            pendingMessageFragments.delete(messageId);
+        }
+    }
+
+    async function refreshStatusMessages(messageIds) {
+        if (!Array.isArray(messageIds)) return;
+        const uniqueIds = [...new Set(messageIds.map(Number).filter(Boolean))];
+        for (const messageId of uniqueIds) {
+            try {
+                await refreshMessageFragment(messageId, { preserveScroll: true });
+            } catch (error) {
+                console.error('Unable to refresh message status:', messageId, error);
+            }
+        }
+    }
+
+    function refreshWebSocketMessage(messageId) {
+        const id = Number(messageId);
+        if (!id) return;
+        refreshMessageFragment(id, { preserveScroll: true }).catch(error => {
+            console.error('Unable to refresh WebSocket message:', id, error);
+        });
+    }
+
+    function handleWebSocketMessage(event) {
+        let data;
+        try { data = JSON.parse(event.data); }
+        catch (error) {
+            console.error('WebSocket invalid JSON:', error);
+            return;
+        }
+        // notify other modules (chat_typing.js uses typing_start / typing_stop)
+        window.dispatchEvent(new CustomEvent('agro:websocket-message', { detail: data }));
+
+        if (data.type === 'connection_established') {
+            console.log('Message WebSocket connected.');
+            markExistingReceivedMessagesAsRead();
+            return;
+        }
+        if (data.type === 'message_created') {
+            if (data.message) {
+                appendIncomingMessage(data.message).catch(err => console.error('WebSocket message rendering error:', err));
+            }
+            return;
+        }
+        if (data.type === 'message_status_updated' || data.type === 'message_delivery_updated') {
+            if (Array.isArray(data.message_ids)) {
+                refreshStatusMessages(data.message_ids);
+                return;
+            }
+            const singleId = data.message_id || data.id || data.message?.id;
+            if (singleId) refreshStatusMessages([singleId]);
+            return;
+        }
+        if (data.type === 'reaction_updated' || data.type === 'message_reacted') {
+            const payload = data.message || data.data || data;
+            const messageId = payload.message_id || payload.id || data.message_id || data.id;
+            if (messageId) refreshWebSocketMessage(messageId);
+            return;
+        }
+        if (data.type === 'message_updated') {
+            const payload = data.message || data.data || data;
+            const messageId = payload.message_id || payload.id || data.message_id || data.id;
+            if (messageId) refreshWebSocketMessage(messageId);
+            return;
+        }
+        if (data.type === 'message_deleted') {
+            const messageId = data.message_id || data.id || data.message?.id || data.data?.message_id || data.data?.id;
+            if (!messageId) {
+                console.warn('WebSocket message_deleted: message ID is missing.');
+                return;
+            }
+            refreshWebSocketMessage(messageId);
+            return;
+        }
+        if (data.type === 'error') {
+            console.error('WebSocket server error:', data.code, data.message);
+        }
+    }
 
     function scheduleWebSocketReconnect() {
-        if (websocketManuallyClosed) {
-            return;
-        }
-
-        if (websocketReconnectTimer) {
-            return;
-        }
-
-        websocketReconnectTimer =
-            setTimeout(
-                function () {
-                    websocketReconnectTimer =
-                        null;
-
-                    connectWebSocket();
-                },
-                WEBSOCKET_RECONNECT_DELAY
-            );
+        if (websocketManuallyClosed || websocketReconnectTimer) return;
+        websocketReconnectTimer = setTimeout(() => {
+            websocketReconnectTimer = null;
+            connectWebSocket();
+        }, WEBSOCKET_RECONNECT_DELAY);
     }
-
-
-    /* =========================================================
-       CONNECT WEBSOCKET
-    ========================================================== */
 
     function connectWebSocket() {
-        if (!chatWindow) {
-            return;
-        }
-
-        const url =
-            getWebSocketUrl();
-
-        if (!url) {
-            return;
-        }
-
-        if (
-            messageWebSocket &&
-            (
-                messageWebSocket.readyState ===
-                    WebSocket.OPEN ||
-                messageWebSocket.readyState ===
-                    WebSocket.CONNECTING
-            )
-        ) {
-            return;
-        }
-
+        if (!chatWindow) return;
+        const url = getWebSocketUrl();
+        if (!url) return;
+        if (messageWebSocket && (messageWebSocket.readyState === WebSocket.OPEN || messageWebSocket.readyState === WebSocket.CONNECTING)) return;
         websocketManuallyClosed = false;
-
         try {
-            messageWebSocket =
-                new WebSocket(url);
-
-            /*
-             * IMPORTANT:
-             *
-             * Make the current WebSocket available
-             * to chat_typing.js.
-             */
-            window.agroMessageSocket =
-                messageWebSocket;
-
+            messageWebSocket = new WebSocket(url);
+            window.agroMessageSocket = messageWebSocket; // for chat_typing.js
         } catch (error) {
-            console.error(
-                'Unable to create WebSocket:',
-                error
-            );
-
+            console.error('Unable to create WebSocket:', error);
             messageWebSocket = null;
-
-            window.agroMessageSocket =
-                null;
-
+            window.agroMessageSocket = null;
             scheduleWebSocketReconnect();
-
             return;
         }
-
-
-        messageWebSocket.addEventListener(
-            'open',
-            function () {
-                console.log(
-                    'Message WebSocket connected.'
-                );
-
-                markExistingReceivedMessagesAsRead();
-            }
-        );
-
-
-        messageWebSocket.addEventListener(
-            'message',
-            handleWebSocketMessage
-        );
-
-
-        messageWebSocket.addEventListener(
-            'error',
-            function (error) {
-                console.error(
-                    'Message WebSocket error:',
-                    error
-                );
-            }
-        );
-
-
-        messageWebSocket.addEventListener(
-            'close',
-            function (event) {
-                console.warn(
-                    'Message WebSocket closed:',
-                    event.code,
-                    event.reason
-                );
-
-                messageWebSocket =
-                    null;
-
-                /*
-                 * IMPORTANT:
-                 *
-                 * Clear global reference too.
-                 */
-                window.agroMessageSocket =
-                    null;
-
-                scheduleWebSocketReconnect();
-            }
-        );
+        messageWebSocket.addEventListener('open', () => {
+            console.log('Message WebSocket connected.');
+            markExistingReceivedMessagesAsRead();
+        });
+        messageWebSocket.addEventListener('message', handleWebSocketMessage);
+        messageWebSocket.addEventListener('error', err => console.error('Message WebSocket error:', err));
+        messageWebSocket.addEventListener('close', event => {
+            console.warn('Message WebSocket closed:', event.code, event.reason);
+            messageWebSocket = null;
+            window.agroMessageSocket = null;
+            scheduleWebSocketReconnect();
+        });
     }
-
-
-    /* =========================================================
-       CLOSE WEBSOCKET
-    ========================================================== */
 
     function closeWebSocket() {
-        websocketManuallyClosed =
-            true;
-
+        websocketManuallyClosed = true;
         if (websocketReconnectTimer) {
-            clearTimeout(
-                websocketReconnectTimer
-            );
-
-            websocketReconnectTimer =
-                null;
+            clearTimeout(websocketReconnectTimer);
+            websocketReconnectTimer = null;
         }
-
         if (messageWebSocket) {
-            try {
-                messageWebSocket.close(
-                    1000,
-                    'Page unloading'
-                );
-
-            } catch (error) {
-                // Ignore.
-            }
-
-            messageWebSocket =
-                null;
+            try { messageWebSocket.close(1000, 'Page unloading'); } catch (e) {}
+            messageWebSocket = null;
         }
-
-        /*
-         * Clear global reference as well.
-         */
-        window.agroMessageSocket =
-            null;
+        window.agroMessageSocket = null;
     }
-
-
-    /* =========================================================
-       INITIALIZE WEBSOCKET
-    ========================================================== */
 
     connectWebSocket();
 
-
-    /* =========================================================
-       BEFORE UNLOAD
-    ========================================================== */
-
-    window.addEventListener(
-        'beforeunload',
-        function () {
-            revokeImageUrl();
-            revokeVideoUrl();
-
-            closeWebSocket();
-
-            if (scrollButtonHideTimer) {
-                clearTimeout(
-                    scrollButtonHideTimer
-                );
-
-                scrollButtonHideTimer =
-                    null;
-            }
+    window.addEventListener('beforeunload', () => {
+        revokeImageUrl();
+        revokeVideoUrl();
+        closeWebSocket();
+        if (scrollButtonHideTimer) {
+            clearTimeout(scrollButtonHideTimer);
+            scrollButtonHideTimer = null;
         }
-    );
+    });
 });
