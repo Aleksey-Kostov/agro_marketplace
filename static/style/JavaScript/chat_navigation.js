@@ -366,42 +366,54 @@ document.addEventListener('DOMContentLoaded', function () {
             event.detail || {};
 
         /*
-         * The controller tells us whether the user was
-         * at the bottom BEFORE the message was rendered.
+         * If the user was NOT at the bottom before
+         * the message was rendered, do not move the
+         * conversation.
+         *
+         * The message is already appended at the bottom.
+         * We only increase unread.
          */
         if (!detail.shouldScroll) {
-            /*
-             * The user was reading older messages.
-             *
-             * One rendered message = one unread.
-             *
-             * No other file should increment this counter.
-             */
             if (!isAtBottom()) {
                 addUnreadMessage();
             }
 
             updateScrollButtons();
+
             return;
         }
 
         /*
-         * User was already at the bottom.
+         * The user was already at the bottom.
          *
-         * New message should follow the conversation.
+         * IMPORTANT:
+         *
+         * Do NOT use smooth scrolling here.
+         *
+         * New messages can arrive very quickly. If every
+         * message starts a new smooth-scroll animation,
+         * several animations can overlap and the user may
+         * end up slightly above the latest message.
+         *
+         * For automatic following of a live conversation
+         * we always jump directly to the new bottom.
          */
         requestAnimationFrame(
             function () {
-                showScrollButtons();
-
                 chatWindow.scrollTo({
                     top: getBottomScrollTop(),
-                    behavior: 'smooth'
+                    behavior: 'auto'
                 });
 
                 clearUnreadMessages();
 
                 updateScrollButtons();
+
+                window.dispatchEvent(
+                    new CustomEvent(
+                        'agro:chat-bottom-reached'
+                    )
+                );
 
                 scheduleScrollButtonHide();
             }
