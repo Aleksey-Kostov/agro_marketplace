@@ -250,35 +250,21 @@ document.addEventListener('DOMContentLoaded', function () {
         removeEmptyConversationMessage();
 
         /*
-         * The chat may use flex-direction:
-         * column-reverse.
+         * The conversation uses normal DOM order:
          *
-         * With column-reverse, the first DOM
-         * element is visually the newest message.
+         * oldest message
+         * oldest message
+         * newest message
          *
-         * With normal column direction, the newest
-         * message belongs at the end of the container.
+         * Therefore a new message always belongs
+         * at the end of the message list.
+         *
+         * We intentionally do NOT use column-reverse.
          */
-        const computedStyle =
-            window.getComputedStyle(
-                chatMessages
-            );
-
-        const isColumnReverse =
-            computedStyle.flexDirection ===
-            'column-reverse';
-
-        if (isColumnReverse) {
-            chatMessages.insertAdjacentHTML(
-                'afterbegin',
-                html
-            );
-        } else {
-            chatMessages.insertAdjacentHTML(
-                'beforeend',
-                html
-            );
-        }
+        chatMessages.insertAdjacentHTML(
+            'beforeend',
+            html
+        );
 
         const inserted =
             getMessageElement(messageId);
@@ -292,6 +278,17 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
+        /*
+         * chat_navigation.js owns:
+         *
+         * - scroll position
+         * - unread counter
+         * - "at bottom" state
+         * - scroll buttons
+         *
+         * This event only tells it that the message
+         * has been rendered.
+         */
         window.dispatchEvent(
             new CustomEvent(
                 'agro:message-rendered',
