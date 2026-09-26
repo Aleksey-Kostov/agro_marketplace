@@ -1431,39 +1431,23 @@ document.addEventListener('DOMContentLoaded', function () {
        ========================================================= */
 
     function setSubmitMode(mode) {
-        if (mode === 'edit') {
-            if (submitText) {
-                submitText.textContent =
-                    'Save changes';
-            }
-
-            if (submitIcon) {
-                submitIcon.classList.remove(
-                    'fa-paper-plane'
-                );
-
-                submitIcon.classList.add(
-                    'fa-save'
-                );
-            }
-
+        if (!submitBtn) {
             return;
         }
 
-        if (submitText) {
-            submitText.textContent =
-                'Send';
-        }
+        const isEditMode =
+            mode === 'edit';
 
-        if (submitIcon) {
-            submitIcon.classList.remove(
-                'fa-save'
-            );
-
-            submitIcon.classList.add(
-                'fa-paper-plane'
-            );
-        }
+        submitBtn.innerHTML =
+            isEditMode
+                ? (
+                    '<i class="fas fa-save me-1" id="message-submit-icon"></i>' +
+                    '<span id="message-submit-text">Save changes</span>'
+                )
+                : (
+                    '<i class="fas fa-paper-plane me-1" id="message-submit-icon"></i>' +
+                    '<span id="message-submit-text">Send</span>'
+                );
     }
 
     function setSendingState(isSending) {
