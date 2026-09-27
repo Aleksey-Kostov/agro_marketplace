@@ -235,6 +235,7 @@
     margin-bottom: 4px;
     min-width: 0;
     overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 
@@ -688,55 +689,6 @@
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-}
-
-
-/* =========================================================
-   MESSAGE META
-========================================================= */
-
-.conversation-meta {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 8px;
-    width: 100%;
-    min-width: 0;
-    margin-bottom: 4px;
-}
-
-.conversation-name {
-    color: #222;
-    font-size: 15px;
-    font-weight: 600;
-    overflow-wrap: anywhere;
-}
-
-.conversation-date {
-    color: #777;
-    font-size: 12px;
-    white-space: nowrap;
-}
-
-
-/* =========================================================
-   DELIVERY STATUS
-========================================================= */
-
-.message-delivery-status {
-    display: inline-flex;
-    align-items: center;
-    margin-left: 2px;
-    font-size: 11px;
-    line-height: 1;
-    font-weight: 600;
-    color: #999;
-    white-space: nowrap;
-    user-select: none;
-}
-
-.message-delivery-status-read {
-    color: #8e44ad;
 }
 
 
@@ -2509,18 +2461,6 @@
     .conversation-message-body {
         max-width: calc(100% - 48px);
         min-width: 0;
-    }
-
-    .conversation-meta {
-        gap: 5px;
-    }
-
-    .conversation-name {
-        font-size: 14px;
-    }
-
-    .conversation-date {
-        font-size: 11px;
     }
 
     .chat-message-content {

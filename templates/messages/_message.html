@@ -8,7 +8,9 @@
             {% else %}
                 received-message
             {% endif %}"
-     data-message-id="{{ item.pk }}">
+     data-message-id="{{ item.pk }}"
+     data-message-date="{{ item.timestamp|date:'Y-m-d' }}"
+     data-message-timestamp="{{ item.timestamp|date:'c' }}">
 
     <!-- =====================================================
          AVATAR
@@ -44,40 +46,28 @@
         {% endif %}
     </div>
 
+
     <!-- =====================================================
          MESSAGE BODY
     ====================================================== -->
 
     <div class="conversation-message-body">
 
+
         <!-- =================================================
              META
         ================================================== -->
 
         <div class="conversation-meta">
+
             <span class="conversation-name">
                 {{ item.sender.profile.username_in_marketplace|default:item.sender.username }}
             </span>
+
             <span class="conversation-date">
-                {{ item.timestamp|date:"j M. Y H:i" }}
+                {{ item.timestamp|date:"d.m.Y" }}
             </span>
-            {% if item.sender == request.user and not item.is_removed %}
-            <span class="message-delivery-status
-                         {% if item.delivery_status == 'read' %}
-                             message-delivery-status-read
-                         {% endif %}"
-                  title="{{ item.delivery_status|title }}">
-                {% if item.delivery_status == 'sent' %}
-                    ✓
-                {% elif item.delivery_status == 'delivered' %}
-                    ✓✓
-                {% elif item.delivery_status == 'read' %}
-                    ✓✓
-                {% else %}
-                    ✓
-                {% endif %}
-            </span>
-            {% endif %}
+
         </div>
 
 
@@ -87,18 +77,28 @@
 
         <div class="message-row-content">
 
+
             <!-- =================================================
                  BUBBLE + REACTIONS
             ================================================== -->
 
             <div class="chat-message-content">
 
+
                 <!-- =================================================
                      MESSAGE BUBBLE
                 ================================================== -->
 
-                <div class="message-bubble"
+                <div class="message-bubble
+                            {% if item.body and not item.image and not item.video %}
+                                {% if item.body|length <= 30 %}
+                                    message-text-short
+                                {% else %}
+                                    message-text-long
+                                {% endif %}
+                            {% endif %}"
                      id="message-bubble-{{ item.pk }}">
+
                     {% if item.is_removed %}
 
                     <!-- =============================================
@@ -106,28 +106,38 @@
                     ============================================== -->
 
                     <div class="deleted-message-placeholder">
+
                         <i class="fas fa-ban"></i>
+
                         <span>
                             This message was deleted
                         </span>
+
                     </div>
+
                     {% else %}
+
 
                     <!-- =============================================
                          REPLY PREVIEW
                     ============================================== -->
 
                     {% if item.parent_message %}
+
                     <a href="#msg-{{ item.parent_message.pk }}"
                        class="message-reply-preview"
                        data-reply-target="{{ item.parent_message.pk }}"
                        title="Go to original message">
+
                         <div class="message-reply-line">
                         </div>
+
                         <div class="message-reply-content">
+
                             <div class="message-reply-name">
                                 {{ item.parent_message.sender.profile.username_in_marketplace|default:item.parent_message.sender.username }}
                             </div>
+
                             <div class="message-reply-preview-row">
 
                                 <!-- =================================
@@ -135,130 +145,247 @@
                                 ================================== -->
 
                                 <div class="message-reply-text">
+
                                     {% if item.parent_message.is_removed %}
+
                                     <em class="text-muted">
                                         This message was deleted
                                     </em>
+
                                     {% elif item.parent_message.body %}
+
                                     {{ item.parent_message.body|striptags|truncatechars:55 }}
+
                                     {% elif item.parent_message.image %}
+
                                     <i class="fas fa-image"></i>
                                     Photo
+
                                     {% elif item.parent_message.video %}
+
                                     <i class="fas fa-video"></i>
                                     Video
+
                                     {% else %}
+
                                     Message
+
                                     {% endif %}
+
                                 </div>
+
 
                                 <!-- =================================
                                      REPLY MEDIA
                                 ================================== -->
 
                                 {% if not item.parent_message.is_removed %}
+
                                     {% if item.parent_message.image %}
+
                                     <div class="message-reply-media-thumb">
+
                                         <img src="{{ item.parent_message.image.url }}"
                                              alt="Replied image"
                                              loading="lazy">
+
                                     </div>
+
                                     {% elif item.parent_message.video %}
+
                                     <div class="message-reply-media-thumb">
+
                                         <video preload="metadata"
                                                muted
                                                playsinline>
+
                                             <source src="{{ item.parent_message.video_url|default:item.parent_message.video.url }}">
+
                                         </video>
+
                                         <span class="message-reply-video-icon">
+
                                             <i class="fas fa-play"></i>
+
                                         </span>
+
                                     </div>
+
                                     {% endif %}
+
                                 {% endif %}
+
                             </div>
+
                         </div>
+
                     </a>
+
                     {% endif %}
+
 
                     <!-- =============================================
                          MESSAGE CONTENT
                     ============================================== -->
 
                     {% if item.body or item.image or item.video %}
+
                     <div class="message-content-wrap">
+
 
                         <!-- =================================
                              TEXT
                         ================================== -->
 
                         {% if item.body %}
+
                         <div class="message-body-html">
                             {{ item.body|safe }}
                         </div>
+
                         {% endif %}
+
 
                         <!-- =================================
                              IMAGE
                         ================================== -->
 
                         {% if item.image %}
+
                         <div class="media-wrap">
+
                             <a href="{{ item.image.url }}"
                                target="_blank"
                                rel="noopener noreferrer">
+
                                 <img src="{{ item.image.url }}"
                                      alt="Attachment"
                                      class="message-image"
                                      loading="lazy">
+
                             </a>
+
                             <button type="button"
                                     class="media-share-btn share-btn"
                                     data-url="{{ item.image.url }}"
                                     data-media-url="{{ item.image.url }}"
                                     title="Copy link"
                                     aria-label="Share image">
+
                                 <i class="fas fa-share-alt"></i>
+
                             </button>
+
                         </div>
+
                         {% endif %}
+
 
                         <!-- =================================
                              VIDEO
                         ================================== -->
 
                         {% if item.video %}
+
                         <div class="media-wrap">
+
                             <video class="message-video"
                                    controls
                                    preload="metadata">
+
                                 <source src="{{ item.video_url|default:item.video.url }}">
+
                             </video>
+
                             <button type="button"
                                     class="media-share-btn share-btn"
                                     data-url="{{ item.video_url|default:item.video.url }}"
                                     data-media-url="{{ item.video_url|default:item.video.url }}"
                                     title="Copy link"
                                     aria-label="Share video">
+
                                 <i class="fas fa-share-alt"></i>
+
                             </button>
+
                         </div>
+
                         {% endif %}
+
+
+                        <!-- =================================================
+                             MESSAGE TIME + DELIVERY STATUS
+                        ================================================== -->
+
+                        {% if not item.is_removed %}
+
+                        <div class="message-bubble-meta">
+
+                            <span class="message-bubble-time">
+                                {{ item.timestamp|date:"H:i" }}
+                            </span>
+
+                            {% if item.sender == request.user %}
+
+                            <span class="message-delivery-status
+                                         {% if item.delivery_status == 'read' %}
+                                             message-delivery-status-read
+                                         {% endif %}"
+                                  title="{{ item.delivery_status|title }}">
+
+                                {% if item.delivery_status == 'sent' %}
+
+                                    ✓
+
+                                {% elif item.delivery_status == 'delivered' %}
+
+                                    ✓✓
+
+                                {% elif item.delivery_status == 'read' %}
+
+                                    ✓✓
+
+                                {% else %}
+
+                                    ✓
+
+                                {% endif %}
+
+                            </span>
+
+                            {% endif %}
+
+                        </div>
+
+                        {% endif %}
+
+
                     </div>
+
                     {% endif %}
+
+
                     {% endif %}
+
                 </div>
+
 
                 <!-- =================================================
                      REACTIONS
                 ================================================== -->
+
                 {% if not item.is_system and not item.is_removed %}
+
                 {% user_reacted item request.user 'like' as liked %}
                 {% user_reacted item request.user 'heart' as hearted %}
                 {% reaction_users item 'like' as like_users %}
                 {% reaction_users item 'heart' as heart_users %}
+
+
                 <div class="message-actions">
+
                     <div class="message-reactions">
+
 
                         <!-- =================================
                              LIKE
@@ -269,19 +396,27 @@
                            data-reaction="like"
                            data-msg="{{ item.pk }}"
                            title="{% for u in like_users %}{{ u.profile.username_in_marketplace|default:u.username }}{% if not forloop.last %}, {% endif %}{% empty %}Like{% endfor %}">
+
                             <span class="tg-emoji">
                                 👍
                             </span>
+
                             <span class="tg-avatars"
                                   data-react-avatars="like-{{ item.pk }}">
+
                                 {% for u in like_users %}
+
                                 <img src="{% if u.profile.profile_photo %}{{ u.profile.profile_photo.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
                                      class="react-avatar"
                                      alt="{{ u.profile.username_in_marketplace|default:u.username }}"
                                      loading="lazy">
+
                                 {% endfor %}
+
                             </span>
+
                         </a>
+
 
                         <!-- =================================
                              HEART
@@ -292,50 +427,73 @@
                            data-reaction="heart"
                            data-msg="{{ item.pk }}"
                            title="{% for u in heart_users %}{{ u.profile.username_in_marketplace|default:u.username }}{% if not forloop.last %}, {% endif %}{% empty %}Heart{% endfor %}">
+
                             <span class="tg-emoji">
                                 ❤️
                             </span>
+
                             <span class="tg-avatars"
                                   data-react-avatars="heart-{{ item.pk }}">
+
                                 {% for u in heart_users %}
+
                                 <img src="{% if u.profile.profile_photo %}{{ u.profile.profile_photo.url }}{% else %}{% static 'images/profile_picture.webp' %}{% endif %}"
                                      class="react-avatar"
                                      alt="{{ u.profile.username_in_marketplace|default:u.username }}"
                                      loading="lazy">
+
                                 {% endfor %}
+
                             </span>
+
                         </a>
+
 
                         <!-- =================================
                              DELETE
                         ================================== -->
 
                         {% if item.sender == request.user %}
+
                         <form method="post"
                               action="{% url 'delete-one-message' item.pk %}"
                               class="delete-message-form">
+
                             {% csrf_token %}
+
                             <button type="submit"
                                     class="tg-reaction delete-message-reaction"
                                     title="Delete"
                                     aria-label="Delete message">
+
                                 <span class="tg-emoji">
                                     🗑️
                                 </span>
+
                             </button>
+
                         </form>
+
                         {% endif %}
+
+
                     </div>
+
                 </div>
+
                 {% endif %}
+
             </div>
+
 
             <!-- =================================================
                  SIDE ACTIONS
             ================================================== -->
 
             {% if not item.is_system and not item.is_removed %}
+
             <div class="message-side-actions">
+
 
                 <!-- =================================
                      REPLY
@@ -350,14 +508,18 @@
                         data-reply-video="{% if item.video %}{{ item.video_url|default:item.video.url|escapejs }}{% endif %}"
                         title="Reply"
                         aria-label="Reply">
+
                     <i class="fas fa-reply"></i>
+
                 </button>
+
 
                 <!-- =================================
                      EDIT
                 ================================== -->
 
                 {% if item.sender == request.user and item.body %}
+
                 <button type="button"
                         class="message-side-btn edit-message-side-btn"
                         data-message-id="{{ item.pk }}"
@@ -365,7 +527,9 @@
                         data-message-body="{{ item.body|striptags|escapejs }}"
                         title="Edit"
                         aria-label="Edit message">
+
                     <i class="fas fa-edit"></i>
+
                 </button>
                 {% endif %}
             </div>

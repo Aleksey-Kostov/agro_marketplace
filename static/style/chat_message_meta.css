@@ -1,0 +1,427 @@
+/* =========================================================
+   CHAT MESSAGE META
+========================================================= */
+
+
+/* =========================================================
+   MESSAGE META
+========================================================= */
+
+.conversation-meta {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    width: 100%;
+    min-width: 0;
+
+    margin-bottom: 4px;
+}
+
+.conversation-name {
+    color: #222;
+    font-size: 15px;
+    font-weight: 600;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.conversation-date {
+    color: #777;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   MESSAGE BUBBLE
+========================================================= */
+
+.message-bubble {
+    position: relative;
+}
+
+
+/* =========================================================
+   MESSAGE CONTENT
+========================================================= */
+
+.message-content-wrap {
+    width: 100%;
+    min-width: 0;
+}
+
+
+/* =========================================================
+   SHORT TEXT
+   Text + meta on the same line
+========================================================= */
+
+.message-bubble.message-text-short
+.message-content-wrap {
+    display: inline;
+
+    width: auto;
+}
+
+
+/* =========================================================
+   SHORT TEXT BODY
+========================================================= */
+
+.message-bubble.message-text-short
+.message-body-html {
+    display: inline !important;
+
+    width: auto !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    white-space: normal;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   SHORT TEXT INNER HTML
+========================================================= */
+
+.message-bubble.message-text-short
+.message-body-html > p,
+.message-bubble.message-text-short
+.message-body-html > div,
+.message-bubble.message-text-short
+.message-body-html > span,
+.message-bubble.message-text-short
+.message-body-html > strong,
+.message-bubble.message-text-short
+.message-body-html > em,
+.message-bubble.message-text-short
+.message-body-html > b,
+.message-bubble.message-text-short
+.message-body-html > i {
+    display: inline !important;
+
+    width: auto !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* =========================================================
+   SHORT TEXT META
+========================================================= */
+
+.message-bubble.message-text-short
+.message-bubble-meta {
+    display: inline-flex;
+
+    width: auto;
+
+    margin: 0 0 0 6px;
+    padding: 2px 6px;
+
+    vertical-align: baseline;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 3px;
+
+    white-space: nowrap;
+
+    font-size: 11px;
+    line-height: 1;
+
+    user-select: none;
+
+    /* Light transparent bubble */
+    background: rgba(80, 80, 80, 0.18);
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.08);
+
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+
+/* =========================================================
+   LONG TEXT
+========================================================= */
+
+.message-bubble.message-text-long
+.message-body-html {
+    display: block;
+
+    width: 100%;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   LONG TEXT META
+   Bottom-right inside the message bubble
+========================================================= */
+
+.message-bubble.message-text-long
+.message-bubble-meta {
+    display: flex;
+
+    width: fit-content;
+
+    margin-left: auto;
+    margin-top: 4px;
+
+    padding: 2px 6px;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 3px;
+
+    white-space: nowrap;
+
+    font-size: 11px;
+    line-height: 1;
+
+    user-select: none;
+
+    /* Light transparent bubble */
+    background: rgba(80, 80, 80, 0.18);
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.08);
+
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+
+/* =========================================================
+   MESSAGE TIME
+========================================================= */
+
+.message-bubble-time {
+    display: inline-block;
+
+    color: #666;
+
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 400;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   DELIVERY STATUS
+========================================================= */
+
+.message-delivery-status {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin-left: 1px;
+
+    color: #888;
+
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 600;
+
+    letter-spacing: -1px;
+
+    white-space: nowrap;
+
+    user-select: none;
+}
+
+.message-delivery-status-read {
+    color: #8e44ad;
+}
+
+
+/* =========================================================
+   MEDIA
+========================================================= */
+
+.chat-message-content:has(.media-wrap)
+.message-bubble {
+    position: relative;
+}
+
+
+/* =========================================================
+   MEDIA META
+   Below image/video, inside bubble
+========================================================= */
+
+.chat-message-content:has(.media-wrap)
+.message-bubble-meta {
+    display: flex;
+
+    width: fit-content;
+
+    min-height: 18px;
+
+    margin-left: auto;
+    margin-top: 4px;
+
+    padding: 3px 6px;
+
+    box-sizing: border-box;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 3px;
+
+    white-space: nowrap;
+
+    font-size: 11px;
+    line-height: 1;
+
+    user-select: none;
+
+    background: rgba(255, 255, 255, 0.55);
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.08);
+
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+
+/* =========================================================
+   DELETED MESSAGE
+========================================================= */
+
+.deleted-message-placeholder
+.message-bubble-meta {
+    display: none !important;
+}
+
+
+/* =========================================================
+   FLOATING DATE INDICATOR
+========================================================= */
+
+.chat-floating-date {
+    position: absolute;
+
+    top: 10px;
+    left: 50%;
+
+    z-index: 60;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 30px;
+
+    padding: 6px 12px;
+
+    border-radius: 16px;
+
+    background: rgba(80, 80, 80, .82);
+    color: #fff;
+
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+
+    white-space: nowrap;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, .16);
+
+    transform:
+        translateX(-50%)
+        translateY(-6px);
+
+    opacity: 0;
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition:
+        opacity .18s ease,
+        transform .18s ease,
+        visibility .18s ease;
+
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+.chat-floating-date.is-visible {
+    opacity: 1;
+    visibility: visible;
+
+    transform:
+        translateX(-50%)
+        translateY(0);
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 576px) {
+
+    .conversation-meta {
+        gap: 5px;
+        margin-bottom: 4px;
+    }
+
+    .conversation-name {
+        font-size: 14px;
+    }
+
+    .conversation-date {
+        font-size: 11px;
+    }
+
+    .message-bubble-time {
+        font-size: 10px;
+    }
+
+    .message-delivery-status {
+        font-size: 10px;
+    }
+
+    .message-bubble.message-text-short
+    .message-bubble-meta {
+        padding: 2px 5px;
+    }
+
+    .message-bubble.message-text-long
+    .message-bubble-meta {
+        padding: 2px 5px;
+    }
+
+    .chat-message-content:has(.media-wrap)
+    .message-bu

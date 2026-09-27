@@ -1,11 +1,7 @@
 from pathlib import Path
-
-from decouple import config, UndefinedValueError
-import os
-
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # =========================================================
 # SECURITY
@@ -37,22 +33,47 @@ CSRF_TRUSTED_ORIGINS = [
     if origin.strip()
 ]
 
-
 # =========================================================
 # STATIC FILES
 # =========================================================
 
 STATIC_URL = "/static/"
-
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+# =========================================================
+# MEDIA FILES
+# =========================================================
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # =========================================================
-# CLOUDINARY MEDIA STORAGE
+# MESSAGE STORAGE
+# =========================================================
+#
+# Possible values:
+#
+#     local
+#     cloudinary
+#
+# Local is the default.
+#
+
+MESSAGE_IMAGE_STORAGE = config(
+    "MESSAGE_IMAGE_STORAGE",
+    default="local",
+).strip().lower()
+
+MESSAGE_VIDEO_STORAGE = config(
+    "MESSAGE_VIDEO_STORAGE",
+    default="local",
+).strip().lower()
+
+# =========================================================
+# CLOUDINARY
 # =========================================================
 
 CLOUDINARY_URL = config(
@@ -68,29 +89,30 @@ if CLOUDINARY_URL:
         secure=True,
     )
 
-    STORAGES = {
-        "default": {
-            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-        },
-    }
+# =========================================================
+# DEFAULT DJANGO STORAGES
+# =========================================================
 
+if CLOUDINARY_URL:
+    DEFAULT_FILE_STORAGE_BACKEND = (
+        "cloudinary_storage.storage.MediaCloudinaryStorage"
+    )
 else:
-    # Local development fallback
-    MEDIA_URL = "/media/"
-    MEDIA_ROOT = BASE_DIR / "media"
+    DEFAULT_FILE_STORAGE_BACKEND = (
+        "django.core.files.storage.FileSystemStorage"
+    )
 
-    STORAGES = {
-        "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-        },
-    }
-
+STORAGES = {
+    "default": {
+        "BACKEND": DEFAULT_FILE_STORAGE_BACKEND,
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage."
+            "CompressedManifestStaticFilesStorage"
+        ),
+    },
+}
 
 # =========================================================
 # DJANGO APPS
@@ -117,7 +139,6 @@ INSTALLED_APPS = [
     "agro_marketplace.agro_messages",
 ]
 
-
 # =========================================================
 # MIDDLEWARE
 # =========================================================
@@ -135,13 +156,11 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-
 # =========================================================
 # URL & TEMPLATES
 # =========================================================
 
 ROOT_URLCONF = "agro_marketplace.urls"
-
 
 TEMPLATES = [
     {
@@ -164,10 +183,8 @@ TEMPLATES = [
     },
 ]
 
-
 WSGI_APPLICATION = "agro_marketplace.wsgi.application"
 ASGI_APPLICATION = "agro_marketplace.asgi.application"
-
 
 # =========================================================
 # DATABASES
@@ -184,7 +201,6 @@ DATABASES = {
     }
 }
 
-
 if config("DATABASE_URL", default=""):
     import dj_database_url
 
@@ -192,15 +208,14 @@ if config("DATABASE_URL", default=""):
         config("DATABASE_URL")
     )
 
-
 # =========================================================
 # AUTH
 # =========================================================
 
 AUTH_USER_MODEL = "accounts.AppUser"
+
 LOGIN_REDIRECT_URL = "dash"
 LOGOUT_REDIRECT_URL = "home"
-
 
 # =========================================================
 # PASSWORD VALIDATORS
@@ -209,22 +224,25 @@ LOGOUT_REDIRECT_URL = "home"
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME":
-            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator",
     },
     {
         "NAME":
-            "django.contrib.auth.password_validation.MinimumLengthValidator",
+            "django.contrib.auth.password_validation."
+            "MinimumLengthValidator",
     },
     {
         "NAME":
-            "django.contrib.auth.password_validation.CommonPasswordValidator",
+            "django.contrib.auth.password_validation."
+            "CommonPasswordValidator",
     },
     {
         "NAME":
-            "django.contrib.auth.password_validation.NumericPasswordValidator",
+            "django.contrib.auth.password_validation."
+            "NumericPasswordValidator",
     },
 ]
-
 
 # =========================================================
 # LOCALE
@@ -236,14 +254,12 @@ USE_I18N = True
 USE_TZ = False
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
 # =========================================================
 # UPLOAD LIMITS
 # =========================================================
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50 MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50 MB
-
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
 
 # =========================================================
 # CHANNELS / WEBSOCKETS
@@ -253,7 +269,6 @@ REDIS_URL = config(
     "REDIS_URL",
     default="redis://127.0.0.1:6379/0",
 )
-
 
 CHANNEL_LAYERS = {
     "default": {
