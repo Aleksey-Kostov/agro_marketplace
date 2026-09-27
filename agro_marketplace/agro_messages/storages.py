@@ -57,21 +57,45 @@ class LocalMessageVideoStorage(FileSystemStorage):
 
 
 # =========================================================
-# CLOUDINARY MESSAGE STORAGE
+# CLOUDINARY MESSAGE IMAGE STORAGE
 # =========================================================
 
-class CloudinaryMessageStorage:
+class CloudinaryMessageImageStorage:
     """
-    Cloudinary storage за файлове от съобщения.
+    Cloudinary storage за изображения от съобщенията.
 
-    Cloudinary се зарежда само когато този storage
-    реално бъде избран.
+    Използва MediaCloudinaryStorage.
     """
 
     def __new__(cls, *args, **kwargs):
-        from cloudinary_storage.storage import MediaCloudinaryStorage
+        from cloudinary_storage.storage import (
+            MediaCloudinaryStorage,
+        )
 
         return MediaCloudinaryStorage(
+            *args,
+            **kwargs,
+        )
+
+
+# =========================================================
+# CLOUDINARY MESSAGE VIDEO STORAGE
+# =========================================================
+
+class CloudinaryMessageVideoStorage:
+    """
+    Cloudinary storage за видеа от съобщенията.
+
+    Използва VideoMediaCloudinaryStorage,
+    предназначен специално за видео файлове.
+    """
+
+    def __new__(cls, *args, **kwargs):
+        from cloudinary_storage.storage import (
+            VideoMediaCloudinaryStorage,
+        )
+
+        return VideoMediaCloudinaryStorage(
             *args,
             **kwargs,
         )
@@ -219,7 +243,7 @@ class MessageImageStorage(SelectableMessageStorage):
 
     storage_map = {
         "local": LocalMessageImageStorage,
-        "cloudinary": CloudinaryMessageStorage,
+        "cloudinary": CloudinaryMessageImageStorage,
     }
 
 
@@ -240,5 +264,6 @@ class MessageVideoStorage(SelectableMessageStorage):
 
     storage_map = {
         "local": LocalMessageVideoStorage,
-        "cloudinary": CloudinaryMessageStorage,
+        "cloudinary": CloudinaryMessageVideoStorage,
     }
+    
