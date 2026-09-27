@@ -515,6 +515,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     const oldScrollTop =
                         chatWindow.scrollTop;
 
+                    const wasAtBottom =
+                        isChatAtBottom();
+
                     const data =
                         await fetchMessageFragment(
                             id
@@ -524,11 +527,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         getMessageElement(id);
 
                     if (!currentMessage) {
-                        return appendRenderedMessage(
-                            data.html,
-                            data.message_id || id,
-                            false
-                        );
+                        return false;
+
                     }
 
                     const wrapper =
@@ -553,8 +553,31 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
 
                     if (preserveScroll) {
-                        chatWindow.scrollTop =
-                            oldScrollTop;
+                        /*
+                         * If the user was already at the bottom,
+                         * the new message height may have changed.
+                         *
+                         * Therefore restoring the old scrollTop is
+                         * NOT safe: the old value may no longer be
+                         * the new bottom.
+                         *
+                         * Keep the user locked to the actual bottom.
+                         */
+                        if (wasAtBottom) {
+                            chatWindow.scrollTop =
+                                Math.max(
+                                    0,
+                                    chatWindow.scrollHeight -
+                                    chatWindow.clientHeight
+                                );
+                        } else {
+                            /*
+                             * User was reading older messages.
+                             * Preserve their exact position.
+                             */
+                            chatWindow.scrollTop =
+                                oldScrollTop;
+                        }
 
                         chatWindow.dispatchEvent(
                             new Event('scroll')
