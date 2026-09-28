@@ -24,6 +24,8 @@
         0 8px 30px rgba(0, 0, 0, 0.16);
 
     z-index: 1055;
+
+    box-sizing: border-box;
 }
 
 
@@ -33,10 +35,13 @@
 
 .emoji-category-bar {
     display: flex;
+    flex-wrap: nowrap;
 
     align-items: center;
 
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
 
     padding: 6px 8px;
 
@@ -45,11 +50,16 @@
     overflow-x: auto;
     overflow-y: hidden;
 
+    box-sizing: border-box;
+
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 
     background: #f8f9fa;
 
     scrollbar-width: none;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
 }
 
 .emoji-category-bar::-webkit-scrollbar {
@@ -65,7 +75,11 @@
     flex: 0 0 36px;
 
     width: 36px;
+    min-width: 36px;
+    max-width: 36px;
+
     height: 36px;
+    min-height: 36px;
 
     display: inline-flex;
 
@@ -84,6 +98,8 @@
     line-height: 1;
 
     cursor: pointer;
+
+    box-sizing: border-box;
 
     transition:
         background-color .15s ease,
@@ -118,6 +134,7 @@
     gap: 2px;
 
     width: 100%;
+    min-width: 0;
 
     max-height: 300px;
 
@@ -125,6 +142,8 @@
 
     overflow-y: auto;
     overflow-x: hidden;
+
+    box-sizing: border-box;
 
     scrollbar-width: thin;
 }
@@ -155,6 +174,8 @@
     line-height: 1;
 
     cursor: pointer;
+
+    box-sizing: border-box;
 
     transition:
         background-color .12s ease,
@@ -228,8 +249,29 @@
     .emoji-picker {
         width: 330px;
         max-width: calc(100vw - 16px);
+    }
 
-        border-radius: 12px;
+    .emoji-category-bar {
+        width: 100%;
+        max-width: 100%;
+
+        padding-left: 6px;
+        padding-right: 6px;
+
+        gap: 3px;
+    }
+
+    .emoji-category-btn {
+        flex: 0 0 34px;
+
+        width: 34px;
+        min-width: 34px;
+        max-width: 34px;
+
+        height: 34px;
+        min-height: 34px;
+
+        font-size: 19px;
     }
 
     .emoji-grid {
@@ -244,15 +286,6 @@
     .emoji-btn {
         font-size: 23px;
     }
-
-    .emoji-category-btn {
-        flex-basis: 34px;
-
-        width: 34px;
-        height: 34px;
-
-        font-size: 19px;
-    }
 }
 
 
@@ -264,6 +297,25 @@
 
     .emoji-picker {
         width: calc(100vw - 12px);
+        max-width: calc(100vw - 12px);
+    }
+
+    .emoji-category-bar {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .emoji-category-btn {
+        flex: 0 0 32px;
+
+        width: 32px;
+        min-width: 32px;
+        max-width: 32px;
+
+        height: 32px;
+        min-height: 32px;
+
+        font-size: 18px;
     }
 
     .emoji-grid {
