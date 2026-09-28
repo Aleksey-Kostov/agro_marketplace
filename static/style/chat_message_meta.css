@@ -54,13 +54,15 @@
 
 /* =========================================================
    SHORT TEXT
-   Text + time/status on the same line
+   Text above, time/status always bottom-right
 ========================================================= */
 
 .message-bubble.message-text-short
 .message-content-wrap {
-    display: inline;
-    width: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
 }
 
 
@@ -70,9 +72,9 @@
 
 .message-bubble.message-text-short
 .message-body-html {
-    display: inline !important;
+    display: block !important;
     width: auto !important;
-    max-width: none !important;
+    max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     white-space: normal;
@@ -109,24 +111,29 @@
 
 /* =========================================================
    SHORT TEXT META
+   Always bottom-right
 ========================================================= */
 
 .message-bubble.message-text-short
 .message-bubble-meta {
-    display: inline-flex;
-    width: auto;
-    margin: 0 0 0 6px;
+    display: flex;
+    width: fit-content;
+    margin: 4px 0 0 auto;
     padding: 2px 6px;
-    vertical-align: baseline;
+
     align-items: center;
     justify-content: center;
     gap: 3px;
+
     white-space: nowrap;
     font-size: 11px;
     line-height: 1;
     user-select: none;
-    background: rgba(80, 80, 80, 0.18);
+
+    background: rgba(255, 255, 255, 0.72);
+    border: none;
     border-radius: 10px;
+
     box-shadow:
         0 1px 3px rgba(0, 0, 0, 0.08);
 
@@ -150,7 +157,7 @@
 
 /* =========================================================
    LONG TEXT META
-   Bottom-right inside bubble
+   Always bottom-right inside bubble
 ========================================================= */
 
 .message-bubble.message-text-long
@@ -160,15 +167,20 @@
     margin-top: 4px;
     margin-left: auto;
     padding: 2px 6px;
+
     align-items: center;
     justify-content: center;
     gap: 3px;
+
     white-space: nowrap;
     font-size: 11px;
     line-height: 1;
     user-select: none;
-    background: rgba(80, 80, 80, 0.18);
+
+    background: rgba(255, 255, 255, 0.72);
+    border: none;
     border-radius: 10px;
+
     box-shadow:
         0 1px 3px rgba(0, 0, 0, 0.08);
 
@@ -233,7 +245,7 @@
 /* =========================================================
    MEDIA META
    Time/status below image/video
-   inside the bubble
+   always bottom-right
 ========================================================= */
 
 .chat-message-content:has(.media-wrap)
@@ -241,21 +253,30 @@
     display: flex;
     width: fit-content;
     min-height: 18px;
+
     margin-top: 4px;
     margin-left: auto;
+
     padding: 3px 6px;
+
     box-sizing: border-box;
+
     align-items: center;
     justify-content: center;
     gap: 3px;
+
     white-space: nowrap;
     font-size: 11px;
     line-height: 1;
     user-select: none;
-    background: rgba(255, 255, 255, 0.55);
+
+    background: rgba(255, 255, 255, 0.72);
+    border: none;
     border-radius: 10px;
+
     box-shadow:
         0 1px 3px rgba(0, 0, 0, 0.08);
+
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
 }
@@ -280,18 +301,25 @@
     top: 10px;
     left: 50%;
     z-index: 60;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
     min-height: 30px;
     padding: 6px 12px;
+
     border-radius: 16px;
+
     background: rgba(80, 80, 80, 0.82);
     color: #fff;
+
     font-size: 12px;
     font-weight: 500;
     line-height: 1;
+
     white-space: nowrap;
+
     box-shadow:
         0 2px 8px rgba(0, 0, 0, 0.16);
 
@@ -336,7 +364,6 @@
 
     .conversation-meta {
         gap: 5px;
-
         margin-bottom: 4px;
     }
 
@@ -358,7 +385,8 @@
 
     .message-bubble.message-text-short
     .message-bubble-meta {
-        margin-left: 5px;
+        margin-top: 4px;
+        margin-left: auto;
         padding: 2px 5px;
     }
 
