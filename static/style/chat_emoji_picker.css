@@ -1,0 +1,290 @@
+/* =========================================================
+   CHAT EMOJI PICKER
+========================================================= */
+
+
+/* =========================================================
+   PICKER CONTAINER
+========================================================= */
+
+.emoji-picker {
+    width: 360px;
+    max-width: calc(100vw - 24px);
+
+    padding: 0 !important;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    border-radius: 14px;
+
+    background: #fff;
+
+    box-shadow:
+        0 8px 30px rgba(0, 0, 0, 0.16);
+
+    z-index: 1055;
+}
+
+
+/* =========================================================
+   CATEGORY BAR
+========================================================= */
+
+.emoji-category-bar {
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    padding: 6px 8px;
+
+    gap: 4px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+    background: #f8f9fa;
+
+    scrollbar-width: none;
+}
+
+.emoji-category-bar::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* =========================================================
+   CATEGORY BUTTON
+========================================================= */
+
+.emoji-category-btn {
+    flex: 0 0 36px;
+
+    width: 36px;
+    height: 36px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 9px;
+
+    background: transparent;
+
+    font-size: 20px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color .15s ease,
+        transform .12s ease;
+}
+
+.emoji-category-btn:hover {
+    background: rgba(0, 0, 0, 0.07);
+
+    transform: scale(1.05);
+}
+
+.emoji-category-btn:active {
+    transform: scale(0.94);
+}
+
+.emoji-category-btn.active {
+    background: rgba(0, 0, 0, 0.10);
+}
+
+
+/* =========================================================
+   EMOJI GRID
+========================================================= */
+
+.emoji-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(8, minmax(0, 1fr));
+
+    gap: 2px;
+
+    width: 100%;
+
+    max-height: 300px;
+
+    padding: 8px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    scrollbar-width: thin;
+}
+
+
+/* =========================================================
+   EMOJI BUTTON
+========================================================= */
+
+.emoji-btn {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: none !important;
+    border-radius: 8px;
+
+    background: transparent !important;
+
+    font-size: 25px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color .12s ease,
+        transform .10s ease;
+}
+
+.emoji-btn:hover {
+    background: rgba(0, 0, 0, 0.07) !important;
+
+    transform: scale(1.12);
+}
+
+.emoji-btn:active {
+    transform: scale(0.90);
+}
+
+
+/* =========================================================
+   EMPTY RECENT
+========================================================= */
+
+.emoji-empty {
+    grid-column: 1 / -1;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 120px;
+
+    padding: 20px;
+
+    color: #777;
+
+    font-size: 13px;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.emoji-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.emoji-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.emoji-grid::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+
+    background: rgba(0, 0, 0, 0.20);
+}
+
+.emoji-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.32);
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 576px) {
+
+    .emoji-picker {
+        width: 330px;
+        max-width: calc(100vw - 16px);
+
+        border-radius: 12px;
+    }
+
+    .emoji-grid {
+        grid-template-columns:
+            repeat(7, minmax(0, 1fr));
+
+        max-height: 280px;
+
+        padding: 7px;
+    }
+
+    .emoji-btn {
+        font-size: 23px;
+    }
+
+    .emoji-category-btn {
+        flex-basis: 34px;
+
+        width: 34px;
+        height: 34px;
+
+        font-size: 19px;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL SCREENS
+========================================================= */
+
+@media (max-width: 360px) {
+
+    .emoji-picker {
+        width: calc(100vw - 12px);
+    }
+
+    .emoji-grid {
+        grid-template-columns:
+            repeat(6, minmax(0, 1fr));
+    }
+
+    .emoji-btn {
+        font-size: 22px;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .emoji-category-btn,
+    .emoji-btn {
+        transition: none;
+    }
+}
