@@ -56,28 +56,14 @@ document.addEventListener(
            FLOATING DATE
         ====================================================== */
 
-        let floatingDate =
-            chatWindow.querySelector(
+        const floatingDate =
+            document.querySelector(
                 '.chat-floating-date'
-            );
+             );
 
-       if (!floatingDate) {
-          floatingDate =
-       document.createElement('div');
-
-           floatingDate.className =
-               'chat-floating-date';
-
-           floatingDate.setAttribute(
-               'aria-hidden',
-               'true'
-           );
-
-           chatWindow.appendChild(
-               floatingDate
-           );
-       }
-
+        if (!floatingDate) {
+            return;
+        }
 
         let hideFloatingDateTimer = null;
 
