@@ -1,4 +1,4 @@
-/* =========================================================
+ /* =========================================================
    CHAT MESSAGE EMOJI
 ========================================================= */
 
@@ -9,7 +9,6 @@
 
 .message-bubble.emoji-only {
     position: relative;
-
     min-width: 0;
 }
 
@@ -21,15 +20,22 @@
 .message-bubble.emoji-only
 .chat-twemoji {
     display: inline-block;
+
     width: 1em;
     height: 1em;
+
     max-width: none;
     max-height: none;
+
     margin: 0;
+
     vertical-align: middle;
+
     object-fit: contain;
+
     user-select: none;
     pointer-events: none;
+
     -webkit-user-drag: none;
 }
 
@@ -42,8 +48,11 @@
 .message-body-html {
     margin: 0 !important;
     padding: 0 !important;
+
     white-space: nowrap !important;
-    overflow: visible;
+
+    overflow: visible !important;
+
     word-break: normal !important;
     overflow-wrap: normal !important;
 }
@@ -55,8 +64,10 @@
 
 .message-bubble.emoji-only
 .message-body-html > p,
+
 .message-bubble.emoji-only
 .message-body-html > div,
+
 .message-bubble.emoji-only
 .message-body-html > span {
     width: auto !important;
@@ -69,6 +80,8 @@
 
     word-break: normal !important;
     overflow-wrap: normal !important;
+
+    overflow: visible !important;
 }
 
 
@@ -86,35 +99,57 @@
     box-shadow: none !important;
 
     padding: 0 !important;
+
+    overflow: visible !important;
 }
+
 
 .message-bubble.emoji-only-1
 .message-content-wrap {
     width: auto;
+
     display: flex;
+
     flex-direction: column;
+
     align-items: flex-end;
+
+    overflow: visible !important;
 }
+
 
 .message-bubble.emoji-only-1
 .message-body-html {
     display: block !important;
+
     width: auto !important;
     max-width: none !important;
+
     font-size: 42px !important;
-    line-height: 1.2 !important;
+
+    line-height: 1.25 !important;
+
     text-align: right;
+
+    overflow: visible !important;
 }
+
 
 .message-bubble.emoji-only-1
 .message-body-html > p,
+
 .message-bubble.emoji-only-1
 .message-body-html > div,
+
 .message-bubble.emoji-only-1
 .message-body-html > span {
     display: inline !important;
+
     font-size: inherit !important;
+
     line-height: inherit !important;
+
+    overflow: visible !important;
 }
 
 
@@ -125,19 +160,31 @@
 .message-bubble.emoji-only-1
 .message-bubble-meta {
     display: inline-flex;
+
     width: fit-content;
+
     margin: 2px 0 0 auto;
+
     padding: 2px 5px;
+
     align-items: center;
     justify-content: center;
+
     gap: 3px;
+
     white-space: nowrap;
+
     font-size: 11px;
+
     line-height: 1;
+
     background: transparent;
+
     border: none;
     border-radius: 0;
+
     box-shadow: none;
+
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
 }
@@ -152,32 +199,52 @@
 .message-bubble.emoji-only-2
 .message-content-wrap {
     display: flex;
+
     align-items: center;
+
     width: auto;
     max-width: 100%;
+
     white-space: nowrap;
+
+    overflow: visible !important;
 }
+
 
 .message-bubble.emoji-only-2
 .message-body-html {
     display: inline-block !important;
+
     width: auto !important;
     max-width: none !important;
+
     flex: 0 0 auto;
+
     font-size: 34px !important;
-    line-height: 1.15 !important;
+
+    line-height: 1.25 !important;
+
     text-align: left;
+
+    overflow: visible !important;
 }
+
 
 .message-bubble.emoji-only-2
 .message-body-html > p,
+
 .message-bubble.emoji-only-2
 .message-body-html > div,
+
 .message-bubble.emoji-only-2
 .message-body-html > span {
     display: inline !important;
+
     font-size: inherit !important;
+
     line-height: inherit !important;
+
+    overflow: visible !important;
 }
 
 
@@ -188,21 +255,35 @@
 .message-bubble.emoji-only-2
 .message-bubble-meta {
     display: inline-flex;
+
     flex: 0 0 auto;
+
     width: fit-content;
+
     margin: 0 0 0 7px;
+
     padding: 2px 6px;
+
     align-items: center;
     justify-content: center;
+
     gap: 3px;
+
     white-space: nowrap;
+
     font-size: 11px;
+
     line-height: 1;
+
     background: rgba(255, 255, 255, 0.55);
+
     border: none;
+
     border-radius: 10px;
+
     box-shadow:
         0 1px 3px rgba(0, 0, 0, 0.08);
+
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
 }
@@ -218,31 +299,50 @@
 .message-bubble.emoji-only-3
 .message-content-wrap {
     display: flex;
+
     flex-direction: column;
+
     align-items: flex-end;
+
     width: auto;
     max-width: 100%;
+
+    overflow: visible !important;
 }
+
 
 .message-bubble.emoji-only-3
 .message-body-html {
     display: block !important;
+
     width: auto !important;
     max-width: none !important;
+
     font-size: 32px !important;
-    line-height: 1.15 !important;
+
+    line-height: 1.25 !important;
+
     text-align: right;
+
+    overflow: visible !important;
 }
+
 
 .message-bubble.emoji-only-3
 .message-body-html > p,
+
 .message-bubble.emoji-only-3
 .message-body-html > div,
+
 .message-bubble.emoji-only-3
 .message-body-html > span {
     display: inline !important;
+
     font-size: inherit !important;
+
     line-height: inherit !important;
+
+    overflow: visible !important;
 }
 
 
@@ -253,20 +353,33 @@
 .message-bubble.emoji-only-3
 .message-bubble-meta {
     display: inline-flex;
+
     width: fit-content;
+
     margin: 3px 0 0 auto;
+
     padding: 2px 6px;
+
     align-items: center;
     justify-content: center;
+
     gap: 3px;
+
     white-space: nowrap;
+
     font-size: 11px;
+
     line-height: 1;
+
     background: rgba(255, 255, 255, 0.55);
+
     border: none;
+
     border-radius: 10px;
+
     box-shadow:
         0 1px 3px rgba(0, 0, 0, 0.08);
+
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
 }
@@ -280,16 +393,21 @@
 .message-bubble.emoji-only
 .message-bubble-time {
     font-size: 11px;
+
     line-height: 1;
 
     white-space: nowrap;
 }
 
+
 .message-bubble.emoji-only
 .message-delivery-status {
     font-size: 11px;
+
     line-height: 1;
+
     white-space: nowrap;
+
     letter-spacing: -1px;
 }
 
@@ -303,17 +421,32 @@
     .message-bubble.emoji-only-1
     .message-body-html {
         font-size: 40px !important;
+
+        line-height: 1.25 !important;
+
+        overflow: visible !important;
     }
+
 
     .message-bubble.emoji-only-2
     .message-body-html {
         font-size: 32px !important;
+
+        line-height: 1.25 !important;
+
+        overflow: visible !important;
     }
+
 
     .message-bubble.emoji-only-3
     .message-body-html {
         font-size: 30px !important;
+
+        line-height: 1.25 !important;
+
+        overflow: visible !important;
     }
+
 
     .message-bubble.emoji-only-1
     .message-bubble-meta {
@@ -322,12 +455,14 @@
         padding: 2px 5px;
     }
 
+
     .message-bubble.emoji-only-2
     .message-bubble-meta {
         margin-left: 6px;
 
         padding: 2px 5px;
     }
+
 
     .message-bubble.emoji-only-3
     .message-bubble-meta {
@@ -336,8 +471,10 @@
         padding: 2px 5px;
     }
 
+
     .message-bubble.emoji-only
     .message-bubble-time,
+
     .message-bubble.emoji-only
     .message-delivery-status {
         font-size: 10px;
@@ -353,17 +490,25 @@
 
     .message-bubble.emoji-only-1
     .message-body-html {
-        font-size: 34px !important;
+        font-size: 38px !important;
+
+        line-height: 1.25 !important;
     }
+
 
     .message-bubble.emoji-only-2
     .message-body-html {
         font-size: 30px !important;
+
+        line-height: 1.25 !important;
     }
+
 
     .message-bubble.emoji-only-3
     .message-body-html {
         font-size: 28px !important;
+
+        line-height: 1.25 !important;
     }
 }
 
@@ -375,6 +520,7 @@
 @media (prefers-reduced-motion: reduce) {
 
     .message-bubble.emoji-only,
+
     .message-bubble.emoji-only
     .chat-twemoji {
         transition: none !important;
