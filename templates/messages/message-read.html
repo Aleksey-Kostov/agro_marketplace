@@ -451,40 +451,6 @@
 
 
                     <!-- =================================================
-                         EMOJI BUTTON
-                         Emoji button is intentionally above the
-                         message field.
-                    ================================================== -->
-
-                    <div class="mb-2">
-
-                        <div class="dropdown">
-
-                            <button type="button"
-                                    id="emoji-toggle-btn"
-                                    class="btn btn-outline-secondary btn-sm"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                    title="Emoji"
-                                    aria-label="Emoji">
-
-                                😊
-
-                            </button>
-
-
-                            <div class="dropdown-menu p-2 emoji-picker">
-
-                                <div class="emoji-grid"></div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- =================================================
                          MESSAGE BODY
                     ================================================== -->
 
@@ -550,7 +516,6 @@
 
                     <!-- =================================================
                          FILE PREVIEW
-                         Reserved for the next attachment step.
                     ================================================== -->
 
                     <div id="file-preview-wrap"
@@ -593,25 +558,35 @@
 
                     <div id="upload-progress-wrap"
                          class="upload-progress-wrap d-none mb-2">
+
                         <div class="d-flex justify-content-between align-items-center mb-1">
+
                             <small id="upload-progress-text">
                                 Uploading...
                             </small>
+
                             <small id="upload-progress-percent">
                                 0%
                             </small>
+
                         </div>
+
+
                         <div class="progress"
                              role="progressbar"
                              aria-label="Upload progress"
                              aria-valuemin="0"
                              aria-valuemax="100"
                              aria-valuenow="0">
+
                             <div id="upload-progress-bar"
                                  class="progress-bar"
                                  style="width: 0%;">
+
                             </div>
+
                         </div>
+
                     </div>
 
 
@@ -621,59 +596,97 @@
 
                     <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
 
+
                         <!-- =================================================
-                             ATTACHMENT DROPDOWN
+                             LEFT ACTION BUTTONS
                         ================================================== -->
 
-                        <div class="dropdown">
-                            <button type="button"
-                                    id="attachment-toggle-btn"
-                                    class="btn btn-outline-secondary btn-sm"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                    title="Attachments"
-                                    aria-label="Attachments">
-                                <i class="fas fa-paperclip"></i>
-                            </button>
+                        <div class="d-flex align-items-center gap-1">
 
 
-                            <div class="dropdown-menu attachment-picker"
-                                 aria-labelledby="attachment-toggle-btn">
-                                <button type="button"
-                                        class="dropdown-item attachment-option"
-                                        id="attach-image-btn">
-                                    <i class="fas fa-image me-2"></i>
-                                    Image
-                                </button>
+                            <!-- =============================================
+                                 EMOJI
+                            ============================================== -->
+
+                            <div class="dropdown">
 
                                 <button type="button"
-                                        class="dropdown-item attachment-option"
-                                        id="attach-video-btn">
-                                    <i class="fas fa-video me-2"></i>
-                                    Video
+                                        id="emoji-toggle-btn"
+                                        class="btn btn-outline-secondary btn-sm"
+                                        data-bs-toggle="dropdown"
+                                        data-bs-display="static"
+                                        data-bs-placement="bottom-start"
+                                        aria-expanded="false"
+                                        title="Emoji"
+                                        aria-label="Emoji">
+
+                                    😊
+
                                 </button>
 
-                                <button type="button"
-                                        class="dropdown-item attachment-option"
-                                        id="attach-file-btn">
-                                    <i class="fas fa-file-alt me-2"></i>
-                                    File
-                                </button>
+
+                                <div class="dropdown-menu p-2 emoji-picker"
+                                     aria-labelledby="emoji-toggle-btn">
+
+                                    <div class="emoji-grid"></div>
+
+                                </div>
+
                             </div>
+
+
+                            <!-- =============================================
+                                 ATTACHMENTS
+                            ============================================== -->
+
+                            <div class="dropdown">
+                                <button type="button"
+                                        id="attachment-toggle-btn"
+                                        class="btn btn-outline-secondary btn-sm"
+                                        data-bs-toggle="dropdown"
+                                        data-bs-display="static"
+                                        data-bs-placement="bottom-start"
+                                        aria-expanded="false"
+                                        title="Attachments"
+                                        aria-label="Attachments">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <div class="dropdown-menu attachment-picker"
+                                     aria-labelledby="attachment-toggle-btn">
+                                    <button type="button"
+                                            class="dropdown-item attachment-option"
+                                            id="attach-image-btn">
+                                        <i class="fas fa-image me-2"></i>
+                                        Image
+                                    </button>
+                                    <button type="button"
+                                            class="dropdown-item attachment-option"
+                                            id="attach-video-btn">
+                                        <i class="fas fa-video me-2"></i>
+                                        Video
+                                    </button>
+                                    <button type="button"
+                                            class="dropdown-item attachment-option"
+                                            id="attach-file-btn">
+                                        <i class="fas fa-file-alt me-2"></i>
+                                        File
+                                    </button>
+                                </div>
+                            </div>
+
+
+                            <!-- =============================================
+                                 REMOVE MEDIA
+                            ============================================== -->
+
+                            <button type="button"
+                                    id="remove-media-btn"
+                                    class="btn btn-outline-danger btn-sm d-none"
+                                    title="Remove attachment"
+                                    aria-label="Remove attachment">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
-
-
-                        <!-- =================================================
-                             REMOVE MEDIA
-                        ================================================== -->
-
-                        <button type="button"
-                                id="remove-media-btn"
-                                class="btn btn-outline-danger btn-sm d-none"
-                                title="Remove attachment"
-                                aria-label="Remove attachment">
-                            <i class="fas fa-times"></i>
-                        </button>
 
 
                         <!-- =================================================
