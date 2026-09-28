@@ -556,9 +556,13 @@ document.addEventListener(
 
 
         /* =====================================================
-           INITIALIZE
+            INITIALIZE
         ====================================================== */
 
         updateMessageDateLabels();
+
+        floatingDate.classList.remove(
+            'is-visible'
+        );
     }
 );
