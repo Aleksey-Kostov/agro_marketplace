@@ -61,22 +61,22 @@ document.addEventListener(
                 '.chat-floating-date'
             );
 
-        if (!floatingDate) {
-            floatingDate =
-                document.createElement('div');
+       if (!floatingDate) {
+          floatingDate =
+       document.createElement('div');
 
-            floatingDate.className =
-                'chat-floating-date';
+           floatingDate.className =
+               'chat-floating-date';
 
-            floatingDate.setAttribute(
-                'aria-hidden',
-                'true'
-            );
+           floatingDate.setAttribute(
+               'aria-hidden',
+               'true'
+           );
 
-            chatWindow.appendChild(
-                floatingDate
-            );
-        }
+           chatWindow.appendChild(
+               floatingDate
+           );
+       }
 
 
         let hideFloatingDateTimer = null;
