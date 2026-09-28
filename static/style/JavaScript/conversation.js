@@ -542,11 +542,460 @@ document.addEventListener('DOMContentLoaded', function () {
        EMOJI
        ========================================================= */
 
+
+    const emojiPicker =
+        document.querySelector('.emoji-picker');
+
+    const emojiGrid =
+        emojiPicker
+            ? emojiPicker.querySelector('.emoji-grid')
+            : null;
+
+    let activeEmojiCategory = 'smileys_people';
+
+
+    function insertEmojiIntoComposer(emoji) {
+
+        if (
+            !emoji ||
+            !messageBodyField
+        ) {
+            return;
+        }
+
+
+        const start =
+            typeof messageBodyField.selectionStart === 'number'
+                ? messageBodyField.selectionStart
+                : messageBodyField.value.length;
+
+
+        const end =
+            typeof messageBodyField.selectionEnd === 'number'
+                ? messageBodyField.selectionEnd
+                : messageBodyField.value.length;
+
+
+        const currentValue =
+            messageBodyField.value;
+
+
+        messageBodyField.value =
+            currentValue.substring(0, start) +
+            emoji +
+            currentValue.substring(end);
+
+
+        const newPosition =
+            start + emoji.length;
+
+
+        messageBodyField.focus();
+
+
+        try {
+
+            messageBodyField.setSelectionRange(
+                newPosition,
+                newPosition
+            );
+
+        } catch (e) {
+            /*
+             * Some input implementations may not
+             * support selection ranges.
+             */
+        }
+
+
+        /*
+         * Remember emoji for the Recent category.
+         */
+
+        if (
+            typeof addRecentChatEmoji ===
+            'function'
+        ) {
+            addRecentChatEmoji(
+                emoji
+            );
+        }
+    }
+
+
+    function getEmojiCategoryList() {
+
+        if (
+            typeof CHAT_EMOJI_CATEGORIES ===
+            'undefined'
+        ) {
+            return [];
+        }
+
+
+        return Object.values(
+            CHAT_EMOJI_CATEGORIES
+        );
+    }
+
+
+    function getRecentEmojiList() {
+
+        if (
+            typeof getRecentChatEmojis !==
+            'function'
+        ) {
+            return [];
+        }
+
+
+        return getRecentChatEmojis();
+    }
+
+
+    function createEmojiCategoryBar() {
+
+        if (!emojiPicker) {
+            return null;
+        }
+
+
+        let categoryBar =
+            emojiPicker.querySelector(
+                '.emoji-category-bar'
+            );
+
+
+        if (categoryBar) {
+            return categoryBar;
+        }
+
+
+        categoryBar =
+            document.createElement('div');
+
+
+        categoryBar.className =
+            'emoji-category-bar';
+
+
+        const categories =
+            getEmojiCategoryList();
+
+
+        categories.forEach(
+            function (category) {
+
+                const button =
+                    document.createElement(
+                        'button'
+                    );
+
+
+                button.type =
+                    'button';
+
+
+                button.className =
+                    'emoji-category-btn';
+
+
+                button.dataset.category =
+                    category.id;
+
+
+                button.title =
+                    category.name;
+
+
+                button.setAttribute(
+                    'aria-label',
+                    category.name
+                );
+
+
+                button.textContent =
+                    category.icon;
+
+
+                if (
+                    category.id ===
+                    activeEmojiCategory
+                ) {
+                    button.classList.add(
+                        'active'
+                    );
+                }
+
+
+                categoryBar.appendChild(
+                    button
+                );
+            }
+        );
+
+
+        /*
+         * Insert the category bar before
+         * the emoji grid.
+         */
+
+        if (emojiGrid) {
+            emojiGrid.parentNode.insertBefore(
+                categoryBar,
+                emojiGrid
+            );
+        } else {
+            emojiPicker.appendChild(
+                categoryBar
+            );
+        }
+
+
+        return categoryBar;
+    }
+
+
+    function getEmojisForCategory(
+        categoryId
+    ) {
+
+        if (
+            categoryId === 'recent'
+        ) {
+
+            return getRecentEmojiList();
+        }
+
+
+        if (
+            typeof CHAT_EMOJI_CATEGORIES ===
+            'undefined'
+        ) {
+            return [];
+        }
+
+
+        const category =
+            CHAT_EMOJI_CATEGORIES[
+                categoryId
+            ];
+
+
+        if (!category) {
+            return [];
+        }
+
+
+        return Array.isArray(
+            category.emojis
+        )
+            ? category.emojis
+            : [];
+    }
+
+
+    function renderEmojiCategory(
+        categoryId
+    ) {
+
+        if (!emojiGrid) {
+            return;
+        }
+
+
+        const emojis =
+            getEmojisForCategory(
+                categoryId
+            );
+
+
+        emojiGrid.replaceChildren();
+
+
+        if (!emojis.length) {
+
+            const empty =
+                document.createElement(
+                    'div'
+                );
+
+
+            empty.className =
+                'emoji-empty';
+
+
+            empty.textContent =
+                'No recent emojis';
+
+
+            emojiGrid.appendChild(
+                empty
+            );
+
+
+            return;
+        }
+
+
+        emojis.forEach(
+            function (emoji) {
+
+                const button =
+                    document.createElement(
+                        'button'
+                    );
+
+
+                button.type =
+                    'button';
+
+
+                button.className =
+                    'btn btn-sm btn-light emoji-btn';
+
+
+                button.dataset.emoji =
+                    emoji;
+
+
+                button.textContent =
+                    emoji;
+
+
+                button.setAttribute(
+                    'aria-label',
+                    emoji
+                );
+
+
+                emojiGrid.appendChild(
+                    button
+                );
+            }
+        );
+    }
+
+
+    function setActiveEmojiCategory(
+        categoryId
+    ) {
+
+        if (!categoryId) {
+            return;
+        }
+
+
+        activeEmojiCategory =
+            categoryId;
+
+
+        if (emojiPicker) {
+
+            emojiPicker
+                .querySelectorAll(
+                    '.emoji-category-btn'
+                )
+                .forEach(
+                    function (button) {
+
+                        button.classList.toggle(
+                            'active',
+                            button.dataset.category ===
+                                categoryId
+                        );
+                    }
+                );
+        }
+
+
+        renderEmojiCategory(
+            categoryId
+        );
+    }
+
+
+    function initializeEmojiPicker() {
+
+        if (!emojiPicker) {
+            return;
+        }
+
+
+        /*
+         * The catalog must be loaded before
+         * this script is initialized.
+         */
+
+        if (
+            typeof CHAT_EMOJI_CATEGORIES ===
+            'undefined'
+        ) {
+
+            console.warn(
+                'CHAT_EMOJI_CATEGORIES is not loaded.'
+            );
+
+            return;
+        }
+
+
+        createEmojiCategoryBar();
+
+
+        /*
+         * Start with Smileys & People.
+         */
+
+        setActiveEmojiCategory(
+            'smileys_people'
+        );
+    }
+
+
+    /*
+     * Category click.
+     */
+
     document.addEventListener(
         'click',
         function (event) {
+
+            const categoryButton =
+                event.target.closest(
+                    '.emoji-category-btn'
+                );
+
+
+            if (!categoryButton) {
+                return;
+            }
+
+
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            setActiveEmojiCategory(
+                categoryButton.dataset.category
+            );
+        }
+    );
+
+
+    /*
+     * Emoji click.
+     */
+
+    document.addEventListener(
+        'click',
+        function (event) {
+
             const emojiButton =
-                event.target.closest('.emoji-btn');
+                event.target.closest(
+                    '.emoji-btn'
+                );
+
 
             if (
                 !emojiButton ||
@@ -555,59 +1004,47 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+
             event.preventDefault();
             event.stopPropagation();
 
+
             const emoji =
-                emojiButton.dataset.emoji || '';
+                emojiButton.dataset.emoji ||
+                '';
+
 
             if (!emoji) {
                 return;
             }
 
-            const start =
-                typeof messageBodyField.selectionStart === 'number'
-                    ? messageBodyField.selectionStart
-                    : messageBodyField.value.length;
 
-            const end =
-                typeof messageBodyField.selectionEnd === 'number'
-                    ? messageBodyField.selectionEnd
-                    : messageBodyField.value.length;
+            insertEmojiIntoComposer(
+                emoji
+            );
 
-            const currentValue =
-                messageBodyField.value;
 
-            messageBodyField.value =
-                currentValue.substring(0, start) +
-                emoji +
-                currentValue.substring(end);
-
-            const newPosition =
-                start + emoji.length;
-
-            messageBodyField.focus();
-
-            try {
-                messageBodyField.setSelectionRange(
-                    newPosition,
-                    newPosition
-                );
-            } catch (e) {}
+            /*
+             * Close Bootstrap dropdown after
+             * selecting an emoji.
+             */
 
             const toggle =
                 document.getElementById(
                     'emoji-toggle-btn'
                 );
 
+
             if (
                 toggle &&
                 window.bootstrap
             ) {
+
                 const instance =
                     bootstrap.Dropdown.getInstance(
                         toggle
                     );
+
 
                 if (instance) {
                     instance.hide();
@@ -615,6 +1052,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     );
+
+
+    /*
+     * Initialize the picker after the DOM
+     * has been created.
+     */
+
+    initializeEmojiPicker();
 
 
     /* =========================================================

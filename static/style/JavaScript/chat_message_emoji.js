@@ -1,6 +1,7 @@
 /* =========================================================
    CHAT MESSAGE EMOJI
-   ========================================================= */
+   Twemoji preparation / emoji-only messages
+========================================================= */
 
 (function () {
     "use strict";
@@ -8,9 +9,10 @@
 
     /* =====================================================
        EMOJI DETECTION
-       ===================================================== */
+    ===================================================== */
 
     function isEmojiCharacter(char) {
+
         if (!char) {
             return false;
         }
@@ -21,143 +23,190 @@
     }
 
 
-    function getEmojiCount(text) {
+    function getEmojiSegments(text) {
+
         if (!text) {
-            return 0;
+            return [];
         }
 
         const trimmed = text.trim();
 
         if (!trimmed) {
-            return 0;
+            return [];
         }
 
+
         /*
-         * Intl.Segmenter разделя emoji комбинации
-         * като 👨‍👩‍👧‍👦 или ❤️ правилно.
+         * Modern browsers:
+         * use grapheme clusters so joined emoji such as
+         * ❤️, 👨‍👩‍👧‍👦 and 🏳️‍🌈 stay together.
          */
-        if (typeof Intl !== "undefined" &&
-            typeof Intl.Segmenter === "function") {
 
-            const segmenter = new Intl.Segmenter(
-                undefined,
-                {
-                    granularity: "grapheme"
-                }
-            );
+        if (
+            typeof Intl !== "undefined" &&
+            typeof Intl.Segmenter === "function"
+        ) {
 
-            const segments = Array.from(
+            const segmenter =
+                new Intl.Segmenter(
+                    undefined,
+                    {
+                        granularity: "grapheme"
+                    }
+                );
+
+
+            return Array.from(
                 segmenter.segment(trimmed),
                 item => item.segment
             );
 
-            if (!segments.length) {
-                return 0;
-            }
+        }
 
-            const allEmoji = segments.every(
-                segment => isEmojiCharacter(segment)
+
+        /*
+         * Fallback for browsers without Intl.Segmenter.
+         */
+
+        return Array.from(trimmed);
+    }
+
+
+    function getEmojiCount(text) {
+
+        if (!text) {
+            return 0;
+        }
+
+
+        const segments =
+            getEmojiSegments(text);
+
+
+        if (!segments.length) {
+            return 0;
+        }
+
+
+        /*
+         * Every grapheme must be an emoji.
+         */
+
+        const allEmoji =
+            segments.every(
+                segment =>
+                    isEmojiCharacter(segment)
             );
 
-            if (!allEmoji) {
-                return 0;
-            }
 
-            return segments.length;
-        }
-
-        /*
-         * Fallback за браузъри без Intl.Segmenter.
-         */
-        const emojiMatches = trimmed.match(
-            /(\p{Extended_Pictographic}|\p{Emoji_Presentation})/gu
-        );
-
-        if (!emojiMatches) {
+        if (!allEmoji) {
             return 0;
         }
 
-        /*
-         * Ако има нормални символи, това не е
-         * emoji-only съобщение.
-         */
-        const cleaned = trimmed
-            .replace(
-                /(\p{Extended_Pictographic}|\p{Emoji_Presentation})/gu,
-                ""
-            )
-            .replace(
-                /[\uFE0F\u200D\u20E3]/g,
-                ""
-            )
-            .trim();
 
-        if (cleaned) {
-            return 0;
-        }
-
-        return emojiMatches.length;
+        return segments.length;
     }
 
 
     /* =====================================================
-       MESSAGE BODY TEXT
-       ===================================================== */
+       MESSAGE BODY
+    ===================================================== */
 
-    function getMessageBodyText(messageBubble) {
-        const body = messageBubble.querySelector(
+    function getMessageBody(
+        messageBubble
+    ) {
+
+        if (!messageBubble) {
+            return null;
+        }
+
+
+        return messageBubble.querySelector(
             ".message-body-html"
         );
+    }
+
+
+    function getMessageBodyText(
+        messageBubble
+    ) {
+
+        const body =
+            getMessageBody(
+                messageBubble
+            );
+
 
         if (!body) {
             return "";
         }
 
-        return body.textContent || "";
+
+        return (
+            body.textContent || ""
+        );
     }
 
 
     /* =====================================================
-       APPLY EMOJI CLASS
-       ===================================================== */
+       EMOJI CLASS
+    ===================================================== */
 
-    function applyEmojiClass(messageBubble) {
-        if (!messageBubble) {
-            return;
-        }
+    function clearEmojiClasses(
+        messageBubble
+    ) {
 
-        /*
-         * Премахваме старите emoji класове,
-         * за да може функцията безопасно да се
-         * извиква повече от веднъж.
-         */
         messageBubble.classList.remove(
             "emoji-only",
             "emoji-only-1",
             "emoji-only-2",
             "emoji-only-3"
         );
+    }
+
+
+    function applyEmojiClass(
+        messageBubble
+    ) {
+
+        if (!messageBubble) {
+            return;
+        }
+
+
+        clearEmojiClasses(
+            messageBubble
+        );
+
 
         /*
-         * Ако има media, не обработваме съобщението
-         * като emoji-only.
+         * Media messages are never emoji-only.
          */
+
         if (
-            messageBubble.querySelector(".media-wrap")
+            messageBubble.querySelector(
+                ".media-wrap"
+            )
         ) {
             return;
         }
 
-        const text = getMessageBodyText(
-            messageBubble
-        );
 
-        const emojiCount = getEmojiCount(text);
+        const text =
+            getMessageBodyText(
+                messageBubble
+            );
+
+
+        const emojiCount =
+            getEmojiCount(text);
+
 
         /*
-         * Само 1, 2 или 3 emoji имат специално
-         * Viber-подобно поведение.
+         * We only special-case
+         * 1, 2 or 3 emojis.
          */
+
         if (
             emojiCount < 1 ||
             emojiCount > 3
@@ -165,9 +214,11 @@
             return;
         }
 
+
         messageBubble.classList.add(
             "emoji-only"
         );
+
 
         messageBubble.classList.add(
             `emoji-only-${emojiCount}`
@@ -176,34 +227,276 @@
 
 
     /* =====================================================
-       PROCESS MESSAGE
-       ===================================================== */
+       TWEMOJI SUPPORT
+    ===================================================== */
 
-    function processMessage(message) {
-        if (!message) {
-            return;
+    function getTwemojiUrl(
+        emoji
+    ) {
+
+        if (!emoji) {
+            return null;
         }
 
-        const messageBubble = message.querySelector(
-            ".message-bubble"
+
+        /*
+         * The catalog is the source of truth.
+         *
+         * We only return a URL when the emoji
+         * exists in CHAT_EMOJIS.
+         */
+
+        if (
+            typeof getChatEmojiByCharacter !==
+            "function"
+        ) {
+            return null;
+        }
+
+
+        const catalogEmoji =
+            getChatEmojiByCharacter(
+                emoji
+            );
+
+
+        if (!catalogEmoji) {
+            return null;
+        }
+
+
+        /*
+         * Convert the Unicode code points
+         * into the format used by Twemoji CDN.
+         *
+         * Example:
+         * 😀 → 1f600
+         * ❤️ → 2764-fe0f
+         */
+
+        const codePoints =
+            Array.from(emoji)
+                .map(
+                    character =>
+                        character
+                            .codePointAt(0)
+                            .toString(16)
+                    )
+                .join("-");
+
+
+        return (
+            "https://cdn.jsdelivr.net/gh/" +
+            "twitter/twemoji@latest/assets/svg/" +
+            codePoints +
+            ".svg"
         );
+    }
+
+
+    /* =====================================================
+       TWEMOJI RENDERING
+    ===================================================== */
+
+    function renderTwemoji(
+        messageBubble
+    ) {
 
         if (!messageBubble) {
             return;
         }
 
-        applyEmojiClass(messageBubble);
+
+        const body =
+            getMessageBody(
+                messageBubble
+            );
+
+
+        if (!body) {
+            return;
+        }
+
+
+        /*
+         * Do not render normal text.
+         */
+
+        if (
+            !messageBubble.classList.contains(
+                "emoji-only"
+            )
+        ) {
+            return;
+        }
+
+
+        /*
+         * Prevent duplicate rendering.
+         */
+
+        if (
+            body.dataset.twemojiRendered ===
+            "true"
+        ) {
+            return;
+        }
+
+
+        const text =
+            body.textContent.trim();
+
+
+        const segments =
+            getEmojiSegments(text);
+
+
+        if (!segments.length) {
+            return;
+        }
+
+
+        /*
+         * Build the visual content using
+         * <img> elements, while keeping the
+         * original Unicode value in data-emoji.
+         */
+
+        const fragment =
+            document.createDocumentFragment();
+
+
+        segments.forEach(
+            emoji => {
+
+                const src =
+                    getTwemojiUrl(
+                        emoji
+                    );
+
+
+                /*
+                 * If this emoji isn't currently
+                 * in our catalog, keep the original
+                 * Unicode character.
+                 */
+
+                if (!src) {
+
+                    fragment.appendChild(
+                        document.createTextNode(
+                            emoji
+                        )
+                    );
+
+                    return;
+                }
+
+
+                const image =
+                    document.createElement(
+                        "img"
+                    );
+
+
+                image.className =
+                    "chat-twemoji";
+
+
+                image.src =
+                    src;
+
+
+                image.alt =
+                    emoji;
+
+
+                image.setAttribute(
+                    "draggable",
+                    "false"
+                );
+
+
+                image.dataset.emoji =
+                    emoji;
+
+
+                image.loading =
+                    "eager";
+
+
+                fragment.appendChild(
+                    image
+                );
+            }
+        );
+
+
+        body.replaceChildren(
+            fragment
+        );
+
+
+        body.dataset.twemojiRendered =
+            "true";
+    }
+
+
+    /* =====================================================
+       PROCESS MESSAGE
+    ===================================================== */
+
+    function processMessage(
+        message
+    ) {
+
+        if (!message) {
+            return;
+        }
+
+
+        const messageBubble =
+            message.querySelector(
+                ".message-bubble"
+            );
+
+
+        if (!messageBubble) {
+            return;
+        }
+
+
+        /*
+         * First determine whether this is
+         * an emoji-only message.
+         */
+
+        applyEmojiClass(
+            messageBubble
+        );
+
+
+        /*
+         * Then render the emoji visually.
+         */
+
+        renderTwemoji(
+            messageBubble
+        );
     }
 
 
     /* =====================================================
        PROCESS ALL EXISTING MESSAGES
-       ===================================================== */
+    ===================================================== */
 
     function processAllMessages() {
-        const messages = document.querySelectorAll(
-            ".conversation-message"
-        );
+
+        const messages =
+            document.querySelectorAll(
+                ".conversation-message"
+            );
+
 
         messages.forEach(
             processMessage
@@ -213,9 +506,10 @@
 
     /* =====================================================
        OBSERVE NEW MESSAGES
-       ===================================================== */
+    ===================================================== */
 
     function observeMessages() {
+
         const chatWindow =
             document.querySelector(
                 "#chat-window"
@@ -227,9 +521,11 @@
                 ".conversation-messages"
             );
 
+
         if (!chatWindow) {
             return;
         }
+
 
         const observer =
             new MutationObserver(
@@ -248,12 +544,18 @@
                                         return;
                                     }
 
+
+                                    /*
+                                     * Direct message.
+                                     */
+
                                     if (
                                         node.matches &&
                                         node.matches(
                                             ".conversation-message"
                                         )
                                     ) {
+
                                         processMessage(
                                             node
                                         );
@@ -261,12 +563,24 @@
                                         return;
                                     }
 
+
+                                    /*
+                                     * Message contained
+                                     * inside an added element.
+                                     */
+
+                                    if (
+                                        !node.querySelectorAll
+                                    ) {
+                                        return;
+                                    }
+
+
                                     const messages =
-                                        node.querySelectorAll
-                                            ? node.querySelectorAll(
-                                                ".conversation-message"
-                                            )
-                                            : [];
+                                        node.querySelectorAll(
+                                            ".conversation-message"
+                                        );
+
 
                                     messages.forEach(
                                         processMessage
@@ -277,6 +591,7 @@
                     );
                 }
             );
+
 
         observer.observe(
             chatWindow,
@@ -289,28 +604,29 @@
 
 
     /* =====================================================
-       INITIALIZE
-       ===================================================== */
+       INIT
+    ===================================================== */
 
     function init() {
+
         processAllMessages();
+
         observeMessages();
     }
 
-
-    /* =====================================================
-       DOM READY
-       ===================================================== */
 
     if (
         document.readyState ===
         "loading"
     ) {
+
         document.addEventListener(
             "DOMContentLoaded",
             init
         );
+
     } else {
+
         init();
     }
 
