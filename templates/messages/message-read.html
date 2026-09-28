@@ -230,9 +230,6 @@
 
                 <!-- =================================================
                      TYPING INDICATOR
-
-                     IMPORTANT:
-                     This MUST be outside .conversation-scroll.
                 ================================================== -->
 
                 <div id="chat-typing-indicator"
@@ -454,6 +451,40 @@
 
 
                     <!-- =================================================
+                         EMOJI BUTTON
+                         Emoji button is intentionally above the
+                         message field.
+                    ================================================== -->
+
+                    <div class="mb-2">
+
+                        <div class="dropdown">
+
+                            <button type="button"
+                                    id="emoji-toggle-btn"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    title="Emoji"
+                                    aria-label="Emoji">
+
+                                😊
+
+                            </button>
+
+
+                            <div class="dropdown-menu p-2 emoji-picker">
+
+                                <div class="emoji-grid"></div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
                          MESSAGE BODY
                     ================================================== -->
 
@@ -518,6 +549,21 @@
 
 
                     <!-- =================================================
+                         FILE PREVIEW
+                         Reserved for the next attachment step.
+                    ================================================== -->
+
+                    <div id="file-preview-wrap"
+                         class="mb-2 d-none">
+
+                        <div id="file-preview"
+                             class="file-preview">
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
                          FILE INPUTS
                     ================================================== -->
 
@@ -527,10 +573,17 @@
                            accept="image/*"
                            hidden>
 
+
                     <input type="file"
                            name="video"
                            id="id_video"
                            accept="video/*"
+                           hidden>
+
+
+                    <input type="file"
+                           name="file"
+                           id="id_file"
                            hidden>
 
 
@@ -540,34 +593,25 @@
 
                     <div id="upload-progress-wrap"
                          class="upload-progress-wrap d-none mb-2">
-
                         <div class="d-flex justify-content-between align-items-center mb-1">
-
                             <small id="upload-progress-text">
                                 Uploading...
                             </small>
-
                             <small id="upload-progress-percent">
                                 0%
                             </small>
-
                         </div>
-
-
                         <div class="progress"
                              role="progressbar"
                              aria-label="Upload progress"
                              aria-valuemin="0"
                              aria-valuemax="100"
                              aria-valuenow="0">
-
                             <div id="upload-progress-bar"
                                  class="progress-bar"
                                  style="width: 0%;">
                             </div>
-
                         </div>
-
                     </div>
 
 
@@ -577,89 +621,67 @@
 
                     <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
 
+                        <!-- =================================================
+                             ATTACHMENT DROPDOWN
+                        ================================================== -->
 
-                        <div class="btn-group"
-                             role="group">
-
-
-                            <!-- =============================================
-                                 IMAGE
-                            ============================================== -->
-
+                        <div class="dropdown">
                             <button type="button"
-                                    id="attach-image-btn"
-                                    class="btn btn-outline-secondary btn-sm rounded-start"
-                                    title="Attach image"
-                                    aria-label="Attach image">
-
-                                <i class="fas fa-image"></i>
-
-                            </button>
-
-
-                            <!-- =============================================
-                                 VIDEO
-                            ============================================== -->
-
-                            <button type="button"
-                                    id="attach-video-btn"
+                                    id="attachment-toggle-btn"
                                     class="btn btn-outline-secondary btn-sm"
-                                    title="Attach video"
-                                    aria-label="Attach video">
-                                <i class="fas fa-video"></i>
-                            </button>
-
-
-                            <!-- =============================================
-                                 REMOVE MEDIA
-                            ============================================== -->
-
-                            <button type="button"
-                                    id="remove-media-btn"
-                                    class="btn btn-outline-danger btn-sm d-none"
-                                    title="Remove attachment"
-                                    aria-label="Remove attachment">
-                                <i class="fas fa-times"></i>
-                            </button>
-
-
-                            <!-- =============================================
-                                 EMOJI TOGGLE
-                            ============================================== -->
-
-                            <button type="button"
-                                    id="emoji-toggle-btn"
-                                    class="btn btn-outline-secondary btn-sm rounded-end"
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false"
-                                    title="Emoji"
-                                    aria-label="Emoji">
-                                😊
+                                    title="Attachments"
+                                    aria-label="Attachments">
+                                <i class="fas fa-paperclip"></i>
                             </button>
 
 
-                            <!-- =============================================
-                                 EMOJI PICKER
+                            <div class="dropdown-menu attachment-picker"
+                                 aria-labelledby="attachment-toggle-btn">
+                                <button type="button"
+                                        class="dropdown-item attachment-option"
+                                        id="attach-image-btn">
+                                    <i class="fas fa-image me-2"></i>
+                                    Image
+                                </button>
 
-                                 IMPORTANT:
-                                 The grid is intentionally empty.
+                                <button type="button"
+                                        class="dropdown-item attachment-option"
+                                        id="attach-video-btn">
+                                    <i class="fas fa-video me-2"></i>
+                                    Video
+                                </button>
 
-                                 conversation.js loads all emoji
-                                 dynamically from emojis.js.
-                            ============================================== -->
-
-                            <div class="dropdown-menu p-2 emoji-picker">
-                                <div class="emoji-grid"></div>
+                                <button type="button"
+                                        class="dropdown-item attachment-option"
+                                        id="attach-file-btn">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    File
+                                </button>
                             </div>
                         </div>
 
 
-                        <!-- =============================================
+                        <!-- =================================================
+                             REMOVE MEDIA
+                        ================================================== -->
+
+                        <button type="button"
+                                id="remove-media-btn"
+                                class="btn btn-outline-danger btn-sm d-none"
+                                title="Remove attachment"
+                                aria-label="Remove attachment">
+                            <i class="fas fa-times"></i>
+                        </button>
+
+
+                        <!-- =================================================
                              SEND BUTTON
-                        ============================================== -->
+                        ================================================== -->
 
                         <button type="submit"
-                                class="btn btn-primary px-4"
+                                class="btn btn-primary px-4 ms-auto"
                                 id="message-submit-btn">
                             <i class="fas fa-paper-plane me-1"
                                id="message-submit-icon"></i>
