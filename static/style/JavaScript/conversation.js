@@ -957,30 +957,92 @@ document.addEventListener('DOMContentLoaded', function () {
      * Category click.
      */
 
-    document.addEventListener(
-        'click',
-        function (event) {
+    /* =========================================================
+       EMOJI PICKER CLICK HANDLERS
+       Keep Bootstrap dropdown open while using the picker.
+    ========================================================= */
 
-            const categoryButton =
-                event.target.closest(
-                    '.emoji-category-btn'
+    if (emojiPicker) {
+
+        emojiPicker.addEventListener(
+            'click',
+            function (event) {
+
+                const categoryButton =
+                    event.target.closest(
+                        '.emoji-category-btn'
+                    );
+
+                if (categoryButton) {
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    setActiveEmojiCategory(
+                        categoryButton.dataset.category
+                    );
+
+                    return;
+                }
+
+
+                const emojiButton =
+                    event.target.closest(
+                        '.emoji-btn'
+                    );
+
+                if (!emojiButton) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+
+
+                const emoji =
+                    emojiButton.dataset.emoji ||
+                    '';
+
+
+                if (!emoji) {
+                    return;
+                }
+
+
+                insertEmojiIntoComposer(
+                    emoji
                 );
 
 
-            if (!categoryButton) {
-                return;
+                /*
+                 * Close Bootstrap dropdown only
+                 * after an emoji has been selected.
+                 */
+
+                const toggle =
+                    document.getElementById(
+                        'emoji-toggle-btn'
+                    );
+
+
+                if (
+                    toggle &&
+                    window.bootstrap
+                ) {
+
+                    const instance =
+                        bootstrap.Dropdown.getInstance(
+                            toggle
+                        );
+
+
+                    if (instance) {
+                        instance.hide();
+                    }
+                }
             }
-
-
-            event.preventDefault();
-            event.stopPropagation();
-
-
-            setActiveEmojiCategory(
-                categoryButton.dataset.category
-            );
-        }
-    );
+        );
+    }
 
 
     /*
