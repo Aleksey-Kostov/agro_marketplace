@@ -478,32 +478,85 @@ document.addEventListener(
         ====================================================== */
 
         let scrollFrame = null;
+        let userScrollIntent = false;
 
         chatWindow.addEventListener(
-            'scroll',
+            'wheel',
             function () {
+                userScrollIntent = true;
+             },
+             {
+                 passive: true
+             }
+        );
 
-                /*
-                 * Every scroll event schedules exactly
-                 * one update for the next animation frame.
-                 */
-                if (scrollFrame !== null) {
-                    return;
-                }
-
-                scrollFrame =
-                    requestAnimationFrame(
-                        function () {
-                            scrollFrame = null;
-
-                            updateFloatingDate();
-                        }
-                    );
+        chatWindow.addEventListener(
+            'touchmove',
+            function () {
+                userScrollIntent = true;
             },
             {
-                passive: true
+                 passive: true
             }
         );
+
+        chatWindow.addEventListener(
+            'keydown',
+             function (event) {
+                 const scrollKeys = [
+                     'ArrowUp',
+                     'ArrowDown',
+                     'PageUp',
+                     'PageDown',
+                     'Home',
+                     'End',
+                     ' '
+                 ];
+
+                if (
+                    scrollKeys.includes(
+                       event.key
+                    )
+                ) {
+                      userScrollIntent = true;
+           }
+       }
+   );
+
+        chatWindow.addEventListener(
+           'scroll',
+           function () {
+
+        /*
+         * Ignore programmatic scrolls.
+         *
+         * Only a scroll that was preceded by
+         * real user interaction may show the
+         * floating date.
+         */
+              if (!userScrollIntent) {
+                      return;
+              }
+
+              userScrollIntent = false;
+
+              if (scrollFrame !== null) {
+                      return;
+               }
+
+               scrollFrame =
+            requestAnimationFrame(
+                      function () {
+                         scrollFrame = null;
+
+             updateFloatingDate();
+                            }
+                       );
+                },
+                {
+                   passive: true
+                }
+          );
 
 
         /* =====================================================
