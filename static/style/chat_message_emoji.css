@@ -1,0 +1,371 @@
+/* =========================================================
+   CHAT MESSAGE EMOJI
+
+   IMPORTANT:
+   This file contains only emoji-specific styling.
+   Emoji detection/classes will be added separately
+   in chat_message_emoji.js.
+========================================================= */
+
+
+/* =========================================================
+   EMOJI MESSAGE BASE
+========================================================= */
+
+.message-bubble.emoji-only {
+    position: relative;
+}
+
+
+/* =========================================================
+   EMOJI BODY
+========================================================= */
+
+.message-bubble.emoji-only
+.message-body-html {
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+
+/* Remove rich-text paragraph spacing for emoji messages. */
+
+.message-bubble.emoji-only
+.message-body-html > p,
+.message-bubble.emoji-only
+.message-body-html > div,
+.message-bubble.emoji-only
+.message-body-html > span {
+    margin: 0;
+    padding: 0;
+}
+
+
+/* =========================================================
+   ONE EMOJI
+   No bubble background.
+   Emoji is slightly enlarged.
+   Time / ticks appear underneath.
+========================================================= */
+
+.message-bubble.emoji-only-1 {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 0 !important;
+
+    padding: 0 !important;
+}
+
+
+/* Emoji itself */
+
+.message-bubble.emoji-only-1
+.message-body-html {
+    display: block;
+
+    width: fit-content;
+    max-width: none;
+
+    font-size: 36px;
+    line-height: 1.05;
+
+    margin: 0;
+    padding: 0;
+}
+
+
+/* Keep the emoji on its own visual line. */
+
+.message-bubble.emoji-only-1
+.message-body-html > p,
+.message-bubble.emoji-only-1
+.message-body-html > div,
+.message-bubble.emoji-only-1
+.message-body-html > span {
+    display: block;
+
+    width: fit-content;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* Time + ticks under one emoji */
+
+.message-bubble.emoji-only-1
+.message-bubble-meta {
+    display: flex;
+
+    width: fit-content;
+
+    margin-left: auto;
+    margin-right: 0;
+    margin-top: 2px;
+
+    padding: 1px 3px;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 3px;
+
+    background: transparent;
+    box-shadow: none;
+
+    border-radius: 0;
+
+    font-size: 10px;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   TWO EMOJI
+   Bubble remains.
+   Time / ticks stay beside the emoji.
+========================================================= */
+
+.message-bubble.emoji-only-2
+.message-content-wrap {
+    display: inline-flex;
+
+    width: auto;
+    max-width: 100%;
+
+    align-items: center;
+}
+
+
+/* Slightly enlarged emoji pair */
+
+.message-bubble.emoji-only-2
+.message-body-html {
+    display: inline;
+
+    width: auto;
+    max-width: none;
+
+    font-size: 32px;
+    line-height: 1.05;
+
+    margin: 0;
+    padding: 0;
+}
+
+
+/* Prevent rich-text block elements from creating a new line. */
+
+.message-bubble.emoji-only-2
+.message-body-html > p,
+.message-bubble.emoji-only-2
+.message-body-html > div,
+.message-bubble.emoji-only-2
+.message-body-html > span {
+    display: inline;
+
+    width: auto;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* Time + ticks beside the emoji */
+
+.message-bubble.emoji-only-2
+.message-bubble-meta {
+    display: inline-flex;
+
+    width: auto;
+
+    margin: 0 0 0 6px;
+
+    padding: 2px 5px;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 3px;
+
+    vertical-align: middle;
+
+    white-space: nowrap;
+
+    font-size: 10px;
+    line-height: 1;
+
+    background: rgba(255, 255, 255, 0.55);
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.08);
+
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+
+/* =========================================================
+   THREE OR MORE EMOJI
+   Bubble remains.
+   Time / ticks move to bottom-right.
+========================================================= */
+
+.message-bubble.emoji-only-3
+.message-content-wrap {
+    display: block;
+
+    width: 100%;
+}
+
+
+/* Emoji group */
+
+.message-bubble.emoji-only-3
+.message-body-html {
+    display: block;
+
+    width: auto;
+    max-width: 100%;
+
+    font-size: 30px;
+    line-height: 1.08;
+
+    margin: 0;
+    padding: 0;
+
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+
+/* Keep the emoji group together. */
+
+.message-bubble.emoji-only-3
+.message-body-html > p,
+.message-bubble.emoji-only-3
+.message-body-html > div,
+.message-bubble.emoji-only-3
+.message-body-html > span {
+    display: block;
+
+    width: auto;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* Time + ticks at bottom-right */
+
+.message-bubble.emoji-only-3
+.message-bubble-meta {
+    display: flex;
+
+    width: fit-content;
+
+    margin-left: auto;
+    margin-top: 4px;
+
+    padding: 2px 6px;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 3px;
+
+    white-space: nowrap;
+
+    font-size: 10px;
+    line-height: 1;
+
+    background: rgba(255, 255, 255, 0.55);
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.08);
+
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+
+/* =========================================================
+   EMOJI TIME
+========================================================= */
+
+.message-bubble.emoji-only
+.message-bubble-time {
+    font-size: 10px;
+    line-height: 1;
+}
+
+
+/* =========================================================
+   EMOJI DELIVERY STATUS
+========================================================= */
+
+.message-bubble.emoji-only
+.message-delivery-status {
+    font-size: 10px;
+    line-height: 1;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 576px) {
+
+    .message-bubble.emoji-only-1
+    .message-body-html {
+        font-size: 34px;
+    }
+
+    .message-bubble.emoji-only-2
+    .message-body-html {
+        font-size: 30px;
+    }
+
+    .message-bubble.emoji-only-3
+    .message-body-html {
+        font-size: 28px;
+    }
+
+    .message-bubble.emoji-only-1
+    .message-bubble-meta {
+        font-size: 9px;
+    }
+
+    .message-bubble.emoji-only-2
+    .message-bubble-meta,
+    .message-bubble.emoji-only-3
+    .message-bubble-meta {
+        padding: 2px 5px;
+    }
+
+    .message-bubble.emoji-only
+    .message-bubble-time,
+    .message-bubble.emoji-only
+    .message-delivery-status {
+        font-size: 9px;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .message-bubble.emoji-only {
+        transition: none;
+    }
+}
