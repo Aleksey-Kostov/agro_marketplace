@@ -1,6 +1,5 @@
 /* =========================================================
    CHAT MESSAGE EMOJI
-   Twemoji preparation / emoji-only messages
 ========================================================= */
 
 (function () {
@@ -241,9 +240,6 @@
 
         /*
          * The catalog is the source of truth.
-         *
-         * We only return a URL when the emoji
-         * exists in CHAT_EMOJIS.
          */
 
         if (
@@ -266,12 +262,16 @@
 
 
         /*
-         * Convert the Unicode code points
-         * into the format used by Twemoji CDN.
+         * Convert the complete grapheme into
+         * Twemoji Unicode code points.
          *
-         * Example:
-         * 😀 → 1f600
-         * ❤️ → 2764-fe0f
+         * This keeps:
+         *
+         * ❤️
+         * 👨‍👩‍👧‍👦
+         * 🏳️‍🌈
+         *
+         * as complete emoji sequences.
          */
 
         const codePoints =
@@ -291,6 +291,88 @@
             codePoints +
             ".svg"
         );
+    }
+
+
+    /* =====================================================
+       CREATE TWEMOJI IMAGE
+    ===================================================== */
+
+    function createTwemojiImage(
+        emoji,
+        src
+    ) {
+
+        const image =
+            document.createElement(
+                "img"
+            );
+
+
+        image.className =
+            "chat-twemoji";
+
+
+        image.src =
+            src;
+
+
+        image.alt =
+            emoji;
+
+
+        image.title =
+            emoji;
+
+
+        image.dataset.emoji =
+            emoji;
+
+
+        image.setAttribute(
+            "draggable",
+            "false"
+        );
+
+
+        image.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+
+        /*
+         * Explicit intrinsic dimensions.
+         *
+         * CSS still controls the final visual
+         * size through 1em.
+         */
+
+        image.width = 1;
+        image.height = 1;
+
+
+        /*
+         * Prevent the browser from treating the
+         * image as an inline baseline element
+         * with unwanted descender space.
+         */
+
+        image.style.display =
+            "inline-block";
+
+        image.style.verticalAlign =
+            "middle";
+
+        image.style.objectFit =
+            "contain";
+
+
+        image.loading =
+            "eager";
+
+
+        return image;
     }
 
 
@@ -356,12 +438,6 @@
         }
 
 
-        /*
-         * Build the visual content using
-         * <img> elements, while keeping the
-         * original Unicode value in data-emoji.
-         */
-
         const fragment =
             document.createDocumentFragment();
 
@@ -394,35 +470,10 @@
 
 
                 const image =
-                    document.createElement(
-                        "img"
+                    createTwemojiImage(
+                        emoji,
+                        src
                     );
-
-
-                image.className =
-                    "chat-twemoji";
-
-
-                image.src =
-                    src;
-
-
-                image.alt =
-                    emoji;
-
-
-                image.setAttribute(
-                    "draggable",
-                    "false"
-                );
-
-
-                image.dataset.emoji =
-                    emoji;
-
-
-                image.loading =
-                    "eager";
 
 
                 fragment.appendChild(
