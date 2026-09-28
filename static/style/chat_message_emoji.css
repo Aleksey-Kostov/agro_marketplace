@@ -42,11 +42,17 @@
     margin: 0 !important;
     padding: 0 !important;
 
-    font-size: 36px;
-    line-height: 1.2;
+    font-size: 36px !important;
+    line-height: 1.2 !important;
 
     white-space: nowrap;
 }
+
+
+/* =========================================================
+   ONE EMOJI INNER HTML
+   Overrides .message-box p
+========================================================= */
 
 .message-bubble.emoji-only-1
 .message-body-html > p,
@@ -61,6 +67,12 @@
 
     margin: 0 !important;
     padding: 0 !important;
+}
+
+.message-bubble.emoji-only-1
+.message-body-html > p {
+    font-size: 36px !important;
+    line-height: 1.2 !important;
 }
 
 
@@ -255,7 +267,14 @@
 
     .message-bubble.emoji-only-1
     .message-body-html {
-        font-size: 34px;
+        font-size: 34px !important;
+        line-height: 1.2 !important;
+    }
+
+    .message-bubble.emoji-only-1
+    .message-body-html > p {
+        font-size: 34px !important;
+        line-height: 1.2 !important;
     }
 
     .message-bubble.emoji-only-2
