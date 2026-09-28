@@ -13,26 +13,36 @@
 
         <div class="col-12 edit-profile text-details mb-2 message-box">
             <div class="d-flex align-items-center p-0 rounded flex-wrap gap-2">
+
                 <a href="{% url 'message-inbox' %}"
                    class="btn btn-secondary back-button">
+
                     <i class="fas fa-arrow-left"></i>
+
                     <span class="d-none d-sm-inline">
                         Back
                     </span>
+
                 </a>
 
                 <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
+
                     <i class="fas fa-comments"></i>
+
                     Conversation
+
                 </h3>
+
             </div>
         </div>
+
 
         <!-- =====================================================
              CONVERSATION
         ====================================================== -->
 
         <div class="message-box conversation-box">
+
 
             <!-- =================================================
                  TITLE + ACTIONS
@@ -44,10 +54,12 @@
                     {{ root_message.title|default:"Direct conversation" }}
                 </h3>
 
+
                 <div class="btn-group conversation-actions"
                      role="group">
 
                     {% if not is_system %}
+
 
                     <!-- =============================================
                          BLOCK / UNBLOCK
@@ -111,6 +123,7 @@
 
                     {% endif %}
 
+
                     <!-- =============================================
                          REPORT
                     ============================================== -->
@@ -143,6 +156,7 @@
 
                     {% endif %}
 
+
                     <!-- =============================================
                          DELETE CONVERSATION
                     ============================================== -->
@@ -174,6 +188,7 @@
 
             <div class="conversation-scroll-wrap">
 
+
                 <!-- =================================================
                      SCROLLING MESSAGE AREA
                 ================================================== -->
@@ -184,6 +199,7 @@
                      data-current-user-id="{{ request.user.pk }}"
                      data-message-fragment-url="{% url 'message-fragment' 0 %}"
                      data-default-avatar="{% static 'images/profile_picture.webp' %}">
+
 
                     <!-- =================================================
                          MESSAGES
@@ -217,9 +233,6 @@
 
                      IMPORTANT:
                      This MUST be outside .conversation-scroll.
-                     It is intentionally a sibling of the scroll
-                     container so it does not scroll together with
-                     the messages.
                 ================================================== -->
 
                 <div id="chat-typing-indicator"
@@ -448,6 +461,7 @@
 
                         {{ form.body }}
 
+
                         <div id="chat-drop-overlay"
                              class="chat-drop-overlay"
                              aria-hidden="true">
@@ -563,8 +577,14 @@
 
                     <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
 
+
                         <div class="btn-group"
                              role="group">
+
+
+                            <!-- =============================================
+                                 IMAGE
+                            ============================================== -->
 
                             <button type="button"
                                     id="attach-image-btn"
@@ -577,27 +597,35 @@
                             </button>
 
 
+                            <!-- =============================================
+                                 VIDEO
+                            ============================================== -->
+
                             <button type="button"
                                     id="attach-video-btn"
                                     class="btn btn-outline-secondary btn-sm"
                                     title="Attach video"
                                     aria-label="Attach video">
-
                                 <i class="fas fa-video"></i>
-
                             </button>
 
+
+                            <!-- =============================================
+                                 REMOVE MEDIA
+                            ============================================== -->
 
                             <button type="button"
                                     id="remove-media-btn"
                                     class="btn btn-outline-danger btn-sm d-none"
                                     title="Remove attachment"
                                     aria-label="Remove attachment">
-
                                 <i class="fas fa-times"></i>
-
                             </button>
 
+
+                            <!-- =============================================
+                                 EMOJI TOGGLE
+                            ============================================== -->
 
                             <button type="button"
                                     id="emoji-toggle-btn"
@@ -606,117 +634,36 @@
                                     aria-expanded="false"
                                     title="Emoji"
                                     aria-label="Emoji">
-
                                 😊
-
                             </button>
+
+
+                            <!-- =============================================
+                                 EMOJI PICKER
+
+                                 IMPORTANT:
+                                 The grid is intentionally empty.
+
+                                 conversation.js loads all emoji
+                                 dynamically from emojis.js.
+                            ============================================== -->
+
                             <div class="dropdown-menu p-2 emoji-picker"
                                  data-bs-auto-close="false">
-                                <div class="emoji-grid">
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😊">😊
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😂">😂
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😍">😍
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😘">😘
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😉">😉
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😎">😎
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😢">😢
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😡">😡
-                                    </button>
-
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👍">👍
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👎">👎
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="👏">👏
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🙏">🙏
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❤️">❤️
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🔥">🔥
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="⭐">⭐
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🎉">🎉
-                                    </button>
-
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="✅">✅
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="❌">❌
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍎">🍎
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍐">🍐
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍇">🍇
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🥕">🥕
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="📦">📦
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="💰">💰
-                                    </button>
-
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🤣">🤣
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😅">😅
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😇">😇
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🤔">🤔
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🙄">🙄
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="😴">😴
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🤗">🤗
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🥰">🥰
-                                    </button>
-
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="💔">💔
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="💯">💯
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🎈">🎈
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🎁">🎁
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🌞">🌞
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🌸">🌸
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🐶">🐶
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🐱">🐱
-                                    </button>
-
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="☕">☕
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light emoji-btn" data-emoji="🍕">🍕
-                                    </button>
-
-                                </div>
-
+                                <div class="emoji-grid"></div>
                             </div>
-
                         </div>
 
+
+                        <!-- =============================================
+                             SEND BUTTON
+                        ============================================== -->
 
                         <button type="submit"
                                 class="btn btn-primary px-4"
                                 id="message-submit-btn">
-
                             <i class="fas fa-paper-plane me-1"
                                id="message-submit-icon"></i>
-
                             <span id="message-submit-text">
                                 Send
                             </span>
@@ -728,4 +675,5 @@
         </div>
     </div>
 </main>
+
 {% endblock %}
