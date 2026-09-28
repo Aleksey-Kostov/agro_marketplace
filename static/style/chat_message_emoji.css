@@ -526,3 +526,6 @@
         transition: none !important;
     }
 }
+.message-bubble.emoji-only::before {
+    display: none !important;
+}
