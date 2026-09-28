@@ -959,7 +959,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* =========================================================
        EMOJI PICKER CLICK HANDLERS
-       Keep Bootstrap dropdown open while using the picker.
+       Keep picker open while selecting emojis/categories.
+       Bootstrap closes it when clicking outside.
     ========================================================= */
 
     if (emojiPicker) {
@@ -973,9 +974,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         '.emoji-category-btn'
                     );
 
+
                 if (categoryButton) {
 
                     event.preventDefault();
+
                     event.stopPropagation();
 
                     setActiveEmojiCategory(
@@ -991,11 +994,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         '.emoji-btn'
                     );
 
+
                 if (!emojiButton) {
                     return;
                 }
 
+
                 event.preventDefault();
+
                 event.stopPropagation();
 
 
@@ -1013,33 +1019,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     emoji
                 );
 
-
                 /*
-                 * Close Bootstrap dropdown only
-                 * after an emoji has been selected.
+                 * IMPORTANT:
+                 * Do NOT close the Bootstrap dropdown here.
+                 *
+                 * The picker remains open so the user can
+                 * select multiple emojis.
+                 *
+                 * Bootstrap will close it automatically when
+                 * the user clicks outside the dropdown.
                  */
-
-                const toggle =
-                    document.getElementById(
-                        'emoji-toggle-btn'
-                    );
-
-
-                if (
-                    toggle &&
-                    window.bootstrap
-                ) {
-
-                    const instance =
-                        bootstrap.Dropdown.getInstance(
-                            toggle
-                        );
-
-
-                    if (instance) {
-                        instance.hide();
-                    }
-                }
             }
         );
     }
