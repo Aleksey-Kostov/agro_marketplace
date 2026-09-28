@@ -531,15 +531,6 @@ document.addEventListener(
 
                                 updateMessageDateLabels();
 
-                                /*
-                                 * If messages were inserted
-                                 * while the user is currently
-                                 * scrolling, immediately
-                                 * recalculate the floating
-                                 * month/year.
-                                 */
-                                updateFloatingDate();
-
                             },
                             0
                         );
