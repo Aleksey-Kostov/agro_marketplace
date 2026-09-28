@@ -236,8 +236,7 @@ document.addEventListener(
 
 
             /* ---------------------------------------------
-               THIS WEEK
-               Monday ... Sunday
+               RECENT DAYS
             --------------------------------------------- */
 
             if (
@@ -312,6 +311,19 @@ document.addEventListener(
 
 
         /* =====================================================
+           GET MESSAGES
+        ====================================================== */
+
+        function getMessages() {
+            return Array.from(
+                chatMessages.querySelectorAll(
+                    '.conversation-message'
+                )
+            );
+        }
+
+
+        /* =====================================================
            UPDATE MESSAGE DATE LABELS
         ====================================================== */
 
@@ -320,9 +332,7 @@ document.addEventListener(
                 new Date();
 
             const messages =
-                chatMessages.querySelectorAll(
-                    '.conversation-message'
-                );
+                getMessages();
 
             messages.forEach(
                 function (message) {
@@ -355,16 +365,15 @@ document.addEventListener(
 
 
         /* =====================================================
-           FIND CURRENT MESSAGE WHILE SCROLLING
+           FIND CURRENT MESSAGE
+           
+           The message whose top edge is closest to,
+           but not below, the activation line.
         ====================================================== */
 
         function getCurrentVisibleMessage() {
             const messages =
-                Array.from(
-                    chatMessages.querySelectorAll(
-                        '.conversation-message'
-                    )
-                );
+                getMessages();
 
             if (!messages.length) {
                 return null;
@@ -373,15 +382,26 @@ document.addEventListener(
             const windowRect =
                 chatWindow.getBoundingClientRect();
 
+            /*
+             * The floating date is at the top of the
+             * chat. We use a slightly lower activation
+             * line so the currently visible message
+             * determines the month reliably.
+             */
             const activationLine =
-                windowRect.top + 70;
+                windowRect.top + 55;
 
             let currentMessage =
                 messages[0];
 
             for (
-                const message of messages
+                let index = 0;
+                index < messages.length;
+                index += 1
             ) {
+                const message =
+                    messages[index];
+
                 const rect =
                     message.getBoundingClientRect();
 
@@ -401,10 +421,10 @@ document.addEventListener(
 
 
         /* =====================================================
-           SHOW FLOATING MONTH / YEAR
+           UPDATE FLOATING DATE
         ====================================================== */
 
-        function showFloatingDate() {
+        function updateFloatingDate() {
             const message =
                 getCurrentVisibleMessage();
 
@@ -421,14 +441,31 @@ document.addEventListener(
                 return;
             }
 
-            floatingDate.textContent =
+            const newLabel =
                 getFloatingDateLabel(
                     date
                 );
 
+            /*
+             * Do not unnecessarily rewrite the DOM
+             * when the month/year has not changed.
+             */
+            if (
+                floatingDate.textContent !==
+                newLabel
+            ) {
+                floatingDate.textContent =
+                    newLabel;
+            }
+
             floatingDate.classList.add(
                 'is-visible'
             );
+
+
+            /* ---------------------------------------------
+               RESET HIDE TIMER
+            --------------------------------------------- */
 
             if (
                 hideFloatingDateTimer
@@ -459,7 +496,12 @@ document.addEventListener(
         chatWindow.addEventListener(
             'scroll',
             function () {
-                if (scrollFrame) {
+
+                /*
+                 * Every scroll event schedules exactly
+                 * one update for the next animation frame.
+                 */
+                if (scrollFrame !== null) {
                     return;
                 }
 
@@ -468,7 +510,7 @@ document.addEventListener(
                         function () {
                             scrollFrame = null;
 
-                            showFloatingDate();
+                            updateFloatingDate();
                         }
                     );
             },
@@ -488,6 +530,7 @@ document.addEventListener(
         const observer =
             new MutationObserver(
                 function () {
+
                     if (
                         mutationTimer
                     ) {
@@ -499,7 +542,18 @@ document.addEventListener(
                     mutationTimer =
                         setTimeout(
                             function () {
+
                                 updateMessageDateLabels();
+
+                                /*
+                                 * If messages were inserted
+                                 * while the user is currently
+                                 * scrolling, immediately
+                                 * recalculate the floating
+                                 * month/year.
+                                 */
+                                updateFloatingDate();
+
                             },
                             0
                         );
