@@ -1,5 +1,6 @@
 /* =========================================================
    CHAT MESSAGE EMOJI
+   Twemoji preparation / emoji-only messages
 ========================================================= */
 
 (function () {
@@ -240,6 +241,9 @@
 
         /*
          * The catalog is the source of truth.
+         *
+         * We only return a URL when the emoji
+         * exists in CHAT_EMOJIS.
          */
 
         if (
@@ -262,16 +266,24 @@
 
 
         /*
-         * Convert the complete grapheme into
-         * Twemoji Unicode code points.
+         * Twemoji filenames do NOT use the
+         * Unicode variation selector FE0F.
          *
-         * This keeps:
+         * Example:
          *
          * ❤️
-         * 👨‍👩‍👧‍👦
-         * 🏳️‍🌈
          *
-         * as complete emoji sequences.
+         * Unicode:
+         * 2764 FE0F
+         *
+         * Twemoji asset:
+         * 2764.svg
+         *
+         * Therefore FE0F is removed only
+         * from the asset filename.
+         *
+         * The original emoji itself remains
+         * unchanged everywhere else.
          */
 
         const codePoints =
@@ -282,7 +294,16 @@
                             .codePointAt(0)
                             .toString(16)
                     )
+                .filter(
+                    codePoint =>
+                        codePoint !== "fe0f"
+                )
                 .join("-");
+
+
+        if (!codePoints) {
+            return null;
+        }
 
 
         return (
@@ -317,6 +338,13 @@
             src;
 
 
+        /*
+         * Keep the original Unicode emoji.
+         *
+         * This is important for accessibility
+         * and for preserving the actual message.
+         */
+
         image.alt =
             emoji;
 
@@ -342,27 +370,23 @@
 
 
         /*
-         * Explicit intrinsic dimensions.
+         * Browser intrinsic dimensions.
          *
-         * CSS still controls the final visual
-         * size through 1em.
+         * CSS controls the final visual size.
          */
 
         image.width = 1;
+
         image.height = 1;
 
-
-        /*
-         * Prevent the browser from treating the
-         * image as an inline baseline element
-         * with unwanted descender space.
-         */
 
         image.style.display =
             "inline-block";
 
+
         image.style.verticalAlign =
             "middle";
+
 
         image.style.objectFit =
             "contain";
