@@ -258,8 +258,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # UPLOAD LIMITS
 # =========================================================
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
-FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = 110 * 1024 * 1024
+
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 # =========================================================
 # CHANNELS / WEBSOCKETS
