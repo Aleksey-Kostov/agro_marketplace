@@ -8,7 +8,6 @@ from .storages import (
     MessageVideoStorage,
 )
 
-
 User = settings.AUTH_USER_MODEL
 
 
@@ -17,7 +16,6 @@ User = settings.AUTH_USER_MODEL
 # =========================================================
 
 class Message(models.Model):
-
     sender = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -109,11 +107,73 @@ class Message(models.Model):
 
 
 # =========================================================
+# MESSAGE ATTACHMENT
+# =========================================================
+
+class MessageAttachment(models.Model):
+    IMAGE = "image"
+    VIDEO = "video"
+    FILE = "file"
+
+    ATTACHMENT_TYPE_CHOICES = (
+        (IMAGE, "Image"),
+        (VIDEO, "Video"),
+        (FILE, "File"),
+    )
+
+    message = models.ForeignKey(
+        Message,
+        on_delete=models.CASCADE,
+        related_name="attachments",
+    )
+
+    file = models.FileField(
+        upload_to="message_attachments/",
+    )
+
+    original_name = models.CharField(
+        max_length=255,
+    )
+
+    mime_type = models.CharField(
+        max_length=100,
+    )
+
+    size = models.PositiveBigIntegerField()
+
+    attachment_type = models.CharField(
+        max_length=10,
+        choices=ATTACHMENT_TYPE_CHOICES,
+    )
+
+    cloudinary_public_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+    )
+
+    cloudinary_resource_type = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return self.original_name
+
+
+# =========================================================
 # MESSAGE STATUS
 # =========================================================
 
 class MessageStatus(models.Model):
-
     class Meta:
         verbose_name = "Messages Status"
         verbose_name_plural = "Messages Status"
@@ -161,7 +221,6 @@ class MessageStatus(models.Model):
 # =========================================================
 
 class MessageReport(models.Model):
-
     message = models.ForeignKey(
         Message,
         on_delete=models.CASCADE,
@@ -196,7 +255,6 @@ class MessageReport(models.Model):
 # =========================================================
 
 class BlockedUser(models.Model):
-
     blocker = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -225,7 +283,6 @@ class BlockedUser(models.Model):
 # =========================================================
 
 class MessageReaction(models.Model):
-
     LIKE = "like"
     HEART = "heart"
 
