@@ -266,4 +266,26 @@ class MessageVideoStorage(SelectableMessageStorage):
         "local": LocalMessageVideoStorage,
         "cloudinary": CloudinaryMessageVideoStorage,
     }
-    
+
+
+# =========================================================
+# CLOUDINARY MESSAGE ATTACHMENT STORAGE
+# =========================================================
+
+class CloudinaryMessageAttachmentStorage:
+    """
+    Cloudinary storage за общи message attachments.
+
+    Използва MediaCloudinaryStorage като универсален
+    Cloudinary storage backend.
+    """
+
+    def __new__(cls, *args, **kwargs):
+        from cloudinary_storage.storage import (
+            MediaCloudinaryStorage,
+        )
+
+        return MediaCloudinaryStorage(
+            *args,
+            **kwargs,
+        )
