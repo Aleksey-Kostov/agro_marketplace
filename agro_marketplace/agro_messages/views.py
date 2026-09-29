@@ -15,6 +15,9 @@ from channels.layers import get_channel_layer
 
 import hashlib
 import markdown
+from pathlib import Path
+
+from PIL import Image, UnidentifiedImageError
 
 from .forms import MessageForm
 from .models import (
@@ -725,20 +728,40 @@ def message_has_content(request):
 
 
 def validate_message_attachments(request):
+    """
+    Central server-side validation for chat attachments.
+
+    Limits:
+        Image: 10 MB
+        Video: 100 MB
+
+    Security:
+        - only one attachment type at a time
+        - validates file size
+        - validates extension
+        - validates declared MIME type
+        - verifies real image content with Pillow
+        - verifies common video container signatures
+    """
 
     image_file = request.FILES.get('image')
     video_file = request.FILES.get('video')
 
-    if image_file and video_file:
+    # ============================================================
+    # ONLY ONE ATTACHMENT
+    # ============================================================
 
+    if image_file and video_file:
         raise ValidationError(
             "Please attach either an image or a video, not both."
         )
 
+    # ============================================================
+    # IMAGE
+    # ============================================================
+
     if image_file:
-
         if image_file.size > MAX_IMAGE_SIZE:
-
             raise ValidationError(
                 "Image is too large. Maximum size is 10 MB."
             )
@@ -750,18 +773,70 @@ def validate_message_attachments(request):
                 '',
             )
             or ''
+        ).lower().strip()
+
+        allowed_image_types = {
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+            'image/gif',
+        }
+
+        if content_type not in allowed_image_types:
+            raise ValidationError(
+                "Invalid image file."
+            )
+
+        extension = (
+            Path(
+                image_file.name or ''
+            )
+            .suffix
+            .lower()
         )
 
-        if not content_type.startswith('image/'):
+        allowed_image_extensions = {
+            '.jpg',
+            '.jpeg',
+            '.png',
+            '.webp',
+            '.gif',
+        }
+
+        if extension not in allowed_image_extensions:
+            raise ValidationError(
+                "Invalid image file extension."
+            )
+
+        # --------------------------------------------------------
+        # REAL IMAGE VALIDATION
+        # --------------------------------------------------------
+
+        try:
+            image_file.seek(0)
+
+            with Image.open(image_file) as image:
+                image.verify()
+
+            image_file.seek(0)
+
+        except (
+            UnidentifiedImageError,
+            OSError,
+            ValueError,
+        ):
+            image_file.seek(0)
 
             raise ValidationError(
                 "Invalid image file."
             )
 
+    # ============================================================
+    # VIDEO
+    # ============================================================
+
     if video_file:
-
         if video_file.size > MAX_VIDEO_SIZE:
-
             raise ValidationError(
                 "Video is too large. Maximum size is 100 MB."
             )
@@ -773,14 +848,83 @@ def validate_message_attachments(request):
                 '',
             )
             or ''
-        )
+        ).lower().strip()
 
-        if not content_type.startswith('video/'):
+        allowed_video_types = {
+            'video/mp4',
+            'video/webm',
+            'video/quicktime',
+        }
 
+        if content_type not in allowed_video_types:
             raise ValidationError(
                 "Invalid video file."
             )
 
+        extension = (
+            Path(
+                video_file.name or ''
+            )
+            .suffix
+            .lower()
+        )
+
+        allowed_video_extensions = {
+            '.mp4',
+            '.webm',
+            '.mov',
+        }
+
+        if extension not in allowed_video_extensions:
+            raise ValidationError(
+                "Invalid video file extension."
+            )
+
+        # --------------------------------------------------------
+        # REAL VIDEO CONTAINER VALIDATION
+        # --------------------------------------------------------
+
+        video_file.seek(0)
+
+        header = video_file.read(32)
+
+        video_file.seek(0)
+
+        is_mp4_or_mov = (
+            len(header) >= 12
+            and header[4:8] == b'ftyp'
+        )
+
+        is_webm = (
+            header.startswith(
+                b'\x1a\x45\xdf\xa3'
+            )
+        )
+
+        if not (
+            is_mp4_or_mov
+            or is_webm
+        ):
+            raise ValidationError(
+                "Invalid video file."
+            )
+
+        # Make sure the extension and actual container agree.
+        if extension == '.webm' and not is_webm:
+            raise ValidationError(
+                "Invalid video file."
+            )
+
+        if (
+            extension in {
+                '.mp4',
+                '.mov',
+            }
+            and not is_mp4_or_mov
+        ):
+            raise ValidationError(
+                "Invalid video file."
+            )
 
 # ============================================================
 # SYSTEM MESSAGE
