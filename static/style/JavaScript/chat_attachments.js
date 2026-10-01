@@ -1775,11 +1775,12 @@ document.addEventListener(
         );
 
 
-     /* =========================================================
-        VIDEO MESSAGE PREVIEW
-        ========================================================= */
+       /* =========================================================
+          VIDEO MESSAGE PREVIEW
+          ========================================================= */
 
         const MESSAGE_VIDEO_PREVIEW_SECONDS = 4;
+
 
         const messageVideoIntersectionObserver =
             new IntersectionObserver(
@@ -1800,12 +1801,18 @@ document.addEventListener(
                                 entry.isIntersecting &&
                                 entry.intersectionRatio >= 0.5
                             ) {
+                                video.dataset.previewVisible =
+                                    'true';
+
                                 startMessageVideoPreview(
                                     video
                                 );
 
                                 return;
                             }
+
+                            video.dataset.previewVisible =
+                                'false';
 
                             stopMessageVideoPreview(
                                 video
@@ -1835,6 +1842,16 @@ document.addEventListener(
                 return;
             }
 
+            /*
+             * Mark this play() call as being
+             * initiated by the preview system.
+             *
+             * The "play" event will use this flag
+             * to distinguish it from user playback.
+             */
+            video.dataset.previewProgrammaticPlay =
+                'true';
+
             video.dataset.previewPlaying =
                 'true';
 
@@ -1849,6 +1866,9 @@ document.addEventListener(
                 playPromise.catch(
                     function () {
                         video.dataset.previewPlaying =
+                            'false';
+
+                        video.dataset.previewProgrammaticPlay =
                             'false';
                     }
                 );
@@ -1889,8 +1909,14 @@ document.addEventListener(
             video.dataset.previewActive =
                 'true';
 
+            video.dataset.previewResetting =
+                'true';
+
             video.currentTime =
                 0;
+
+            video.dataset.previewResetting =
+                'false';
 
             playMessageVideoPreview(
                 video
@@ -1911,14 +1937,23 @@ document.addEventListener(
             video.dataset.previewPlaying =
                 'false';
 
+            video.dataset.previewProgrammaticPlay =
+                'false';
+
             video.pause();
 
             if (
                 video.readyState >=
                 1
             ) {
+                video.dataset.previewResetting =
+                    'true';
+
                 video.currentTime =
                     0;
+
+                video.dataset.previewResetting =
+                    'false';
             }
         }
 
@@ -1953,17 +1988,53 @@ document.addEventListener(
                         ''
                     );
 
+                    video.dataset.previewVisible =
+                        'false';
+
+                    video.dataset.previewActive =
+                        'false';
+
+                    video.dataset.previewPlaying =
+                        'false';
+
+                    video.dataset.previewDisabled =
+                        'false';
+
+                    video.dataset.previewProgrammaticPlay =
+                        'false';
+
+                    video.dataset.previewResetting =
+                        'false';
+
+
                     /*
-                     * A click means the user wants
-                     * to control the video manually.
+                     * Detect every real playback start.
                      *
-                     * From this moment the automatic
-                     * preview is disabled for this
-                     * video.
+                     * If it was started by our preview
+                     * system, leave preview mode active.
+                     *
+                     * Otherwise the user pressed Play
+                     * and wants normal full-video playback.
                      */
                     video.addEventListener(
-                        'click',
+                        'play',
                         function () {
+                            if (
+                                video.dataset.previewProgrammaticPlay ===
+                                'true'
+                            ) {
+                                video.dataset.previewProgrammaticPlay =
+                                    'false';
+
+                                return;
+                            }
+
+                            /*
+                             * User started the video manually.
+                             *
+                             * Disable automatic preview permanently
+                             * for this video element.
+                             */
                             video.dataset.previewDisabled =
                                 'true';
 
@@ -1974,6 +2045,57 @@ document.addEventListener(
                                 'false';
                         }
                     );
+
+
+                    /*
+                     * If the user seeks manually,
+                     * this is also a clear indication
+                     * that they want normal playback.
+                     */
+                    video.addEventListener(
+                        'seeking',
+                        function () {
+                            if (
+                                video.dataset.previewResetting ===
+                                'true'
+                            ) {
+                                return;
+                            }
+
+                            video.dataset.previewDisabled =
+                                'true';
+
+                            video.dataset.previewActive =
+                                'false';
+
+                            video.dataset.previewPlaying =
+                                'false';
+                        }
+                    );
+
+
+                    /*
+                     * If the user changes the volume,
+                     * they have taken manual control.
+                     */
+                    video.addEventListener(
+                        'volumechange',
+                        function () {
+                            if (
+                                video.dataset.previewActive ===
+                                'true'
+                            ) {
+                                return;
+                            }
+
+                            /*
+                             * Do not disable anything here
+                             * when the video is already in
+                             * normal/manual mode.
+                             */
+                        }
+                    );
+
 
                     /*
                      * Metadata may not be available
@@ -2003,12 +2125,12 @@ document.addEventListener(
                         }
                     );
 
+
                     /*
-                     * Detect when the preview reaches
-                     * the end of its preview window.
+                     * Preview reaches four seconds.
                      *
-                     * Instead of stopping, jump back
-                     * to the beginning and continue.
+                     * Jump back to the beginning
+                     * and continue the preview.
                      */
                     video.addEventListener(
                         'timeupdate',
@@ -2024,8 +2146,14 @@ document.addEventListener(
                                 video.currentTime >=
                                 MESSAGE_VIDEO_PREVIEW_SECONDS
                             ) {
+                                video.dataset.previewResetting =
+                                    'true';
+
                                 video.currentTime =
                                     0;
+
+                                video.dataset.previewResetting =
+                                    'false';
 
                                 playMessageVideoPreview(
                                     video
@@ -2033,6 +2161,7 @@ document.addEventListener(
                             }
                         }
                     );
+
 
                     /*
                      * Very short videos may finish
@@ -2048,8 +2177,14 @@ document.addEventListener(
                                 return;
                             }
 
+                            video.dataset.previewResetting =
+                                'true';
+
                             video.currentTime =
                                 0;
+
+                            video.dataset.previewResetting =
+                                'false';
 
                             playMessageVideoPreview(
                                 video
@@ -2057,27 +2192,27 @@ document.addEventListener(
                         }
                     );
 
+
                     /*
-                     * Remember whether the video is
-                     * currently inside the viewport.
+                     * Preview playback stopped.
+                     *
+                     * Do not change manual playback state here.
                      */
                     video.addEventListener(
                         'pause',
                         function () {
                             if (
-                                video.dataset.previewPlaying ===
+                                video.dataset.previewActive !==
                                 'true'
                             ) {
                                 return;
                             }
 
-                            /*
-                             * If the pause was not caused
-                             * by our preview system, let
-                             * the user keep control.
-                             */
+                            video.dataset.previewPlaying =
+                                'false';
                         }
                     );
+
 
                     messageVideoIntersectionObserver.observe(
                         video
