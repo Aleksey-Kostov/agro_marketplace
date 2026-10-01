@@ -1776,15 +1776,115 @@ document.addEventListener(
 
 
         /* =========================================================
-          VIDEO MESSAGE PREVIEW
+           VIDEO MESSAGE PREVIEW
         ========================================================= */
 
         const MESSAGE_VIDEO_PREVIEW_SECONDS = 4;
 
 
-        /*
-         * Start the automatic preview.
-         */
+        /* =========================================================
+           START FULL VIDEO
+        ========================================================= */
+
+        function startFullMessageVideo(
+            video,
+            playButton
+        ) {
+            if (!video) {
+                return;
+            }
+
+            /*
+             * Disable automatic preview permanently
+             * for this video after the user presses Play.
+             */
+            video.dataset.previewDisabled =
+                'true';
+
+            video.dataset.previewActive =
+                'false';
+
+            video.dataset.previewPlaying =
+                'false';
+
+            video.dataset.previewVisible =
+                'true';
+
+
+            /*
+             * Stop preview and reset video.
+             */
+            video.dataset.previewResetting =
+                'true';
+
+            video.pause();
+
+            try {
+                video.currentTime = 0;
+            } catch (error) {
+                /*
+                 * Metadata may not be ready yet.
+                 * The normal browser video controls will
+                 * handle playback once the video is ready.
+                 */
+            }
+
+            video.dataset.previewResetting =
+                'false';
+
+
+            /*
+             * Enable normal video playback.
+             */
+            video.controls = true;
+
+            video.muted = false;
+
+            video.removeAttribute(
+                'muted'
+            );
+
+
+            /*
+             * Hide custom Play button.
+             */
+            if (playButton) {
+                playButton.classList.add(
+                    'd-none'
+                );
+            }
+
+
+            /*
+             * Start the video.
+             */
+            const playPromise =
+                video.play();
+
+            if (
+                playPromise &&
+                typeof playPromise.catch ===
+                    'function'
+            ) {
+                playPromise.catch(
+                    function () {
+                        /*
+                         * Browser may block autoplay
+                         * in some situations.
+                         *
+                         * Native controls remain enabled,
+                         * so the user can press Play.
+                         */
+                    }
+                );
+            }
+        }
+
+
+        /* =========================================================
+           PLAY PREVIEW
+        ========================================================= */
+
         function playMessageVideoPreview(
             video
         ) {
@@ -1817,9 +1917,10 @@ document.addEventListener(
         }
 
 
-        /*
-         * Start preview from 0:00.
-         */
+        /* =========================================================
+           START PREVIEW
+        ========================================================= */
+
         function startMessageVideoPreview(
             video
         ) {
@@ -1831,6 +1932,9 @@ document.addEventListener(
                 return;
             }
 
+            /*
+             * We need metadata before changing currentTime.
+             */
             if (
                 video.readyState <
                 1
@@ -1838,6 +1942,10 @@ document.addEventListener(
                 return;
             }
 
+
+            /*
+             * Preview must always be muted.
+             */
             video.muted = true;
 
             video.setAttribute(
@@ -1850,17 +1958,33 @@ document.addEventListener(
                 ''
             );
 
+
+            /*
+             * Native controls are hidden
+             * during automatic preview.
+             */
+            video.controls = false;
+
+
             video.dataset.previewActive =
                 'true';
 
+            video.dataset.previewPlaying =
+                'false';
+
+
+            /*
+             * Always start preview
+             * from the beginning.
+             */
             video.dataset.previewResetting =
                 'true';
 
-            video.currentTime =
-                0;
+            video.currentTime = 0;
 
             video.dataset.previewResetting =
                 'false';
+
 
             playMessageVideoPreview(
                 video
@@ -1868,9 +1992,10 @@ document.addEventListener(
         }
 
 
-        /*
-         * Stop automatic preview.
-         */
+        /* =========================================================
+           STOP PREVIEW
+        ========================================================= */
+
         function stopMessageVideoPreview(
             video
         ) {
@@ -1884,175 +2009,53 @@ document.addEventListener(
             video.dataset.previewPlaying =
                 'false';
 
+            /*
+             * Do not touch videos where
+             * the user already started
+             * normal playback.
+             */
+            if (
+                video.dataset.previewDisabled ===
+                'true'
+            ) {
+                return;
+            }
+
             video.pause();
 
             if (
                 video.readyState >=
                 1
             ) {
-                video.dataset.previewResetting =
-                    'true';
-
-                video.currentTime =
-                    0;
-
-                video.dataset.previewResetting =
-                    'false';
-            }
-        }
-
-
-        /*
-         * Switch from automatic preview
-         * to full manual playback.
-         *
-         * This is the important part.
-         */
-        function startFullMessageVideo(
-            video
-        ) {
-            if (!video) {
-                return;
-            }
-
-            /*
-             * Disable preview permanently
-             * for this video element.
-             */
-            video.dataset.previewDisabled =
-                'true';
-
-            video.dataset.previewActive =
-                'false';
-
-            video.dataset.previewPlaying =
-                'false';
-
-            /*
-             * Start the real video from
-             * the beginning.
-             */
-            video.dataset.previewResetting =
-                'true';
-
-            video.currentTime =
-                0;
-
-            video.dataset.previewResetting =
-                'false';
-
-            /*
-             * Give control back to the user.
-             */
-            video.controls =
-                true;
-
-            /*
-             * The preview was muted.
-             *
-             * Full playback should behave
-             * like a normal video.
-             */
-            video.muted =
-                false;
-
-            video.removeAttribute(
-                'muted'
-            );
-
-            video.setAttribute(
-                'playsinline',
-                ''
-            );
-
-            /*
-             * Start the complete video.
-             */
-            const playPromise =
-                video.play();
-
-            if (
-                playPromise &&
-                typeof playPromise.catch ===
-                    'function'
-            ) {
-                playPromise.catch(
-                    function () {
-                        /*
-                         * Browser may require
-                         * another user interaction.
-                         */
-                    }
-                );
-            }
-        }
-
-
-        /*
-         * Observe which videos are visible.
-         */
-        const messageVideoIntersectionObserver =
-            new IntersectionObserver(
-                function (entries) {
-                    entries.forEach(
-                        function (entry) {
-                            const video =
-                                entry.target;
-
-                            if (
-                                video.dataset.previewDisabled ===
-                                'true'
-                            ) {
-                                return;
-                            }
-
-                            if (
-                                entry.isIntersecting &&
-                                entry.intersectionRatio >= 0.5
-                            ) {
-                                video.dataset.previewVisible =
-                                    'true';
-
-                                startMessageVideoPreview(
-                                    video
-                                );
-
-                                return;
-                            }
-
-                            video.dataset.previewVisible =
-                                'false';
-
-                            stopMessageVideoPreview(
-                                video
-                            );
-                        }
-                    );
-                },
-                {
-                    root:
-                        chatWindow ||
-                        null,
-
-                    threshold: [
-                        0,
-                        0.5
-                    ]
+                try {
+                    video.currentTime = 0;
+                } catch (error) {
+                    /*
+                     * Ignore reset errors.
+                     */
                 }
-            );
+            }
+        }
 
 
-        /*
-         * Setup all message videos.
-         */
+        /* =========================================================
+           SETUP VIDEO PREVIEW
+        ========================================================= */
+
         function setupMessageVideoPreview() {
+
             const videos =
                 document.querySelectorAll(
                     '.message-video'
                 );
 
+
             videos.forEach(
                 function (video) {
+
+                    /*
+                     * Prevent duplicate initialization.
+                     */
                     if (
                         video.dataset.previewReady ===
                         'true'
@@ -2063,11 +2066,28 @@ document.addEventListener(
                     video.dataset.previewReady =
                         'true';
 
+
                     /*
-                     * Preview starts muted.
+                     * Find the custom Play button
+                     * inside the same media wrapper.
                      */
-                    video.muted =
-                        true;
+                    const mediaWrap =
+                        video.closest(
+                            '.media-wrap'
+                        );
+
+                    const playButton =
+                        mediaWrap
+                            ? mediaWrap.querySelector(
+                                '.message-video-play-btn'
+                            )
+                            : null;
+
+
+                    /*
+                     * Initial video state.
+                     */
+                    video.muted = true;
 
                     video.setAttribute(
                         'muted',
@@ -2079,7 +2099,10 @@ document.addEventListener(
                         ''
                     );
 
-                    video.dataset.previewVisible =
+                    video.controls = false;
+
+
+                    video.dataset.previewDisabled =
                         'false';
 
                     video.dataset.previewActive =
@@ -2088,83 +2111,53 @@ document.addEventListener(
                     video.dataset.previewPlaying =
                         'false';
 
-                    video.dataset.previewDisabled =
-                        'false';
-
-                    video.dataset.previewResetting =
+                    video.dataset.previewVisible =
                         'false';
 
 
                     /*
-                     * IMPORTANT:
-                     *
-                     * The automatic preview is already
-                     * playing, so waiting for a "play"
-                     * event is not enough.
-                     *
-                     * When the user interacts with the
-                     * video, switch immediately to the
-                     * complete video.
+                     * Hide custom button until
+                     * the video becomes visible.
                      */
-                    video.addEventListener(
-                        'pointerdown',
-                        function (event) {
-                            if (
-                                video.dataset.previewActive !==
-                                'true'
-                            ) {
-                                return;
+                    if (playButton) {
+
+                        playButton.classList.add(
+                            'd-none'
+                        );
+
+
+                        /*
+                         * IMPORTANT:
+                         *
+                         * The click listener belongs
+                         * to the custom button,
+                         * NOT to the video.
+                         */
+                        playButton.addEventListener(
+                            'click',
+                            function (event) {
+
+                                event.preventDefault();
+
+                                event.stopPropagation();
+
+                                startFullMessageVideo(
+                                    video,
+                                    playButton
+                                );
                             }
-
-                            /*
-                             * The user is taking control.
-                             */
-                            event.preventDefault();
-
-                            event.stopPropagation();
-
-                            startFullMessageVideo(
-                                video
-                            );
-                        },
-                        true
-                    );
+                        );
+                    }
 
 
-                    /*
-                     * Fallback for browsers where
-                     * pointer events do not reach
-                     * the video controls correctly.
-                     */
-                    video.addEventListener(
-                        'click',
-                        function (event) {
-                            if (
-                                video.dataset.previewActive !==
-                                'true'
-                            ) {
-                                return;
-                            }
+                    /* =================================================
+                       VIDEO METADATA
+                    ================================================= */
 
-                            event.preventDefault();
-
-                            event.stopPropagation();
-
-                            startFullMessageVideo(
-                                video
-                            );
-                        },
-                        true
-                    );
-
-
-                    /*
-                     * Metadata may not be available
-                     * when IntersectionObserver fires.
-                     */
                     video.addEventListener(
                         'loadedmetadata',
                         function () {
+
                             if (
                                 video.dataset.previewDisabled ===
                                 'true'
@@ -2184,15 +2177,23 @@ document.addEventListener(
                     );
 
 
-                    /*
-                     * Loop ONLY the first four seconds
-                     * while automatic preview is active.
-                     */
+                    /* =================================================
+                       PREVIEW TIME
+                    ================================================= */
+
                     video.addEventListener(
                         'timeupdate',
                         function () {
+
                             if (
                                 video.dataset.previewActive !==
+                                'true'
+                            ) {
+                                return;
+                            }
+
+                            if (
+                                video.dataset.previewResetting ===
                                 'true'
                             ) {
                                 return;
@@ -2202,11 +2203,11 @@ document.addEventListener(
                                 video.currentTime >=
                                 MESSAGE_VIDEO_PREVIEW_SECONDS
                             ) {
+
                                 video.dataset.previewResetting =
                                     'true';
 
-                                video.currentTime =
-                                    0;
+                                video.currentTime = 0;
 
                                 video.dataset.previewResetting =
                                     'false';
@@ -2219,12 +2220,18 @@ document.addEventListener(
                     );
 
 
-                    /*
-                     * Very short videos.
-                     */
+                    /* =================================================
+                       PREVIEW ENDED
+                    ================================================= */
+
                     video.addEventListener(
                         'ended',
                         function () {
+
+                            /*
+                             * Normal user playback must
+                             * NOT loop.
+                             */
                             if (
                                 video.dataset.previewActive !==
                                 'true'
@@ -2235,8 +2242,7 @@ document.addEventListener(
                             video.dataset.previewResetting =
                                 'true';
 
-                            video.currentTime =
-                                0;
+                            video.currentTime = 0;
 
                             video.dataset.previewResetting =
                                 'false';
@@ -2248,13 +2254,14 @@ document.addEventListener(
                     );
 
 
-                    /*
-                     * Do not interfere with
-                     * normal full-video playback.
-                     */
+                    /* =================================================
+                       PREVIEW PAUSE
+                    ================================================= */
+
                     video.addEventListener(
                         'pause',
                         function () {
+
                             if (
                                 video.dataset.previewActive !==
                                 'true'
@@ -2262,35 +2269,177 @@ document.addEventListener(
                                 return;
                             }
 
+                            /*
+                             * If the browser pauses the
+                             * preview for an external reason,
+                             * remember that it is no longer
+                             * actively playing.
+                             */
                             video.dataset.previewPlaying =
                                 'false';
                         }
                     );
 
 
-                    messageVideoIntersectionObserver.observe(
-                        video
-                    );
+                    /* =================================================
+                       VISIBILITY OBSERVER
+                    ================================================= */
+
+                    if (
+                        typeof messageVideoIntersectionObserver !==
+                        'undefined'
+                    ) {
+
+                        messageVideoIntersectionObserver.observe(
+                            video
+                        );
+
+                    }
+
                 }
             );
         }
 
 
+        /* =========================================================
+           VIDEO VISIBILITY OBSERVER
+        ========================================================= */
+
+        const messageVideoIntersectionObserver =
+            new IntersectionObserver(
+                function (entries) {
+
+                    entries.forEach(
+                        function (entry) {
+
+                            const video =
+                                entry.target;
+
+                            if (!video) {
+                                return;
+                            }
+
+
+                            const mediaWrap =
+                                video.closest(
+                                    '.media-wrap'
+                                );
+
+                            const playButton =
+                                mediaWrap
+                                    ? mediaWrap.querySelector(
+                                        '.message-video-play-btn'
+                                    )
+                                    : null;
+
+
+                            /*
+                             * User already started
+                             * normal playback.
+                             *
+                             * Do not restart preview
+                             * or interfere with controls.
+                             */
+                            if (
+                                video.dataset.previewDisabled ===
+                                'true'
+                            ) {
+                                if (playButton) {
+                                    playButton.classList.add(
+                                        'd-none'
+                                    );
+                                }
+
+                                return;
+                            }
+
+
+                            /*
+                             * Video is sufficiently visible.
+                             */
+                            if (
+                                entry.isIntersecting &&
+                                entry.intersectionRatio >=
+                                    0.5
+                            ) {
+
+                                video.dataset.previewVisible =
+                                    'true';
+
+
+                                if (playButton) {
+                                    playButton.classList.remove(
+                                        'd-none'
+                                    );
+                                }
+
+
+                                startMessageVideoPreview(
+                                    video
+                                );
+
+                                return;
+                            }
+
+
+                            /*
+                             * Video is no longer visible.
+                             */
+                            video.dataset.previewVisible =
+                                'false';
+
+
+                            stopMessageVideoPreview(
+                                video
+                            );
+
+
+                            if (playButton) {
+                                playButton.classList.add(
+                                    'd-none'
+                                );
+                            }
+
+                        }
+                    );
+
+                },
+                {
+                    root:
+                        chatWindow ||
+                        null,
+
+                    threshold: [
+                        0,
+                        0.5
+                    ]
+                }
+            );
+
+
+        /* =========================================================
+           INITIALIZE VIDEO PREVIEWS
+        ========================================================= */
+
         setupMessageVideoPreview();
 
 
-        /*
-         * Handle dynamically added messages.
-         */
+        /* =========================================================
+           WATCH NEW MESSAGES
+        ========================================================= */
+
         const messageVideoMutationObserver =
             new MutationObserver(
                 function () {
+
                     setupMessageVideoPreview();
+
                 }
             );
 
 
         if (chatMessages) {
+
             messageVideoMutationObserver.observe(
                 chatMessages,
                 {
@@ -2298,6 +2447,7 @@ document.addEventListener(
                     subtree: true
                 }
             );
+
         }
 
 
