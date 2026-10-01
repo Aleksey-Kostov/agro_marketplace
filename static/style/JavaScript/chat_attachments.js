@@ -1775,11 +1775,153 @@ document.addEventListener(
         );
 
 
-        /* =========================================================
-           VIDEO MESSAGE PREVIEW
-           ========================================================= */
+     /* =========================================================
+        VIDEO MESSAGE PREVIEW
+        ========================================================= */
 
         const MESSAGE_VIDEO_PREVIEW_SECONDS = 4;
+
+        const messageVideoIntersectionObserver =
+            new IntersectionObserver(
+                function (entries) {
+                    entries.forEach(
+                        function (entry) {
+                            const video =
+                                entry.target;
+
+                            if (
+                                video.dataset.previewDisabled ===
+                                'true'
+                            ) {
+                                return;
+                            }
+
+                            if (
+                                entry.isIntersecting &&
+                                entry.intersectionRatio >= 0.5
+                            ) {
+                                startMessageVideoPreview(
+                                    video
+                                );
+
+                                return;
+                            }
+
+                            stopMessageVideoPreview(
+                                video
+                            );
+                        }
+                    );
+                },
+                {
+                    root: chatWindow || null,
+
+                    threshold: [
+                        0,
+                        0.5
+                    ]
+                }
+            );
+
+
+        function playMessageVideoPreview(
+            video
+        ) {
+            if (
+                !video ||
+                video.dataset.previewDisabled ===
+                    'true'
+            ) {
+                return;
+            }
+
+            video.dataset.previewPlaying =
+                'true';
+
+            const playPromise =
+                video.play();
+
+            if (
+                playPromise &&
+                typeof playPromise.catch ===
+                    'function'
+            ) {
+                playPromise.catch(
+                    function () {
+                        video.dataset.previewPlaying =
+                            'false';
+                    }
+                );
+            }
+        }
+
+
+        function startMessageVideoPreview(
+            video
+        ) {
+            if (
+                !video ||
+                video.dataset.previewDisabled ===
+                    'true'
+            ) {
+                return;
+            }
+
+            if (
+                video.readyState <
+                1
+            ) {
+                return;
+            }
+
+            video.muted = true;
+
+            video.setAttribute(
+                'muted',
+                ''
+            );
+
+            video.setAttribute(
+                'playsinline',
+                ''
+            );
+
+            video.dataset.previewActive =
+                'true';
+
+            video.currentTime =
+                0;
+
+            playMessageVideoPreview(
+                video
+            );
+        }
+
+
+        function stopMessageVideoPreview(
+            video
+        ) {
+            if (!video) {
+                return;
+            }
+
+            video.dataset.previewActive =
+                'false';
+
+            video.dataset.previewPlaying =
+                'false';
+
+            video.pause();
+
+            if (
+                video.readyState >=
+                1
+            ) {
+                video.currentTime =
+                    0;
+            }
+        }
+
 
         function setupMessageVideoPreview() {
             const videos =
@@ -1800,79 +1942,164 @@ document.addEventListener(
                         'true';
 
                     video.muted = true;
+
                     video.setAttribute(
                         'muted',
                         ''
                     );
+
                     video.setAttribute(
                         'playsinline',
                         ''
                     );
 
+                    /*
+                     * A click means the user wants
+                     * to control the video manually.
+                     *
+                     * From this moment the automatic
+                     * preview is disabled for this
+                     * video.
+                     */
+                    video.addEventListener(
+                        'click',
+                        function () {
+                            video.dataset.previewDisabled =
+                                'true';
+
+                            video.dataset.previewActive =
+                                'false';
+
+                            video.dataset.previewPlaying =
+                                'false';
+                        }
+                    );
+
+                    /*
+                     * Metadata may not be available
+                     * when IntersectionObserver fires.
+                     *
+                     * Once metadata arrives, preview
+                     * starts if the video is visible.
+                     */
                     video.addEventListener(
                         'loadedmetadata',
                         function () {
                             if (
-                                video.dataset.previewPlayed ===
+                                video.dataset.previewDisabled ===
                                 'true'
                             ) {
                                 return;
                             }
 
-                            video.dataset.previewPlayed =
-                                'true';
-
-                            video.currentTime = 0;
-
-                            const playPromise =
-                                video.play();
-
                             if (
-                                playPromise &&
-                                typeof playPromise.catch ===
-                                    'function'
+                                video.dataset.previewVisible ===
+                                'true'
                             ) {
-                                playPromise.catch(
-                                    function () {
-                                        /*
-                                         * Browser may block
-                                         * autoplay. Controls
-                                         * remain available.
-                                         */
-                                    }
+                                startMessageVideoPreview(
+                                    video
                                 );
                             }
                         }
                     );
 
+                    /*
+                     * Detect when the preview reaches
+                     * the end of its preview window.
+                     *
+                     * Instead of stopping, jump back
+                     * to the beginning and continue.
+                     */
                     video.addEventListener(
                         'timeupdate',
                         function () {
                             if (
+                                video.dataset.previewActive !==
+                                'true'
+                            ) {
+                                return;
+                            }
+
+                            if (
                                 video.currentTime >=
                                 MESSAGE_VIDEO_PREVIEW_SECONDS
                             ) {
-                                video.pause();
+                                video.currentTime =
+                                    0;
 
-                                video.currentTime = 0;
+                                playMessageVideoPreview(
+                                    video
+                                );
                             }
                         }
+                    );
+
+                    /*
+                     * Very short videos may finish
+                     * before reaching four seconds.
+                     */
+                    video.addEventListener(
+                        'ended',
+                        function () {
+                            if (
+                                video.dataset.previewActive !==
+                                'true'
+                            ) {
+                                return;
+                            }
+
+                            video.currentTime =
+                                0;
+
+                            playMessageVideoPreview(
+                                video
+                            );
+                        }
+                    );
+
+                    /*
+                     * Remember whether the video is
+                     * currently inside the viewport.
+                     */
+                    video.addEventListener(
+                        'pause',
+                        function () {
+                            if (
+                                video.dataset.previewPlaying ===
+                                'true'
+                            ) {
+                                return;
+                            }
+
+                            /*
+                             * If the pause was not caused
+                             * by our preview system, let
+                             * the user keep control.
+                             */
+                        }
+                    );
+
+                    messageVideoIntersectionObserver.observe(
+                        video
                     );
                 }
             );
         }
 
+
         setupMessageVideoPreview();
 
-        const messageVideoObserver =
+
+        const messageVideoMutationObserver =
             new MutationObserver(
                 function () {
                     setupMessageVideoPreview();
                 }
             );
 
+
         if (chatMessages) {
-            messageVideoObserver.observe(
+            messageVideoMutationObserver.observe(
                 chatMessages,
                 {
                     childList: true,
