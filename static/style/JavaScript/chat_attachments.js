@@ -87,9 +87,39 @@ document.addEventListener(
                 'chat-window'
             );
 
+        const chatMessages =
+            document.getElementById(
+                'chat-messages'
+            );
+
         const dropOverlay =
             document.getElementById(
                 'chat-drop-overlay'
+            );
+
+        const uploadProgressWrap =
+            document.getElementById(
+                'upload-progress-wrap'
+            );
+
+        const uploadProgressBar =
+            document.getElementById(
+                'upload-progress-bar'
+            );
+
+        const uploadProgressText =
+            document.getElementById(
+                'upload-progress-text'
+            );
+
+        const uploadProgressPercent =
+            document.getElementById(
+                'upload-progress-percent'
+            );
+
+        const submitBtn =
+            document.getElementById(
+                'message-submit-btn'
             );
 
 
@@ -129,6 +159,8 @@ document.addEventListener(
         let videoObjectUrl = null;
 
         let dragCounter = 0;
+
+        let isUploading = false;
 
 
         /* =========================================================
@@ -183,38 +215,125 @@ document.addEventListener(
         }
 
 
-        function setInputFile(
-            input,
-            file
+        function getCsrfToken() {
+            const csrfInput =
+                replyForm.querySelector(
+                    '[name="csrfmiddlewaretoken"]'
+                );
+
+            return csrfInput
+                ? csrfInput.value
+                : '';
+        }
+
+
+        function getSendUrl() {
+            return (
+                replyForm.dataset.sendUrl ||
+                replyForm.getAttribute(
+                    'action'
+                ) ||
+                window.location.href
+            );
+        }
+
+
+        function isAtBottom() {
+            if (
+                window.agroChatNavigation &&
+                typeof
+                    window.agroChatNavigation
+                        .isAtBottom ===
+                        'function'
+            ) {
+                return window.agroChatNavigation.isAtBottom();
+            }
+
+            if (!chatWindow) {
+                return true;
+            }
+
+            return (
+                chatWindow.scrollTop +
+                chatWindow.clientHeight
+            ) >= (
+                chatWindow.scrollHeight - 50
+            );
+        }
+
+
+        function appendRenderedMessage(
+            html,
+            messageId,
+            shouldScroll
         ) {
             if (
-                !input ||
-                !file
+                window.agroChatConversation &&
+                typeof
+                    window.agroChatConversation
+                        .appendRenderedMessage ===
+                        'function'
             ) {
+                return window.agroChatConversation
+                    .appendRenderedMessage(
+                        html,
+                        messageId,
+                        shouldScroll
+                    );
+            }
+
+            if (!chatMessages) {
                 return false;
             }
 
-            try {
-                const dataTransfer =
-                    new DataTransfer();
+            const id =
+                Number(messageId);
 
-                dataTransfer.items.add(
-                    file
-                );
-
-                input.files =
-                    dataTransfer.files;
-
-                return true;
-
-            } catch (error) {
-                console.error(
-                    'Unable to assign attachment file:',
-                    error
-                );
-
+            if (!id) {
                 return false;
             }
+
+            const existing =
+                document.getElementById(
+                    `msg-${id}`
+                );
+
+            if (existing) {
+                return false;
+            }
+
+            const wrapper =
+                document.createElement(
+                    'div'
+                );
+
+            wrapper.innerHTML =
+                html.trim();
+
+            const element =
+                wrapper.firstElementChild;
+
+            if (!element) {
+                return false;
+            }
+
+            chatMessages.appendChild(
+                element
+            );
+
+            if (
+                shouldScroll &&
+                chatWindow
+            ) {
+                requestAnimationFrame(
+                    function () {
+                        chatWindow.scrollTop =
+                            chatWindow.scrollHeight;
+                    }
+                );
+            }
+
+            return true;
         }
 
 
@@ -437,6 +556,47 @@ document.addEventListener(
         }
 
 
+        function getSelectedAttachment() {
+            const imageFile =
+                imageInput &&
+                imageInput.files &&
+                imageInput.files[0];
+
+            const videoFile =
+                videoInput &&
+                videoInput.files &&
+                videoInput.files[0];
+
+            const genericFile =
+                fileInput &&
+                fileInput.files &&
+                fileInput.files[0];
+
+            if (imageFile) {
+                return {
+                    type: 'image',
+                    file: imageFile
+                };
+            }
+
+            if (videoFile) {
+                return {
+                    type: 'video',
+                    file: videoFile
+                };
+            }
+
+            if (genericFile) {
+                return {
+                    type: 'file',
+                    file: genericFile
+                };
+            }
+
+            return null;
+        }
+
+
         function validateAttachmentsBeforeSubmit() {
             const imageFile =
                 imageInput &&
@@ -455,19 +615,13 @@ document.addEventListener(
 
             const count =
                 Number(
-                    Boolean(
-                        imageFile
-                    )
+                    Boolean(imageFile)
                 ) +
                 Number(
-                    Boolean(
-                        videoFile
-                    )
+                    Boolean(videoFile)
                 ) +
                 Number(
-                    Boolean(
-                        genericFile
-                    )
+                    Boolean(genericFile)
                 );
 
             if (count > 1) {
@@ -511,21 +665,7 @@ document.addEventListener(
 
         function hasAttachment() {
             return Boolean(
-                (
-                    imageInput &&
-                    imageInput.files &&
-                    imageInput.files[0]
-                ) ||
-                (
-                    videoInput &&
-                    videoInput.files &&
-                    videoInput.files[0]
-                ) ||
-                (
-                    fileInput &&
-                    fileInput.files &&
-                    fileInput.files[0]
-                )
+                getSelectedAttachment()
             );
         }
 
@@ -771,16 +911,9 @@ document.addEventListener(
                     'file-preview-meta';
 
                 meta.textContent =
-                    `${
-                        getExtension(
-                            file
-                        )
-                            .replace(
-                                '.',
-                                ''
-                            )
-                            .toUpperCase()
-                    } · ${
+                    `${getExtension(file)
+                        .replace('.', '')
+                        .toUpperCase()} · ${
                         formatFileSize(
                             file.size
                         )
@@ -816,40 +949,41 @@ document.addEventListener(
 
 
         /* =========================================================
-           DROP OVERLAY
+           INPUT FILE
            ========================================================= */
 
-        function showDropOverlay() {
-            if (!dropOverlay) {
-                return;
+        function setInputFile(
+            input,
+            file
+        ) {
+            if (
+                !input ||
+                !file
+            ) {
+                return false;
             }
 
-            dropOverlay.classList.add(
-                'active',
-                'show'
-            );
+            try {
+                const dataTransfer =
+                    new DataTransfer();
 
-            dropOverlay.setAttribute(
-                'aria-hidden',
-                'false'
-            );
-        }
+                dataTransfer.items.add(
+                    file
+                );
 
+                input.files =
+                    dataTransfer.files;
 
-        function hideDropOverlay() {
-            if (!dropOverlay) {
-                return;
+                return true;
+
+            } catch (error) {
+                console.error(
+                    'Unable to assign attachment file:',
+                    error
+                );
+
+                return false;
             }
-
-            dropOverlay.classList.remove(
-                'active',
-                'show'
-            );
-
-            dropOverlay.setAttribute(
-                'aria-hidden',
-                'true'
-            );
         }
 
 
@@ -866,6 +1000,10 @@ document.addEventListener(
                 function (event) {
                     event.preventDefault();
 
+                    if (isUploading) {
+                        return;
+                    }
+
                     imageInput.click();
                 }
             );
@@ -881,6 +1019,10 @@ document.addEventListener(
                 function (event) {
                     event.preventDefault();
 
+                    if (isUploading) {
+                        return;
+                    }
+
                     videoInput.click();
                 }
             );
@@ -895,6 +1037,10 @@ document.addEventListener(
                 'click',
                 function (event) {
                     event.preventDefault();
+
+                    if (isUploading) {
+                        return;
+                    }
 
                     fileInput.click();
                 }
@@ -970,6 +1116,10 @@ document.addEventListener(
                 function (event) {
                     event.preventDefault();
 
+                    if (isUploading) {
+                        return;
+                    }
+
                     clearMediaInputs();
                 }
             );
@@ -980,12 +1130,50 @@ document.addEventListener(
            DRAG & DROP
            ========================================================= */
 
+        function showDropOverlay() {
+            if (!dropOverlay) {
+                return;
+            }
+
+            dropOverlay.classList.add(
+                'active',
+                'show'
+            );
+
+            dropOverlay.setAttribute(
+                'aria-hidden',
+                'false'
+            );
+        }
+
+
+        function hideDropOverlay() {
+            if (!dropOverlay) {
+                return;
+            }
+
+            dropOverlay.classList.remove(
+                'active',
+                'show'
+            );
+
+            dropOverlay.setAttribute(
+                'aria-hidden',
+                'true'
+            );
+        }
+
+
         if (chatWindow) {
             chatWindow.addEventListener(
                 'dragenter',
                 function (event) {
                     event.preventDefault();
                     event.stopPropagation();
+
+                    if (isUploading) {
+                        return;
+                    }
 
                     dragCounter += 1;
 
@@ -999,6 +1187,10 @@ document.addEventListener(
                 function (event) {
                     event.preventDefault();
                     event.stopPropagation();
+
+                    if (isUploading) {
+                        return;
+                    }
 
                     if (
                         event.dataTransfer
@@ -1043,6 +1235,10 @@ document.addEventListener(
                         0;
 
                     hideDropOverlay();
+
+                    if (isUploading) {
+                        return;
+                    }
 
                     handleDrop(
                         event
@@ -1129,7 +1325,8 @@ document.addEventListener(
             'paste',
             function (event) {
                 if (
-                    !messageBodyField
+                    !messageBodyField ||
+                    isUploading
                 ) {
                     return;
                 }
@@ -1201,6 +1398,384 @@ document.addEventListener(
 
 
         /* =========================================================
+           UPLOAD PROGRESS
+           ========================================================= */
+
+        function showUploadProgress() {
+            if (!uploadProgressWrap) {
+                return;
+            }
+
+            uploadProgressWrap.classList.remove(
+                'd-none'
+            );
+
+            if (uploadProgressBar) {
+                uploadProgressBar.style.width =
+                    '0%';
+
+                uploadProgressBar.setAttribute(
+                    'aria-valuenow',
+                    '0'
+                );
+            }
+
+            if (uploadProgressPercent) {
+                uploadProgressPercent.textContent =
+                    '0%';
+            }
+
+            if (uploadProgressText) {
+                uploadProgressText.textContent =
+                    'Uploading...';
+            }
+        }
+
+
+        function updateUploadProgress(
+            percent
+        ) {
+            percent =
+                Math.max(
+                    0,
+                    Math.min(
+                        100,
+                        percent
+                    )
+                );
+
+            if (uploadProgressBar) {
+                uploadProgressBar.style.width =
+                    `${percent}%`;
+
+                uploadProgressBar.setAttribute(
+                    'aria-valuenow',
+                    String(percent)
+                );
+            }
+
+            if (uploadProgressPercent) {
+                uploadProgressPercent.textContent =
+                    `${percent}%`;
+            }
+        }
+
+
+        function hideUploadProgress() {
+            if (uploadProgressWrap) {
+                uploadProgressWrap.classList.add(
+                    'd-none'
+                );
+            }
+        }
+
+
+        /* =========================================================
+           BUTTON STATE
+           ========================================================= */
+
+        function setUploadingState(
+            uploading
+        ) {
+            if (!submitBtn) {
+                return;
+            }
+
+            if (uploading) {
+                submitBtn.disabled =
+                    true;
+
+                submitBtn.innerHTML =
+                    '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
+
+                return;
+            }
+
+            submitBtn.disabled =
+                false;
+
+            submitBtn.innerHTML =
+                '<i class="fas fa-paper-plane me-1" id="message-submit-icon"></i>' +
+                '<span id="message-submit-text">Send</span>';
+        }
+
+
+        /* =========================================================
+           UPLOAD
+           ========================================================= */
+
+        function uploadAttachment() {
+            if (
+                isUploading ||
+                !replyForm
+            ) {
+                return;
+            }
+
+            if (
+                !validateAttachmentsBeforeSubmit()
+            ) {
+                return;
+            }
+
+            const attachment =
+                getSelectedAttachment();
+
+            if (!attachment) {
+                return;
+            }
+
+            const sendUrl =
+                getSendUrl();
+
+            if (!sendUrl) {
+                alert(
+                    'Message send URL is missing.'
+                );
+
+                return;
+            }
+
+            const shouldScroll =
+                isAtBottom();
+
+            const formData =
+                new FormData(
+                    replyForm
+                );
+
+            const xhr =
+                new XMLHttpRequest();
+
+            isUploading = true;
+
+            showUploadProgress();
+            setUploadingState(
+                true
+            );
+
+            xhr.upload.addEventListener(
+                'progress',
+                function (event) {
+                    if (
+                        !event.lengthComputable
+                    ) {
+                        return;
+                    }
+
+                    updateUploadProgress(
+                        Math.round(
+                            (
+                                event.loaded /
+                                event.total
+                            ) *
+                            100
+                        )
+                    );
+                }
+            );
+
+
+            xhr.addEventListener(
+                'load',
+                function () {
+                    if (
+                        xhr.status >= 200 &&
+                        xhr.status < 300
+                    ) {
+                        updateUploadProgress(
+                            100
+                        );
+
+                        if (
+                            uploadProgressText
+                        ) {
+                            uploadProgressText.textContent =
+                                'Upload complete';
+                        }
+
+                        let data;
+
+                        try {
+                            data =
+                                JSON.parse(
+                                    xhr.responseText
+                                );
+
+                        } catch (error) {
+                            console.error(
+                                'Invalid attachment response:',
+                                xhr.responseText
+                            );
+
+                            alert(
+                                'Server returned an invalid response.'
+                            );
+
+                            resetUploadState();
+
+                            return;
+                        }
+
+                        if (
+                            !data ||
+                            !data.ok ||
+                            !data.html ||
+                            !data.message_id
+                        ) {
+                            alert(
+                                (
+                                    data &&
+                                    data.error
+                                ) ||
+                                'Message upload failed.'
+                            );
+
+                            resetUploadState();
+
+                            return;
+                        }
+
+                        appendRenderedMessage(
+                            data.html,
+                            data.message_id,
+                            shouldScroll
+                        );
+
+                        window.dispatchEvent(
+                            new CustomEvent(
+                                'agro:message-sent'
+                            )
+                        );
+
+                        setTimeout(
+                            hideUploadProgress,
+                            300
+                        );
+
+                        clearMediaInputs();
+
+                        resetUploadState();
+
+                        return;
+                    }
+
+                    let errorMessage =
+                        'Upload failed. Please try again.';
+
+                    try {
+                        const data =
+                            JSON.parse(
+                                xhr.responseText
+                            );
+
+                        if (
+                            data &&
+                            data.error
+                        ) {
+                            errorMessage =
+                                data.error;
+                        }
+
+                    } catch (error) {}
+
+                    alert(
+                        errorMessage
+                    );
+
+                    resetUploadState();
+                }
+            );
+
+
+            xhr.addEventListener(
+                'error',
+                function () {
+                    alert(
+                        'Upload failed. Please check your connection and try again.'
+                    );
+
+                    resetUploadState();
+                }
+            );
+
+
+            xhr.addEventListener(
+                'abort',
+                function () {
+                    resetUploadState();
+                }
+            );
+
+
+            xhr.open(
+                'POST',
+                sendUrl,
+                true
+            );
+
+
+            const csrfToken =
+                getCsrfToken();
+
+            if (csrfToken) {
+                xhr.setRequestHeader(
+                    'X-CSRFToken',
+                    csrfToken
+                );
+            }
+
+            xhr.setRequestHeader(
+                'X-Requested-With',
+                'XMLHttpRequest'
+            );
+
+            xhr.setRequestHeader(
+                'Accept',
+                'application/json'
+            );
+
+            xhr.send(
+                formData
+            );
+        }
+
+
+        function resetUploadState() {
+            isUploading =
+                false;
+
+            hideUploadProgress();
+            setUploadingState(
+                false
+            );
+        }
+
+
+        /* =========================================================
+           FORM SUBMIT
+           ========================================================= */
+
+        replyForm.addEventListener(
+            'submit',
+            function (event) {
+                const attachment =
+                    getSelectedAttachment();
+
+                if (!attachment) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopImmediatePropagation();
+
+                uploadAttachment();
+            },
+            true
+        );
+
+
+        /* =========================================================
            PUBLIC API
            ========================================================= */
 
@@ -1214,21 +1789,26 @@ document.addEventListener(
             validate:
                 validateAttachmentsBeforeSubmit,
 
+            upload:
+                uploadAttachment,
+
             isBusy:
                 function () {
-                    return false;
+                    return isUploading;
                 }
         };
 
 
         /* =========================================================
-           CLEANUP AFTER MESSAGE SENT
+           CLEANUP
            ========================================================= */
 
         window.addEventListener(
             'agro:message-sent',
             function () {
-                clearMediaInputs();
+                if (!isUploading) {
+                    clearMediaInputs();
+                }
             }
         );
     }

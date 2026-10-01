@@ -2215,23 +2215,13 @@ document.addEventListener('DOMContentLoaded', function () {
             ? messageBodyField.value.trim()
             : '';
 
-        const imageFile =
-            imageInput &&
-            imageInput.files &&
-            imageInput.files[0];
-
-        const videoFile =
-            videoInput &&
-            videoInput.files &&
-            videoInput.files[0];
-
-        if (imageFile || videoFile) {
-            if (!validateAttachmentsBeforeSubmit()) {
-                return;
-            }
-
-            handleAttachmentSubmit(event);
-            return;
+        if (
+            window.agroChatAttachments &&
+            typeof window.agroChatAttachments.hasAttachment ===
+                'function' &&
+            window.agroChatAttachments.hasAttachment()
+        ) {
+           return;
         }
 
         if (!body) {
@@ -2580,27 +2570,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     editingMessageId.value
                 ) {
                     handleEditSubmit(e);
-                    return;
-                }
-
-                const imageFile =
-                    imageInput &&
-                    imageInput.files &&
-                    imageInput.files[0];
-
-                const videoFile =
-                    videoInput &&
-                    videoInput.files &&
-                    videoInput.files[0];
-
-                if (imageFile || videoFile) {
-                    if (
-                        !validateAttachmentsBeforeSubmit()
-                    ) {
-                        return;
-                    }
-
-                    handleAttachmentSubmit(e);
                     return;
                 }
 
