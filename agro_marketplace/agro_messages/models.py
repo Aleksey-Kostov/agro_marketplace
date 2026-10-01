@@ -3,11 +3,15 @@ from datetime import datetime
 from django.conf import settings
 from django.db import models
 
-
 from .storages import (
     MessageImageStorage,
     MessageVideoStorage,
     MessageAttachmentStorage,
+)
+
+from .services.cloudinary_attachments import (
+    CloudinaryAttachmentDeleteError,
+    delete_message_attachment,
 )
 
 User = settings.AUTH_USER_MODEL
@@ -165,11 +169,40 @@ class MessageAttachment(models.Model):
         auto_now_add=True,
     )
 
-    class Meta:
-        ordering = ["created_at"]
-
     def __str__(self):
         return self.original_name
+
+    def delete(self, *args, **kwargs):
+        """
+        Delete the associated Cloudinary asset, if present,
+        and then delete the database record.
+
+        Cloudinary cleanup must never block the database
+        deletion of the attachment.
+        """
+
+        if (
+                self.cloudinary_public_id
+                and self.cloudinary_resource_type
+        ):
+            try:
+                delete_message_attachment(
+                    public_id=self.cloudinary_public_id,
+                    resource_type=(
+                        self.cloudinary_resource_type
+                    ),
+                )
+
+            except CloudinaryAttachmentDeleteError:
+                pass
+
+        return super().delete(
+            *args,
+            **kwargs,
+        )
+
+    class Meta:
+        ordering = ["created_at"]
 
 
 # =========================================================
