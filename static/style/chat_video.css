@@ -8,38 +8,26 @@
 
 .message-video-play-btn {
     position: absolute;
-
     top: 50%;
     left: 50%;
-
     width: 56px;
     height: 56px;
-
     margin: 0;
     padding: 0;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     transform: translate(-50%, -50%);
-
     border: 0;
     border-radius: 50%;
-
     background: rgba(30, 30, 30, 0.62);
     color: #fff;
-
     box-shadow:
         0 4px 14px rgba(0, 0, 0, 0.28);
-
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-
     cursor: pointer;
-
     z-index: 10;
-
     transition:
         transform 0.16s ease,
         background-color 0.16s ease,
@@ -48,21 +36,18 @@
 }
 
 .message-video-play-btn i {
-    margin-left: 3px;
-
-    font-size: 19px;
+    margin-left: 0;
+    font-size: 18px;
     line-height: 1;
-
     color: #fff;
+    transform: translateX(1px);
 }
 
 .message-video-play-btn:hover {
     background: rgba(25, 25, 25, 0.76);
-
     transform:
         translate(-50%, -50%)
         scale(1.06);
-
     box-shadow:
         0 6px 18px rgba(0, 0, 0, 0.34);
 }
