@@ -1775,9 +1775,9 @@ document.addEventListener(
         );
 
 
-       /* =========================================================
-          VIDEO MESSAGE PREVIEW
-          ========================================================= */
+        /* =========================================================
+           VIDEO MESSAGE PREVIEW
+        ========================================================= */
 
         const MESSAGE_VIDEO_PREVIEW_SECONDS = 4;
 
@@ -1843,11 +1843,8 @@ document.addEventListener(
             }
 
             /*
-             * Mark this play() call as being
-             * initiated by the preview system.
-             *
-             * The "play" event will use this flag
-             * to distinguish it from user playback.
+             * This play() call comes from the
+             * automatic preview system.
              */
             video.dataset.previewProgrammaticPlay =
                 'true';
@@ -2008,17 +2005,19 @@ document.addEventListener(
 
 
                     /*
-                     * Detect every real playback start.
+                     * Detect playback start.
                      *
-                     * If it was started by our preview
-                     * system, leave preview mode active.
+                     * There are two possible sources:
                      *
-                     * Otherwise the user pressed Play
-                     * and wants normal full-video playback.
+                     * 1. Our automatic preview.
+                     * 2. The user pressing Play.
                      */
                     video.addEventListener(
                         'play',
                         function () {
+                            /*
+                             * Automatic preview playback.
+                             */
                             if (
                                 video.dataset.previewProgrammaticPlay ===
                                 'true'
@@ -2029,11 +2028,18 @@ document.addEventListener(
                                 return;
                             }
 
+
                             /*
-                             * User started the video manually.
+                             * USER PLAY
                              *
-                             * Disable automatic preview permanently
-                             * for this video element.
+                             * The user explicitly wants
+                             * to watch the whole video.
+                             *
+                             * Therefore:
+                             *
+                             * - disable preview
+                             * - stop looping
+                             * - start from the beginning
                              */
                             video.dataset.previewDisabled =
                                 'true';
@@ -2043,14 +2049,32 @@ document.addEventListener(
 
                             video.dataset.previewPlaying =
                                 'false';
+
+                            video.dataset.previewResetting =
+                                'true';
+
+                            video.currentTime =
+                                0;
+
+                            video.dataset.previewResetting =
+                                'false';
+
+                            /*
+                             * currentTime was reset to 0
+                             * while playback was already
+                             * requested by the user.
+                             *
+                             * The video therefore continues
+                             * as normal from the beginning.
+                             */
                         }
                     );
 
 
                     /*
-                     * If the user seeks manually,
-                     * this is also a clear indication
-                     * that they want normal playback.
+                     * If the user manually seeks,
+                     * switch permanently to normal
+                     * video playback.
                      */
                     video.addEventListener(
                         'seeking',
@@ -2075,34 +2099,8 @@ document.addEventListener(
 
 
                     /*
-                     * If the user changes the volume,
-                     * they have taken manual control.
-                     */
-                    video.addEventListener(
-                        'volumechange',
-                        function () {
-                            if (
-                                video.dataset.previewActive ===
-                                'true'
-                            ) {
-                                return;
-                            }
-
-                            /*
-                             * Do not disable anything here
-                             * when the video is already in
-                             * normal/manual mode.
-                             */
-                        }
-                    );
-
-
-                    /*
                      * Metadata may not be available
                      * when IntersectionObserver fires.
-                     *
-                     * Once metadata arrives, preview
-                     * starts if the video is visible.
                      */
                     video.addEventListener(
                         'loadedmetadata',
@@ -2127,10 +2125,10 @@ document.addEventListener(
 
 
                     /*
-                     * Preview reaches four seconds.
+                     * Automatic preview loop.
                      *
-                     * Jump back to the beginning
-                     * and continue the preview.
+                     * Only the first four seconds
+                     * are repeated.
                      */
                     video.addEventListener(
                         'timeupdate',
@@ -2164,8 +2162,7 @@ document.addEventListener(
 
 
                     /*
-                     * Very short videos may finish
-                     * before reaching four seconds.
+                     * Very short videos.
                      */
                     video.addEventListener(
                         'ended',
@@ -2194,9 +2191,7 @@ document.addEventListener(
 
 
                     /*
-                     * Preview playback stopped.
-                     *
-                     * Do not change manual playback state here.
+                     * Preview pause handling.
                      */
                     video.addEventListener(
                         'pause',
