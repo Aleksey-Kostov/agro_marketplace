@@ -10,50 +10,52 @@ document.addEventListener('DOMContentLoaded', function () {
         )
         : null;
 
-    const imageInput = document.getElementById('id_image');
-    const videoInput = document.getElementById('id_video');
+    const chatWindow =
+        document.getElementById('chat-window');
 
-    const imagePreview = document.getElementById('image-preview');
-    const videoPreview = document.getElementById('video-preview');
+    const chatMessages =
+        document.getElementById('chat-messages');
 
-    const imagePreviewWrap = document.getElementById('image-preview-wrap');
-    const videoPreviewWrap = document.getElementById('video-preview-wrap');
+    const editingBar =
+        document.getElementById('editing-message-bar');
 
-    const attachImageBtn = document.getElementById('attach-image-btn');
-    const attachVideoBtn = document.getElementById('attach-video-btn');
-    const removeMediaBtn = document.getElementById('remove-media-btn');
+    const editingMessageId =
+        document.getElementById('editing-message-id');
 
-    const chatWindow = document.getElementById('chat-window');
-    const chatMessages = document.getElementById('chat-messages');
+    const editingPreview =
+        document.getElementById('editing-message-preview');
 
-    const dropOverlay = document.getElementById('chat-drop-overlay');
+    const cancelEditBtn =
+        document.getElementById('cancel-edit-btn');
 
-    const uploadProgressWrap = document.getElementById('upload-progress-wrap');
-    const uploadProgressBar = document.getElementById('upload-progress-bar');
-    const uploadProgressText = document.getElementById('upload-progress-text');
-    const uploadProgressPercent = document.getElementById('upload-progress-percent');
+    const replyBar =
+        document.getElementById('replying-message-bar');
 
-    const editingBar = document.getElementById('editing-message-bar');
-    const editingMessageId = document.getElementById('editing-message-id');
-    const editingPreview = document.getElementById('editing-message-preview');
-    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const replyPreview =
+        document.getElementById('replying-message-preview');
 
-    const replyBar = document.getElementById('replying-message-bar');
-    const replyPreview = document.getElementById('replying-message-preview');
-    const cancelReplyBtn = document.getElementById('cancel-reply-btn');
-    const replyToInput = document.getElementById('reply-to');
+    const cancelReplyBtn =
+        document.getElementById('cancel-reply-btn');
 
-    const replyMedia = document.getElementById('replying-message-media');
-    const replyImage = document.getElementById('replying-message-image');
-    const replyVideo = document.getElementById('replying-message-video');
-    const replyVideoPlayer = document.getElementById('replying-message-video-player');
+    const replyToInput =
+        document.getElementById('reply-to');
 
-    const submitBtn = document.getElementById('message-submit-btn');
-    const submitText = document.getElementById('message-submit-text');
-    const submitIcon = document.getElementById('message-submit-icon');
+    const replyMedia =
+        document.getElementById('replying-message-media');
 
-    const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
-    const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
+    const replyImage =
+        document.getElementById('replying-message-image');
+
+    const replyVideo =
+        document.getElementById('replying-message-video');
+
+    const replyVideoPlayer =
+        document.getElementById(
+            'replying-message-video-player'
+        );
+
+    const submitBtn =
+        document.getElementById('message-submit-btn');
 
     const normalFormAction = replyForm
         ? (
@@ -63,14 +65,9 @@ document.addEventListener('DOMContentLoaded', function () {
         )
         : window.location.href;
 
-    let imageObjectUrl = null;
-    let videoObjectUrl = null;
-
-    let dragCounter = 0;
-
-    let isSubmittingAttachment = false;
     let isSubmittingEdit = false;
     let isSubmittingMessage = false;
+
     let activeMessageSendToken = 0;
 
     const pendingMessageRefreshes = new Map();
@@ -83,7 +80,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function isChatAtBottom() {
         if (
             window.agroChatNavigation &&
-            typeof window.agroChatNavigation.isAtBottom === 'function'
+            typeof window.agroChatNavigation.isAtBottom ===
+                'function'
         ) {
             return window.agroChatNavigation.isAtBottom();
         }
@@ -107,10 +105,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function getCsrfToken() {
         const csrfInput = replyForm
-            ? replyForm.querySelector('[name="csrfmiddlewaretoken"]')
-            : document.querySelector('[name="csrfmiddlewaretoken"]');
+            ? replyForm.querySelector(
+                '[name="csrfmiddlewaretoken"]'
+            )
+            : document.querySelector(
+                '[name="csrfmiddlewaretoken"]'
+            );
 
-        return csrfInput ? csrfInput.value : '';
+        return csrfInput
+            ? csrfInput.value
+            : '';
     }
 
 
@@ -120,7 +124,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function getMessageElement(messageId) {
         return messageId
-            ? document.getElementById(`msg-${messageId}`)
+            ? document.getElementById(
+                `msg-${messageId}`
+            )
             : null;
     }
 
@@ -130,27 +136,38 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (element.dataset.messageId) {
-            const id = Number(element.dataset.messageId);
+            const id =
+                Number(element.dataset.messageId);
 
             if (id) {
                 return id;
             }
         }
 
-        const rawId = element.id || '';
+        const rawId =
+            element.id || '';
 
         if (rawId.startsWith('msg-')) {
-            const id = Number(rawId.substring(4));
+            const id =
+                Number(
+                    rawId.substring(4)
+                );
 
             if (id) {
                 return id;
             }
         }
 
-        const child = element.querySelector('[data-message-id]');
+        const child =
+            element.querySelector(
+                '[data-message-id]'
+            );
 
         if (child) {
-            const id = Number(child.dataset.messageId);
+            const id =
+                Number(
+                    child.dataset.messageId
+                );
 
             if (id) {
                 return id;
@@ -166,7 +183,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         chatMessages
-            .querySelectorAll('.alert.alert-info')
+            .querySelectorAll(
+                '.alert.alert-info'
+            )
             .forEach(function (el) {
                 el.remove();
             });
@@ -187,39 +206,46 @@ document.addEventListener('DOMContentLoaded', function () {
             !html ||
             !messageId
         ) {
-        return false;
+            return false;
         }
 
-        if (getMessageElement(messageId)) {
+        if (
+            getMessageElement(messageId)
+        ) {
             return false;
         }
 
         removeEmptyConversationMessage();
 
         const computedStyle =
-            window.getComputedStyle(chatMessages);
+            window.getComputedStyle(
+                chatMessages
+            );
 
         const isColumnReverse =
-            computedStyle.flexDirection === 'column-reverse';
+            computedStyle.flexDirection ===
+            'column-reverse';
 
         /*
-         * Messages are displayed newest at the bottom.
+         * Current chat order is normally ascending
+         * in the DOM:
          *
-         * With column-reverse, the first DOM element is
-         * displayed at the visual bottom.
+         * oldest
+         * ...
+         * newest
          *
-         * Therefore:
-         *   column-reverse -> afterbegin
-         *   normal         -> beforeend
+         * Therefore normal flex direction uses beforeend.
+         *
+         * Keep column-reverse compatibility for old layouts.
          */
         if (isColumnReverse) {
             chatMessages.insertAdjacentHTML(
-               'afterbegin',
+                'afterbegin',
                 html
             );
         } else {
             chatMessages.insertAdjacentHTML(
-               'beforeend',
+                'beforeend',
                 html
             );
         }
@@ -228,41 +254,37 @@ document.addEventListener('DOMContentLoaded', function () {
             getMessageElement(messageId);
 
         if (!inserted) {
-             console.warn(
-                 'Rendered message HTML did not contain expected message:',
-                  messageId
-             );
+            console.warn(
+                'Rendered message HTML did not contain expected message:',
+                messageId
+            );
 
-             return false;
+            return false;
         }
 
         /*
-         * Tell chat_navigation.js that a new message
-         * has been rendered.
+         * chat_navigation.js owns:
+         * - scroll-to-bottom
+         * - unread counter
+         * - latest button
          *
-         * shouldScroll is true when the user was already
-         * at the bottom, so the navigation layer can keep
-         * the conversation at the bottom.
-         *
-         * When false, the user is reading older messages,
-         * so their current scroll position is preserved
-         * and unread handling remains active.
+         * We only notify it that the message exists.
          */
-         window.dispatchEvent(
-             new CustomEvent(
-                 'agro:message-rendered',
-                 {
-                     detail: {
-                         messageId,
-                         shouldScroll: Boolean(
-                             shouldScroll
-                         )
-                     }
-                 }
-             )
-         );
+        window.dispatchEvent(
+            new CustomEvent(
+                'agro:message-rendered',
+                {
+                    detail: {
+                        messageId,
+                        shouldScroll: Boolean(
+                            shouldScroll
+                        )
+                    }
+                }
+            )
+        );
 
-         return true;
+        return true;
     }
 
 
@@ -290,10 +312,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
-            const url = new URL(
-                template,
-                window.location.origin
-            );
+            const url =
+                new URL(
+                    template,
+                    window.location.origin
+                );
 
             url.pathname =
                 url.pathname.replace(
@@ -323,23 +346,27 @@ document.addEventListener('DOMContentLoaded', function () {
             );
         }
 
-        const response = await fetch(
-            fragmentUrl,
-            {
-                method: 'GET',
-                credentials: 'same-origin',
-                cache: 'no-store',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
+        const response =
+            await fetch(
+                fragmentUrl,
+                {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    headers: {
+                        'X-Requested-With':
+                            'XMLHttpRequest',
+                        'Accept':
+                            'application/json'
+                    }
                 }
-            }
-        );
+            );
 
         let data;
 
         try {
-            data = await response.json();
+            data =
+                await response.json();
 
         } catch (error) {
             throw new Error(
@@ -384,6 +411,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const currentMessage =
             getMessageElement(id);
 
+        /*
+         * If the message disappeared while the request
+         * was running, render the returned fragment again.
+         */
         if (!currentMessage) {
             return appendRenderedMessage(
                 data.html,
@@ -411,6 +442,10 @@ document.addEventListener('DOMContentLoaded', function () {
             newMessage
         );
 
+        /*
+         * Reaction refreshes and other fragment refreshes
+         * must not move the user's scroll position.
+         */
         if (
             preserveScroll &&
             chatWindow
@@ -430,12 +465,19 @@ document.addEventListener('DOMContentLoaded', function () {
         messageId,
         options = {}
     ) {
-        const id = Number(messageId);
+        const id =
+            Number(messageId);
 
         if (!id) {
             return Promise.resolve(false);
         }
 
+        /*
+         * Serialize refreshes for the same message.
+         *
+         * This prevents two fast reactions from racing
+         * and rendering an older server response last.
+         */
         const previous =
             pendingMessageRefreshes.get(id) ||
             Promise.resolve();
@@ -483,6 +525,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
+       PUBLIC CONVERSATION API
+       ========================================================= */
+
+    /*
+     * chat_attachments.js uses this API after its own
+     * attachment upload succeeds.
+     *
+     * IMPORTANT:
+     * Attachment upload is NOT implemented here.
+     * chat_attachments.js owns it.
+     */
+    window.agroChatConversation = {
+        appendRenderedMessage,
+        refreshMessageFragment,
+        isChatAtBottom
+    };
+
+
+    /* =========================================================
        SEND URL
        ========================================================= */
 
@@ -500,150 +561,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       COMPOSER RESET
-       ========================================================= */
-
-    function resetComposerAfterSend() {
-        if (messageBodyField) {
-            messageBodyField.value = '';
-        }
-
-        if (replyToInput) {
-            replyToInput.value = '';
-        }
-
-        clearReplyMedia();
-        clearMediaInputs();
-
-        if (editingMessageId) {
-            editingMessageId.value = '';
-        }
-
-        if (editingBar) {
-            editingBar.classList.add('d-none');
-        }
-
-        if (replyBar) {
-            replyBar.classList.add('d-none');
-        }
-
-        if (replyForm) {
-            replyForm.setAttribute(
-                'action',
-                normalFormAction
-            );
-        }
-
-        setSubmitMode('send');
-    }
-
-
-    /* =========================================================
-       FILE HELPERS
-       ========================================================= */
-
-    function formatFileSize(bytes) {
-        if (bytes < 1024) {
-            return `${bytes} B`;
-        }
-
-        if (bytes < 1024 * 1024) {
-            return `${(bytes / 1024).toFixed(1)} KB`;
-        }
-
-        return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-    }
-
-    function validateImageFile(file) {
-        if (!file) {
-            return false;
-        }
-
-        if (!file.type.startsWith('image/')) {
-            alert(
-                'Please select a valid image file.'
-            );
-
-            return false;
-        }
-
-        if (file.size > MAX_IMAGE_SIZE) {
-            alert(
-                `Image is too large.\n\nMaximum size: 10 MB\nSelected: ${formatFileSize(file.size)}`
-            );
-
-            return false;
-        }
-
-        return true;
-    }
-
-    function validateVideoFile(file) {
-        if (!file) {
-            return false;
-        }
-
-        if (!file.type.startsWith('video/')) {
-            alert(
-                'Please select a valid video file.'
-            );
-
-            return false;
-        }
-
-        if (file.size > MAX_VIDEO_SIZE) {
-            alert(
-                `Video is too large.\n\nMaximum size: 100 MB\nSelected: ${formatFileSize(file.size)}`
-            );
-
-            return false;
-        }
-
-        return true;
-    }
-
-    function revokeImageUrl() {
-        if (imageObjectUrl) {
-            URL.revokeObjectURL(
-                imageObjectUrl
-            );
-
-            imageObjectUrl = null;
-        }
-    }
-
-    function revokeVideoUrl() {
-        if (videoObjectUrl) {
-            URL.revokeObjectURL(
-                videoObjectUrl
-            );
-
-            videoObjectUrl = null;
-        }
-    }
-
-
-    /* =========================================================
        REPLY MEDIA
        ========================================================= */
 
     function clearReplyMedia() {
         if (replyMedia) {
-            replyMedia.classList.add('d-none');
+            replyMedia.classList.add(
+                'd-none'
+            );
         }
 
         if (replyImage) {
-            replyImage.classList.add('d-none');
-            replyImage.removeAttribute('src');
+            replyImage.classList.add(
+                'd-none'
+            );
+
+            replyImage.removeAttribute(
+                'src'
+            );
         }
 
         if (replyVideo) {
-            replyVideo.classList.add('d-none');
+            replyVideo.classList.add(
+                'd-none'
+            );
         }
 
         if (replyVideoPlayer) {
             replyVideoPlayer.pause();
-            replyVideoPlayer.removeAttribute('src');
+
+            replyVideoPlayer.removeAttribute(
+                'src'
+            );
+
             replyVideoPlayer.load();
         }
     }
@@ -659,7 +609,8 @@ document.addEventListener('DOMContentLoaded', function () {
             replyMedia &&
             replyImage
         ) {
-            replyImage.src = imageUrl;
+            replyImage.src =
+                imageUrl;
 
             replyImage.classList.remove(
                 'd-none'
@@ -695,655 +646,65 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       MEDIA INPUTS
+       COMPOSER RESET
        ========================================================= */
 
-    function clearMediaInputs() {
-        if (imageInput) {
-            imageInput.value = '';
+    function resetComposerAfterSend() {
+        if (messageBodyField) {
+            messageBodyField.value = '';
         }
 
-        if (videoInput) {
-            videoInput.value = '';
+        if (replyToInput) {
+            replyToInput.value = '';
         }
 
-        revokeImageUrl();
-        revokeVideoUrl();
-
-        if (imagePreview) {
-            imagePreview.removeAttribute(
-                'src'
-            );
-        }
-
-        if (videoPreview) {
-            videoPreview.pause();
-            videoPreview.removeAttribute(
-                'src'
-            );
-            videoPreview.load();
-        }
-
-        hideMediaPreviews();
-    }
-
-    function hideMediaPreviews() {
-        if (imagePreviewWrap) {
-            imagePreviewWrap.classList.add(
-                'd-none'
-            );
-        }
-
-        if (videoPreviewWrap) {
-            videoPreviewWrap.classList.add(
-                'd-none'
-            );
-        }
-
-        if (removeMediaBtn) {
-            removeMediaBtn.classList.add(
-                'd-none'
-            );
-        }
-    }
-
-    function handleImageFile(file) {
-        if (!validateImageFile(file)) {
-            if (imageInput) {
-                imageInput.value = '';
-            }
-
-            return false;
-        }
-
-        if (videoInput) {
-            videoInput.value = '';
-        }
-
-        revokeVideoUrl();
-
-        if (videoPreview) {
-            videoPreview.pause();
-            videoPreview.removeAttribute(
-                'src'
-            );
-            videoPreview.load();
-        }
-
-        if (!imagePreview) {
-            return false;
-        }
-
-        revokeImageUrl();
-
-        imageObjectUrl =
-            URL.createObjectURL(file);
-
-        imagePreview.src =
-            imageObjectUrl;
-
-        if (imagePreviewWrap) {
-            imagePreviewWrap.classList.remove(
-                'd-none'
-            );
-        }
-
-        if (videoPreviewWrap) {
-            videoPreviewWrap.classList.add(
-                'd-none'
-            );
-        }
-
-        if (removeMediaBtn) {
-            removeMediaBtn.classList.remove(
-                'd-none'
-            );
-        }
-
-        return true;
-    }
-
-    function handleVideoFile(file) {
-        if (!validateVideoFile(file)) {
-            if (videoInput) {
-                videoInput.value = '';
-            }
-
-            return false;
-        }
-
-        if (imageInput) {
-            imageInput.value = '';
-        }
-
-        revokeImageUrl();
-
-        if (imagePreview) {
-            imagePreview.removeAttribute(
-                'src'
-            );
-        }
-
-        if (!videoPreview) {
-            return false;
-        }
-
-        revokeVideoUrl();
-
-        videoObjectUrl =
-            URL.createObjectURL(file);
-
-        videoPreview.src =
-            videoObjectUrl;
-
-        videoPreview.load();
-
-        if (videoPreviewWrap) {
-            videoPreviewWrap.classList.remove(
-                'd-none'
-            );
-        }
-
-        if (imagePreviewWrap) {
-            imagePreviewWrap.classList.add(
-                'd-none'
-            );
-        }
-
-        if (removeMediaBtn) {
-            removeMediaBtn.classList.remove(
-                'd-none'
-            );
-        }
-
-        return true;
-    }
-
-
-    /* =========================================================
-       ATTACHMENTS
-       ========================================================= */
-
-    if (
-        attachImageBtn &&
-        imageInput
-    ) {
-        attachImageBtn.addEventListener(
-            'click',
-            function (e) {
-                e.preventDefault();
-
-                if (
-                    isSubmittingAttachment ||
-                    isSubmittingEdit ||
-                    isSubmittingMessage
-                ) {
-                    return;
-                }
-
-                imageInput.click();
-            }
-        );
-    }
-
-    if (
-        attachVideoBtn &&
-        videoInput
-    ) {
-        attachVideoBtn.addEventListener(
-            'click',
-            function (e) {
-                e.preventDefault();
-
-                if (
-                    isSubmittingAttachment ||
-                    isSubmittingEdit ||
-                    isSubmittingMessage
-                ) {
-                    return;
-                }
-
-                videoInput.click();
-            }
-        );
-    }
-
-    if (imageInput) {
-        imageInput.addEventListener(
-            'change',
-            function () {
-                const file =
-                    imageInput.files &&
-                    imageInput.files[0];
-
-                if (file) {
-                    handleImageFile(file);
-                }
-            }
-        );
-    }
-
-    if (videoInput) {
-        videoInput.addEventListener(
-            'change',
-            function () {
-                const file =
-                    videoInput.files &&
-                    videoInput.files[0];
-
-                if (file) {
-                    handleVideoFile(file);
-                }
-            }
-        );
-    }
-
-    if (removeMediaBtn) {
-        removeMediaBtn.addEventListener(
-            'click',
-            function (e) {
-                e.preventDefault();
-                clearMediaInputs();
-            }
-        );
-    }
-
-
-    /* =========================================================
-       DRAG & DROP
-       ========================================================= */
-
-    function showDropOverlay() {
-        if (!dropOverlay) {
-            return;
-        }
-
-        dropOverlay.classList.add(
-            'active',
-            'show'
-        );
-
-        dropOverlay.setAttribute(
-            'aria-hidden',
-            'false'
-        );
-    }
-
-    function hideDropOverlay() {
-        if (!dropOverlay) {
-            return;
-        }
-
-        dropOverlay.classList.remove(
-            'active',
-            'show'
-        );
-
-        dropOverlay.setAttribute(
-            'aria-hidden',
-            'true'
-        );
-    }
-
-    if (chatWindow) {
-        chatWindow.addEventListener(
-            'dragenter',
-            function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                if (
-                    isSubmittingEdit ||
-                    isSubmittingAttachment ||
-                    isSubmittingMessage
-                ) {
-                    return;
-                }
-
-                dragCounter++;
-
-                showDropOverlay();
-            }
-        );
-
-        chatWindow.addEventListener(
-            'dragover',
-            function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                if (
-                    isSubmittingEdit ||
-                    isSubmittingAttachment ||
-                    isSubmittingMessage
-                ) {
-                    return;
-                }
-
-                if (e.dataTransfer) {
-                    e.dataTransfer.dropEffect =
-                        'copy';
-                }
-
-                showDropOverlay();
-            }
-        );
-
-        chatWindow.addEventListener(
-            'dragleave',
-            function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                dragCounter--;
-
-                if (dragCounter <= 0) {
-                    dragCounter = 0;
-                    hideDropOverlay();
-                }
-            }
-        );
-
-        chatWindow.addEventListener(
-            'drop',
-            function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                dragCounter = 0;
-
-                hideDropOverlay();
-
-                if (
-                    isSubmittingEdit ||
-                    isSubmittingAttachment ||
-                    isSubmittingMessage
-                ) {
-                    return;
-                }
-
-                const files =
-                    e.dataTransfer &&
-                    e.dataTransfer.files;
-
-                if (
-                    !files ||
-                    !files.length
-                ) {
-                    return;
-                }
-
-                const file = files[0];
-
-                if (
-                    file.type.startsWith(
-                        'image/'
-                    )
-                ) {
-                    if (
-                        !validateImageFile(
-                            file
-                        )
-                    ) {
-                        return;
-                    }
-
-                    if (imageInput) {
-                        try {
-                            const dt =
-                                new DataTransfer();
-
-                            dt.items.add(file);
-
-                            imageInput.files =
-                                dt.files;
-
-                        } catch (err) {
-                            console.error(
-                                'Unable to assign image file:',
-                                err
-                            );
-                        }
-                    }
-
-                    handleImageFile(file);
-
-                    return;
-                }
-
-                if (
-                    file.type.startsWith(
-                        'video/'
-                    )
-                ) {
-                    if (
-                        !validateVideoFile(
-                            file
-                        )
-                    ) {
-                        return;
-                    }
-
-                    if (videoInput) {
-                        try {
-                            const dt =
-                                new DataTransfer();
-
-                            dt.items.add(file);
-
-                            videoInput.files =
-                                dt.files;
-
-                        } catch (err) {
-                            console.error(
-                                'Unable to assign video file:',
-                                err
-                            );
-                        }
-                    }
-
-                    handleVideoFile(file);
-
-                    return;
-                }
-
-                alert(
-                    'Only image and video files are allowed.'
-                );
-            }
-        );
-    }
-
-
-    /* =========================================================
-       PASTE IMAGE
-       ========================================================= */
-
-    document.addEventListener(
-        'paste',
-        function (e) {
-            if (
-                !messageBodyField ||
-                isSubmittingEdit ||
-                isSubmittingAttachment ||
-                isSubmittingMessage
-            ) {
-                return;
-            }
-
-            if (
-                document.activeElement !==
-                messageBodyField
-            ) {
-                return;
-            }
-
-            const items =
-                e.clipboardData &&
-                e.clipboardData.items;
-
-            if (!items) {
-                return;
-            }
-
-            for (
-                let i = 0;
-                i < items.length;
-                i++
-            ) {
-                const item = items[i];
-
-                if (
-                    item.kind !== 'file' ||
-                    !item.type.startsWith(
-                        'image/'
-                    )
-                ) {
-                    continue;
-                }
-
-                const file =
-                    item.getAsFile();
-
-                if (
-                    !file ||
-                    !validateImageFile(file)
-                ) {
-                    return;
-                }
-
-                try {
-                    const dt =
-                        new DataTransfer();
-
-                    dt.items.add(file);
-
-                    if (imageInput) {
-                        imageInput.files =
-                            dt.files;
-                    }
-
-                } catch (err) {
-                    console.error(
-                        'Unable to assign pasted image:',
-                        err
-                    );
-
-                    return;
-                }
-
-                handleImageFile(file);
-
-                e.preventDefault();
-
-                return;
-            }
-        }
-    );
-
-
-    /* =========================================================
-       UPLOAD PROGRESS
-       ========================================================= */
-
-    function showUploadProgress() {
-        if (!uploadProgressWrap) {
-            return;
-        }
-
-        uploadProgressWrap.classList.remove(
-            'd-none'
-        );
-
-        if (uploadProgressBar) {
-            uploadProgressBar.style.width =
-                '0%';
-
-            uploadProgressBar.setAttribute(
-                'aria-valuenow',
-                '0'
-            );
-        }
-
-        if (uploadProgressPercent) {
-            uploadProgressPercent.textContent =
-                '0%';
-        }
-
-        if (uploadProgressText) {
-            uploadProgressText.textContent =
-                'Uploading...';
-        }
-    }
-
-    function updateUploadProgress(percent) {
-        percent =
-            Math.max(
-                0,
-                Math.min(100, percent)
-            );
-
-        if (uploadProgressBar) {
-            uploadProgressBar.style.width =
-                `${percent}%`;
-
-            uploadProgressBar.setAttribute(
-                'aria-valuenow',
-                String(percent)
-            );
-        }
-
-        if (uploadProgressPercent) {
-            uploadProgressPercent.textContent =
-                `${percent}%`;
-        }
-    }
-
-    function hideUploadProgress() {
-        if (uploadProgressWrap) {
-            uploadProgressWrap.classList.add(
-                'd-none'
-            );
-        }
-    }
-
-    function validateAttachmentsBeforeSubmit() {
-        const imageFile =
-            imageInput &&
-            imageInput.files &&
-            imageInput.files[0];
-
-        const videoFile =
-            videoInput &&
-            videoInput.files &&
-            videoInput.files[0];
-
+        clearReplyMedia();
+
+        /*
+         * Attachment state belongs to chat_attachments.js.
+         *
+         * Do not manipulate:
+         * - id_image
+         * - id_video
+         * - id_file
+         * - attachment previews
+         * - object URLs
+         * - upload progress
+         *
+         * here.
+         */
         if (
-            imageFile &&
-            videoFile
+            window.agroChatAttachments &&
+            typeof window.agroChatAttachments.clear ===
+                'function'
         ) {
-            alert(
-                'Please attach either an image or a video, not both.'
+            window.agroChatAttachments.clear();
+        }
+
+        if (editingMessageId) {
+            editingMessageId.value = '';
+        }
+
+        if (editingBar) {
+            editingBar.classList.add(
+                'd-none'
             );
-
-            return false;
         }
 
-        if (
-            imageFile &&
-            !validateImageFile(imageFile)
-        ) {
-            return false;
+        if (replyBar) {
+            replyBar.classList.add(
+                'd-none'
+            );
         }
 
-        if (
-            videoFile &&
-            !validateVideoFile(videoFile)
-        ) {
-            return false;
+        if (replyForm) {
+            replyForm.setAttribute(
+                'action',
+                normalFormAction
+            );
         }
 
-        return true;
+        setSubmitMode('send');
     }
 
 
@@ -1388,17 +749,12 @@ document.addEventListener('DOMContentLoaded', function () {
         submitBtn.disabled = false;
 
         /*
-         * IMPORTANT:
+         * setSendingState(true) replaces innerHTML,
+         * so the original child references no longer exist.
          *
-         * setSendingState(true) replaces submitBtn.innerHTML,
-         * which removes the original #message-submit-icon and
-         * #message-submit-text elements from the DOM.
-         *
-         * Therefore we must rebuild the button HTML here instead
-         * of calling setSubmitMode(), which would operate on the
-         * old detached DOM references.
+         * Rebuild the button instead of trying to reuse
+         * detached DOM references.
          */
-
         if (
             editingMessageId &&
             editingMessageId.value
@@ -1414,43 +770,6 @@ document.addEventListener('DOMContentLoaded', function () {
             '<i class="fas fa-paper-plane me-1" id="message-submit-icon"></i>' +
             '<span id="message-submit-text">Send</span>';
     }
-
-    function handleMessageAcknowledged(event) {
-        const detail = event.detail || {};
-        const messageId = Number(detail.messageId);
-
-        if (!messageId || !isSubmittingMessage) {
-            return;
-        }
-
-        /*
-         * The WebSocket controller has confirmed that our message
-         * was created and rendered. The HTTP request may still be
-         * waiting for its response, so the visual Sending... state
-         * must not depend on fetch() finishing.
-         */
-        isSubmittingMessage = false;
-        activeMessageSendToken += 1;
-
-        setSendingState(false);
-
-        window.dispatchEvent(
-            new CustomEvent('agro:message-sent')
-        );
-
-        resetComposerAfterSend();
-    }
-
-    window.addEventListener(
-        'agro:message-acknowledged',
-         handleMessageAcknowledged
-    );
-
-
-/* =========================================================
-   SAVING STATE
-   ========================================================= */
-
 
     function setSavingState(isSaving) {
         if (!submitBtn) {
@@ -1469,13 +788,9 @@ document.addEventListener('DOMContentLoaded', function () {
         submitBtn.disabled = false;
 
         /*
-         * setSavingState(true) replaces submitBtn.innerHTML,
-         * which removes the original #message-submit-icon and
-         * #message-submit-text elements from the DOM.
-         *
-         * Rebuild the button instead of using the old DOM references.
+         * setSavingState(true) replaces innerHTML,
+         * so rebuild the button after saving.
          */
-
         if (
             editingMessageId &&
             editingMessageId.value
@@ -1491,6 +806,56 @@ document.addEventListener('DOMContentLoaded', function () {
             '<i class="fas fa-paper-plane me-1" id="message-submit-icon"></i>' +
             '<span id="message-submit-text">Send</span>';
     }
+
+
+    /* =========================================================
+       WEBSOCKET MESSAGE ACKNOWLEDGEMENT
+       ========================================================= */
+
+    function handleMessageAcknowledged(event) {
+        const detail =
+            event.detail || {};
+
+        const messageId =
+            Number(detail.messageId);
+
+        if (
+            !messageId ||
+            !isSubmittingMessage
+        ) {
+            return;
+        }
+
+        /*
+         * WebSocket has confirmed that the message exists.
+         *
+         * Do not wait for the HTTP response to remove
+         * the Sending state.
+         */
+        isSubmittingMessage = false;
+
+        activeMessageSendToken += 1;
+
+        setSendingState(false);
+
+        window.dispatchEvent(
+            new CustomEvent(
+                'agro:message-sent'
+            )
+        );
+
+        resetComposerAfterSend();
+    }
+
+    window.addEventListener(
+        'agro:message-acknowledged',
+        handleMessageAcknowledged
+    );
+
+
+    /* =========================================================
+       MESSAGE PREVIEW
+       ========================================================= */
 
     function getMessagePreview(text) {
         let preview =
@@ -1536,7 +901,17 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        clearMediaInputs();
+        /*
+         * Attachments are owned by chat_attachments.js.
+         * Clear them through its public API.
+         */
+        if (
+            window.agroChatAttachments &&
+            typeof window.agroChatAttachments.clear ===
+                'function'
+        ) {
+            window.agroChatAttachments.clear();
+        }
 
         if (replyToInput) {
             replyToInput.value = '';
@@ -1666,7 +1041,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (editingMessageId) {
-            editingMessageId.value = '';
+            editingMessageId.value =
+                '';
         }
 
         if (editingBar) {
@@ -1764,7 +1140,6 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
 
             if (
-                isSubmittingAttachment ||
                 isSubmittingEdit ||
                 isSubmittingMessage
             ) {
@@ -1790,7 +1165,6 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
 
             if (
-                isSubmittingAttachment ||
                 isSubmittingEdit ||
                 isSubmittingMessage
             ) {
@@ -1902,7 +1276,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
             if (submitButton) {
-                submitButton.disabled = true;
+                submitButton.disabled =
+                    true;
             }
 
             const oldScrollTop =
@@ -1992,7 +1367,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
             } finally {
-                form.dataset.loading = '0';
+                form.dataset.loading =
+                    '0';
 
                 if (
                     submitButton &&
@@ -2080,7 +1456,17 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        clearMediaInputs();
+        /*
+         * Editing a message must never carry an attachment.
+         * Attachment cleanup is delegated to chat_attachments.js.
+         */
+        if (
+            window.agroChatAttachments &&
+            typeof window.agroChatAttachments.clear ===
+                'function'
+        ) {
+            window.agroChatAttachments.clear();
+        }
 
         if (replyToInput) {
             replyToInput.value = '';
@@ -2183,12 +1569,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         } finally {
             isSubmittingEdit = false;
+
             setSavingState(false);
         }
     }
 
 
-        /* =========================================================
+    /* =========================================================
        TEXT MESSAGE AJAX
        ========================================================= */
 
@@ -2198,30 +1585,45 @@ document.addEventListener('DOMContentLoaded', function () {
         if (
             isSubmittingMessage ||
             isSubmittingEdit ||
-            isSubmittingAttachment ||
             !replyForm
         ) {
             return;
         }
 
-        const sendUrl = getSendUrl();
+        const sendUrl =
+            getSendUrl();
 
         if (!sendUrl) {
-            alert('Message send URL is missing.');
+            alert(
+                'Message send URL is missing.'
+            );
+
             return;
         }
 
-        const body = messageBodyField
-            ? messageBodyField.value.trim()
-            : '';
+        const body =
+            messageBodyField
+                ? messageBodyField.value.trim()
+                : '';
 
+        /*
+         * Attachment submit is owned by chat_attachments.js.
+         *
+         * Its submit listener runs in capture phase and
+         * intercepts attachment submissions before this
+         * function reaches the network.
+         *
+         * This extra guard prevents conversation.js from
+         * accidentally sending an attachment as a text message
+         * if the attachment controller reports one.
+         */
         if (
             window.agroChatAttachments &&
             typeof window.agroChatAttachments.hasAttachment ===
                 'function' &&
             window.agroChatAttachments.hasAttachment()
         ) {
-           return;
+            return;
         }
 
         if (!body) {
@@ -2232,35 +1634,47 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const shouldScroll = isChatAtBottom();
-        const formData = new FormData(replyForm);
+        const shouldScroll =
+            isChatAtBottom();
+
+        const formData =
+            new FormData(replyForm);
 
         isSubmittingMessage = true;
-        const sendToken = ++activeMessageSendToken;
+
+        const sendToken =
+            ++activeMessageSendToken;
 
         setSendingState(true);
 
         try {
-            const response = await fetch(
-                sendUrl,
-                {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'same-origin',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
+            const response =
+                await fetch(
+                    sendUrl,
+                    {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With':
+                                'XMLHttpRequest',
+                            'Accept':
+                                'application/json'
+                        }
                     }
-                }
-            );
+                );
 
-            const responseText = await response.text();
+            const responseText =
+                await response.text();
 
             let data = null;
 
             if (responseText) {
                 try {
-                    data = JSON.parse(responseText);
+                    data =
+                        JSON.parse(
+                            responseText
+                        );
                 } catch (jsonError) {
                     console.warn(
                         'Send message: invalid JSON response:',
@@ -2276,7 +1690,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
             }
 
-            if (data && data.ok === false) {
+            if (
+                data &&
+                data.ok === false
+            ) {
                 throw new Error(
                     data.error ||
                     'Unable to send message.'
@@ -2284,11 +1701,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             /*
-             * If the normal HTTP response contains the message,
+             * If HTTP returned the rendered message,
              * render it immediately.
              *
-             * If WebSocket already rendered it first,
-             * appendRenderedMessage() safely ignores the duplicate.
+             * If WebSocket already rendered it,
+             * appendRenderedMessage() detects the duplicate.
              */
             if (
                 data &&
@@ -2302,12 +1719,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
             }
 
-            /*
-             * Tell the typing controller that the message
-             * has been successfully sent.
-             */
             window.dispatchEvent(
-                new CustomEvent('agro:message-sent')
+                new CustomEvent(
+                    'agro:message-sent'
+                )
             );
 
             resetComposerAfterSend();
@@ -2325,224 +1740,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
         } finally {
             /*
-             * If the WebSocket acknowledgement already completed
-             * this send, do not let the HTTP request's finally block
-             * reset the state of a newer send operation.
+             * If WebSocket acknowledgement already finished
+             * this send, don't let an older HTTP request reset
+             * a newer sending state.
              */
-            if (activeMessageSendToken === sendToken) {
-                isSubmittingMessage = false;
+            if (
+                activeMessageSendToken ===
+                sendToken
+            ) {
+                isSubmittingMessage =
+                    false;
+
                 setSendingState(false);
             }
-        }
-    }
-
-
-    /* =========================================================
-       ATTACHMENT AJAX
-       ========================================================= */
-
-    function handleAttachmentSubmit(event) {
-        event.preventDefault();
-
-        if (
-            !replyForm ||
-            isSubmittingAttachment ||
-            isSubmittingEdit ||
-            isSubmittingMessage
-        ) {
-            return;
-        }
-
-        if (!validateAttachmentsBeforeSubmit()) {
-            return;
-        }
-
-        const sendUrl = getSendUrl();
-
-        if (!sendUrl) {
-            alert('Message send URL is missing.');
-            return;
-        }
-
-        const shouldScroll = isChatAtBottom();
-        const formData = new FormData(replyForm);
-        const xhr = new XMLHttpRequest();
-
-        isSubmittingAttachment = true;
-
-        showUploadProgress();
-
-        if (submitBtn) {
-            submitBtn.disabled = true;
-
-            submitBtn.dataset.originalHtml =
-                submitBtn.innerHTML;
-
-            submitBtn.innerHTML =
-                '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
-        }
-
-        xhr.upload.addEventListener(
-            'progress',
-            function (e) {
-                if (!e.lengthComputable) {
-                    return;
-                }
-
-                updateUploadProgress(
-                    Math.round(
-                        (e.loaded / e.total) * 100
-                    )
-                );
-            }
-        );
-
-        xhr.addEventListener(
-            'load',
-            function () {
-                if (
-                    xhr.status >= 200 &&
-                    xhr.status < 300
-                ) {
-                    updateUploadProgress(100);
-
-                    if (uploadProgressText) {
-                        uploadProgressText.textContent =
-                            'Upload complete';
-                    }
-
-                    let data;
-
-                    try {
-                        data = JSON.parse(
-                            xhr.responseText
-                        );
-                    } catch (err) {
-                        console.error(
-                            'Invalid attachment response:',
-                            xhr.responseText
-                        );
-
-                        alert(
-                            'Server returned an invalid response.'
-                        );
-
-                        resetUploadButton();
-                        return;
-                    }
-
-                    if (
-                        !data.ok ||
-                        !data.html ||
-                        !data.message_id
-                    ) {
-                        alert(
-                            data.error ||
-                            'Message upload failed.'
-                        );
-
-                        resetUploadButton();
-                        return;
-                    }
-
-                    appendRenderedMessage(
-                        data.html,
-                        data.message_id,
-                        shouldScroll
-                    );
-
-                    window.dispatchEvent(
-                        new CustomEvent(
-                            'agro:message-sent'
-                        )
-                    );
-
-                    setTimeout(
-                        hideUploadProgress,
-                        300
-                    );
-
-                    resetComposerAfterSend();
-                    resetUploadButton();
-
-                    return;
-                }
-
-                let errorMessage =
-                    'Upload failed. Please try again.';
-
-                try {
-                    const data = JSON.parse(
-                        xhr.responseText
-                    );
-
-                    if (data.error) {
-                        errorMessage = data.error;
-                    }
-                } catch (e) {}
-
-                alert(errorMessage);
-                resetUploadButton();
-            }
-        );
-
-        xhr.addEventListener(
-            'error',
-            function () {
-                alert(
-                    'Upload failed. Please check your connection and try again.'
-                );
-
-                resetUploadButton();
-            }
-        );
-
-        xhr.addEventListener(
-            'abort',
-            resetUploadButton
-        );
-
-        xhr.open(
-            'POST',
-            sendUrl,
-            true
-        );
-
-        const csrfToken = getCsrfToken();
-
-        if (csrfToken) {
-            xhr.setRequestHeader(
-                'X-CSRFToken',
-                csrfToken
-            );
-        }
-
-        xhr.setRequestHeader(
-            'X-Requested-With',
-            'XMLHttpRequest'
-        );
-
-        xhr.setRequestHeader(
-            'Accept',
-            'application/json'
-        );
-
-        xhr.send(formData);
-    }
-
-    function resetUploadButton() {
-        hideUploadProgress();
-
-        isSubmittingAttachment = false;
-
-        if (submitBtn) {
-            submitBtn.disabled = false;
-
-            submitBtn.innerHTML =
-                submitBtn.dataset.originalHtml ||
-                '<i class="fas fa-paper-plane fa-paper-plane me-1"></i> Send';
-
-            delete submitBtn.dataset.originalHtml;
         }
     }
 
@@ -2555,13 +1765,19 @@ document.addEventListener('DOMContentLoaded', function () {
         replyForm.addEventListener(
             'submit',
             function (e) {
-                e.preventDefault();
+                /*
+                 * chat_attachments.js owns attachment submits
+                 * and listens in capture phase.
+                 *
+                 * If an attachment exists, that controller
+                 * will stop this event before it reaches here.
+                 */
 
                 if (
-                    isSubmittingAttachment ||
                     isSubmittingEdit ||
                     isSubmittingMessage
                 ) {
+                    e.preventDefault();
                     return;
                 }
 
@@ -2595,7 +1811,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            const url = button.dataset.url;
+            const url =
+                button.dataset.url;
 
             if (!url) {
                 return;
@@ -2635,7 +1852,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     const oldHtml =
                         button.innerHTML;
 
-                    button.innerHTML = '✓';
+                    button.innerHTML =
+                        '✓';
 
                     setTimeout(
                         function () {
@@ -2656,20 +1874,27 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const textarea =
-                document.createElement('textarea');
+                document.createElement(
+                    'textarea'
+                );
 
-            textarea.value = url;
+            textarea.value =
+                url;
 
             textarea.style.cssText =
                 'position:fixed;left:-9999px;top:-9999px;opacity:0';
 
-            document.body.appendChild(textarea);
+            document.body.appendChild(
+                textarea
+            );
 
             textarea.focus();
             textarea.select();
 
             try {
-                document.execCommand('copy');
+                document.execCommand(
+                    'copy'
+                );
             } catch (err) {
                 console.error(
                     'Copy failed:',
@@ -2731,10 +1956,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
-            const url = new URL(
-                template,
-                window.location.origin
-            );
+            const url =
+                new URL(
+                    template,
+                    window.location.origin
+                );
 
             url.pathname =
                 url.pathname.replace(
@@ -2815,13 +2041,13 @@ document.addEventListener('DOMContentLoaded', function () {
         button.classList.toggle(
             'active-like',
             reaction === 'like' &&
-                active
+            active
         );
 
         button.classList.toggle(
             'active-heart',
             reaction === 'heart' &&
-                active
+            active
         );
 
         button.setAttribute(
@@ -2854,32 +2080,44 @@ document.addEventListener('DOMContentLoaded', function () {
             avatarBox.replaceChildren();
 
             (
-                Array.isArray(data.reactors)
+                Array.isArray(
+                    data.reactors
+                )
                     ? data.reactors
                     : []
-            ).forEach(function (reactor) {
-                const img =
-                    document.createElement('img');
+            ).forEach(
+                function (reactor) {
+                    const img =
+                        document.createElement(
+                            'img'
+                        );
 
-                img.className =
-                    'react-avatar';
+                    img.className =
+                        'react-avatar';
 
-                img.alt =
-                    reactor.username ||
-                    'User';
+                    img.alt =
+                        reactor.username ||
+                        'User';
 
-                img.loading =
-                    'lazy';
+                    img.loading =
+                        'lazy';
 
-                img.src =
-                    reactor.photo ||
-                    defaultAvatar;
+                    img.src =
+                        reactor.photo ||
+                        defaultAvatar;
 
-                avatarBox.appendChild(img);
-            });
+                    avatarBox.appendChild(
+                        img
+                    );
+                }
+            );
         }
 
-        if (Array.isArray(data.reactors)) {
+        if (
+            Array.isArray(
+                data.reactors
+            )
+        ) {
             const names =
                 data.reactors
                     .map(
@@ -2902,7 +2140,9 @@ document.addEventListener('DOMContentLoaded', function () {
         'click',
         async function (e) {
             const button =
-                e.target.closest('.js-react');
+                e.target.closest(
+                    '.js-react'
+                );
 
             if (!button) {
                 return;
@@ -2912,7 +2152,8 @@ document.addEventListener('DOMContentLoaded', function () {
             e.stopPropagation();
 
             if (
-                button.dataset.loading === '1'
+                button.dataset.loading ===
+                '1'
             ) {
                 return;
             }
@@ -2969,8 +2210,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            button.dataset.loading = '1';
-            button.disabled = true;
+            button.dataset.loading =
+                '1';
+
+            button.disabled =
+                true;
 
             const scrollTop =
                 chatWindow
@@ -3070,8 +2314,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
             } finally {
-                button.dataset.loading = '0';
-                button.disabled = false;
+                button.dataset.loading =
+                    '0';
+
+                button.disabled =
+                    false;
 
                 const currentMessage =
                     getMessageElement(
@@ -3080,11 +2327,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (currentMessage) {
                     currentMessage
-                        .querySelectorAll('.js-react')
+                        .querySelectorAll(
+                            '.js-react'
+                        )
                         .forEach(
                             function (btn) {
-                                btn.disabled = false;
-                                btn.dataset.loading = '0';
+                                btn.disabled =
+                                    false;
+
+                                btn.dataset.loading =
+                                    '0';
                             }
                         );
                 }
@@ -3101,12 +2353,13 @@ document.addEventListener('DOMContentLoaded', function () {
         'beforeunload',
         function () {
             /*
-             * The separate WebSocket manager owns socket
-             * cleanup. This file only releases local
-             * media URLs.
+             * No attachment/object-URL cleanup here.
+             *
+             * chat_attachments.js owns attachment previews
+             * and their object URLs.
+             *
+             * conversation.js only owns conversation state.
              */
-            revokeImageUrl();
-            revokeVideoUrl();
         }
     );
 });
