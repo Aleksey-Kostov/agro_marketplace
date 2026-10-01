@@ -17,33 +17,49 @@
     ====================================================== -->
 
     <div class="conversation-avatar">
+
         {% if item.sender == request.user %}
+
         <a href="{% url 'profile-details' pk=item.sender.pk %}">
+
             {% if item.sender.profile.profile_photo %}
+
             <img src="{{ item.sender.profile.profile_photo.url }}"
                  class="message-avatar"
                  alt="{{ item.sender.profile.username_in_marketplace|default:item.sender.username }}"
                  loading="lazy">
+
             {% else %}
+
             <img src="{% static 'images/profile_picture.webp' %}"
                  class="message-avatar"
                  alt="{{ item.sender.profile.username_in_marketplace|default:item.sender.username }}"
                  loading="lazy">
+
             {% endif %}
+
         </a>
+
         {% else %}
+
         {% if item.sender.profile.profile_photo %}
+
         <img src="{{ item.sender.profile.profile_photo.url }}"
              class="message-avatar"
              alt="{{ item.sender.profile.username_in_marketplace|default:item.sender.username }}"
              loading="lazy">
+
         {% else %}
+
         <img src="{% static 'images/profile_picture.webp' %}"
              class="message-avatar"
              alt="{{ item.sender.profile.username_in_marketplace|default:item.sender.username }}"
              loading="lazy">
+
         {% endif %}
+
         {% endif %}
+
     </div>
 
 
@@ -52,7 +68,6 @@
     ====================================================== -->
 
     <div class="conversation-message-body">
-
 
         <!-- =================================================
              META
@@ -77,20 +92,20 @@
 
         <div class="message-row-content">
 
-
             <!-- =================================================
                  BUBBLE + REACTIONS
             ================================================== -->
 
             <div class="chat-message-content">
 
+                {% with attachments=item.attachments.all %}
 
                 <!-- =================================================
                      MESSAGE BUBBLE
                 ================================================== -->
 
                 <div class="message-bubble
-                            {% if item.body and not item.image and not item.video %}
+                            {% if item.body and not item.image and not item.video and not attachments %}
                                 {% if item.body|length <= 30 %}
                                     message-text-short
                                 {% else %}
@@ -117,12 +132,13 @@
 
                     {% else %}
 
-
                     <!-- =============================================
                          REPLY PREVIEW
                     ============================================== -->
 
                     {% if item.parent_message %}
+
+                    {% with parent_attachments=item.parent_message.attachments.all %}
 
                     <a href="#msg-{{ item.parent_message.pk }}"
                        class="message-reply-preview"
@@ -165,6 +181,29 @@
 
                                     <i class="fas fa-video"></i>
                                     Video
+
+                                    {% elif parent_attachments %}
+
+                                    {% with parent_attachment=parent_attachments|first %}
+
+                                        {% if parent_attachment.attachment_type == 'image' %}
+
+                                        <i class="fas fa-image"></i>
+                                        Photo
+
+                                        {% elif parent_attachment.attachment_type == 'video' %}
+
+                                        <i class="fas fa-video"></i>
+                                        Video
+
+                                        {% else %}
+
+                                        <i class="fas fa-file"></i>
+                                        {{ parent_attachment.original_name|truncatechars:40 }}
+
+                                        {% endif %}
+
+                                    {% endwith %}
 
                                     {% else %}
 
@@ -211,6 +250,44 @@
 
                                     </div>
 
+                                    {% elif parent_attachments %}
+
+                                    {% with parent_attachment=parent_attachments|first %}
+
+                                        {% if parent_attachment.attachment_type == 'image' %}
+
+                                        <div class="message-reply-media-thumb">
+
+                                            <img src="{{ parent_attachment.file.url }}"
+                                                 alt="{{ parent_attachment.original_name }}"
+                                                 loading="lazy">
+
+                                        </div>
+
+                                        {% elif parent_attachment.attachment_type == 'video' %}
+
+                                        <div class="message-reply-media-thumb">
+
+                                            <video preload="metadata"
+                                                   muted
+                                                   playsinline>
+
+                                                <source src="{{ parent_attachment.file.url }}">
+
+                                            </video>
+
+                                            <span class="message-reply-video-icon">
+
+                                                <i class="fas fa-play"></i>
+
+                                            </span>
+
+                                        </div>
+
+                                        {% endif %}
+
+                                    {% endwith %}
+
                                     {% endif %}
 
                                 {% endif %}
@@ -221,6 +298,8 @@
 
                     </a>
 
+                    {% endwith %}
+
                     {% endif %}
 
 
@@ -228,10 +307,9 @@
                          MESSAGE CONTENT
                     ============================================== -->
 
-                    {% if item.body or item.image or item.video %}
+                    {% if item.body or item.image or item.video or attachments %}
 
                     <div class="message-content-wrap">
-
 
                         <!-- =================================
                              TEXT
@@ -247,7 +325,8 @@
 
 
                         <!-- =================================
-                             IMAGE
+                             LEGACY IMAGE
+                             Used only for old messages.
                         ================================== -->
 
                         {% if item.image %}
@@ -282,7 +361,8 @@
 
 
                         <!-- =================================
-                             VIDEO
+                             LEGACY VIDEO
+                             Used only for old messages.
                         ================================== -->
 
                         {% if item.video %}
@@ -313,6 +393,169 @@
                         {% endif %}
 
 
+                        <!-- =================================
+                             NEW ATTACHMENTS
+                        ================================== -->
+
+                        {% for attachment in attachments %}
+
+                            {% if attachment.attachment_type == 'image' %}
+
+                            <!-- =================================
+                                 IMAGE ATTACHMENT
+                            ================================== -->
+
+                            <div class="media-wrap">
+
+                                <a href="{{ attachment.file.url }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer">
+
+                                    <img src="{{ attachment.file.url }}"
+                                         alt="{{ attachment.original_name }}"
+                                         class="message-image"
+                                         loading="lazy">
+
+                                </a>
+
+                                <button type="button"
+                                        class="media-share-btn share-btn"
+                                        data-url="{{ attachment.file.url }}"
+                                        data-media-url="{{ attachment.file.url }}"
+                                        title="Copy link"
+                                        aria-label="Share image">
+
+                                    <i class="fas fa-share-alt"></i>
+
+                                </button>
+
+                            </div>
+
+
+                            {% elif attachment.attachment_type == 'video' %}
+
+                            <!-- =================================
+                                 VIDEO ATTACHMENT
+                            ================================== -->
+
+                            <div class="media-wrap">
+
+                                <video class="message-video"
+                                       controls
+                                       preload="metadata"
+                                       playsinline>
+
+                                    <source src="{{ attachment.file.url }}"
+                                            type="{{ attachment.mime_type }}">
+
+                                </video>
+
+                                <button type="button"
+                                        class="media-share-btn share-btn"
+                                        data-url="{{ attachment.file.url }}"
+                                        data-media-url="{{ attachment.file.url }}"
+                                        title="Copy link"
+                                        aria-label="Share video">
+
+                                    <i class="fas fa-share-alt"></i>
+
+                                </button>
+
+                            </div>
+
+
+                            {% elif attachment.attachment_type == 'file' %}
+
+                            <!-- =================================
+                                 GENERIC FILE ATTACHMENT
+                            ================================== -->
+
+                            <div class="chat-file-attachment">
+
+                                <a href="{{ attachment.file.url }}"
+                                   class="chat-file-link"
+                                   target="_blank"
+                                   rel="noopener noreferrer">
+
+                                    <span class="chat-file-icon">
+
+                                        {% if attachment.mime_type == 'application/pdf' %}
+
+                                        <i class="fas fa-file-pdf"></i>
+
+                                        {% elif attachment.mime_type == 'text/plain' %}
+
+                                        <i class="fas fa-file-alt"></i>
+
+                                        {% elif 'word' in attachment.mime_type %}
+
+                                        <i class="fas fa-file-word"></i>
+
+                                        {% elif 'excel' in attachment.mime_type or 'spreadsheet' in attachment.mime_type %}
+
+                                        <i class="fas fa-file-excel"></i>
+
+                                        {% elif 'powerpoint' in attachment.mime_type or 'presentation' in attachment.mime_type %}
+
+                                        <i class="fas fa-file-powerpoint"></i>
+
+                                        {% elif attachment.mime_type == 'application/zip' or attachment.mime_type == 'application/x-zip-compressed' %}
+
+                                        <i class="fas fa-file-archive"></i>
+
+                                        {% else %}
+
+                                        <i class="fas fa-file"></i>
+
+                                        {% endif %}
+
+                                    </span>
+
+                                    <span class="chat-file-info">
+
+                                        <span class="chat-file-name">
+                                            {{ attachment.original_name }}
+                                        </span>
+
+                                        <span class="chat-file-meta">
+
+                                            {% if attachment.size %}
+
+                                                {% if attachment.size < 1024 %}
+
+                                                    {{ attachment.size }} B
+
+                                                {% elif attachment.size < 1048576 %}
+
+                                                    {{ attachment.size|filesizeformat }}
+
+                                                {% else %}
+
+                                                    {{ attachment.size|filesizeformat }}
+
+                                                {% endif %}
+
+                                            {% endif %}
+
+                                        </span>
+
+                                    </span>
+
+                                    <span class="chat-file-download">
+
+                                        <i class="fas fa-download"></i>
+
+                                    </span>
+
+                                </a>
+
+                            </div>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+
                         <!-- =================================================
                              MESSAGE TIME + DELIVERY STATUS
                         ================================================== -->
@@ -322,7 +565,7 @@
                         <div class="message-bubble-meta">
 
                             <span class="message-bubble-time">
-                                {{ item.timestamp|date:"H:i" }}
+                                {{ item.timestamp|date:"H:i" }} ч.
                             </span>
 
                             {% if item.sender == request.user %}
@@ -359,15 +602,15 @@
 
                         {% endif %}
 
-
                     </div>
 
                     {% endif %}
 
-
                     {% endif %}
 
                 </div>
+
+                {% endwith %}
 
 
                 <!-- =================================================
@@ -381,11 +624,9 @@
                 {% reaction_users item 'like' as like_users %}
                 {% reaction_users item 'heart' as heart_users %}
 
-
                 <div class="message-actions">
 
                     <div class="message-reactions">
-
 
                         <!-- =================================
                              LIKE
@@ -476,7 +717,6 @@
 
                         {% endif %}
 
-
                     </div>
 
                 </div>
@@ -493,7 +733,6 @@
             {% if not item.is_system and not item.is_removed %}
 
             <div class="message-side-actions">
-
 
                 <!-- =================================
                      REPLY
@@ -531,9 +770,15 @@
                     <i class="fas fa-edit"></i>
 
                 </button>
+
                 {% endif %}
+
             </div>
+
             {% endif %}
+
         </div>
+
     </div>
+
 </div>

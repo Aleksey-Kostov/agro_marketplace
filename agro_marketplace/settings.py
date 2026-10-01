@@ -279,3 +279,8 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+MESSAGE_ATTACHMENT_STORAGE = config(
+    "MESSAGE_ATTACHMENT_STORAGE",
+    default="local",
+)

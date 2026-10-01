@@ -3,9 +3,11 @@ from datetime import datetime
 from django.conf import settings
 from django.db import models
 
+
 from .storages import (
     MessageImageStorage,
     MessageVideoStorage,
+    MessageAttachmentStorage,
 )
 
 User = settings.AUTH_USER_MODEL
@@ -128,7 +130,8 @@ class MessageAttachment(models.Model):
     )
 
     file = models.FileField(
-        upload_to="message_attachments/",
+        upload_to="",
+        storage=MessageAttachmentStorage(),
     )
 
     original_name = models.CharField(

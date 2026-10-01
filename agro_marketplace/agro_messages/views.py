@@ -1,5 +1,11 @@
+from pathlib import Path
+
 from django.core.paginator import Paginator
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import (
+    render,
+    redirect,
+    get_object_or_404,
+)
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages as django_messages
 from django.contrib.auth import get_user_model
@@ -15,17 +21,18 @@ from channels.layers import get_channel_layer
 
 import hashlib
 import markdown
-from pathlib import Path
-
-from PIL import Image, UnidentifiedImageError
 
 from .forms import MessageForm
 from .models import (
     Message,
+    MessageAttachment,
     MessageStatus,
     MessageReport,
     BlockedUser,
     MessageReaction,
+)
+from .services.attachment_validation import (
+    validate_message_attachments as validate_attachments,
 )
 from .templatetags.message_tags_inbox import (
     get_user_conversations,
@@ -35,15 +42,8 @@ from ..accounts.models import AppUser
 from ..buyers.models import BuyerItems
 from ..sellers.models import SellerItems
 
+
 User = get_user_model()
-
-
-# ============================================================
-# CONSTANTS
-# ============================================================
-
-MAX_IMAGE_SIZE = 10 * 1024 * 1024
-MAX_VIDEO_SIZE = 100 * 1024 * 1024
 
 
 # ============================================================
@@ -99,24 +99,105 @@ def build_message_group_name(
 
 
 # ============================================================
+# WEBSOCKET ATTACHMENTS SERIALIZATION
+# ============================================================
+
+def serialize_message_attachments(message):
+    """
+    Server-authoritative representation of all new-style
+    message attachments.
+
+    One message currently allows only one attachment, but the
+    response is intentionally a list so the frontend architecture
+    can support multiple attachments later without changing the
+    API shape.
+    """
+
+    attachments = []
+
+    for attachment in message.attachments.all():
+
+        url = None
+
+        try:
+
+            if attachment.file:
+                url = attachment.file.url
+
+        except Exception:
+
+            url = None
+
+        attachments.append(
+            {
+                'id': attachment.pk,
+                'type': attachment.attachment_type,
+                'url': url,
+                'original_name': (
+                    attachment.original_name
+                    or ''
+                ),
+                'mime_type': (
+                    attachment.mime_type
+                    or ''
+                ),
+                'size': int(
+                    attachment.size
+                    or 0
+                ),
+            }
+        )
+
+    return attachments
+
+
+# ============================================================
 # WEBSOCKET SERIALIZATION
 # ============================================================
 
 def serialize_message_for_websocket(message):
+
+    # --------------------------------------------------------
+    # Legacy image/video URLs
+    # --------------------------------------------------------
+    #
+    # These remain temporarily for backward compatibility with
+    # old messages stored in Message.image / Message.video.
+    #
+    # New uploads use MessageAttachment.
+
     image_url = None
     video_url = None
 
     try:
+
         if message.image:
             image_url = message.image.url
+
     except Exception:
+
         image_url = None
 
     try:
+
         if message.video:
             video_url = message.video.url
+
     except Exception:
+
         video_url = None
+
+    # --------------------------------------------------------
+    # New attachment architecture
+    # --------------------------------------------------------
+
+    attachments = serialize_message_attachments(
+        message
+    )
+
+    # --------------------------------------------------------
+    # Reply
+    # --------------------------------------------------------
 
     parent_message = getattr(
         message,
@@ -127,6 +208,7 @@ def serialize_message_for_websocket(message):
     reply_data = None
 
     if parent_message:
+
         reply_data = {
             'id': parent_message.pk,
             'body': parent_message.body or '',
@@ -144,8 +226,14 @@ def serialize_message_for_websocket(message):
         'timestamp': message.timestamp.isoformat(),
         'is_system': bool(message.is_system),
         'is_removed': bool(message.is_removed),
+
+        # Legacy compatibility.
         'image_url': image_url,
         'video_url': video_url,
+
+        # New canonical attachment API.
+        'attachments': attachments,
+
         'reply': reply_data,
     }
 
@@ -171,6 +259,7 @@ def broadcast_message_event(
         return
 
     try:
+
         channel_layer = get_channel_layer()
 
         if channel_layer is None:
@@ -218,6 +307,7 @@ def broadcast_message_created(message):
         return
 
     try:
+
         channel_layer = get_channel_layer()
 
         if channel_layer is None:
@@ -398,6 +488,7 @@ def get_conversation_messages(root_message):
         .prefetch_related(
             'statuses',
             'reactions',
+            'attachments',
         )
         .order_by(
             'timestamp',
@@ -472,6 +563,7 @@ def get_conversation_messages_for_user(
         .prefetch_related(
             'statuses',
             'reactions',
+            'attachments',
         )
         .order_by(
             'timestamp',
@@ -557,7 +649,6 @@ def add_message_delivery_status(
         if message.is_removed:
             continue
 
-        # Само sender вижда delivery/read отметките.
         if message.sender_id != current_user.pk:
             continue
 
@@ -719,11 +810,13 @@ def message_has_content(request):
 
     image_file = request.FILES.get('image')
     video_file = request.FILES.get('video')
+    generic_file = request.FILES.get('file')
 
     return bool(
         body
         or image_file
         or video_file
+        or generic_file
     )
 
 
@@ -731,200 +824,192 @@ def validate_message_attachments(request):
     """
     Central server-side validation for chat attachments.
 
-    Limits:
-        Image: 10 MB
-        Video: 100 MB
+    The actual validation rules live in:
+        services/attachment_validation.py
+    """
 
-    Security:
-        - only one attachment type at a time
-        - validates file size
-        - validates extension
-        - validates declared MIME type
-        - verifies real image content with Pillow
-        - verifies common video container signatures
+    return validate_attachments(
+        image_file=request.FILES.get('image'),
+        video_file=request.FILES.get('video'),
+        generic_file=request.FILES.get('file'),
+    )
+
+
+# ============================================================
+# CREATE MESSAGE ATTACHMENT
+# ============================================================
+
+def create_message_attachment(
+    *,
+    message,
+    file,
+    attachment_type,
+):
+    """
+    Creates one MessageAttachment and stores the uploaded file
+    through MessageAttachmentStorage.
+
+    The original client filename is kept only as metadata.
+
+    The actual stored filename is generated by Django storage.
+    """
+
+    if not file:
+        return None
+
+    original_name = Path(
+        file.name or 'attachment'
+    ).name
+
+    attachment = MessageAttachment(
+        message=message,
+        original_name=original_name,
+        mime_type=(
+            getattr(
+                file,
+                'content_type',
+                '',
+            )
+            or ''
+        ).lower().strip(),
+        size=int(
+            getattr(
+                file,
+                'size',
+                0,
+            )
+            or 0
+        ),
+        attachment_type=attachment_type,
+    )
+
+    try:
+
+        attachment.file.save(
+            original_name,
+            file,
+            save=False,
+        )
+
+        attachment.save()
+
+    except Exception:
+
+        try:
+
+            if attachment.file:
+                attachment.file.delete(
+                    save=False
+                )
+
+        except Exception:
+            pass
+
+        raise
+
+    return attachment
+
+
+# ============================================================
+# CREATE MESSAGE ATTACHMENT FROM REQUEST
+# ============================================================
+
+def create_attachment_from_request(
+    *,
+    request,
+    message,
+):
+    """
+    Finds the single validated attachment in the request
+    and creates the corresponding MessageAttachment.
     """
 
     image_file = request.FILES.get('image')
     video_file = request.FILES.get('video')
+    generic_file = request.FILES.get('file')
 
-    # ============================================================
-    # ONLY ONE ATTACHMENT
-    # ============================================================
+    supplied = [
+        ('image', image_file),
+        ('video', video_file),
+        ('file', generic_file),
+    ]
 
-    if image_file and video_file:
+    attachments = [
+        item
+        for item in supplied
+        if item[1] is not None
+    ]
+
+    if not attachments:
+        return None
+
+    if len(attachments) != 1:
+
         raise ValidationError(
-            "Please attach either an image or a video, not both."
+            "Please attach only one file per message."
         )
 
-    # ============================================================
-    # IMAGE
-    # ============================================================
+    attachment_type, file = attachments[0]
 
-    if image_file:
-        if image_file.size > MAX_IMAGE_SIZE:
-            raise ValidationError(
-                "Image is too large. Maximum size is 10 MB."
+    return create_message_attachment(
+        message=message,
+        file=file,
+        attachment_type=attachment_type,
+    )
+
+
+# ============================================================
+# DELETE STORED ATTACHMENT FILE
+# ============================================================
+
+def delete_stored_attachment_file(
+    attachment,
+):
+    """
+    Deletes the physical file represented by one
+    MessageAttachment.
+
+    The DB object itself may already be rolled back, therefore
+    this helper works directly with the attachment instance.
+    """
+
+    if not attachment:
+        return
+
+    try:
+
+        if attachment.file:
+            attachment.file.delete(
+                save=False
             )
 
-        content_type = (
-            getattr(
-                image_file,
-                'content_type',
-                '',
-            )
-            or ''
-        ).lower().strip()
+    except Exception:
+        pass
 
-        allowed_image_types = {
-            'image/jpeg',
-            'image/png',
-            'image/webp',
-            'image/gif',
-        }
 
-        if content_type not in allowed_image_types:
-            raise ValidationError(
-                "Invalid image file."
-            )
+# ============================================================
+# DELETE STORED ATTACHMENTS
+# ============================================================
 
-        extension = (
-            Path(
-                image_file.name or ''
-            )
-            .suffix
-            .lower()
+def delete_message_attachments(message):
+    """
+    Deletes physical attachment files for a globally deleted
+    message.
+
+    This function must NOT be called for per-user conversation
+    deletion via MessageStatus.is_deleted.
+    """
+
+    attachments = list(
+        message.attachments.all()
+    )
+
+    for attachment in attachments:
+
+        delete_stored_attachment_file(
+            attachment
         )
 
-        allowed_image_extensions = {
-            '.jpg',
-            '.jpeg',
-            '.png',
-            '.webp',
-            '.gif',
-        }
-
-        if extension not in allowed_image_extensions:
-            raise ValidationError(
-                "Invalid image file extension."
-            )
-
-        # --------------------------------------------------------
-        # REAL IMAGE VALIDATION
-        # --------------------------------------------------------
-
-        try:
-            image_file.seek(0)
-
-            with Image.open(image_file) as image:
-                image.verify()
-
-            image_file.seek(0)
-
-        except (
-            UnidentifiedImageError,
-            OSError,
-            ValueError,
-        ):
-            image_file.seek(0)
-
-            raise ValidationError(
-                "Invalid image file."
-            )
-
-    # ============================================================
-    # VIDEO
-    # ============================================================
-
-    if video_file:
-        if video_file.size > MAX_VIDEO_SIZE:
-            raise ValidationError(
-                "Video is too large. Maximum size is 100 MB."
-            )
-
-        content_type = (
-            getattr(
-                video_file,
-                'content_type',
-                '',
-            )
-            or ''
-        ).lower().strip()
-
-        allowed_video_types = {
-            'video/mp4',
-            'video/webm',
-            'video/quicktime',
-        }
-
-        if content_type not in allowed_video_types:
-            raise ValidationError(
-                "Invalid video file."
-            )
-
-        extension = (
-            Path(
-                video_file.name or ''
-            )
-            .suffix
-            .lower()
-        )
-
-        allowed_video_extensions = {
-            '.mp4',
-            '.webm',
-            '.mov',
-        }
-
-        if extension not in allowed_video_extensions:
-            raise ValidationError(
-                "Invalid video file extension."
-            )
-
-        # --------------------------------------------------------
-        # REAL VIDEO CONTAINER VALIDATION
-        # --------------------------------------------------------
-
-        video_file.seek(0)
-
-        header = video_file.read(32)
-
-        video_file.seek(0)
-
-        is_mp4_or_mov = (
-            len(header) >= 12
-            and header[4:8] == b'ftyp'
-        )
-
-        is_webm = (
-            header.startswith(
-                b'\x1a\x45\xdf\xa3'
-            )
-        )
-
-        if not (
-            is_mp4_or_mov
-            or is_webm
-        ):
-            raise ValidationError(
-                "Invalid video file."
-            )
-
-        # Make sure the extension and actual container agree.
-        if extension == '.webm' and not is_webm:
-            raise ValidationError(
-                "Invalid video file."
-            )
-
-        if (
-            extension in {
-                '.mp4',
-                '.mov',
-            }
-            and not is_mp4_or_mov
-        ):
-            raise ValidationError(
-                "Invalid video file."
-            )
 
 # ============================================================
 # SYSTEM MESSAGE
@@ -964,7 +1049,7 @@ def send_system_message(
         is_read=False,
     )
 
-    admin_status = MessageStatus.objects.create(
+    MessageStatus.objects.create(
         message=message,
         profile=admin,
         is_read=True,
@@ -1178,8 +1263,10 @@ def send_message(
 
             try:
 
-                validate_message_attachments(
-                    request
+                attachment_result = (
+                    validate_message_attachments(
+                        request
+                    )
                 )
 
             except ValidationError as exc:
@@ -1206,6 +1293,32 @@ def send_message(
             message = form.save(
                 commit=False
             )
+
+            # =================================================
+            # NEW ATTACHMENT ARCHITECTURE
+            # =================================================
+            #
+            # New image/video uploads are stored only in
+            # MessageAttachment.
+            #
+            # The legacy Message.image / Message.video fields
+            # remain available for old messages.
+            #
+            # This prevents storing the same new upload twice.
+
+            if attachment_result:
+
+                attachment_type, _ = (
+                    attachment_result
+                )
+
+                if attachment_type == 'image':
+
+                    message.image = None
+
+                elif attachment_type == 'video':
+
+                    message.video = None
 
             message.sender = request.user
             message.recipient = recipient
@@ -1294,26 +1407,73 @@ def send_message(
                 )
 
             # =================================================
-            # SAVE
+            # SAVE MESSAGE + ATTACHMENT
             # =================================================
 
-            with transaction.atomic():
+            created_attachment = None
 
-                message.save()
+            try:
 
-                MessageStatus.objects.create(
-                    message=message,
-                    profile=recipient,
-                    is_read=False,
-                )
+                with transaction.atomic():
 
-                sender_status = (
+                    message.save()
+
+                    created_attachment = (
+                        create_attachment_from_request(
+                            request=request,
+                            message=message,
+                        )
+                    )
+
+                    MessageStatus.objects.create(
+                        message=message,
+                        profile=recipient,
+                        is_read=False,
+                    )
+
                     MessageStatus.objects.create(
                         message=message,
                         profile=request.user,
                         is_read=True,
                     )
+
+            except Exception:
+
+                # Important:
+                #
+                # transaction rollback removes the DB row,
+                # therefore message.attachments cannot be used
+                # here. We must delete the physical file from
+                # the attachment instance we already created.
+
+                delete_stored_attachment_file(
+                    created_attachment
                 )
+
+                raise
+
+            # =================================================
+            # REFRESH MESSAGE + ATTACHMENTS
+            # =================================================
+
+            message = (
+                Message.objects
+                .select_related(
+                    'sender__profile',
+                    'recipient__profile',
+                    'parent_message',
+                    'parent_message__sender__profile',
+                    'parent_message__recipient__profile',
+                )
+                .prefetch_related(
+                    'statuses',
+                    'reactions',
+                    'attachments',
+                )
+                .get(
+                    pk=message.pk
+                )
+            )
 
             # =================================================
             # WEBSOCKET
@@ -1438,14 +1598,17 @@ def message_fragment(
 ):
 
     message = get_object_or_404(
-        Message.objects.select_related(
+        Message.objects
+        .select_related(
             'sender__profile',
             'recipient__profile',
             'parent_message__sender__profile',
             'parent_message__recipient__profile',
-        ).prefetch_related(
+        )
+        .prefetch_related(
             'statuses',
             'reactions',
+            'attachments',
         ),
         pk=pk,
     )
@@ -1522,10 +1685,14 @@ def read_message(
 ):
 
     message = get_object_or_404(
-        Message.objects.select_related(
+        Message.objects
+        .select_related(
             'sender__profile',
             'recipient__profile',
             'parent_message',
+        )
+        .prefetch_related(
+            'attachments',
         ),
         pk=pk,
     )
@@ -1706,8 +1873,10 @@ def read_message(
 
             try:
 
-                validate_message_attachments(
-                    request
+                attachment_result = (
+                    validate_message_attachments(
+                        request
+                    )
                 )
 
             except ValidationError as exc:
@@ -1876,6 +2045,23 @@ def read_message(
                 commit=False
             )
 
+            # New image/video uploads are stored only in
+            # MessageAttachment.
+
+            if attachment_result:
+
+                attachment_type, _ = (
+                    attachment_result
+                )
+
+                if attachment_type == 'image':
+
+                    reply.image = None
+
+                elif attachment_type == 'video':
+
+                    reply.video = None
+
             reply.sender = current_user
             reply.recipient = recipient
 
@@ -1902,24 +2088,66 @@ def read_message(
                 )
 
             # =================================================
-            # SAVE
+            # SAVE REPLY + ATTACHMENT
             # =================================================
 
-            with transaction.atomic():
+            created_attachment = None
 
-                reply.save()
+            try:
 
-                MessageStatus.objects.create(
-                    message=reply,
-                    profile=recipient,
-                    is_read=False,
+                with transaction.atomic():
+
+                    reply.save()
+
+                    created_attachment = (
+                        create_attachment_from_request(
+                            request=request,
+                            message=reply,
+                        )
+                    )
+
+                    MessageStatus.objects.create(
+                        message=reply,
+                        profile=recipient,
+                        is_read=False,
+                    )
+
+                    MessageStatus.objects.create(
+                        message=reply,
+                        profile=current_user,
+                        is_read=True,
+                    )
+
+            except Exception:
+
+                delete_stored_attachment_file(
+                    created_attachment
                 )
 
-                MessageStatus.objects.create(
-                    message=reply,
-                    profile=current_user,
-                    is_read=True,
+                raise
+
+            # =================================================
+            # REFRESH ATTACHMENTS
+            # =================================================
+
+            reply = (
+                Message.objects
+                .select_related(
+                    'sender__profile',
+                    'recipient__profile',
+                    'parent_message',
+                    'parent_message__sender__profile',
+                    'parent_message__recipient__profile',
                 )
+                .prefetch_related(
+                    'statuses',
+                    'reactions',
+                    'attachments',
+                )
+                .get(
+                    pk=reply.pk
+                )
+            )
 
             # =================================================
             # WEBSOCKET
@@ -2062,14 +2290,17 @@ def delete_one_message(
 ):
 
     msg = get_object_or_404(
-        Message.objects.select_related(
+        Message.objects
+        .select_related(
             'sender',
             'recipient',
+        )
+        .prefetch_related(
+            'attachments',
         ),
         pk=pk,
     )
 
-    # Само авторът може да изтрие съобщението.
     if msg.sender_id != request.user.pk:
 
         if is_ajax_request(request):
@@ -2104,19 +2335,15 @@ def delete_one_message(
             status=405,
         )
 
-    # ========================================================
-    # SAVE ORIGINAL STATE
-    # ========================================================
-
     was_removed = bool(
         msg.is_removed
     )
 
-    # ========================================================
-    # GLOBAL MESSAGE DELETE
-    # ========================================================
-
     if not was_removed:
+
+        delete_message_attachments(
+            msg
+        )
 
         msg.is_removed = True
 
@@ -2126,10 +2353,6 @@ def delete_one_message(
             ]
         )
 
-    # ========================================================
-    # MARK RECIPIENT STATUS
-    # ========================================================
-
     MessageStatus.objects.filter(
         message=msg,
         profile_id=msg.recipient_id,
@@ -2137,19 +2360,11 @@ def delete_one_message(
         is_read=True,
     )
 
-    # ========================================================
-    # REALTIME DELETE
-    # ========================================================
-
     if not was_removed:
 
         broadcast_message_deleted(
             msg
         )
-
-    # ========================================================
-    # AJAX
-    # ========================================================
 
     if is_ajax_request(request):
 
@@ -2160,10 +2375,6 @@ def delete_one_message(
                 'deleted': True,
             }
         )
-
-    # ========================================================
-    # NORMAL REQUEST
-    # ========================================================
 
     return redirect(
         safe_next_url(request)
@@ -2269,10 +2480,6 @@ def delete_message(
                 is_read=True,
             )
 
-    # Това е delete само за CURRENT USER.
-    # Не изпращаме message_deleted към другия човек,
-    # защото той все още трябва да вижда conversation-а.
-
     if is_ajax_request(request):
 
         return JsonResponse(
@@ -2310,16 +2517,16 @@ def react_message(
         )
 
     msg = get_object_or_404(
-        Message.objects.select_related(
+        Message.objects
+        .select_related(
             'sender',
             'recipient',
+        )
+        .prefetch_related(
+            'attachments',
         ),
         pk=pk,
     )
-
-    # ========================================================
-    # AUTHORIZATION
-    # ========================================================
 
     if (
         msg.sender_id != request.user.pk
@@ -2335,10 +2542,6 @@ def react_message(
             status=403,
         )
 
-    # ========================================================
-    # REMOVED
-    # ========================================================
-
     if msg.is_removed:
 
         return JsonResponse(
@@ -2350,10 +2553,6 @@ def react_message(
             },
             status=400,
         )
-
-    # ========================================================
-    # SYSTEM
-    # ========================================================
 
     if getattr(
         msg,
@@ -2371,10 +2570,6 @@ def react_message(
             status=400,
         )
 
-    # ========================================================
-    # REACTION VALIDATION
-    # ========================================================
-
     if not is_valid_reaction(
         reaction
     ):
@@ -2386,10 +2581,6 @@ def react_message(
             },
             status=400,
         )
-
-    # ========================================================
-    # TOGGLE
-    # ========================================================
 
     with transaction.atomic():
 
@@ -2419,28 +2610,16 @@ def react_message(
 
             active = True
 
-    # ========================================================
-    # REACTORS
-    # ========================================================
-
     reactors = get_reaction_reactors(
         msg,
         reaction,
     )
-
-    # ========================================================
-    # REALTIME BROADCAST
-    # ========================================================
 
     broadcast_message_reaction(
         msg,
         reaction=reaction,
         active=active,
     )
-
-    # ========================================================
-    # SERVER-AUTHORITATIVE HTML
-    # ========================================================
 
     add_message_delivery_status(
         [msg],
@@ -2454,10 +2633,6 @@ def react_message(
         },
         request=request,
     )
-
-    # ========================================================
-    # RESPONSE
-    # ========================================================
 
     return JsonResponse(
         {
@@ -2727,16 +2902,16 @@ def edit_message(
 ):
 
     message = get_object_or_404(
-        Message.objects.select_related(
+        Message.objects
+        .select_related(
             'sender',
             'recipient',
+        )
+        .prefetch_related(
+            'attachments',
         ),
         pk=pk,
     )
-
-    # ========================================================
-    # AUTHORIZATION
-    # ========================================================
 
     if message.sender != request.user:
 
@@ -2750,10 +2925,6 @@ def edit_message(
             status=403,
         )
 
-    # ========================================================
-    # SYSTEM
-    # ========================================================
-
     if message.is_system:
 
         return JsonResponse(
@@ -2765,10 +2936,6 @@ def edit_message(
             },
             status=403,
         )
-
-    # ========================================================
-    # DELETED
-    # ========================================================
 
     if message.is_removed:
 
@@ -2782,10 +2949,6 @@ def edit_message(
             status=400,
         )
 
-    # ========================================================
-    # METHOD
-    # ========================================================
-
     if request.method != 'POST':
 
         return JsonResponse(
@@ -2795,10 +2958,6 @@ def edit_message(
             },
             status=405,
         )
-
-    # ========================================================
-    # BODY
-    # ========================================================
 
     new_body = (
         request.POST.get('body')
@@ -2817,10 +2976,6 @@ def edit_message(
             status=400,
         )
 
-    # ========================================================
-    # UPDATE
-    # ========================================================
-
     message.body = markdown.markdown(
         new_body,
     )
@@ -2831,17 +2986,9 @@ def edit_message(
         ]
     )
 
-    # ========================================================
-    # REALTIME UPDATE
-    # ========================================================
-
     broadcast_message_updated(
         message
     )
-
-    # ========================================================
-    # SERVER HTML
-    # ========================================================
 
     add_message_delivery_status(
         [message],

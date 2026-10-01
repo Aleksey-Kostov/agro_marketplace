@@ -1,5 +1,8 @@
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage, Storage
+from django.core.files.storage import (
+    FileSystemStorage,
+    Storage,
+)
 
 
 # =========================================================
@@ -57,6 +60,40 @@ class LocalMessageVideoStorage(FileSystemStorage):
 
 
 # =========================================================
+# LOCAL MESSAGE ATTACHMENT STORAGE
+# =========================================================
+
+class LocalMessageAttachmentStorage(FileSystemStorage):
+    """
+    Локално съхранение на общите message attachments.
+
+    Използва се за:
+
+        image
+        video
+        file
+
+    Файловете се записват в:
+
+        MEDIA_ROOT/message_attachments/
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault(
+            "location",
+            settings.MEDIA_ROOT / "message_attachments",
+        )
+
+        kwargs.setdefault(
+            "base_url",
+            settings.MEDIA_URL
+            + "message_attachments/",
+        )
+
+        super().__init__(*args, **kwargs)
+
+
+# =========================================================
 # CLOUDINARY MESSAGE IMAGE STORAGE
 # =========================================================
 
@@ -96,6 +133,32 @@ class CloudinaryMessageVideoStorage:
         )
 
         return VideoMediaCloudinaryStorage(
+            *args,
+            **kwargs,
+        )
+
+
+# =========================================================
+# CLOUDINARY MESSAGE ATTACHMENT STORAGE
+# =========================================================
+
+class CloudinaryMessageAttachmentStorage:
+    """
+    Cloudinary storage за общи message attachments.
+
+    Използва MediaCloudinaryStorage като универсален
+    Cloudinary storage backend.
+
+    Типът на Cloudinary resource-а се управлява
+    отделно от attachment upload service-а.
+    """
+
+    def __new__(cls, *args, **kwargs):
+        from cloudinary_storage.storage import (
+            MediaCloudinaryStorage,
+        )
+
+        return MediaCloudinaryStorage(
             *args,
             **kwargs,
         )
@@ -162,7 +225,12 @@ class SelectableMessageStorage(Storage):
             mode=mode,
         )
 
-    def save(self, name, content, max_length=None):
+    def save(
+        self,
+        name,
+        content,
+        max_length=None,
+    ):
         return self._storage.save(
             name,
             content,
@@ -204,7 +272,11 @@ class SelectableMessageStorage(Storage):
     def get_valid_name(self, name):
         return self._storage.get_valid_name(name)
 
-    def get_available_name(self, name, max_length=None):
+    def get_available_name(
+        self,
+        name,
+        max_length=None,
+    ):
         return self._storage.get_available_name(
             name,
             max_length=max_length,
@@ -230,7 +302,9 @@ class SelectableMessageStorage(Storage):
 # MESSAGE IMAGE STORAGE
 # =========================================================
 
-class MessageImageStorage(SelectableMessageStorage):
+class MessageImageStorage(
+    SelectableMessageStorage
+):
     """
     Storage за изображенията на съобщенията.
 
@@ -251,7 +325,9 @@ class MessageImageStorage(SelectableMessageStorage):
 # MESSAGE VIDEO STORAGE
 # =========================================================
 
-class MessageVideoStorage(SelectableMessageStorage):
+class MessageVideoStorage(
+    SelectableMessageStorage
+):
     """
     Storage за видеата на съобщенията.
 
@@ -269,23 +345,31 @@ class MessageVideoStorage(SelectableMessageStorage):
 
 
 # =========================================================
-# CLOUDINARY MESSAGE ATTACHMENT STORAGE
+# MESSAGE ATTACHMENT STORAGE
 # =========================================================
 
-class CloudinaryMessageAttachmentStorage:
+class MessageAttachmentStorage(
+    SelectableMessageStorage
+):
     """
-    Cloudinary storage за общи message attachments.
+    Storage за всички общи message attachments.
 
-    Използва MediaCloudinaryStorage като универсален
-    Cloudinary storage backend.
+    Поддържа:
+
+        image
+        video
+        file
+
+    Управлява се от:
+
+        MESSAGE_ATTACHMENT_STORAGE
     """
 
-    def __new__(cls, *args, **kwargs):
-        from cloudinary_storage.storage import (
-            MediaCloudinaryStorage,
-        )
+    storage_setting = (
+        "MESSAGE_ATTACHMENT_STORAGE"
+    )
 
-        return MediaCloudinaryStorage(
-            *args,
-            **kwargs,
-        )
+    storage_map = {
+        "local": LocalMessageAttachmentStorage,
+        "cloudinary": CloudinaryMessageAttachmentStorage,
+    }
