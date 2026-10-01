@@ -443,8 +443,10 @@ document.addEventListener('DOMContentLoaded', function () {
         );
 
         /*
-         * Reaction refreshes and other fragment refreshes
-         * must not move the user's scroll position.
+         * Full message refreshes preserve the user's
+         * current scroll position.
+         *
+         * Reaction clicks NEVER use this function.
          */
         if (
             preserveScroll &&
@@ -475,8 +477,8 @@ document.addEventListener('DOMContentLoaded', function () {
         /*
          * Serialize refreshes for the same message.
          *
-         * This prevents two fast reactions from racing
-         * and rendering an older server response last.
+         * This prevents two fast full-message updates
+         * from racing and rendering an older response last.
          */
         const previous =
             pendingMessageRefreshes.get(id) ||
@@ -2136,6 +2138,34 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+
+    /*
+     * =========================================================
+     * REACTION CLICK
+     * =========================================================
+     *
+     * IMPORTANT:
+     *
+     * A reaction changes ONLY reaction state.
+     *
+     * NEVER call refreshMessageFragment() here.
+     *
+     * refreshMessageFragment() replaces the complete
+     * .conversation-message DOM node, which would:
+     *
+     * - recreate <video>
+     * - reset video.currentTime
+     * - restart preview
+     * - blink text messages
+     * - recreate images/media
+     *
+     * The local response already contains the new
+     * reaction state, so updateReactionUI() is enough.
+     *
+     * WebSocket reaction_updated/message_reacted events
+     * are handled by chat_controller.js and use the
+     * reaction-only refreshMessageReactions() function.
+     */
     document.addEventListener(
         'click',
         async function (e) {
@@ -2216,11 +2246,6 @@ document.addEventListener('DOMContentLoaded', function () {
             button.disabled =
                 true;
 
-            const scrollTop =
-                chatWindow
-                    ? chatWindow.scrollTop
-                    : 0;
-
             try {
                 const response =
                     await fetch(
@@ -2261,27 +2286,26 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
                 }
 
+                /*
+                 * IMPORTANT:
+                 *
+                 * Update ONLY the clicked reaction.
+                 *
+                 * Do NOT refresh the whole message.
+                 *
+                 * The video element remains the exact same
+                 * DOM node and therefore keeps:
+                 *
+                 * - currentTime
+                 * - playback state
+                 * - preview state
+                 * - muted state
+                 * - controls state
+                 */
                 updateReactionUI(
                     button,
                     data
                 );
-
-                await refreshMessageFragment(
-                    data.message_id ||
-                    messageId,
-                    {
-                        preserveScroll: true
-                    }
-                );
-
-                if (chatWindow) {
-                    chatWindow.scrollTop =
-                        scrollTop;
-
-                    chatWindow.dispatchEvent(
-                        new Event('scroll')
-                    );
-                }
 
             } catch (error) {
                 console.error(
@@ -2289,21 +2313,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     error
                 );
 
+                /*
+                 * If the POST failed, synchronize ONLY
+                 * the reaction area with the server.
+                 *
+                 * Never fall back to refreshMessageFragment()
+                 * because that would recreate the video/message.
+                 */
                 try {
-                    await refreshMessageFragment(
-                        messageId,
-                        {
-                            preserveScroll: true
-                        }
-                    );
-
-                    if (chatWindow) {
-                        chatWindow.scrollTop =
-                            scrollTop;
-
-                        chatWindow.dispatchEvent(
-                            new Event('scroll')
-                        );
+                    if (
+                        window.agroChatController &&
+                        typeof window.agroChatController
+                            .refreshMessageReactions ===
+                            'function'
+                    ) {
+                        await window.agroChatController
+                            .refreshMessageReactions(
+                                messageId
+                            );
                     }
 
                 } catch (refreshError) {
@@ -2320,6 +2347,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 button.disabled =
                     false;
 
+                /*
+                 * The reaction-only WebSocket refresh may have
+                 * replaced the reaction button while the request
+                 * was running, so always find the current message
+                 * again before re-enabling its reaction buttons.
+                 */
                 const currentMessage =
                     getMessageElement(
                         messageId
