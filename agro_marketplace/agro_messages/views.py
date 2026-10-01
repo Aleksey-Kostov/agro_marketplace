@@ -1,4 +1,5 @@
 from pathlib import Path
+from django.conf import settings
 
 from django.core.paginator import Paginator
 from django.shortcuts import (
@@ -42,7 +43,6 @@ from ..accounts.models import AppUser
 from ..buyers.models import BuyerItems
 from ..sellers.models import SellerItems
 
-
 User = get_user_model()
 
 
@@ -52,8 +52,8 @@ User = get_user_model()
 
 def is_ajax_request(request):
     return (
-        request.headers.get('X-Requested-With')
-        == 'XMLHttpRequest'
+            request.headers.get('X-Requested-With')
+            == 'XMLHttpRequest'
     )
 
 
@@ -62,10 +62,10 @@ def is_ajax_request(request):
 # ============================================================
 
 def build_message_group_name(
-    sender_id,
-    recipient_id,
-    product_type,
-    product_id,
+        sender_id,
+        recipient_id,
+        product_type,
+        product_id,
 ):
     """
     IMPORTANT:
@@ -134,12 +134,12 @@ def serialize_message_attachments(message):
                 'type': attachment.attachment_type,
                 'url': url,
                 'original_name': (
-                    attachment.original_name
-                    or ''
+                        attachment.original_name
+                        or ''
                 ),
                 'mime_type': (
-                    attachment.mime_type
-                    or ''
+                        attachment.mime_type
+                        or ''
                 ),
                 'size': int(
                     attachment.size
@@ -156,7 +156,6 @@ def serialize_message_attachments(message):
 # ============================================================
 
 def serialize_message_for_websocket(message):
-
     # --------------------------------------------------------
     # Legacy image/video URLs
     # --------------------------------------------------------
@@ -208,7 +207,6 @@ def serialize_message_for_websocket(message):
     reply_data = None
 
     if parent_message:
-
         reply_data = {
             'id': parent_message.pk,
             'body': parent_message.body or '',
@@ -243,9 +241,9 @@ def serialize_message_for_websocket(message):
 # ============================================================
 
 def broadcast_message_event(
-    message,
-    event_type,
-    extra_data=None,
+        message,
+        event_type,
+        extra_data=None,
 ):
     """
     Изпраща realtime event до двамата участници
@@ -346,8 +344,8 @@ def broadcast_message_created(message):
 # ============================================================
 
 def broadcast_message_status(
-    message,
-    status,
+        message,
+        status,
 ):
     """
     status:
@@ -374,9 +372,9 @@ def broadcast_message_status(
 # ============================================================
 
 def broadcast_message_reaction(
-    message,
-    reaction=None,
-    active=None,
+        message,
+        reaction=None,
+        active=None,
 ):
     """
     Изпраща reaction_updated към двата браузъра.
@@ -438,7 +436,6 @@ def broadcast_message_updated(message):
 # ============================================================
 
 def _same_conversation(message_a, message_b):
-
     if not message_a or not message_b:
         return False
 
@@ -456,11 +453,11 @@ def _same_conversation(message_a, message_b):
         return False
 
     return (
-        message_a.product_type
-        == message_b.product_type
-        and
-        message_a.product_id
-        == message_b.product_id
+            message_a.product_type
+            == message_b.product_type
+            and
+            message_a.product_id
+            == message_b.product_id
     )
 
 
@@ -469,7 +466,6 @@ def _same_conversation(message_a, message_b):
 # ============================================================
 
 def get_conversation_messages(root_message):
-
     if not root_message:
         return []
 
@@ -504,17 +500,16 @@ def get_conversation_messages(root_message):
 # ============================================================
 
 def is_message_visible_for_user(
-    message,
-    user,
+        message,
+        user,
 ):
-
     if not user or not user.is_authenticated:
         return False
 
     if (
-        message.sender_id != user.pk
-        and
-        message.recipient_id != user.pk
+            message.sender_id != user.pk
+            and
+            message.recipient_id != user.pk
     ):
         return False
 
@@ -538,10 +533,9 @@ def is_message_visible_for_user(
 # ============================================================
 
 def get_conversation_messages_for_user(
-    root_message,
-    user,
+        root_message,
+        user,
 ):
-
     if not root_message:
         return []
 
@@ -606,10 +600,9 @@ def get_conversation_messages_for_user(
 # ============================================================
 
 def add_message_delivery_status(
-    messages,
-    current_user,
+        messages,
+        current_user,
 ):
-
     if not messages:
         return messages
 
@@ -634,7 +627,6 @@ def add_message_delivery_status(
     status_map = {}
 
     for status in statuses:
-
         status_map[
             (
                 status.message_id,
@@ -679,19 +671,18 @@ def add_message_delivery_status(
 # ============================================================
 
 def get_admin_user():
-
     return (
-        User.objects
-        .filter(
-            is_superuser=True,
-        )
-        .first()
-        or
-        User.objects
-        .filter(
-            is_staff=True,
-        )
-        .first()
+            User.objects
+            .filter(
+                is_superuser=True,
+            )
+            .first()
+            or
+            User.objects
+            .filter(
+                is_staff=True,
+            )
+            .first()
     )
 
 
@@ -700,24 +691,23 @@ def get_admin_user():
 # ============================================================
 
 def safe_next_url(
-    request,
-    fallback='message-inbox',
+        request,
+        fallback='message-inbox',
 ):
-
     next_url = (
-        request.POST.get('next')
-        or
-        request.GET.get('next')
-        or
-        request.META.get('HTTP_REFERER')
+            request.POST.get('next')
+            or
+            request.GET.get('next')
+            or
+            request.META.get('HTTP_REFERER')
     )
 
     if next_url and url_has_allowed_host_and_scheme(
-        next_url,
-        allowed_hosts={
-            request.get_host(),
-        },
-        require_https=request.is_secure(),
+            next_url,
+            allowed_hosts={
+                request.get_host(),
+            },
+            require_https=request.is_secure(),
     ):
         return next_url
 
@@ -729,10 +719,9 @@ def safe_next_url(
 # ============================================================
 
 def get_reaction_reactors(
-    message,
-    reaction,
+        message,
+        reaction,
 ):
-
     reactors = []
 
     reactions = (
@@ -770,17 +759,17 @@ def get_reaction_reactors(
                 photo = ''
 
             username = (
-                profile.username_in_marketplace
-                or user.username
+                    profile.username_in_marketplace
+                    or user.username
             )
 
         reactors.append(
             {
                 'id': user.pk,
                 'photo': (
-                    photo
-                    or
-                    '/static/images/profile_picture.webp'
+                        photo
+                        or
+                        '/static/images/profile_picture.webp'
                 ),
                 'username': username,
             }
@@ -790,7 +779,6 @@ def get_reaction_reactors(
 
 
 def is_valid_reaction(reaction):
-
     return reaction in (
         MessageReaction.LIKE,
         MessageReaction.HEART,
@@ -802,10 +790,9 @@ def is_valid_reaction(reaction):
 # ============================================================
 
 def message_has_content(request):
-
     body = (
-        request.POST.get('body')
-        or ''
+            request.POST.get('body')
+            or ''
     ).strip()
 
     image_file = request.FILES.get('image')
@@ -840,42 +827,53 @@ def validate_message_attachments(request):
 # ============================================================
 
 def create_message_attachment(
-    *,
-    message,
-    file,
-    attachment_type,
+        *,
+        message,
+        file,
+        attachment_type,
 ):
     """
-    Creates one MessageAttachment and stores the uploaded file
-    through MessageAttachmentStorage.
+    Creates one MessageAttachment and stores the uploaded file.
 
-    The original client filename is kept only as metadata.
+    Local storage:
+        original filename is passed normally.
 
-    The actual stored filename is generated by Django storage.
+    Cloudinary storage:
+        a special storage name is passed so the storage knows:
+
+            attachment_type
+            message_id
+
+        Example:
+
+            cloudinary/video/123/movie.mp4
+
+        The Cloudinary storage then uploads the file using
+        the existing cloudinary_attachments service.
     """
 
     if not file:
         return None
 
     original_name = Path(
-        file.name or 'attachment'
+        file.name or "attachment"
     ).name
 
     attachment = MessageAttachment(
         message=message,
         original_name=original_name,
         mime_type=(
-            getattr(
-                file,
-                'content_type',
-                '',
-            )
-            or ''
+                getattr(
+                    file,
+                    "content_type",
+                    "",
+                )
+                or ""
         ).lower().strip(),
         size=int(
             getattr(
                 file,
-                'size',
+                "size",
                 0,
             )
             or 0
@@ -883,13 +881,95 @@ def create_message_attachment(
         attachment_type=attachment_type,
     )
 
+    # --------------------------------------------------------
+    # SELECT STORAGE MODE
+    # --------------------------------------------------------
+
+    storage_name = getattr(
+        settings,
+        "MESSAGE_ATTACHMENT_STORAGE",
+        "local",
+    )
+
+    storage_name = (
+        str(storage_name)
+        .strip()
+        .lower()
+    )
+
+    # --------------------------------------------------------
+    # BUILD STORAGE NAME
+    # --------------------------------------------------------
+
+    if storage_name == "cloudinary":
+
+        storage_filename = (
+            f"cloudinary/"
+            f"{attachment_type}/"
+            f"{message.pk}/"
+            f"{original_name}"
+        )
+
+    else:
+
+        storage_filename = original_name
+
     try:
 
         attachment.file.save(
-            original_name,
+            storage_filename,
             file,
             save=False,
         )
+
+        # ----------------------------------------------------
+        # CLOUDINARY METADATA
+        # ----------------------------------------------------
+        #
+        # CloudinaryMessageAttachmentStorage returns:
+        #
+        # cloudinary:<resource_type>:<public_id>:<version>
+        #
+        # Store the useful parts explicitly in the model too.
+
+        if storage_name == "cloudinary":
+
+            stored_name = str(
+                attachment.file.name
+                or ""
+            )
+
+            parts = stored_name.split(
+                ":",
+                3,
+            )
+
+            if len(parts) != 4:
+                raise ValueError(
+                    "Invalid Cloudinary attachment "
+                    "reference returned by storage."
+                )
+
+            (
+                prefix,
+                resource_type,
+                public_id,
+                _version,
+            ) = parts
+
+            if prefix != "cloudinary":
+                raise ValueError(
+                    "Invalid Cloudinary attachment "
+                    "reference prefix."
+                )
+
+            attachment.cloudinary_public_id = (
+                public_id
+            )
+
+            attachment.cloudinary_resource_type = (
+                resource_type
+            )
 
         attachment.save()
 
@@ -901,12 +981,9 @@ def create_message_attachment(
                 attachment.file.delete(
                     save=False
                 )
-
         except Exception:
             pass
-
         raise
-
     return attachment
 
 
@@ -915,9 +992,9 @@ def create_message_attachment(
 # ============================================================
 
 def create_attachment_from_request(
-    *,
-    request,
-    message,
+        *,
+        request,
+        message,
 ):
     """
     Finds the single validated attachment in the request
@@ -944,7 +1021,6 @@ def create_attachment_from_request(
         return None
 
     if len(attachments) != 1:
-
         raise ValidationError(
             "Please attach only one file per message."
         )
@@ -963,7 +1039,7 @@ def create_attachment_from_request(
 # ============================================================
 
 def delete_stored_attachment_file(
-    attachment,
+        attachment,
 ):
     """
     Deletes the physical file represented by one
@@ -1005,7 +1081,6 @@ def delete_message_attachments(message):
     )
 
     for attachment in attachments:
-
         delete_stored_attachment_file(
             attachment
         )
@@ -1016,11 +1091,10 @@ def delete_message_attachments(message):
 # ============================================================
 
 def send_system_message(
-    recipient,
-    title,
-    body,
+        recipient,
+        title,
+        body,
 ):
-
     if not recipient:
         return
 
@@ -1066,10 +1140,9 @@ def send_system_message(
 
 @login_required
 def send_message(
-    request,
-    pk=None,
+        request,
+        pk=None,
 ):
-
     recipient = (
         get_object_or_404(
             AppUser,
@@ -1088,17 +1161,16 @@ def send_message(
     )
 
     if request.method == 'POST':
-
         product_id = (
-            request.POST.get('product_id')
-            or
-            product_id
+                request.POST.get('product_id')
+                or
+                product_id
         )
 
         product_type = (
-            request.POST.get('product_type')
-            or
-            product_type
+                request.POST.get('product_type')
+                or
+                product_type
         )
 
     product = None
@@ -1139,7 +1211,6 @@ def send_message(
     is_blocked_by_other = False
 
     if recipient:
-
         is_blocked = (
             BlockedUser.objects
             .filter(
@@ -1167,7 +1238,6 @@ def send_message(
         if not recipient:
 
             if is_ajax_request(request):
-
                 return JsonResponse(
                     {
                         'ok': False,
@@ -1188,7 +1258,6 @@ def send_message(
         if is_blocked_by_other:
 
             if is_ajax_request(request):
-
                 return JsonResponse(
                     {
                         'ok': False,
@@ -1212,7 +1281,6 @@ def send_message(
         if is_blocked:
 
             if is_ajax_request(request):
-
                 return JsonResponse(
                     {
                         'ok': False,
@@ -1243,7 +1311,6 @@ def send_message(
             if not message_has_content(request):
 
                 if is_ajax_request(request):
-
                     return JsonResponse(
                         {
                             'ok': False,
@@ -1272,7 +1339,6 @@ def send_message(
             except ValidationError as exc:
 
                 if is_ajax_request(request):
-
                     return JsonResponse(
                         {
                             'ok': False,
@@ -1342,9 +1408,9 @@ def send_message(
             # =================================================
 
             if product and getattr(
-                product,
-                'title',
-                None,
+                    product,
+                    'title',
+                    None,
             ):
 
                 message.title = product.title
@@ -1358,8 +1424,8 @@ def send_message(
             # =================================================
 
             reply_to_id = (
-                request.POST.get('reply_to')
-                or ''
+                    request.POST.get('reply_to')
+                    or ''
             ).strip()
 
             message.parent_message = None
@@ -1388,10 +1454,9 @@ def send_message(
                     )
 
                     if _same_conversation(
-                        temp_message,
-                        parent_message,
+                            temp_message,
+                            parent_message,
                     ):
-
                         message.parent_message = (
                             parent_message
                         )
@@ -1401,7 +1466,6 @@ def send_message(
             # =================================================
 
             if message.body:
-
                 message.body = markdown.markdown(
                     message.body
                 )
@@ -1493,7 +1557,6 @@ def send_message(
             # =================================================
 
             if is_ajax_request(request):
-
                 add_message_delivery_status(
                     [message],
                     request.user,
@@ -1529,10 +1592,9 @@ def send_message(
             errors = {}
 
             for (
-                field_name,
-                field_errors,
+                    field_name,
+                    field_errors,
             ) in form.errors.items():
-
                 errors[field_name] = [
                     str(error)
                     for error in field_errors
@@ -1593,10 +1655,9 @@ def send_message(
 
 @login_required
 def message_fragment(
-    request,
-    pk,
+        request,
+        pk,
 ):
-
     message = get_object_or_404(
         Message.objects
         .select_related(
@@ -1620,11 +1681,10 @@ def message_fragment(
     # ========================================================
 
     if (
-        message.sender_id != current_user.pk
-        and
-        message.recipient_id != current_user.pk
+            message.sender_id != current_user.pk
+            and
+            message.recipient_id != current_user.pk
     ):
-
         return HttpResponse(
             "Not authorized",
             status=403,
@@ -1635,10 +1695,9 @@ def message_fragment(
     # ========================================================
 
     if not is_message_visible_for_user(
-        message,
-        current_user,
+            message,
+            current_user,
     ):
-
         return HttpResponse(
             "Not found",
             status=404,
@@ -1680,10 +1739,9 @@ def message_fragment(
 
 @login_required
 def read_message(
-    request,
-    pk,
+        request,
+        pk,
 ):
-
     message = get_object_or_404(
         Message.objects
         .select_related(
@@ -1704,11 +1762,10 @@ def read_message(
     # ========================================================
 
     if (
-        message.sender_id != current_user.pk
-        and
-        message.recipient_id != current_user.pk
+            message.sender_id != current_user.pk
+            and
+            message.recipient_id != current_user.pk
     ):
-
         return HttpResponse(
             "Not authorized",
             status=403,
@@ -1726,7 +1783,6 @@ def read_message(
     )
 
     if not conversation_messages:
-
         return redirect(
             'message-inbox'
         )
@@ -1756,7 +1812,6 @@ def read_message(
     with transaction.atomic():
 
         for status in unread_statuses:
-
             status.mark_as_read()
 
             read_message_objects.append(
@@ -1803,7 +1858,6 @@ def read_message(
     is_blocked_by_other = False
 
     if other_user:
-
         is_blocked = (
             BlockedUser.objects
             .filter(
@@ -1850,7 +1904,6 @@ def read_message(
             if not message_has_content(request):
 
                 if is_ajax_request(request):
-
                     return JsonResponse(
                         {
                             'ok': False,
@@ -1882,7 +1935,6 @@ def read_message(
             except ValidationError as exc:
 
                 if is_ajax_request(request):
-
                     return JsonResponse(
                         {
                             'ok': False,
@@ -1908,14 +1960,13 @@ def read_message(
             recipient = (
                 message.recipient
                 if message.sender_id
-                == current_user.pk
+                   == current_user.pk
                 else message.sender
             )
 
             if not recipient:
 
                 if is_ajax_request(request):
-
                     return JsonResponse(
                         {
                             'ok': False,
@@ -1940,16 +1991,15 @@ def read_message(
             # =================================================
 
             if (
-                BlockedUser.objects
-                .filter(
-                    blocker=recipient,
-                    blocked=current_user,
-                )
-                .exists()
+                    BlockedUser.objects
+                            .filter(
+                        blocker=recipient,
+                        blocked=current_user,
+                    )
+                            .exists()
             ):
 
                 if is_ajax_request(request):
-
                     return JsonResponse(
                         {
                             'ok': False,
@@ -1972,16 +2022,15 @@ def read_message(
                 )
 
             if (
-                BlockedUser.objects
-                .filter(
-                    blocker=current_user,
-                    blocked=recipient,
-                )
-                .exists()
+                    BlockedUser.objects
+                            .filter(
+                        blocker=current_user,
+                        blocked=recipient,
+                    )
+                            .exists()
             ):
 
                 if is_ajax_request(request):
-
                     return JsonResponse(
                         {
                             'ok': False,
@@ -2008,14 +2057,13 @@ def read_message(
             # =================================================
 
             reply_to_id = (
-                request.POST.get('reply_to')
-                or ''
+                    request.POST.get('reply_to')
+                    or ''
             ).strip()
 
             reply_to = None
 
             if reply_to_id.isdigit():
-
                 reply_to = (
                     Message.objects
                     .select_related(
@@ -2031,10 +2079,9 @@ def read_message(
             if reply_to is not None:
 
                 if not _same_conversation(
-                    message,
-                    reply_to,
+                        message,
+                        reply_to,
                 ):
-
                     reply_to = None
 
             # =================================================
@@ -2074,15 +2121,14 @@ def read_message(
             )
 
             reply.title = (
-                message.title
-                or
-                "Direct conversation"
+                    message.title
+                    or
+                    "Direct conversation"
             )
 
             reply.parent_message = reply_to
 
             if reply.body:
-
                 reply.body = markdown.markdown(
                     reply.body
                 )
@@ -2167,7 +2213,6 @@ def read_message(
             # =================================================
 
             if is_ajax_request(request):
-
                 add_message_delivery_status(
                     [reply],
                     current_user,
@@ -2203,10 +2248,9 @@ def read_message(
             errors = {}
 
             for (
-                field_name,
-                field_errors,
+                    field_name,
+                    field_errors,
             ) in form.errors.items():
-
                 errors[field_name] = [
                     str(error)
                     for error in field_errors
@@ -2285,10 +2329,9 @@ def read_message(
 
 @login_required
 def delete_one_message(
-    request,
-    pk,
+        request,
+        pk,
 ):
-
     msg = get_object_or_404(
         Message.objects
         .select_related(
@@ -2304,7 +2347,6 @@ def delete_one_message(
     if msg.sender_id != request.user.pk:
 
         if is_ajax_request(request):
-
             return JsonResponse(
                 {
                     'ok': False,
@@ -2321,7 +2363,6 @@ def delete_one_message(
     if request.method != 'POST':
 
         if is_ajax_request(request):
-
             return JsonResponse(
                 {
                     'ok': False,
@@ -2340,7 +2381,6 @@ def delete_one_message(
     )
 
     if not was_removed:
-
         delete_message_attachments(
             msg
         )
@@ -2361,13 +2401,11 @@ def delete_one_message(
     )
 
     if not was_removed:
-
         broadcast_message_deleted(
             msg
         )
 
     if is_ajax_request(request):
-
         return JsonResponse(
             {
                 'ok': True,
@@ -2387,10 +2425,9 @@ def delete_one_message(
 
 @login_required
 def delete_message(
-    request,
-    pk,
+        request,
+        pk,
 ):
-
     message = get_object_or_404(
         Message,
         pk=pk,
@@ -2399,31 +2436,29 @@ def delete_message(
     user = request.user
 
     if (
-        message.sender_id != user.pk
-        and
-        message.recipient_id != user.pk
+            message.sender_id != user.pk
+            and
+            message.recipient_id != user.pk
     ):
-
         return HttpResponse(
             "Not allowed",
             status=403,
         )
 
     filter_type = (
-        request.POST.get('filter')
-        or
-        request.GET.get('filter')
-        or
-        'inbox'
+            request.POST.get('filter')
+            or
+            request.GET.get('filter')
+            or
+            'inbox'
     )
 
     if filter_type not in (
-        'inbox',
-        'sent',
-        'unread',
-        'all',
+            'inbox',
+            'sent',
+            'unread',
+            'all',
     ):
-
         filter_type = 'inbox'
 
     conversation = list(
@@ -2438,7 +2473,6 @@ def delete_message(
     )
 
     if request.method == 'GET':
-
         return render(
             request,
             'messages/message-delete.html',
@@ -2457,7 +2491,6 @@ def delete_message(
         )
 
     if request.method != 'POST':
-
         return HttpResponse(
             "Method not allowed",
             status=405,
@@ -2469,9 +2502,7 @@ def delete_message(
     ]
 
     if message_ids:
-
         with transaction.atomic():
-
             MessageStatus.objects.filter(
                 message_id__in=message_ids,
                 profile=user,
@@ -2481,7 +2512,6 @@ def delete_message(
             )
 
     if is_ajax_request(request):
-
         return JsonResponse(
             {
                 'ok': True,
@@ -2501,13 +2531,11 @@ def delete_message(
 
 @login_required
 def react_message(
-    request,
-    pk,
-    reaction,
+        request,
+        pk,
+        reaction,
 ):
-
     if request.method != 'POST':
-
         return JsonResponse(
             {
                 'ok': False,
@@ -2529,11 +2557,10 @@ def react_message(
     )
 
     if (
-        msg.sender_id != request.user.pk
-        and
-        msg.recipient_id != request.user.pk
+            msg.sender_id != request.user.pk
+            and
+            msg.recipient_id != request.user.pk
     ):
-
         return JsonResponse(
             {
                 'ok': False,
@@ -2543,7 +2570,6 @@ def react_message(
         )
 
     if msg.is_removed:
-
         return JsonResponse(
             {
                 'ok': False,
@@ -2555,11 +2581,10 @@ def react_message(
         )
 
     if getattr(
-        msg,
-        'is_system',
-        False,
+            msg,
+            'is_system',
+            False,
     ):
-
         return JsonResponse(
             {
                 'ok': False,
@@ -2571,9 +2596,8 @@ def react_message(
         )
 
     if not is_valid_reaction(
-        reaction
+            reaction
     ):
-
         return JsonResponse(
             {
                 'ok': False,
@@ -2652,28 +2676,25 @@ def react_message(
 
 @login_required
 def report_message(
-    request,
-    pk,
+        request,
+        pk,
 ):
-
     message = get_object_or_404(
         Message,
         pk=pk,
     )
 
     if (
-        message.sender_id != request.user.pk
-        and
-        message.recipient_id != request.user.pk
+            message.sender_id != request.user.pk
+            and
+            message.recipient_id != request.user.pk
     ):
-
         return HttpResponse(
             "Not authorized",
             status=403,
         )
 
     if request.method != 'POST':
-
         return redirect(
             'read-message',
             pk=message.pk,
@@ -2734,12 +2755,10 @@ def report_message(
 
 @login_required
 def block_user(
-    request,
-    pk,
+        request,
+        pk,
 ):
-
     if request.method != 'POST':
-
         return HttpResponse(
             "POST required",
             status=405,
@@ -2751,7 +2770,6 @@ def block_user(
     )
 
     if user_to_block == request.user:
-
         django_messages.error(
             request,
             "You cannot block yourself.",
@@ -2797,12 +2815,10 @@ def block_user(
 
 @login_required
 def unblock_user(
-    request,
-    pk,
+        request,
+        pk,
 ):
-
     if request.method != 'POST':
-
         return HttpResponse(
             "POST required",
             status=405,
@@ -2850,21 +2866,19 @@ def unblock_user(
 
 @login_required
 def message_inbox(
-    request,
+        request,
 ):
-
     filter_type = request.GET.get(
         'filter',
         'inbox',
     )
 
     if filter_type not in (
-        'inbox',
-        'sent',
-        'unread',
-        'all',
+            'inbox',
+            'sent',
+            'unread',
+            'all',
     ):
-
         filter_type = 'inbox'
 
     conversations = get_user_conversations(
@@ -2897,10 +2911,9 @@ def message_inbox(
 
 @login_required
 def edit_message(
-    request,
-    pk,
+        request,
+        pk,
 ):
-
     message = get_object_or_404(
         Message.objects
         .select_related(
@@ -2914,7 +2927,6 @@ def edit_message(
     )
 
     if message.sender != request.user:
-
         return JsonResponse(
             {
                 'ok': False,
@@ -2926,7 +2938,6 @@ def edit_message(
         )
 
     if message.is_system:
-
         return JsonResponse(
             {
                 'ok': False,
@@ -2938,7 +2949,6 @@ def edit_message(
         )
 
     if message.is_removed:
-
         return JsonResponse(
             {
                 'ok': False,
@@ -2950,7 +2960,6 @@ def edit_message(
         )
 
     if request.method != 'POST':
-
         return JsonResponse(
             {
                 'ok': False,
@@ -2960,12 +2969,11 @@ def edit_message(
         )
 
     new_body = (
-        request.POST.get('body')
-        or ''
+            request.POST.get('body')
+            or ''
     ).strip()
 
     if not new_body:
-
         return JsonResponse(
             {
                 'ok': False,

@@ -67,7 +67,7 @@ class LocalMessageAttachmentStorage(FileSystemStorage):
     """
     Локално съхранение на общите message attachments.
 
-    Използва се за:
+    Поддържа:
 
         image
         video
@@ -123,8 +123,7 @@ class CloudinaryMessageVideoStorage:
     """
     Cloudinary storage за видеа от съобщенията.
 
-    Използва VideoMediaCloudinaryStorage,
-    предназначен специално за видео файлове.
+    Използва VideoMediaCloudinaryStorage.
     """
 
     def __new__(cls, *args, **kwargs):
@@ -142,25 +141,267 @@ class CloudinaryMessageVideoStorage:
 # CLOUDINARY MESSAGE ATTACHMENT STORAGE
 # =========================================================
 
-class CloudinaryMessageAttachmentStorage:
+class CloudinaryMessageAttachmentStorage(Storage):
     """
-    Cloudinary storage за общи message attachments.
+    Cloudinary storage за MessageAttachment.
 
-    Използва MediaCloudinaryStorage като универсален
-    Cloudinary storage backend.
+    Един Django FileField не знае дали attachment-ът е:
 
-    Типът на Cloudinary resource-а се управлява
-    отделно от attachment upload service-а.
+        image
+        video
+        file
+
+    Затова attachment_type и message_id се подават
+    чрез името при save():
+
+        cloudinary/<attachment_type>/<message_id>/<filename>
+
+    След това cloudinary_attachments service избира:
+
+        image -> Cloudinary image
+        video -> Cloudinary video
+        file  -> Cloudinary raw
+
+    В database MessageAttachment.file.name се пази
+    Cloudinary reference, а не локален /media/ path.
     """
 
-    def __new__(cls, *args, **kwargs):
-        from cloudinary_storage.storage import (
-            MediaCloudinaryStorage,
+    PREFIX = "cloudinary"
+
+    # -----------------------------------------------------
+    # PARSE CLOUDINARY REFERENCE
+    # -----------------------------------------------------
+
+    def _parse_name(self, name):
+        """
+        Parse:
+
+            cloudinary:<resource_type>:<public_id>:<version>
+
+        Example:
+
+            cloudinary:video:chat/messages/123/abc123:123456
+        """
+
+        parts = str(name or "").split(":", 3)
+
+        if len(parts) != 4:
+            raise ValueError(
+                "Invalid Cloudinary attachment reference."
+            )
+
+        prefix = parts[0]
+        resource_type = parts[1]
+        public_id = parts[2]
+
+        if prefix != self.PREFIX:
+            raise ValueError(
+                "Invalid Cloudinary attachment prefix."
+            )
+
+        if not resource_type:
+            raise ValueError(
+                "Cloudinary resource type is missing."
+            )
+
+        if not public_id:
+            raise ValueError(
+                "Cloudinary public ID is missing."
+            )
+
+        return resource_type, public_id
+
+    # -----------------------------------------------------
+    # SAVE
+    # -----------------------------------------------------
+
+    def save(
+        self,
+        name,
+        content,
+        max_length=None,
+    ):
+        """
+        Upload attachment directly to Cloudinary.
+
+        Expected input name:
+
+            cloudinary/<attachment_type>/<message_id>/<filename>
+        """
+
+        from .services.cloudinary_attachments import (
+            upload_message_attachment,
         )
 
-        return MediaCloudinaryStorage(
-            *args,
-            **kwargs,
+        parts = str(name or "").split("/", 3)
+
+        if len(parts) < 3:
+            raise ValueError(
+                "Cloudinary attachment name must be "
+                "cloudinary/<attachment_type>/<message_id>/..."
+            )
+
+        prefix = parts[0]
+        attachment_type = parts[1]
+        message_id = parts[2]
+
+        if prefix != self.PREFIX:
+            raise ValueError(
+                "Invalid Cloudinary attachment prefix."
+            )
+
+        if attachment_type not in {
+            "image",
+            "video",
+            "file",
+        }:
+            raise ValueError(
+                "Unsupported attachment type."
+            )
+
+        if not message_id:
+            raise ValueError(
+                "Message ID is required."
+            )
+
+        # -------------------------------------------------
+        # UPLOAD
+        # -------------------------------------------------
+
+        result = upload_message_attachment(
+            file=content,
+            attachment_type=attachment_type,
+            message_id=message_id,
+        )
+
+        resource_type = result.get(
+            "resource_type"
+        )
+
+        public_id = result.get(
+            "public_id"
+        )
+
+        version = result.get(
+            "version",
+            "",
+        )
+
+        if not resource_type:
+            raise ValueError(
+                "Cloudinary upload did not return "
+                "a resource type."
+            )
+
+        if not public_id:
+            raise ValueError(
+                "Cloudinary upload did not return "
+                "a public ID."
+            )
+
+        # -------------------------------------------------
+        # DATABASE REFERENCE
+        # -------------------------------------------------
+        #
+        # Example:
+        #
+        # cloudinary:video:chat/messages/123/abc:def
+        #
+        # The reference is intentionally independent from
+        # the original client filename.
+
+        reference = (
+            f"{self.PREFIX}:"
+            f"{resource_type}:"
+            f"{public_id}:"
+            f"{version}"
+        )
+
+        if (
+            max_length
+            and len(reference) > max_length
+        ):
+            raise ValueError(
+                "Cloudinary attachment reference "
+                "is too long."
+            )
+
+        return reference
+
+    # -----------------------------------------------------
+    # URL
+    # -----------------------------------------------------
+
+    def url(self, name):
+        """
+        Return secure Cloudinary delivery URL.
+        """
+
+        from .services.cloudinary_attachments import (
+            get_attachment_url,
+        )
+
+        resource_type, public_id = (
+            self._parse_name(name)
+        )
+
+        return get_attachment_url(
+            public_id=public_id,
+            resource_type=resource_type,
+            secure=True,
+        )
+
+    # -----------------------------------------------------
+    # DELETE
+    # -----------------------------------------------------
+
+    def delete(self, name):
+        """
+        Delete attachment from Cloudinary.
+        """
+
+        from .services.cloudinary_attachments import (
+            delete_message_attachment,
+        )
+
+        resource_type, public_id = (
+            self._parse_name(name)
+        )
+
+        delete_message_attachment(
+            public_id=public_id,
+            resource_type=resource_type,
+        )
+
+    # -----------------------------------------------------
+    # EXISTS
+    # -----------------------------------------------------
+
+    def exists(self, name):
+        """
+        Django calls exists() before save().
+
+        We do not perform a Cloudinary API request here.
+
+        Returning False allows Django to save the generated
+        Cloudinary reference without trying to create local
+        filename variants.
+        """
+
+        return False
+
+    # -----------------------------------------------------
+    # PATH
+    # -----------------------------------------------------
+
+    def path(self, name):
+        """
+        Cloudinary files do not have a local filesystem path.
+        """
+
+        raise NotImplementedError(
+            "Cloudinary attachments do not "
+            "have a local filesystem path."
         )
 
 
@@ -172,9 +413,6 @@ class SelectableMessageStorage(Storage):
     """
     Storage wrapper, който избира реалния backend
     според настройката в settings.py.
-
-    Така моделът не е обвързан директно с Local,
-    Cloudinary или друг конкретен storage.
     """
 
     storage_setting = None
@@ -216,10 +454,14 @@ class SelectableMessageStorage(Storage):
         self._storage = storage_class()
 
     # -----------------------------------------------------
-    # File operations
+    # FILE OPERATIONS
     # -----------------------------------------------------
 
-    def open(self, name, mode="rb"):
+    def open(
+        self,
+        name,
+        mode="rb",
+    ):
         return self._storage.open(
             name,
             mode=mode,
@@ -238,39 +480,57 @@ class SelectableMessageStorage(Storage):
         )
 
     def delete(self, name):
-        return self._storage.delete(name)
+        return self._storage.delete(
+            name
+        )
 
     def exists(self, name):
-        return self._storage.exists(name)
+        return self._storage.exists(
+            name
+        )
 
     def size(self, name):
-        return self._storage.size(name)
+        return self._storage.size(
+            name
+        )
 
     def url(self, name):
-        return self._storage.url(name)
+        return self._storage.url(
+            name
+        )
 
     # -----------------------------------------------------
-    # Optional storage methods
+    # OPTIONAL STORAGE METHODS
     # -----------------------------------------------------
 
     def path(self, name):
-        return self._storage.path(name)
+        return self._storage.path(
+            name
+        )
 
     def get_accessed_time(self, name):
-        return self._storage.get_accessed_time(name)
+        return self._storage.get_accessed_time(
+            name
+        )
 
     def get_created_time(self, name):
-        return self._storage.get_created_time(name)
+        return self._storage.get_created_time(
+            name
+        )
 
     def get_modified_time(self, name):
-        return self._storage.get_modified_time(name)
+        return self._storage.get_modified_time(
+            name
+        )
 
     # -----------------------------------------------------
-    # Filename handling
+    # FILENAME HANDLING
     # -----------------------------------------------------
 
     def get_valid_name(self, name):
-        return self._storage.get_valid_name(name)
+        return self._storage.get_valid_name(
+            name
+        )
 
     def get_available_name(
         self,
@@ -288,10 +548,13 @@ class SelectableMessageStorage(Storage):
         )
 
     # -----------------------------------------------------
-    # Delegate unknown attributes/methods
+    # DELEGATE UNKNOWN ATTRIBUTES
     # -----------------------------------------------------
 
-    def __getattr__(self, name):
+    def __getattr__(
+        self,
+        name,
+    ):
         return getattr(
             self._storage,
             name,
@@ -313,7 +576,9 @@ class MessageImageStorage(
         MESSAGE_IMAGE_STORAGE
     """
 
-    storage_setting = "MESSAGE_IMAGE_STORAGE"
+    storage_setting = (
+        "MESSAGE_IMAGE_STORAGE"
+    )
 
     storage_map = {
         "local": LocalMessageImageStorage,
@@ -336,7 +601,9 @@ class MessageVideoStorage(
         MESSAGE_VIDEO_STORAGE
     """
 
-    storage_setting = "MESSAGE_VIDEO_STORAGE"
+    storage_setting = (
+        "MESSAGE_VIDEO_STORAGE"
+    )
 
     storage_map = {
         "local": LocalMessageVideoStorage,
