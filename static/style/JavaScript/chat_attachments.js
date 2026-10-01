@@ -92,31 +92,6 @@ document.addEventListener(
                 'chat-drop-overlay'
             );
 
-        const uploadProgressWrap =
-            document.getElementById(
-                'upload-progress-wrap'
-            );
-
-        const uploadProgressBar =
-            document.getElementById(
-                'upload-progress-bar'
-            );
-
-        const uploadProgressText =
-            document.getElementById(
-                'upload-progress-text'
-            );
-
-        const uploadProgressPercent =
-            document.getElementById(
-                'upload-progress-percent'
-            );
-
-        const submitBtn =
-            document.getElementById(
-                'message-submit-btn'
-            );
-
 
         /* =========================================================
            CONSTANTS
@@ -154,9 +129,6 @@ document.addEventListener(
         let videoObjectUrl = null;
 
         let dragCounter = 0;
-
-        let isSubmittingAttachment =
-            false;
 
 
         /* =========================================================
@@ -583,6 +555,11 @@ document.addEventListener(
                     file
                 )
             ) {
+                if (imageInput) {
+                    imageInput.value =
+                        '';
+                }
+
                 return false;
             }
 
@@ -648,6 +625,11 @@ document.addEventListener(
                     file
                 )
             ) {
+                if (videoInput) {
+                    videoInput.value =
+                        '';
+                }
+
                 return false;
             }
 
@@ -872,417 +854,6 @@ document.addEventListener(
 
 
         /* =========================================================
-           UPLOAD PROGRESS
-           ========================================================= */
-
-        function showUploadProgress() {
-            if (!uploadProgressWrap) {
-                return;
-            }
-
-            uploadProgressWrap.classList.remove(
-                'd-none'
-            );
-
-            if (uploadProgressBar) {
-                uploadProgressBar.style.width =
-                    '0%';
-
-                uploadProgressBar.setAttribute(
-                    'aria-valuenow',
-                    '0'
-                );
-            }
-
-            if (uploadProgressPercent) {
-                uploadProgressPercent.textContent =
-                    '0%';
-            }
-
-            if (uploadProgressText) {
-                uploadProgressText.textContent =
-                    'Uploading...';
-            }
-        }
-
-
-        function updateUploadProgress(
-            percent
-        ) {
-            percent =
-                Math.max(
-                    0,
-                    Math.min(
-                        100,
-                        percent
-                    )
-                );
-
-            if (uploadProgressBar) {
-                uploadProgressBar.style.width =
-                    `${percent}%`;
-
-                uploadProgressBar.setAttribute(
-                    'aria-valuenow',
-                    String(
-                        percent
-                    )
-                );
-            }
-
-            if (uploadProgressPercent) {
-                uploadProgressPercent.textContent =
-                    `${percent}%`;
-            }
-        }
-
-
-        function hideUploadProgress() {
-            if (uploadProgressWrap) {
-                uploadProgressWrap.classList.add(
-                    'd-none'
-                );
-            }
-        }
-
-
-        /* =========================================================
-           UPLOAD
-           ========================================================= */
-
-        function submitAttachment() {
-            if (
-                isSubmittingAttachment
-            ) {
-                return;
-            }
-
-            if (
-                !validateAttachmentsBeforeSubmit()
-            ) {
-                return;
-            }
-
-            const sendUrl =
-                replyForm.getAttribute(
-                    'action'
-                );
-
-            if (!sendUrl) {
-                alert(
-                    'Message send URL is missing.'
-                );
-
-                return;
-            }
-
-            const shouldScroll =
-                window.agroChatConversation &&
-                typeof window.agroChatConversation.isAtBottom ===
-                    'function'
-                    ? window.agroChatConversation.isAtBottom()
-                    : true;
-
-            const formData =
-                new FormData(
-                    replyForm
-                );
-
-            const xhr =
-                new XMLHttpRequest();
-
-            isSubmittingAttachment =
-                true;
-
-            showUploadProgress();
-
-            if (submitBtn) {
-                submitBtn.disabled =
-                    true;
-
-                submitBtn.dataset.originalHtml =
-                    submitBtn.innerHTML;
-
-                submitBtn.innerHTML =
-                    '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
-            }
-
-            xhr.upload.addEventListener(
-                'progress',
-                function (event) {
-                    if (
-                        !event.lengthComputable
-                    ) {
-                        return;
-                    }
-
-                    updateUploadProgress(
-                        Math.round(
-                            (
-                                event.loaded /
-                                event.total
-                            ) * 100
-                        )
-                    );
-                }
-            );
-
-            xhr.addEventListener(
-                'load',
-                function () {
-                    if (
-                        xhr.status >= 200 &&
-                        xhr.status < 300
-                    ) {
-                        updateUploadProgress(
-                            100
-                        );
-
-                        if (
-                            uploadProgressText
-                        ) {
-                            uploadProgressText.textContent =
-                                'Upload complete';
-                        }
-
-                        let data;
-
-                        try {
-                            data =
-                                JSON.parse(
-                                    xhr.responseText
-                                );
-
-                        } catch (error) {
-                            console.error(
-                                'Invalid attachment response:',
-                                xhr.responseText
-                            );
-
-                            alert(
-                                'Server returned an invalid response.'
-                            );
-
-                            resetUploadButton();
-
-                            return;
-                        }
-
-                        if (
-                            !data.ok ||
-                            !data.html ||
-                            !data.message_id
-                        ) {
-                            alert(
-                                data.error ||
-                                'Message upload failed.'
-                            );
-
-                            resetUploadButton();
-
-                            return;
-                        }
-
-                        if (
-                            typeof window
-                                .agroChatConversationAppend ===
-                                'function'
-                        ) {
-                            window
-                                .agroChatConversationAppend(
-                                    data.html,
-                                    data.message_id,
-                                    shouldScroll
-                                );
-                        }
-
-                        window.dispatchEvent(
-                            new CustomEvent(
-                                'agro:message-sent'
-                            )
-                        );
-
-                        window.setTimeout(
-                            hideUploadProgress,
-                            300
-                        );
-
-                        clearMediaInputs();
-
-                        resetUploadButton();
-
-                        return;
-                    }
-
-                    let errorMessage =
-                        'Upload failed. Please try again.';
-
-                    try {
-                        const data =
-                            JSON.parse(
-                                xhr.responseText
-                            );
-
-                        if (data.error) {
-                            errorMessage =
-                                data.error;
-                        }
-
-                    } catch (error) {}
-
-                    alert(
-                        errorMessage
-                    );
-
-                    resetUploadButton();
-                }
-            );
-
-            xhr.addEventListener(
-                'error',
-                function () {
-                    alert(
-                        'Upload failed. Please check your connection and try again.'
-                    );
-
-                    resetUploadButton();
-                }
-            );
-
-            xhr.addEventListener(
-                'abort',
-                resetUploadButton
-            );
-
-            xhr.open(
-                'POST',
-                sendUrl,
-                true
-            );
-
-            const csrfInput =
-                replyForm.querySelector(
-                    '[name="csrfmiddlewaretoken"]'
-                );
-
-            if (csrfInput) {
-                xhr.setRequestHeader(
-                    'X-CSRFToken',
-                    csrfInput.value
-                );
-            }
-
-            xhr.setRequestHeader(
-                'X-Requested-With',
-                'XMLHttpRequest'
-            );
-
-            xhr.setRequestHeader(
-                'Accept',
-                'application/json'
-            );
-
-            xhr.send(
-                formData
-            );
-        }
-
-
-        function resetUploadButton() {
-            hideUploadProgress();
-
-            isSubmittingAttachment =
-                false;
-
-            if (submitBtn) {
-                submitBtn.disabled =
-                    false;
-
-                submitBtn.innerHTML =
-                    submitBtn.dataset.originalHtml ||
-                    '<i class="fas fa-paper-plane me-1"></i> Send';
-
-                delete submitBtn.dataset.originalHtml;
-            }
-        }
-
-
-        /* =========================================================
-           DROP
-           ========================================================= */
-
-        function handleDrop(
-            event
-        ) {
-            const files =
-                event.dataTransfer &&
-                event.dataTransfer.files;
-
-            if (
-                !files ||
-                !files.length
-            ) {
-                return;
-            }
-
-            const file =
-                files[0];
-
-            if (
-                file.type.startsWith(
-                    'image/'
-                )
-            ) {
-                if (
-                    !setInputFile(
-                        imageInput,
-                        file
-                    )
-                ) {
-                    return;
-                }
-
-                handleImageFile(
-                    file
-                );
-
-                return;
-            }
-
-            if (
-                file.type.startsWith(
-                    'video/'
-                )
-            ) {
-                if (
-                    !setInputFile(
-                        videoInput,
-                        file
-                    )
-                ) {
-                    return;
-                }
-
-                handleVideoFile(
-                    file
-                );
-
-                return;
-            }
-
-            if (
-                validateGenericFile(
-                    file
-                )
-            ) {
-                handleGenericFile(
-                    file
-                );
-            }
-        }
-
-
-        /* =========================================================
            BUTTONS
            ========================================================= */
 
@@ -1295,11 +866,7 @@ document.addEventListener(
                 function (event) {
                     event.preventDefault();
 
-                    if (
-                        !isSubmittingAttachment
-                    ) {
-                        imageInput.click();
-                    }
+                    imageInput.click();
                 }
             );
         }
@@ -1314,11 +881,7 @@ document.addEventListener(
                 function (event) {
                     event.preventDefault();
 
-                    if (
-                        !isSubmittingAttachment
-                    ) {
-                        videoInput.click();
-                    }
+                    videoInput.click();
                 }
             );
         }
@@ -1333,11 +896,7 @@ document.addEventListener(
                 function (event) {
                     event.preventDefault();
 
-                    if (
-                        !isSubmittingAttachment
-                    ) {
-                        fileInput.click();
-                    }
+                    fileInput.click();
                 }
             );
         }
@@ -1428,12 +987,6 @@ document.addEventListener(
                     event.preventDefault();
                     event.stopPropagation();
 
-                    if (
-                        isSubmittingAttachment
-                    ) {
-                        return;
-                    }
-
                     dragCounter += 1;
 
                     showDropOverlay();
@@ -1446,12 +999,6 @@ document.addEventListener(
                 function (event) {
                     event.preventDefault();
                     event.stopPropagation();
-
-                    if (
-                        isSubmittingAttachment
-                    ) {
-                        return;
-                    }
 
                     if (
                         event.dataTransfer
@@ -1497,16 +1044,71 @@ document.addEventListener(
 
                     hideDropOverlay();
 
-                    if (
-                        isSubmittingAttachment
-                    ) {
-                        return;
-                    }
-
                     handleDrop(
                         event
                     );
                 }
+            );
+        }
+
+
+        function handleDrop(
+            event
+        ) {
+            const files =
+                event.dataTransfer &&
+                event.dataTransfer.files;
+
+            if (
+                !files ||
+                !files.length
+            ) {
+                return;
+            }
+
+            const file =
+                files[0];
+
+            if (
+                file.type.startsWith(
+                    'image/'
+                )
+            ) {
+                if (
+                    setInputFile(
+                        imageInput,
+                        file
+                    )
+                ) {
+                    handleImageFile(
+                        file
+                    );
+                }
+
+                return;
+            }
+
+            if (
+                file.type.startsWith(
+                    'video/'
+                )
+            ) {
+                if (
+                    setInputFile(
+                        videoInput,
+                        file
+                    )
+                ) {
+                    handleVideoFile(
+                        file
+                    );
+                }
+
+                return;
+            }
+
+            handleGenericFile(
+                file
             );
         }
 
@@ -1527,8 +1129,7 @@ document.addEventListener(
             'paste',
             function (event) {
                 if (
-                    !messageBodyField ||
-                    isSubmittingAttachment
+                    !messageBodyField
                 ) {
                     return;
                 }
@@ -1615,16 +1216,13 @@ document.addEventListener(
 
             isBusy:
                 function () {
-                    return isSubmittingAttachment;
-                },
-
-            submit:
-                submitAttachment
+                    return false;
+                }
         };
 
 
         /* =========================================================
-           AFTER MESSAGE SENT
+           CLEANUP AFTER MESSAGE SENT
            ========================================================= */
 
         window.addEventListener(
