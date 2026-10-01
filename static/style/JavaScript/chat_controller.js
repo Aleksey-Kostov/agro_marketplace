@@ -1,83 +1,107 @@
 document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
-    const chatWindow = document.getElementById('chat-window');
-    const chatMessages = document.getElementById('chat-messages');
+    const chatWindow =
+        document.getElementById('chat-window');
+
+    const chatMessages =
+        document.getElementById('chat-messages');
 
     if (!chatWindow || !chatMessages) {
         return;
     }
 
-    const pendingMessageFragments = new Set();
-    const pendingMessageRefreshes = new Map();
-    const readMessagesSent = new Set();
+    const pendingMessageFragments =
+        new Set();
+
+    const pendingMessageRefreshes =
+        new Map();
+
+    const pendingReactionRefreshes =
+        new Map();
+
+    const readMessagesSent =
+        new Set();
 
     function isChatAtBottom() {
         if (
             window.agroChatNavigation &&
-            typeof window.agroChatNavigation.isAtBottom === 'function'
+            typeof window.agroChatNavigation.isAtBottom ===
+                'function'
         ) {
             return window.agroChatNavigation.isAtBottom();
         }
 
         return (
-            chatWindow.scrollTop + chatWindow.clientHeight
+            chatWindow.scrollTop +
+            chatWindow.clientHeight
         ) >= (
             chatWindow.scrollHeight - 50
         );
     }
 
     function getCurrentUserId() {
-        const value = Number(
-            chatWindow.dataset.currentUserId
-        );
+        const value =
+            Number(
+                chatWindow.dataset.currentUserId
+            );
 
-        return Number.isFinite(value) && value > 0
+        return Number.isFinite(value) &&
+            value > 0
             ? value
             : null;
     }
 
     function getMessageElement(messageId) {
         return messageId
-            ? document.getElementById(`msg-${messageId}`)
+            ? document.getElementById(
+                `msg-${messageId}`
+            )
             : null;
     }
 
-    function getMessageIdFromElement(element) {
+    function getMessageIdFromElement(
+        element
+    ) {
         if (!element) {
             return null;
         }
 
         if (element.dataset.messageId) {
-            const id = Number(
-                element.dataset.messageId
-            );
+            const id =
+                Number(
+                    element.dataset.messageId
+                );
 
             if (id) {
                 return id;
             }
         }
 
-        const rawId = element.id || '';
+        const rawId =
+            element.id || '';
 
         if (rawId.startsWith('msg-')) {
-            const id = Number(
-                rawId.substring(4)
-            );
+            const id =
+                Number(
+                    rawId.substring(4)
+                );
 
             if (id) {
                 return id;
             }
         }
 
-        const child = element.querySelector(
-            '[data-message-id]'
-        );
+        const child =
+            element.querySelector(
+                '[data-message-id]'
+            );
 
         if (child) {
-            const id = Number(
-                child.dataset.messageId
-            );
+            const id =
+                Number(
+                    child.dataset.messageId
+                );
 
             if (id) {
                 return id;
@@ -87,21 +111,27 @@ document.addEventListener('DOMContentLoaded', function () {
         return null;
     }
 
-    function sendWebSocketPayload(payload) {
+    function sendWebSocketPayload(
+        payload
+    ) {
         if (
             !window.agroChatWebSocket ||
-            typeof window.agroChatWebSocket.send !== 'function'
+            typeof window.agroChatWebSocket.send !==
+                'function'
         ) {
             return false;
         }
 
-        return window.agroChatWebSocket.send(payload);
+        return window.agroChatWebSocket.send(
+            payload
+        );
     }
 
     function isWebSocketOpen() {
         if (
             !window.agroChatWebSocket ||
-            typeof window.agroChatWebSocket.isOpen !== 'function'
+            typeof window.agroChatWebSocket.isOpen !==
+                'function'
         ) {
             return false;
         }
@@ -109,7 +139,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return window.agroChatWebSocket.isOpen();
     }
 
-    function getMessageFragmentUrl(messageId) {
+    function getMessageFragmentUrl(
+        messageId
+    ) {
         const template =
             chatWindow.dataset.messageFragmentUrl;
 
@@ -118,15 +150,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
-            const url = new URL(
-                template,
-                window.location.origin
-            );
+            const url =
+                new URL(
+                    template,
+                    window.location.origin
+                );
 
-            url.pathname = url.pathname.replace(
-                /\/0\/?$/,
-                `/${encodeURIComponent(messageId)}/`
-            );
+            url.pathname =
+                url.pathname.replace(
+                    /\/0\/?$/,
+                    `/${encodeURIComponent(
+                        messageId
+                    )}/`
+                );
 
             return url.toString();
 
@@ -140,9 +176,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    async function fetchMessageFragment(messageId) {
+    async function fetchMessageFragment(
+        messageId
+    ) {
         const fragmentUrl =
-            getMessageFragmentUrl(messageId);
+            getMessageFragmentUrl(
+                messageId
+            );
 
         if (!fragmentUrl) {
             throw new Error(
@@ -150,23 +190,28 @@ document.addEventListener('DOMContentLoaded', function () {
             );
         }
 
-        const response = await fetch(
-            fragmentUrl,
-            {
-                method: 'GET',
-                credentials: 'same-origin',
-                cache: 'no-store',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
+        const response =
+            await fetch(
+                fragmentUrl,
+                {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    headers: {
+                        'X-Requested-With':
+                            'XMLHttpRequest',
+
+                        'Accept':
+                            'application/json'
+                    }
                 }
-            }
-        );
+            );
 
         let data;
 
         try {
-            data = await response.json();
+            data =
+                await response.json();
 
         } catch (error) {
             throw new Error(
@@ -188,12 +233,45 @@ document.addEventListener('DOMContentLoaded', function () {
         return data;
     }
 
+    function createMessageFromHtml(
+        html
+    ) {
+        if (!html) {
+            throw new Error(
+                'Server returned empty message HTML.'
+            );
+        }
+
+        const wrapper =
+            document.createElement(
+                'div'
+            );
+
+        wrapper.innerHTML =
+            html.trim();
+
+        const message =
+            wrapper.firstElementChild;
+
+        if (!message) {
+            throw new Error(
+                'Server returned empty message HTML.'
+            );
+        }
+
+        return message;
+    }
+
     function removeEmptyConversationMessage() {
         chatMessages
-            .querySelectorAll('.alert.alert-info')
-            .forEach(function (element) {
-                element.remove();
-            });
+            .querySelectorAll(
+                '.alert.alert-info'
+            )
+            .forEach(
+                function (element) {
+                    element.remove();
+                }
+            );
     }
 
     function dispatchMessageAcknowledged(
@@ -267,7 +345,9 @@ document.addEventListener('DOMContentLoaded', function () {
         );
 
         const inserted =
-            getMessageElement(messageId);
+            getMessageElement(
+                messageId
+            );
 
         if (!inserted) {
             console.warn(
@@ -295,9 +375,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 {
                     detail: {
                         messageId,
-                        shouldScroll: Boolean(
-                            shouldScroll
-                        )
+
+                        shouldScroll:
+                            Boolean(
+                                shouldScroll
+                            )
                     }
                 }
             )
@@ -310,7 +392,8 @@ document.addEventListener('DOMContentLoaded', function () {
         messageId,
         force = false
     ) {
-        const id = Number(messageId);
+        const id =
+            Number(messageId);
 
         if (!id) {
             return false;
@@ -349,18 +432,20 @@ document.addEventListener('DOMContentLoaded', function () {
             .querySelectorAll(
                 '.conversation-message.received-message'
             )
-            .forEach(function (element) {
-                const messageId =
-                    getMessageIdFromElement(
-                        element
-                    );
+            .forEach(
+                function (element) {
+                    const messageId =
+                        getMessageIdFromElement(
+                            element
+                        );
 
-                if (messageId) {
-                    markMessageAsRead(
-                        messageId
-                    );
+                    if (messageId) {
+                        markMessageAsRead(
+                            messageId
+                        );
+                    }
                 }
-            });
+            );
     }
 
     async function appendIncomingMessage(
@@ -386,7 +471,11 @@ document.addEventListener('DOMContentLoaded', function () {
          * to the current user. This keeps the
          * realtime acknowledgement reliable.
          */
-        if (getMessageElement(messageId)) {
+        if (
+            getMessageElement(
+                messageId
+            )
+        ) {
             dispatchMessageAcknowledged(
                 message
             );
@@ -421,7 +510,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     messageId
                 );
 
-            if (getMessageElement(messageId)) {
+            if (
+                getMessageElement(
+                    messageId
+                )
+            ) {
                 dispatchMessageAcknowledged(
                     message
                 );
@@ -495,7 +588,8 @@ document.addEventListener('DOMContentLoaded', function () {
         messageId,
         options = {}
     ) {
-        const id = Number(messageId);
+        const id =
+            Number(messageId);
 
         if (!id) {
             return false;
@@ -508,100 +602,293 @@ document.addEventListener('DOMContentLoaded', function () {
         const next =
             previous
                 .catch(() => {})
-                .then(async function () {
-                    const preserveScroll =
-                        options.preserveScroll !== false;
+                .then(
+                    async function () {
+                        const preserveScroll =
+                            options.preserveScroll !==
+                            false;
 
-                    const oldScrollTop =
-                        chatWindow.scrollTop;
+                        const oldScrollTop =
+                            chatWindow.scrollTop;
 
-                    const wasAtBottom =
-                        isChatAtBottom();
+                        const wasAtBottom =
+                            isChatAtBottom();
 
-                    const data =
-                        await fetchMessageFragment(
-                            id
-                        );
+                        const data =
+                            await fetchMessageFragment(
+                                id
+                            );
 
-                    const currentMessage =
-                        getMessageElement(id);
+                        const currentMessage =
+                            getMessageElement(
+                                id
+                            );
 
-                    if (!currentMessage) {
-                        return false;
-
-                    }
-
-                    const wrapper =
-                        document.createElement(
-                            'div'
-                        );
-
-                    wrapper.innerHTML =
-                        data.html.trim();
-
-                    const newMessage =
-                        wrapper.firstElementChild;
-
-                    if (!newMessage) {
-                        throw new Error(
-                            'Server returned empty message HTML.'
-                        );
-                    }
-
-                    currentMessage.replaceWith(
-                        newMessage
-                    );
-
-                    if (preserveScroll) {
-                        /*
-                         * If the user was already at the bottom,
-                         * the new message height may have changed.
-                         *
-                         * Therefore restoring the old scrollTop is
-                         * NOT safe: the old value may no longer be
-                         * the new bottom.
-                         *
-                         * Keep the user locked to the actual bottom.
-                         */
-                        if (wasAtBottom) {
-                            chatWindow.scrollTop =
-                                Math.max(
-                                    0,
-                                    chatWindow.scrollHeight -
-                                    chatWindow.clientHeight
-                                );
-                        } else {
-                            /*
-                             * User was reading older messages.
-                             * Preserve their exact position.
-                             */
-                            chatWindow.scrollTop =
-                                oldScrollTop;
+                        if (!currentMessage) {
+                            return false;
                         }
 
-                        chatWindow.dispatchEvent(
-                            new Event('scroll')
-                        );
-                    }
+                        const newMessage =
+                            createMessageFromHtml(
+                                data.html
+                            );
 
-                    return true;
-                });
+                        currentMessage.replaceWith(
+                            newMessage
+                        );
+
+                        if (preserveScroll) {
+                            /*
+                             * If the user was already at the bottom,
+                             * the new message height may have changed.
+                             *
+                             * Therefore restoring the old scrollTop is
+                             * NOT safe: the old value may no longer be
+                             * the new bottom.
+                             *
+                             * Keep the user locked to the actual bottom.
+                             */
+                            if (wasAtBottom) {
+                                chatWindow.scrollTop =
+                                    Math.max(
+                                        0,
+                                        chatWindow.scrollHeight -
+                                        chatWindow.clientHeight
+                                    );
+                            } else {
+                                /*
+                                 * User was reading older messages.
+                                 * Preserve their exact position.
+                                 */
+                                chatWindow.scrollTop =
+                                    oldScrollTop;
+                            }
+
+                            chatWindow.dispatchEvent(
+                                new Event(
+                                    'scroll'
+                                )
+                            );
+                        }
+
+                        return true;
+                    }
+                );
 
         let trackedPromise;
 
         trackedPromise =
-            next.finally(function () {
-                if (
-                    pendingMessageRefreshes.get(id) ===
-                    trackedPromise
-                ) {
-                    pendingMessageRefreshes.delete(
-                        id
-                    );
+            next.finally(
+                function () {
+                    if (
+                        pendingMessageRefreshes.get(
+                            id
+                        ) ===
+                        trackedPromise
+                    ) {
+                        pendingMessageRefreshes.delete(
+                            id
+                        );
+                    }
                 }
-            });
+            );
 
         pendingMessageRefreshes.set(
+            id,
+            trackedPromise
+        );
+
+        return trackedPromise;
+    }
+
+    /*
+     * =========================================================
+     * REACTION-ONLY REFRESH
+     * =========================================================
+     *
+     * IMPORTANT:
+     *
+     * Never replace the complete message for a reaction.
+     *
+     * The video, text, emoji state and media state
+     * must remain the same DOM nodes.
+     *
+     * Only .message-reactions is replaced.
+     */
+    async function refreshMessageReactions(
+        messageId
+    ) {
+        const id =
+            Number(messageId);
+
+        if (!id) {
+            return false;
+        }
+
+        const previous =
+            pendingReactionRefreshes.get(id) ||
+            Promise.resolve();
+
+        const next =
+            previous
+                .catch(() => {})
+                .then(
+                    async function () {
+                        const data =
+                            await fetchMessageFragment(
+                                id
+                            );
+
+                        /*
+                         * IMPORTANT:
+                         *
+                         * Re-query the current message
+                         * AFTER the request completes.
+                         *
+                         * Another message refresh may have
+                         * replaced the original DOM while
+                         * this request was running.
+                         */
+                        const currentMessage =
+                            getMessageElement(
+                                id
+                            );
+
+                        if (!currentMessage) {
+                            return false;
+                        }
+
+                        const newMessage =
+                            createMessageFromHtml(
+                                data.html
+                            );
+
+                        const oldReactions =
+                            currentMessage.querySelector(
+                                '.message-reactions'
+                            );
+
+                        const newReactions =
+                            newMessage.querySelector(
+                                '.message-reactions'
+                            );
+
+                        /*
+                         * Normal case:
+                         *
+                         * Old reactions exist and the
+                         * server still returns reactions.
+                         *
+                         * Replace ONLY this element.
+                         */
+                        if (
+                            oldReactions &&
+                            newReactions
+                        ) {
+                            oldReactions.replaceWith(
+                                newReactions
+                            );
+
+                            return true;
+                        }
+
+                        /*
+                         * No reactions currently exist,
+                         * but the server says that reactions
+                         * now exist.
+                         *
+                         * Insert only the reaction block.
+                         */
+                        if (
+                            !oldReactions &&
+                            newReactions
+                        ) {
+                            const existingActions =
+                                currentMessage.querySelector(
+                                    '.message-actions'
+                                );
+
+                            if (existingActions) {
+                                existingActions.appendChild(
+                                    newReactions
+                                );
+                            } else {
+                                const newActions =
+                                    document.createElement(
+                                        'div'
+                                    );
+
+                                newActions.className =
+                                    'message-actions';
+
+                                newActions.appendChild(
+                                    newReactions
+                                );
+
+                                currentMessage.appendChild(
+                                    newActions
+                                );
+                            }
+
+                            return true;
+                        }
+
+                        /*
+                         * Reactions existed before, but
+                         * the server says there are now
+                         * no reactions.
+                         *
+                         * Remove ONLY the reaction block.
+                         */
+                        if (
+                            oldReactions &&
+                            !newReactions
+                        ) {
+                            oldReactions.remove();
+
+                            const actions =
+                                currentMessage.querySelector(
+                                    '.message-actions'
+                                );
+
+                            if (
+                                actions &&
+                                !actions.querySelector(
+                                    '.message-reactions'
+                                ) &&
+                                !actions.querySelector(
+                                    '.delete-message-reaction'
+                                )
+                            ) {
+                                actions.remove();
+                            }
+
+                            return true;
+                        }
+
+                        return false;
+                    }
+                );
+
+        let trackedPromise;
+
+        trackedPromise =
+            next.finally(
+                function () {
+                    if (
+                        pendingReactionRefreshes.get(
+                            id
+                        ) ===
+                        trackedPromise
+                    ) {
+                        pendingReactionRefreshes.delete(
+                            id
+                        );
+                    }
+                }
+            );
+
+        pendingReactionRefreshes.set(
             id,
             trackedPromise
         );
@@ -647,7 +934,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleWebSocketMessage(
         event
     ) {
-        const data = event.detail;
+        const data =
+            event.detail;
 
         if (!data) {
             return;
@@ -658,6 +946,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'connection_established'
         ) {
             markExistingReceivedMessagesAsRead();
+
             return;
         }
 
@@ -667,12 +956,14 @@ document.addEventListener('DOMContentLoaded', function () {
         ) {
             appendIncomingMessage(
                 data.message
-            ).catch(function (error) {
-                console.error(
-                    'WebSocket message rendering error:',
-                    error
-                );
-            });
+            ).catch(
+                function (error) {
+                    console.error(
+                        'WebSocket message rendering error:',
+                        error
+                    );
+                }
+            );
 
             return;
         }
@@ -709,11 +1000,69 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        /*
+         * =====================================================
+         * REACTIONS
+         * =====================================================
+         *
+         * IMPORTANT:
+         *
+         * Reaction events NEVER perform a full
+         * message replacement.
+         *
+         * Only .message-reactions changes.
+         *
+         * Therefore:
+         *
+         * - video keeps playing
+         * - video currentTime is preserved
+         * - text does not blink
+         * - images are not recreated
+         * - message DOM remains intact
+         */
         if (
             data.type ===
                 'reaction_updated' ||
             data.type ===
-                'message_reacted' ||
+                'message_reacted'
+        ) {
+            const payload =
+                data.message ||
+                data.data ||
+                data;
+
+            const messageId =
+                payload.message_id ||
+                payload.id ||
+                data.message_id ||
+                data.id;
+
+            if (messageId) {
+                refreshMessageReactions(
+                    messageId
+                ).catch(
+                    function (error) {
+                        console.error(
+                            'Unable to refresh WebSocket reaction:',
+                            error
+                        );
+                    }
+                );
+            }
+
+            return;
+        }
+
+        /*
+         * =====================================================
+         * FULL MESSAGE UPDATES
+         * =====================================================
+         *
+         * These events intentionally replace the
+         * complete message because the message itself
+         * has changed.
+         */
+        if (
             data.type ===
                 'message_updated' ||
             data.type ===
@@ -736,12 +1085,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     {
                         preserveScroll: true
                     }
-                ).catch(function (error) {
-                    console.error(
-                        'Unable to refresh WebSocket message:',
-                        error
-                    );
-                });
+                ).catch(
+                    function (error) {
+                        console.error(
+                            'Unable to refresh WebSocket message:',
+                            error
+                        );
+                    }
+                );
             }
 
             return;
@@ -792,6 +1143,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         refreshMessageFragment:
             refreshMessageFragment,
+
+        refreshMessageReactions:
+            refreshMessageReactions,
 
         appendIncomingMessage:
             appendIncomingMessage
