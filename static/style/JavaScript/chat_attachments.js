@@ -1776,6 +1776,113 @@ document.addEventListener(
 
 
         /* =========================================================
+           VIDEO MESSAGE PREVIEW
+           ========================================================= */
+
+        const MESSAGE_VIDEO_PREVIEW_SECONDS = 4;
+
+        function setupMessageVideoPreview() {
+            const videos =
+                document.querySelectorAll(
+                    '.message-video'
+                );
+
+            videos.forEach(
+                function (video) {
+                    if (
+                        video.dataset.previewReady ===
+                        'true'
+                    ) {
+                        return;
+                    }
+
+                    video.dataset.previewReady =
+                        'true';
+
+                    video.muted = true;
+                    video.setAttribute(
+                        'muted',
+                        ''
+                    );
+                    video.setAttribute(
+                        'playsinline',
+                        ''
+                    );
+
+                    video.addEventListener(
+                        'loadedmetadata',
+                        function () {
+                            if (
+                                video.dataset.previewPlayed ===
+                                'true'
+                            ) {
+                                return;
+                            }
+
+                            video.dataset.previewPlayed =
+                                'true';
+
+                            video.currentTime = 0;
+
+                            const playPromise =
+                                video.play();
+
+                            if (
+                                playPromise &&
+                                typeof playPromise.catch ===
+                                    'function'
+                            ) {
+                                playPromise.catch(
+                                    function () {
+                                        /*
+                                         * Browser may block
+                                         * autoplay. Controls
+                                         * remain available.
+                                         */
+                                    }
+                                );
+                            }
+                        }
+                    );
+
+                    video.addEventListener(
+                        'timeupdate',
+                        function () {
+                            if (
+                                video.currentTime >=
+                                MESSAGE_VIDEO_PREVIEW_SECONDS
+                            ) {
+                                video.pause();
+
+                                video.currentTime = 0;
+                            }
+                        }
+                    );
+                }
+            );
+        }
+
+        setupMessageVideoPreview();
+
+        const messageVideoObserver =
+            new MutationObserver(
+                function () {
+                    setupMessageVideoPreview();
+                }
+            );
+
+        if (chatMessages) {
+            messageVideoObserver.observe(
+                chatMessages,
+                {
+                    childList: true,
+                    subtree: true
+                }
+            );
+        }
+
+
+        /* =========================================================
            PUBLIC API
            ========================================================= */
 
