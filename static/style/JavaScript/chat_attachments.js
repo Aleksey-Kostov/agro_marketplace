@@ -1776,61 +1776,15 @@ document.addEventListener(
 
 
         /* =========================================================
-           VIDEO MESSAGE PREVIEW
+          VIDEO MESSAGE PREVIEW
         ========================================================= */
 
         const MESSAGE_VIDEO_PREVIEW_SECONDS = 4;
 
 
-        const messageVideoIntersectionObserver =
-            new IntersectionObserver(
-                function (entries) {
-                    entries.forEach(
-                        function (entry) {
-                            const video =
-                                entry.target;
-
-                            if (
-                                video.dataset.previewDisabled ===
-                                'true'
-                            ) {
-                                return;
-                            }
-
-                            if (
-                                entry.isIntersecting &&
-                                entry.intersectionRatio >= 0.5
-                            ) {
-                                video.dataset.previewVisible =
-                                    'true';
-
-                                startMessageVideoPreview(
-                                    video
-                                );
-
-                                return;
-                            }
-
-                            video.dataset.previewVisible =
-                                'false';
-
-                            stopMessageVideoPreview(
-                                video
-                            );
-                        }
-                    );
-                },
-                {
-                    root: chatWindow || null,
-
-                    threshold: [
-                        0,
-                        0.5
-                    ]
-                }
-            );
-
-
+        /*
+         * Start the automatic preview.
+         */
         function playMessageVideoPreview(
             video
         ) {
@@ -1841,13 +1795,6 @@ document.addEventListener(
             ) {
                 return;
             }
-
-            /*
-             * This play() call comes from the
-             * automatic preview system.
-             */
-            video.dataset.previewProgrammaticPlay =
-                'true';
 
             video.dataset.previewPlaying =
                 'true';
@@ -1864,15 +1811,15 @@ document.addEventListener(
                     function () {
                         video.dataset.previewPlaying =
                             'false';
-
-                        video.dataset.previewProgrammaticPlay =
-                            'false';
                     }
                 );
             }
         }
 
 
+        /*
+         * Start preview from 0:00.
+         */
         function startMessageVideoPreview(
             video
         ) {
@@ -1921,6 +1868,9 @@ document.addEventListener(
         }
 
 
+        /*
+         * Stop automatic preview.
+         */
         function stopMessageVideoPreview(
             video
         ) {
@@ -1932,9 +1882,6 @@ document.addEventListener(
                 'false';
 
             video.dataset.previewPlaying =
-                'false';
-
-            video.dataset.previewProgrammaticPlay =
                 'false';
 
             video.pause();
@@ -1955,6 +1902,149 @@ document.addEventListener(
         }
 
 
+        /*
+         * Switch from automatic preview
+         * to full manual playback.
+         *
+         * This is the important part.
+         */
+        function startFullMessageVideo(
+            video
+        ) {
+            if (!video) {
+                return;
+            }
+
+            /*
+             * Disable preview permanently
+             * for this video element.
+             */
+            video.dataset.previewDisabled =
+                'true';
+
+            video.dataset.previewActive =
+                'false';
+
+            video.dataset.previewPlaying =
+                'false';
+
+            /*
+             * Start the real video from
+             * the beginning.
+             */
+            video.dataset.previewResetting =
+                'true';
+
+            video.currentTime =
+                0;
+
+            video.dataset.previewResetting =
+                'false';
+
+            /*
+             * Give control back to the user.
+             */
+            video.controls =
+                true;
+
+            /*
+             * The preview was muted.
+             *
+             * Full playback should behave
+             * like a normal video.
+             */
+            video.muted =
+                false;
+
+            video.removeAttribute(
+                'muted'
+            );
+
+            video.setAttribute(
+                'playsinline',
+                ''
+            );
+
+            /*
+             * Start the complete video.
+             */
+            const playPromise =
+                video.play();
+
+            if (
+                playPromise &&
+                typeof playPromise.catch ===
+                    'function'
+            ) {
+                playPromise.catch(
+                    function () {
+                        /*
+                         * Browser may require
+                         * another user interaction.
+                         */
+                    }
+                );
+            }
+        }
+
+
+        /*
+         * Observe which videos are visible.
+         */
+        const messageVideoIntersectionObserver =
+            new IntersectionObserver(
+                function (entries) {
+                    entries.forEach(
+                        function (entry) {
+                            const video =
+                                entry.target;
+
+                            if (
+                                video.dataset.previewDisabled ===
+                                'true'
+                            ) {
+                                return;
+                            }
+
+                            if (
+                                entry.isIntersecting &&
+                                entry.intersectionRatio >= 0.5
+                            ) {
+                                video.dataset.previewVisible =
+                                    'true';
+
+                                startMessageVideoPreview(
+                                    video
+                                );
+
+                                return;
+                            }
+
+                            video.dataset.previewVisible =
+                                'false';
+
+                            stopMessageVideoPreview(
+                                video
+                            );
+                        }
+                    );
+                },
+                {
+                    root:
+                        chatWindow ||
+                        null,
+
+                    threshold: [
+                        0,
+                        0.5
+                    ]
+                }
+            );
+
+
+        /*
+         * Setup all message videos.
+         */
         function setupMessageVideoPreview() {
             const videos =
                 document.querySelectorAll(
@@ -1973,7 +2063,11 @@ document.addEventListener(
                     video.dataset.previewReady =
                         'true';
 
-                    video.muted = true;
+                    /*
+                     * Preview starts muted.
+                     */
+                    video.muted =
+                        true;
 
                     video.setAttribute(
                         'muted',
@@ -1997,104 +2091,70 @@ document.addEventListener(
                     video.dataset.previewDisabled =
                         'false';
 
-                    video.dataset.previewProgrammaticPlay =
-                        'false';
-
                     video.dataset.previewResetting =
                         'false';
 
 
                     /*
-                     * Detect playback start.
+                     * IMPORTANT:
                      *
-                     * There are two possible sources:
+                     * The automatic preview is already
+                     * playing, so waiting for a "play"
+                     * event is not enough.
                      *
-                     * 1. Our automatic preview.
-                     * 2. The user pressing Play.
+                     * When the user interacts with the
+                     * video, switch immediately to the
+                     * complete video.
                      */
                     video.addEventListener(
-                        'play',
-                        function () {
-                            /*
-                             * Automatic preview playback.
-                             */
+                        'pointerdown',
+                        function (event) {
                             if (
-                                video.dataset.previewProgrammaticPlay ===
+                                video.dataset.previewActive !==
                                 'true'
                             ) {
-                                video.dataset.previewProgrammaticPlay =
-                                    'false';
-
                                 return;
                             }
 
-
                             /*
-                             * USER PLAY
-                             *
-                             * The user explicitly wants
-                             * to watch the whole video.
-                             *
-                             * Therefore:
-                             *
-                             * - disable preview
-                             * - stop looping
-                             * - start from the beginning
+                             * The user is taking control.
                              */
-                            video.dataset.previewDisabled =
-                                'true';
+                            event.preventDefault();
 
-                            video.dataset.previewActive =
-                                'false';
+                            event.stopPropagation();
 
-                            video.dataset.previewPlaying =
-                                'false';
-
-                            video.dataset.previewResetting =
-                                'true';
-
-                            video.currentTime =
-                                0;
-
-                            video.dataset.previewResetting =
-                                'false';
-
-                            /*
-                             * currentTime was reset to 0
-                             * while playback was already
-                             * requested by the user.
-                             *
-                             * The video therefore continues
-                             * as normal from the beginning.
-                             */
-                        }
+                            startFullMessageVideo(
+                                video
+                            );
+                        },
+                        true
                     );
 
 
                     /*
-                     * If the user manually seeks,
-                     * switch permanently to normal
-                     * video playback.
+                     * Fallback for browsers where
+                     * pointer events do not reach
+                     * the video controls correctly.
                      */
                     video.addEventListener(
-                        'seeking',
-                        function () {
+                        'click',
+                        function (event) {
                             if (
-                                video.dataset.previewResetting ===
+                                video.dataset.previewActive !==
                                 'true'
                             ) {
                                 return;
                             }
 
-                            video.dataset.previewDisabled =
-                                'true';
+                            event.preventDefault();
 
-                            video.dataset.previewActive =
-                                'false';
+                            event.stopPropagation();
 
-                            video.dataset.previewPlaying =
-                                'false';
-                        }
+                            startFullMessageVideo(
+                                video
+                            );
+                        },
+                        true
                     );
 
 
@@ -2125,10 +2185,8 @@ document.addEventListener(
 
 
                     /*
-                     * Automatic preview loop.
-                     *
-                     * Only the first four seconds
-                     * are repeated.
+                     * Loop ONLY the first four seconds
+                     * while automatic preview is active.
                      */
                     video.addEventListener(
                         'timeupdate',
@@ -2191,7 +2249,8 @@ document.addEventListener(
 
 
                     /*
-                     * Preview pause handling.
+                     * Do not interfere with
+                     * normal full-video playback.
                      */
                     video.addEventListener(
                         'pause',
@@ -2220,6 +2279,9 @@ document.addEventListener(
         setupMessageVideoPreview();
 
 
+        /*
+         * Handle dynamically added messages.
+         */
         const messageVideoMutationObserver =
             new MutationObserver(
                 function () {
