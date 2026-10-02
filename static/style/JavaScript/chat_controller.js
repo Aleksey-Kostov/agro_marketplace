@@ -896,40 +896,113 @@ document.addEventListener('DOMContentLoaded', function () {
         return trackedPromise;
     }
 
-    function refreshStatusMessages(
-        messageIds
-    ) {
-        if (!Array.isArray(messageIds)) {
-            return;
+    async function refreshMessageStatus(
+    messageId
+) {
+    const id =
+        Number(messageId);
+
+    if (!id) {
+        return false;
+    }
+
+    try {
+        const data =
+            await fetchMessageFragment(
+                id
+            );
+
+        const currentMessage =
+            getMessageElement(id);
+
+        if (!currentMessage) {
+            return false;
         }
 
-        const uniqueIds = [
-            ...new Set(
-                messageIds
-                    .map(Number)
-                    .filter(Boolean)
-            )
-        ];
+        const newMessage =
+            createMessageFromHtml(
+                data.html
+            );
 
-        uniqueIds.forEach(
-            function (messageId) {
-                refreshMessageFragment(
-                    messageId,
-                    {
-                        preserveScroll: true
-                    }
-                ).catch(
-                    function (error) {
-                        console.error(
-                            'Unable to refresh message status:',
-                            messageId,
-                            error
-                        );
-                    }
-                );
-            }
+        const currentStatus =
+            currentMessage.querySelector(
+                '.message-delivery-status'
+            );
+
+        const newStatus =
+            newMessage.querySelector(
+                '.message-delivery-status'
+            );
+
+        /*
+         * IMPORTANT:
+         *
+         * Status changes must update ONLY
+         * the delivery-status element.
+         *
+         * Do NOT replace the complete message.
+         *
+         * This keeps:
+         * - text stable
+         * - images stable
+         * - video stable
+         * - audio stable
+         * - playback state stable
+         * - DOM position stable
+         */
+        if (
+            currentStatus &&
+            newStatus
+        ) {
+            currentStatus.replaceWith(
+                newStatus
+            );
+
+            return true;
+        }
+
+        /*
+         * If the current message does not have
+         * a status element, there is nothing to
+         * replace.
+         */
+        return false;
+
+    } catch (error) {
+        console.error(
+            'Unable to refresh message status:',
+            id,
+            error
         );
+
+        return false;
     }
+}
+
+
+function refreshStatusMessages(
+    messageIds
+) {
+    if (!Array.isArray(messageIds)) {
+        return;
+    }
+
+    const uniqueIds = [
+        ...new Set(
+            messageIds
+                .map(Number)
+                .filter(Boolean)
+        )
+    ];
+
+    uniqueIds.forEach(
+        function (messageId) {
+            refreshMessageStatus(
+                messageId
+            );
+        }
+    );
+}
 
     function handleWebSocketMessage(
         event
