@@ -24,6 +24,11 @@ document.addEventListener(
                 'editing-message-id'
             );
 
+        const replyToInput =
+            document.getElementById(
+                 'reply-to'
+            );
+
         if (
             !replyForm ||
             !submitBtn
@@ -1034,7 +1039,11 @@ document.addEventListener(
             'pointerdown',
             function (event) {
                 if (
-                    isEditMode()
+                    isEditMode() ||
+                    (
+                        replyToInput &&
+                        replyToInput.value
+                    )
                 ) {
                     return;
                 }
@@ -1122,7 +1131,11 @@ document.addEventListener(
             'click',
             function (event) {
                 if (
-                    isEditMode()
+                    isEditMode() ||
+                    (
+                        replyToInput &&
+                        replyToInput.value
+                    )
                 ) {
                     return;
                 }
