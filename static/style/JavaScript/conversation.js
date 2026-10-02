@@ -722,6 +722,21 @@ document.addEventListener('DOMContentLoaded', function () {
         const isEditMode =
             mode === 'edit';
 
+        /*
+         * Edit and reply are normal form submissions.
+         *
+         * voice_recorder.js changes the button to
+         * type="button" when it is acting as a microphone.
+         *
+         * When entering edit/reply mode we must explicitly
+         * restore submit behaviour.
+         */
+        submitBtn.type =
+            'submit';
+
+        submitBtn.disabled =
+            false;
+
         submitBtn.innerHTML =
             isEditMode
                 ? (
