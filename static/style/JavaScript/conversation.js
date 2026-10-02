@@ -837,18 +837,14 @@ document.addEventListener('DOMContentLoaded', function () {
          * the Sending state.
          */
         isSubmittingMessage = false;
-
         activeMessageSendToken += 1;
-
         setSendingState(false);
 
-        window.dispatchEvent(
-            new CustomEvent(
-                'agro:message-sent'
-            )
-        );
-
         resetComposerAfterSend();
+
+        window.dispatchEvent(
+            new CustomEvent('agro:message-sent')
+        );
     }
 
     window.addEventListener(
