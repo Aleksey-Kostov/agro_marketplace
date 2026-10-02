@@ -726,7 +726,7 @@ document.addEventListener('DOMContentLoaded', function () {
             isEditMode
                 ? (
                     '<i class="fas fa-save me-1" id="message-submit-icon"></i>' +
-                    '<span id="message-submit-text">Save changes</span>'
+                    '<span id="message-submit-text">Save</span>'
                 )
                 : (
                     '<i class="fas fa-paper-plane me-1" id="message-submit-icon"></i>' +
@@ -764,7 +764,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ) {
             submitBtn.innerHTML =
                 '<i class="fas fa-save me-1" id="message-submit-icon"></i>' +
-                '<span id="message-submit-text">Save changes</span>';
+                '<span id="message-submit-text">Save</span>';
 
             return;
         }
@@ -801,7 +801,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ) {
             submitBtn.innerHTML =
                 '<i class="fas fa-save me-1" id="message-submit-icon"></i>' +
-                '<span id="message-submit-text">Save changes</span>';
+                '<span id="message-submit-text">Save</span>';
 
             return;
         }
