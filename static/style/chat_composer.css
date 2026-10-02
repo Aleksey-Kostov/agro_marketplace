@@ -7,80 +7,35 @@
     margin-top: 0.75rem;
 }
 
-
-/* =========================================================
-   MAIN COMPOSER ROW
-========================================================= */
-
 .chat-composer-main {
     display: flex;
     align-items: flex-end;
-
     width: 100%;
-
     gap: 0.4rem;
 }
-
-
-/* =========================================================
-   LEFT BUTTONS
-========================================================= */
 
 .chat-composer-left {
     display: flex;
     align-items: flex-end;
-
     gap: 0.3rem;
-
     flex: 0 0 auto;
 }
 
-
-/* =========================================================
-   INPUT WRAPPER
-========================================================= */
-
 .chat-composer-input-wrap {
     position: relative;
-
     flex: 1 1 auto;
-
     min-width: 0;
 }
-
-
-/* =========================================================
-   TEXTAREA
-========================================================= */
-
-/*
- * IMPORTANT:
- *
- * main.css and messages.css contain an old rule:
- *
- * .reply-form textarea,
- * .reply-form .form-control {
- *     min-height: 120px;
- * }
- *
- * That rule was making the chat input several lines high.
- *
- * This composer-specific rule intentionally overrides it.
- */
 
 .chat-composer-input-wrap textarea,
 .chat-composer-input-wrap .form-control {
     display: block;
-
     width: 100%;
-
     min-height: 42px !important;
     height: 42px;
-
     max-height: 160px;
 
     margin: 0;
-
     padding: 9px 14px;
 
     resize: none;
@@ -100,7 +55,6 @@
     box-sizing: border-box;
 
     box-shadow: none;
-
     outline: none;
 
     transition:
@@ -108,7 +62,6 @@
         border-color 0.15s ease,
         box-shadow 0.15s ease;
 }
-
 
 .chat-composer-input-wrap textarea:focus,
 .chat-composer-input-wrap .form-control:focus {
@@ -118,82 +71,89 @@
         0 0 0 0.15rem rgba(13, 110, 253, 0.12);
 }
 
-
 .chat-composer-input-wrap textarea::placeholder,
 .chat-composer-input-wrap .form-control::placeholder {
-    color: #8a8f98;
+    color: #6c757d;
+    opacity: 1;
 }
 
 
 /* =========================================================
-   ACTION BUTTONS
+   LEFT COMPOSER BUTTONS
 ========================================================= */
 
-.chat-composer-action-btn {
-    width: 38px;
-    height: 38px;
-
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
+.chat-composer-left .btn {
+    width: 42px;
+    height: 42px;
 
     padding: 0;
 
-    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
-    flex: 0 0 auto;
+    flex: 0 0 42px;
+
+    border-radius: 50%;
 }
 
-
-.chat-composer-action-btn i {
+.chat-composer-left .btn i {
     margin: 0;
+    font-size: 16px;
 }
 
 
 /* =========================================================
-   SEND / MICROPHONE
+   SEND / MICROPHONE BUTTON
 ========================================================= */
 
 .chat-composer-submit-btn {
     width: 42px;
     height: 42px;
 
-    display: inline-flex;
+    min-width: 42px !important;
+    min-height: 42px;
 
+    padding: 0 !important;
+
+    display: inline-flex;
     align-items: center;
     justify-content: center;
 
-    padding: 0;
-    margin: 0;
+    flex: 0 0 42px;
 
-    border-radius: 50%;
+    border-radius: 50% !important;
 
-    flex: 0 0 auto;
+    font-size: 16px;
+    line-height: 1;
+
+    box-shadow: none;
 
     transition:
-        transform 0.15s ease,
+        transform 0.12s ease,
         background-color 0.15s ease,
         box-shadow 0.15s ease;
 }
 
-
 .chat-composer-submit-btn i {
     margin: 0;
+    padding: 0;
 
-    font-size: 15px;
+    font-size: 16px;
+    line-height: 1;
 }
 
+.chat-composer-submit-btn span {
+    display: none !important;
+}
 
 .chat-composer-submit-btn:hover {
     transform: scale(1.04);
 }
 
-
 .chat-composer-submit-btn:active {
     transform: scale(0.94);
 }
-
 
 .chat-composer-submit-btn:focus-visible {
     outline: 2px solid rgba(13, 110, 253, 0.35);
@@ -205,86 +165,136 @@
    DROP OVERLAY
 ========================================================= */
 
-.chat-composer .chat-drop-overlay {
+#chat-drop-overlay {
     position: absolute;
 
     inset: 0;
 
-    display: none;
-
+    display: flex;
     align-items: center;
     justify-content: center;
 
+    padding: 10px;
+
+    border: 2px dashed rgba(13, 110, 253, 0.45);
     border-radius: 21px;
 
     background: rgba(255, 255, 255, 0.94);
 
-    z-index: 20;
+    color: #0d6efd;
 
-    pointer-events: none;
-}
-
-
-.chat-composer .chat-drop-overlay-content {
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 0.2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
 
     text-align: center;
-}
 
-
-.chat-composer .chat-drop-icon {
-    font-size: 1.4rem;
-}
-
-
-.chat-composer .chat-drop-overlay-content small {
-    color: #6c757d;
+    z-index: 20;
 }
 
 
 /* =========================================================
-   PREVIEWS
+   MEDIA PREVIEWS
 ========================================================= */
 
 .chat-composer-previews {
-    width: 100%;
-}
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 
-
-.chat-composer #image-preview-wrap,
-.chat-composer #video-preview-wrap,
-.chat-composer #file-preview-wrap {
     margin-top: 0.5rem;
 }
 
-
-.chat-composer .attach-preview {
-    display: block;
-
+.chat-composer-previews > * {
     max-width: 100%;
-    max-height: 220px;
-
-    border-radius: 12px;
 }
 
 
-.chat-composer .file-preview {
+/* =========================================================
+   IMAGE PREVIEW
+========================================================= */
+
+#image-preview-container {
+    position: relative;
+}
+
+#image-preview-container img {
+    display: block;
+
+    max-width: 180px;
+    max-height: 180px;
+
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+
+/* =========================================================
+   VIDEO PREVIEW
+========================================================= */
+
+#video-preview-container {
+    position: relative;
+}
+
+#video-preview-container video {
+    display: block;
+
+    max-width: 240px;
+    max-height: 180px;
+
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+
+/* =========================================================
+   FILE PREVIEW
+========================================================= */
+
+#file-preview-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
     max-width: 100%;
 
-    padding: 0.75rem 1rem;
+    padding: 8px 12px;
 
     border: 1px solid #dee2e6;
-
-    border-radius: 12px;
+    border-radius: 10px;
 
     background: #f8f9fa;
+}
+
+#file-preview-container i {
+    flex: 0 0 auto;
+}
+
+#file-preview-container span {
+    min-width: 0;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   REMOVE MEDIA BUTTON
+========================================================= */
+
+.chat-composer .remove-media-btn {
+    width: 32px;
+    height: 32px;
+
+    padding: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
 }
 
 
@@ -292,45 +302,13 @@
    UPLOAD PROGRESS
 ========================================================= */
 
-.chat-composer .upload-progress-wrap {
+.chat-composer .progress {
+    width: 100%;
+    height: 5px;
+
     margin-top: 0.5rem;
-}
 
-
-/* =========================================================
-   PICKERS
-========================================================= */
-
-.chat-composer .emoji-picker {
-    z-index: 1055;
-
-    max-width: min(340px, calc(100vw - 30px));
-}
-
-
-.chat-composer .attachment-picker {
-    min-width: 170px;
-
-    z-index: 1055;
-}
-
-
-/* =========================================================
-   REMOVE MEDIA
-========================================================= */
-
-.chat-composer #remove-media-btn {
-    width: 38px;
-    height: 38px;
-
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 0;
-
-    border-radius: 50%;
+    border-radius: 999px;
 }
 
 
@@ -340,38 +318,44 @@
 
 @media (max-width: 576px) {
 
-    .chat-composer {
-        margin-top: 0.5rem;
-    }
-
     .chat-composer-main {
-        gap: 0.25rem;
+        gap: 0.3rem;
     }
 
     .chat-composer-left {
         gap: 0.2rem;
     }
 
-    .chat-composer-input-wrap textarea,
-    .chat-composer-input-wrap .form-control {
-        min-height: 40px !important;
+    .chat-composer-left .btn {
+        width: 40px;
         height: 40px;
 
-        max-height: 140px;
-
-        padding: 8px 12px;
-
-        border-radius: 20px;
-    }
-
-    .chat-composer-action-btn {
-        width: 36px;
-        height: 36px;
+        flex-basis: 40px;
     }
 
     .chat-composer-submit-btn {
         width: 40px;
         height: 40px;
+
+        min-width: 40px !important;
+        min-height: 40px;
+
+        flex-basis: 40px;
+    }
+
+    .chat-composer-submit-btn i {
+        font-size: 15px;
+    }
+
+    .chat-composer-input-wrap textarea,
+    .chat-composer-input-wrap .form-control {
+        min-height: 40px !important;
+        height: 40px;
+        max-height: 140px;
+
+        padding: 8px 12px;
+
+        border-radius: 20px;
     }
 }
 
@@ -382,19 +366,26 @@
 
 @media (max-width: 360px) {
 
-    .chat-composer-input-wrap textarea,
-    .chat-composer-input-wrap .form-control {
-        min-height: 38px !important;
+    .chat-composer-left .btn {
+        width: 38px;
         height: 38px;
-    }
 
-    .chat-composer-action-btn {
-        width: 34px;
-        height: 34px;
+        flex-basis: 38px;
     }
 
     .chat-composer-submit-btn {
         width: 38px;
+        height: 38px;
+
+        min-width: 38px !important;
+        min-height: 38px;
+
+        flex-basis: 38px;
+    }
+
+    .chat-composer-input-wrap textarea,
+    .chat-composer-input-wrap .form-control {
+        min-height: 38px !important;
         height: 38px;
     }
 }
