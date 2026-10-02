@@ -456,12 +456,17 @@ document.addEventListener(
                     ) / 1000
                 );
 
+            const recordingTime =
+            formatRecordingTime(elapsedSeconds);
+
+            const isMobile =
+            window.matchMedia('(max-width: 767.98px)').matches;
+
             messageBodyField.setAttribute(
-                'placeholder',
-                'Recording ' +
-                formatRecordingTime(
-                    elapsedSeconds
-                )
+                 'placeholder',
+                  isMobile
+                      ? recordingTime
+                      : 'Recording ' + recordingTime
             );
         }
 
