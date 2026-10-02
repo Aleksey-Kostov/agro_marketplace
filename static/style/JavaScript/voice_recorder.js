@@ -42,8 +42,22 @@ document.addEventListener(
 
         let isRecording = false;
         let isStartingRecording = false;
+        let cancelRecording = false;
+
+        let recordingTimer = null;
+        let recordingStartedAt = 0;
 
         let audioInput = null;
+
+        let pointerIsDown = false;
+        let stopAfterStart = false;
+
+        let isCancelTarget = false;
+
+        let originalPlaceholder =
+            messageBodyField
+                ? messageBodyField.getAttribute('placeholder') || ''
+                : '';
 
 
         /* =========================================================
@@ -78,26 +92,12 @@ document.addEventListener(
             audioInput =
                 document.createElement('input');
 
-            audioInput.type =
-                'file';
+            audioInput.type = 'file';
+            audioInput.id = 'id_audio';
+            audioInput.name = AUDIO_INPUT_NAME;
+            audioInput.accept = 'audio/*';
+            audioInput.className = 'd-none';
 
-            audioInput.id =
-                'id_audio';
-
-            audioInput.name =
-                AUDIO_INPUT_NAME;
-
-            audioInput.accept =
-                'audio/*';
-
-            audioInput.className =
-                'd-none';
-
-            /*
-             * This input is intentionally created
-             * dynamically because the voice recorder
-             * owns the audio recording itself.
-             */
             replyForm.appendChild(
                 audioInput
             );
@@ -120,19 +120,13 @@ document.addEventListener(
 
         function hasNormalAttachment() {
             const imageInput =
-                document.getElementById(
-                    'id_image'
-                );
+                document.getElementById('id_image');
 
             const videoInput =
-                document.getElementById(
-                    'id_video'
-                );
+                document.getElementById('id_video');
 
             const fileInput =
-                document.getElementById(
-                    'id_file'
-                );
+                document.getElementById('id_file');
 
             return Boolean(
                 (
@@ -199,22 +193,310 @@ document.addEventListener(
             mimeType
         ) {
             if (
-                mimeType.includes(
-                    'mp4'
-                )
+                mimeType.includes('mp4')
             ) {
                 return 'm4a';
             }
 
             if (
-                mimeType.includes(
-                    'ogg'
-                )
+                mimeType.includes('ogg')
             ) {
                 return 'ogg';
             }
 
             return 'webm';
+        }
+
+
+        function formatRecordingTime(
+            seconds
+        ) {
+            const minutes =
+                Math.floor(
+                    seconds / 60
+                );
+
+            const remainingSeconds =
+                seconds % 60;
+
+            return (
+                minutes +
+                ':' +
+                String(
+                    remainingSeconds
+                ).padStart(2, '0')
+            );
+        }
+
+
+        /* =========================================================
+           CANCEL / SLIDER
+        ========================================================= */
+
+        function createCancelButton() {
+            let cancelBtn =
+                document.getElementById(
+                    'voice-recording-cancel-btn'
+                );
+
+            if (cancelBtn) {
+                return cancelBtn;
+            }
+
+            cancelBtn =
+                document.createElement('button');
+
+            cancelBtn.type = 'button';
+
+            cancelBtn.id =
+                'voice-recording-cancel-btn';
+
+            cancelBtn.className =
+                'chat-voice-cancel-btn d-none';
+
+            cancelBtn.innerHTML =
+                '<i class="fas fa-times"></i>';
+
+            cancelBtn.setAttribute(
+                'aria-label',
+                'Cancel voice recording'
+            );
+
+            cancelBtn.title =
+                'Cancel recording';
+
+            submitBtn.parentNode.insertBefore(
+                cancelBtn,
+                submitBtn
+            );
+
+            cancelBtn.addEventListener(
+                'click',
+                function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    cancelCurrentRecording();
+                }
+            );
+
+            return cancelBtn;
+        }
+
+
+        function setDragProgress(
+            progress
+        ) {
+            const safeProgress =
+                Math.max(
+                    0,
+                    Math.min(
+                        1,
+                        progress
+                    )
+                );
+
+            submitBtn.style.setProperty(
+                '--voice-drag-progress',
+                safeProgress.toString()
+            );
+        }
+
+
+        function showCancelButton() {
+            const cancelBtn =
+                createCancelButton();
+
+            cancelBtn.classList.remove(
+                'd-none'
+            );
+
+            setDragProgress(0);
+        }
+
+
+        function hideCancelButton() {
+            const cancelBtn =
+                document.getElementById(
+                    'voice-recording-cancel-btn'
+                );
+
+            if (cancelBtn) {
+                cancelBtn.classList.add(
+                    'd-none'
+                );
+
+                cancelBtn.classList.remove(
+                    'is-active'
+                );
+            }
+
+            setDragProgress(0);
+        }
+
+
+        function setCancelTarget(active) {
+            const cancelBtn =
+                document.getElementById(
+                    'voice-recording-cancel-btn'
+                );
+
+            if (!cancelBtn) {
+                return;
+            }
+
+            isCancelTarget = active;
+
+            cancelBtn.classList.toggle(
+                'is-active',
+                active
+            );
+        }
+
+
+        function updateCancelTarget(event) {
+            if (
+                !pointerIsDown ||
+                !isRecording
+            ) {
+                return;
+            }
+
+            const cancelBtn =
+                document.getElementById(
+                    'voice-recording-cancel-btn'
+                );
+
+            if (!cancelBtn) {
+                return;
+            }
+
+            const submitRect =
+                submitBtn.getBoundingClientRect();
+
+            const cancelRect =
+                cancelBtn.getBoundingClientRect();
+
+            /*
+             * Start of the drag:
+             * center of the Voice button.
+             */
+            const startX =
+                submitRect.left +
+                submitRect.width / 2;
+
+            /*
+             * Cancel target:
+             * center of the X button.
+             */
+            const cancelX =
+                cancelRect.left +
+                cancelRect.width / 2;
+
+            /*
+             * How far the pointer has moved
+             * towards the Cancel button.
+             */
+            const totalDistance =
+                Math.max(
+                    1,
+                    startX - cancelX
+                );
+
+            const currentDistance =
+                Math.max(
+                    0,
+                    startX - event.clientX
+                );
+
+            const progress =
+                Math.min(
+                    1,
+                    currentDistance /
+                    totalDistance
+                );
+
+            setDragProgress(
+                progress
+            );
+
+            /*
+             * Cancel when the pointer enters
+             * the actual X button.
+             */
+            const isInside =
+                event.clientX >= cancelRect.left &&
+                event.clientX <= cancelRect.right &&
+                event.clientY >= cancelRect.top &&
+                event.clientY <= cancelRect.bottom;
+
+            setCancelTarget(
+                isInside
+            );
+        }
+
+
+        /* =========================================================
+           TIMER
+        ========================================================= */
+
+        function updateRecordingTimer() {
+            if (
+                !messageBodyField ||
+                !isRecording
+            ) {
+                return;
+            }
+
+            const elapsedSeconds =
+                Math.floor(
+                    (
+                        Date.now() -
+                        recordingStartedAt
+                    ) / 1000
+                );
+
+            messageBodyField.setAttribute(
+                'placeholder',
+                'Recording ' +
+                formatRecordingTime(
+                    elapsedSeconds
+                )
+            );
+        }
+
+
+        function startRecordingTimer() {
+            recordingStartedAt =
+                Date.now();
+
+            updateRecordingTimer();
+
+            clearInterval(
+                recordingTimer
+            );
+
+            recordingTimer =
+                setInterval(
+                    updateRecordingTimer,
+                    250
+                );
+        }
+
+
+        function stopRecordingTimer() {
+            clearInterval(
+                recordingTimer
+            );
+
+            recordingTimer = null;
+
+            if (messageBodyField) {
+                messageBodyField.setAttribute(
+                    'placeholder',
+                    originalPlaceholder
+                );
+            }
         }
 
 
@@ -230,23 +512,29 @@ document.addEventListener(
                 return;
             }
 
-            submitBtn.type =
-                'button';
+            submitBtn.classList.remove(
+                'voice-recording'
+            );
 
-            submitBtn.disabled =
-                false;
+            submitBtn.type = 'button';
+            submitBtn.disabled = false;
 
             submitBtn.title =
-                'Record voice message';
+                'Hold to record voice message';
 
             submitBtn.setAttribute(
                 'aria-label',
-                'Record voice message'
+                'Hold to record voice message'
             );
 
             submitBtn.innerHTML =
                 '<i class="fas fa-microphone" ' +
-                'id="message-submit-icon"></i>';
+                'id="message-submit-icon"></i>' +
+                '<span id="message-submit-text">' +
+                'Voice' +
+                '</span>';
+
+            setDragProgress(0);
         }
 
 
@@ -258,11 +546,12 @@ document.addEventListener(
                 return;
             }
 
-            submitBtn.type =
-                'submit';
+            submitBtn.classList.remove(
+                'voice-recording'
+            );
 
-            submitBtn.disabled =
-                false;
+            submitBtn.type = 'submit';
+            submitBtn.disabled = false;
 
             submitBtn.title =
                 'Send message';
@@ -278,6 +567,8 @@ document.addEventListener(
                 '<span id="message-submit-text">' +
                 'Send' +
                 '</span>';
+
+            setDragProgress(0);
         }
 
 
@@ -286,26 +577,26 @@ document.addEventListener(
                 return;
             }
 
-            submitBtn.type =
-                'button';
+            submitBtn.classList.add(
+                'voice-recording'
+            );
 
-            submitBtn.disabled =
-                false;
+            submitBtn.type = 'button';
+            submitBtn.disabled = false;
 
             submitBtn.title =
-                'Stop recording';
+                'Release to send';
 
             submitBtn.setAttribute(
                 'aria-label',
-                'Stop recording'
+                'Release to send voice message'
             );
 
             submitBtn.innerHTML =
-                '<i class="fas fa-stop" ' +
-                'id="message-submit-icon"></i>' +
-                '<span id="message-submit-text">' +
-                ' Stop' +
-                '</span>';
+                '<i class="fas fa-microphone" ' +
+                'id="message-submit-icon"></i>';
+
+            setDragProgress(0);
         }
 
 
@@ -360,11 +651,6 @@ document.addEventListener(
                     }
                 );
 
-            /*
-             * FileList is read-only, therefore
-             * DataTransfer is used to populate
-             * the dynamically-created input.
-             */
             const dataTransfer =
                 new DataTransfer();
 
@@ -391,8 +677,38 @@ document.addEventListener(
                 return;
             }
 
-            audioInput.value =
-                '';
+            audioInput.value = '';
+        }
+
+
+        /* =========================================================
+           RECORDING UI
+        ========================================================= */
+
+        function beginRecordingUI() {
+            setCancelTarget(false);
+            setDragProgress(0);
+
+            if (messageBodyField) {
+                messageBodyField.readOnly = true;
+            }
+
+            showCancelButton();
+            setRecordingButton();
+            startRecordingTimer();
+        }
+
+
+        function endRecordingUI() {
+            setCancelTarget(false);
+            setDragProgress(0);
+
+            stopRecordingTimer();
+            hideCancelButton();
+
+            if (messageBodyField) {
+                messageBodyField.readOnly = false;
+            }
         }
 
 
@@ -410,9 +726,9 @@ document.addEventListener(
 
             if (
                 typeof navigator.mediaDevices ===
-                'undefined' ||
+                    'undefined' ||
                 typeof navigator.mediaDevices.getUserMedia !==
-                'function'
+                    'function'
             ) {
                 alert(
                     'Voice recording is not supported by this browser.'
@@ -432,14 +748,11 @@ document.addEventListener(
                 return;
             }
 
-            isStartingRecording =
-                true;
+            isStartingRecording = true;
+            stopAfterStart = false;
+            cancelRecording = false;
 
             try {
-                /*
-                 * Remove an old voice message
-                 * before starting a new recording.
-                 */
                 clearAudioFile();
 
                 mediaStream =
@@ -447,6 +760,10 @@ document.addEventListener(
                         .getUserMedia({
                             audio: true
                         });
+
+                if (!pointerIsDown) {
+                    stopAfterStart = true;
+                }
 
                 const mimeType =
                     getSupportedMimeType();
@@ -496,25 +813,28 @@ document.addEventListener(
 
                         cleanupMediaStream();
 
-                        isRecording =
-                            false;
+                        isRecording = false;
+                        isStartingRecording = false;
 
-                        isStartingRecording =
-                            false;
-
+                        endRecordingUI();
                         updateButtonState();
                     }
                 );
 
                 mediaRecorder.start();
 
-                isRecording =
-                    true;
+                isRecording = true;
+                isStartingRecording = false;
 
-                isStartingRecording =
-                    false;
+                beginRecordingUI();
 
-                setRecordingButton();
+                if (
+                    stopAfterStart
+                ) {
+                    stopRecording(
+                        cancelRecording
+                    );
+                }
 
             } catch (error) {
                 console.error(
@@ -524,11 +844,10 @@ document.addEventListener(
 
                 cleanupMediaStream();
 
-                isRecording =
-                    false;
+                isRecording = false;
+                isStartingRecording = false;
 
-                isStartingRecording =
-                    false;
+                endRecordingUI();
 
                 if (
                     error &&
@@ -553,7 +872,9 @@ document.addEventListener(
            STOP RECORDING
         ========================================================= */
 
-        function stopRecording() {
+        function stopRecording(
+            shouldCancel = false
+        ) {
             if (
                 !mediaRecorder ||
                 !isRecording
@@ -561,17 +882,51 @@ document.addEventListener(
                 return;
             }
 
+            cancelRecording =
+                Boolean(
+                    shouldCancel
+                );
+
             if (
                 mediaRecorder.state ===
                 'recording'
             ) {
                 mediaRecorder.stop();
             }
+        }
 
-            isRecording =
-                false;
 
-            setSendButton();
+        /* =========================================================
+           CANCEL
+        ========================================================= */
+
+        function cancelCurrentRecording() {
+            if (
+                !isRecording &&
+                !isStartingRecording
+            ) {
+                return;
+            }
+
+            cancelRecording = true;
+            pointerIsDown = false;
+
+            setCancelTarget(false);
+            setDragProgress(0);
+
+            if (
+                mediaRecorder &&
+                mediaRecorder.state ===
+                    'recording'
+            ) {
+                mediaRecorder.stop();
+                return;
+            }
+
+            cleanupMediaStream();
+
+            endRecordingUI();
+            updateButtonState();
         }
 
 
@@ -580,10 +935,16 @@ document.addEventListener(
         ========================================================= */
 
         function finishRecording() {
+            const shouldCancel =
+                cancelRecording;
+
+            const recorder =
+                mediaRecorder;
+
             const mimeType =
                 (
-                    mediaRecorder &&
-                    mediaRecorder.mimeType
+                    recorder &&
+                    recorder.mimeType
                 ) ||
                 'audio/webm';
 
@@ -599,10 +960,18 @@ document.addEventListener(
 
             cleanupMediaStream();
 
-            mediaRecorder =
-                null;
+            mediaRecorder = null;
 
-            if (!blob.size) {
+            isRecording = false;
+            isStartingRecording = false;
+
+            endRecordingUI();
+
+            if (
+                shouldCancel ||
+                !blob.size
+            ) {
+                clearAudioFile();
                 updateButtonState();
                 return;
             }
@@ -612,7 +981,22 @@ document.addEventListener(
                 mimeType
             );
 
-            updateButtonState();
+            if (
+                typeof replyForm.requestSubmit ===
+                'function'
+            ) {
+                replyForm.requestSubmit();
+            } else {
+                replyForm.dispatchEvent(
+                    new Event(
+                        'submit',
+                        {
+                            bubbles: true,
+                            cancelable: true
+                        }
+                    )
+                );
+            }
         }
 
 
@@ -633,53 +1017,121 @@ document.addEventListener(
                     }
                 );
 
-            mediaStream =
-                null;
+            mediaStream = null;
         }
 
 
         /* =========================================================
-           BUTTON CLICK
+           PRESS & HOLD
         ========================================================= */
 
         submitBtn.addEventListener(
-            'click',
+            'pointerdown',
             function (event) {
-                /*
-                 * Edit mode belongs to conversation.js.
-                 */
-                if (isEditMode()) {
-                    return;
-                }
-
-                /*
-                 * If there is text or another attachment,
-                 * allow the normal form submit.
-                 */
                 if (
-                    !isRecording &&
-                    !isStartingRecording &&
-                    (
-                        hasText() ||
-                        hasNormalAttachment() ||
-                        hasAudioAttachment()
-                    )
+                    isEditMode()
                 ) {
                     return;
                 }
 
-                /*
-                 * Empty composer:
-                 * the button is the microphone.
-                 */
-                event.preventDefault();
-
-                if (isRecording) {
-                    stopRecording();
+                if (
+                    hasText() ||
+                    hasNormalAttachment() ||
+                    hasAudioAttachment()
+                ) {
                     return;
                 }
 
+                event.preventDefault();
+
+                pointerIsDown = true;
+                cancelRecording = false;
+                isCancelTarget = false;
+
                 startRecording();
+            }
+        );
+
+
+        document.addEventListener(
+            'pointermove',
+            function (event) {
+                updateCancelTarget(event);
+            }
+        );
+
+
+        document.addEventListener(
+            'pointerup',
+            function (event) {
+                if (
+                    isEditMode() ||
+                    !pointerIsDown
+                ) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                const shouldCancel =
+                    isCancelTarget;
+
+                pointerIsDown = false;
+
+                if (shouldCancel) {
+                    cancelCurrentRecording();
+                    return;
+                }
+
+                if (isStartingRecording) {
+                    stopAfterStart = true;
+                    return;
+                }
+
+                if (isRecording) {
+                    stopRecording(false);
+                }
+            }
+        );
+
+
+        submitBtn.addEventListener(
+            'pointercancel',
+            function () {
+                pointerIsDown = false;
+
+                setCancelTarget(false);
+                setDragProgress(0);
+
+                if (
+                    isRecording ||
+                    isStartingRecording
+                ) {
+                    cancelCurrentRecording();
+                }
+            }
+        );
+
+
+        submitBtn.addEventListener(
+            'click',
+            function (event) {
+                if (
+                    isEditMode()
+                ) {
+                    return;
+                }
+
+                if (
+                    hasText() ||
+                    hasNormalAttachment() ||
+                    hasAudioAttachment()
+                ) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
             }
         );
 
@@ -740,16 +1192,22 @@ document.addEventListener(
 
                 cleanupMediaStream();
 
-                mediaRecorder =
-                    null;
+                mediaRecorder = null;
 
-                isRecording =
-                    false;
+                isRecording = false;
+                isStartingRecording = false;
+                pointerIsDown = false;
+                cancelRecording = false;
+                isCancelTarget = false;
 
-                isStartingRecording =
-                    false;
+                endRecordingUI();
 
-                updateButtonState();
+                setTimeout(
+                    function () {
+                        updateButtonState();
+                    },
+                    0
+                );
             }
         );
 
@@ -759,6 +1217,8 @@ document.addEventListener(
         ========================================================= */
 
         createAudioInput();
+
+        createCancelButton();
 
         updateButtonState();
 
@@ -771,6 +1231,10 @@ document.addEventListener(
             'beforeunload',
             function () {
                 cleanupMediaStream();
+
+                clearInterval(
+                    recordingTimer
+                );
             }
         );
     }
