@@ -13,6 +13,7 @@ from PIL import Image, UnidentifiedImageError
 
 MAX_IMAGE_SIZE = 10 * 1024 * 1024
 MAX_VIDEO_SIZE = 100 * 1024 * 1024
+MAX_AUDIO_SIZE = 25 * 1024 * 1024
 MAX_FILE_SIZE = 25 * 1024 * 1024
 
 
@@ -46,6 +47,32 @@ VIDEO_EXTENSIONS = {
     ".webm",
     ".mov",
 }
+
+
+# Browser MediaRecorder implementations can produce
+# different audio containers/codecs depending on platform.
+AUDIO_TYPES = {
+    "audio/webm",
+    "audio/ogg",
+    "audio/mp4",
+    "audio/mpeg",
+    "audio/wav",
+    "audio/x-wav",
+    "audio/wave",
+    "audio/x-m4a",
+    "audio/mp4a-latm",
+}
+
+AUDIO_EXTENSIONS = {
+    ".webm",
+    ".ogg",
+    ".oga",
+    ".mp4",
+    ".m4a",
+    ".mp3",
+    ".wav",
+}
+
 
 # Generic files use an explicit allowlist.
 # Executable and browser-active formats are intentionally excluded.
@@ -115,56 +142,6 @@ def _has_zip_signature(
             b"PK\x07\x08",
         )
     )
-
-
-def _validate_file_signature(
-    *,
-    file: BinaryIO,
-    extension: str,
-) -> None:
-    """
-    Validate signatures for formats where a reliable
-    magic signature exists.
-
-    Plain text and CSV intentionally do not require
-    a magic signature because they are text formats.
-    """
-
-    header = _read_header(
-        file,
-        16,
-    )
-
-    if extension == ".pdf":
-        if not header.startswith(b"%PDF-"):
-            raise ValidationError(
-                "Invalid file content."
-            )
-        return
-
-    if extension in {
-        ".doc",
-        ".xls",
-        ".ppt",
-    }:
-        if not header.startswith(
-            b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
-        ):
-            raise ValidationError(
-                "Invalid file content."
-            )
-        return
-
-    if extension in {
-        ".docx",
-        ".xlsx",
-        ".pptx",
-        ".zip",
-    }:
-        if not _has_zip_signature(header):
-            raise ValidationError(
-                "Invalid file content."
-            )
 
 
 # ============================================================
@@ -357,8 +334,93 @@ def _validate_video(
 
 
 # ============================================================
+# AUDIO
+# ============================================================
+
+def _validate_audio(
+    file: BinaryIO,
+) -> None:
+    size = _get_size(file)
+
+    if size > MAX_AUDIO_SIZE:
+        raise ValidationError(
+            "Audio is too large. Maximum size is 25 MB."
+        )
+
+    content_type = _get_content_type(file)
+    extension = _get_extension(file)
+
+    if content_type not in AUDIO_TYPES:
+        raise ValidationError(
+            "Invalid audio file."
+        )
+
+    if extension not in AUDIO_EXTENSIONS:
+        raise ValidationError(
+            "Invalid audio file extension."
+        )
+
+    # Browser implementations sometimes report a generic
+    # content type while still producing a valid extension.
+    #
+    # The extension + allowed MIME combination above provides
+    # the application-level validation without assuming one
+    # specific browser codec/container.
+
+
+# ============================================================
 # GENERIC FILE
 # ============================================================
+
+def _validate_file_signature(
+    *,
+    file: BinaryIO,
+    extension: str,
+) -> None:
+    """
+    Validate signatures for formats where a reliable
+    magic signature exists.
+
+    Plain text and CSV intentionally do not require
+    a magic signature because they are text formats.
+    """
+
+    header = _read_header(
+        file,
+        16,
+    )
+
+    if extension == ".pdf":
+        if not header.startswith(b"%PDF-"):
+            raise ValidationError(
+                "Invalid file content."
+            )
+        return
+
+    if extension in {
+        ".doc",
+        ".xls",
+        ".ppt",
+    }:
+        if not header.startswith(
+            b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+        ):
+            raise ValidationError(
+                "Invalid file content."
+            )
+        return
+
+    if extension in {
+        ".docx",
+        ".xlsx",
+        ".pptx",
+        ".zip",
+    }:
+        if not _has_zip_signature(header):
+            raise ValidationError(
+                "Invalid file content."
+            )
+
 
 def _validate_generic_file(
     file: BinaryIO,
@@ -409,6 +471,7 @@ def validate_attachment(
     Supported types:
         image
         video
+        audio
         file
     """
 
@@ -427,6 +490,10 @@ def validate_attachment(
         _validate_video(file)
         return
 
+    if attachment_type == "audio":
+        _validate_audio(file)
+        return
+
     if attachment_type == "file":
         _validate_generic_file(file)
         return
@@ -440,6 +507,7 @@ def validate_message_attachments(
     *,
     image_file=None,
     video_file=None,
+    audio_file=None,
     generic_file=None,
 ) -> tuple[str, BinaryIO] | None:
     """
@@ -460,6 +528,10 @@ def validate_message_attachments(
         (
             "video",
             video_file,
+        ),
+        (
+            "audio",
+            audio_file,
         ),
         (
             "file",

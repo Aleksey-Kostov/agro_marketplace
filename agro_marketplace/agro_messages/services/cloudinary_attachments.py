@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import uuid
-from pathlib import Path
 from typing import BinaryIO
 
 import cloudinary.uploader
@@ -32,12 +31,18 @@ RESOURCE_TYPE_RAW = "raw"
 # MessageAttachment types.
 ATTACHMENT_IMAGE = "image"
 ATTACHMENT_VIDEO = "video"
+ATTACHMENT_AUDIO = "audio"
 ATTACHMENT_FILE = "file"
 
 
 ATTACHMENT_RESOURCE_TYPES = {
     ATTACHMENT_IMAGE: RESOURCE_TYPE_IMAGE,
     ATTACHMENT_VIDEO: RESOURCE_TYPE_VIDEO,
+
+    # Cloudinary stores audio/video media using
+    # the "video" resource type.
+    ATTACHMENT_AUDIO: RESOURCE_TYPE_VIDEO,
+
     ATTACHMENT_FILE: RESOURCE_TYPE_RAW,
 }
 
@@ -70,6 +75,7 @@ def _build_public_id(
 
     The original filename is intentionally not used.
     """
+
     unique_id = uuid.uuid4().hex
 
     return (
@@ -86,6 +92,7 @@ def _get_file_size(
     Return the uploaded file size without
     permanently changing the current file position.
     """
+
     current_position = file.tell()
 
     try:
@@ -203,6 +210,7 @@ def delete_message_attachment(
             resource_type=resource_type,
             invalidate=True,
         )
+
     except Exception as exc:
         raise CloudinaryAttachmentDeleteError(
             "Cloudinary deletion failed."

@@ -71,6 +71,7 @@ class LocalMessageAttachmentStorage(FileSystemStorage):
 
         image
         video
+        audio
         file
 
     Файловете се записват в:
@@ -253,6 +254,7 @@ class CloudinaryMessageAttachmentStorage(Storage):
         if attachment_type not in {
             "image",
             "video",
+            "audio",
             "file",
         }:
             raise ValueError(
@@ -625,6 +627,7 @@ class MessageAttachmentStorage(
 
         image
         video
+        audio
         file
 
     Управлява се от:

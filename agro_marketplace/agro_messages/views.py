@@ -797,12 +797,14 @@ def message_has_content(request):
 
     image_file = request.FILES.get('image')
     video_file = request.FILES.get('video')
+    audio_file = request.FILES.get('audio')
     generic_file = request.FILES.get('file')
 
     return bool(
         body
         or image_file
         or video_file
+        or audio_file
         or generic_file
     )
 
@@ -818,8 +820,10 @@ def validate_message_attachments(request):
     return validate_attachments(
         image_file=request.FILES.get('image'),
         video_file=request.FILES.get('video'),
+        audio_file=request.FILES.get('audio'),
         generic_file=request.FILES.get('file'),
     )
+
 
 
 # ============================================================
@@ -1003,11 +1007,13 @@ def create_attachment_from_request(
 
     image_file = request.FILES.get('image')
     video_file = request.FILES.get('video')
+    audio_file = request.FILES.get('audio')
     generic_file = request.FILES.get('file')
 
     supplied = [
         ('image', image_file),
         ('video', video_file),
+        ('audio', audio_file),
         ('file', generic_file),
     ]
 

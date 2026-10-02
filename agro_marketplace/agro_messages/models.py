@@ -119,11 +119,13 @@ class Message(models.Model):
 class MessageAttachment(models.Model):
     IMAGE = "image"
     VIDEO = "video"
+    AUDIO = "audio"
     FILE = "file"
 
     ATTACHMENT_TYPE_CHOICES = (
         (IMAGE, "Image"),
         (VIDEO, "Video"),
+        (AUDIO, "Audio"),
         (FILE, "File"),
     )
 
@@ -182,8 +184,8 @@ class MessageAttachment(models.Model):
         """
 
         if (
-                self.cloudinary_public_id
-                and self.cloudinary_resource_type
+            self.cloudinary_public_id
+            and self.cloudinary_resource_type
         ):
             try:
                 delete_message_attachment(

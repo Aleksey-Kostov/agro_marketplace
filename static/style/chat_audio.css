@@ -1,0 +1,415 @@
+/* ============================================================
+   CHAT AUDIO / VOICE MESSAGE
+   Modern messenger-style audio attachment
+   ============================================================ */
+
+.chat-audio-attachment {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: min(340px, 100%);
+    min-height: 68px;
+    padding: 10px 14px 10px 10px;
+    margin-top: 8px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+
+/* ============================================================
+   PLAY BUTTON
+   ============================================================ */
+
+.chat-audio-play-btn {
+    position: relative;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #ffffff;
+    color: #222;
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease;
+}
+
+.chat-audio-play-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+}
+
+.chat-audio-play-btn:active {
+    transform: scale(0.95);
+}
+
+.chat-audio-play-btn i {
+    font-size: 15px;
+    margin-left: 2px;
+}
+
+
+/* ============================================================
+   AUDIO MAIN AREA
+   ============================================================ */
+
+.chat-audio-main {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+}
+
+
+/* ============================================================
+   WAVEFORM
+   ============================================================ */
+
+.chat-audio-waveform {
+    height: 26px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    overflow: hidden;
+}
+
+.chat-audio-waveform span {
+    display: block;
+    width: 3px;
+    min-width: 3px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.65;
+    transform-origin: center;
+}
+
+.chat-audio-waveform span:nth-child(1) {
+    height: 9px;
+}
+
+.chat-audio-waveform span:nth-child(2) {
+    height: 15px;
+}
+
+.chat-audio-waveform span:nth-child(3) {
+    height: 22px;
+}
+
+.chat-audio-waveform span:nth-child(4) {
+    height: 13px;
+}
+
+.chat-audio-waveform span:nth-child(5) {
+    height: 19px;
+}
+
+.chat-audio-waveform span:nth-child(6) {
+    height: 11px;
+}
+
+.chat-audio-waveform span:nth-child(7) {
+    height: 24px;
+}
+
+.chat-audio-waveform span:nth-child(8) {
+    height: 16px;
+}
+
+.chat-audio-waveform span:nth-child(9) {
+    height: 8px;
+}
+
+.chat-audio-waveform span:nth-child(10) {
+    height: 20px;
+}
+
+.chat-audio-waveform span:nth-child(11) {
+    height: 14px;
+}
+
+.chat-audio-waveform span:nth-child(12) {
+    height: 23px;
+}
+
+.chat-audio-waveform span:nth-child(13) {
+    height: 10px;
+}
+
+.chat-audio-waveform span:nth-child(14) {
+    height: 18px;
+}
+
+.chat-audio-waveform span:nth-child(15) {
+    height: 12px;
+}
+
+.chat-audio-waveform span:nth-child(16) {
+    height: 21px;
+}
+
+.chat-audio-waveform span:nth-child(17) {
+    height: 9px;
+}
+
+.chat-audio-waveform span:nth-child(18) {
+    height: 16px;
+}
+
+.chat-audio-waveform span:nth-child(19) {
+    height: 22px;
+}
+
+.chat-audio-waveform span:nth-child(20) {
+    height: 11px;
+}
+
+
+/* ============================================================
+   AUDIO META
+   ============================================================ */
+
+.chat-audio-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+}
+
+.chat-audio-name {
+    min-width: 0;
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.75;
+}
+
+.chat-audio-duration {
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.65;
+}
+
+
+/* ============================================================
+   MICROPHONE ICON
+   ============================================================ */
+
+.chat-audio-icon {
+    position: absolute;
+    right: 12px;
+    top: 8px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.chat-audio-icon i {
+    font-size: 11px;
+}
+
+
+/* ============================================================
+   HIDDEN NATIVE AUDIO
+   The real <audio> element remains available for playback,
+   but the browser's default UI is visually hidden.
+   ============================================================ */
+
+.chat-audio-attachment .message-audio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+/* ============================================================
+   RECEIVED MESSAGE
+   ============================================================ */
+
+.received-message .chat-audio-attachment {
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(0, 0, 0, 0.07);
+    color: #333;
+}
+
+.received-message .chat-audio-play-btn {
+    background: #f1f3f5;
+    color: #333;
+}
+
+.received-message .chat-audio-waveform {
+    color: #6c757d;
+}
+
+
+/* ============================================================
+   OWN MESSAGE
+   ============================================================ */
+
+.own-message .chat-audio-attachment {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: inherit;
+}
+
+.own-message .chat-audio-play-btn {
+    background: #ffffff;
+    color: #333;
+}
+
+.own-message .chat-audio-waveform {
+    color: currentColor;
+}
+
+
+/* ============================================================
+   PLAYING STATE
+   ============================================================ */
+
+.chat-audio-attachment.is-playing
+.chat-audio-waveform span {
+    animation: chatAudioWave 0.9s ease-in-out infinite alternate;
+}
+
+.chat-audio-attachment.is-playing
+.chat-audio-waveform span:nth-child(2n) {
+    animation-delay: 0.12s;
+}
+
+.chat-audio-attachment.is-playing
+.chat-audio-waveform span:nth-child(3n) {
+    animation-delay: 0.22s;
+}
+
+.chat-audio-attachment.is-playing
+.chat-audio-waveform span:nth-child(4n) {
+    animation-delay: 0.32s;
+}
+
+@keyframes chatAudioWave {
+    from {
+        transform: scaleY(0.55);
+        opacity: 0.45;
+    }
+
+    to {
+        transform: scaleY(1.05);
+        opacity: 0.9;
+    }
+}
+
+
+/* ============================================================
+   FOCUS / ACCESSIBILITY
+   ============================================================ */
+
+.chat-audio-play-btn:focus-visible {
+    outline: 3px solid rgba(13, 110, 253, 0.35);
+    outline-offset: 2px;
+}
+
+
+/* ============================================================
+   REPLY AUDIO PREVIEW
+   ============================================================ */
+
+.message-reply-audio-thumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 70px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.10);
+    font-size: 12px;
+}
+
+.message-reply-audio-thumb i {
+    font-size: 13px;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 576px) {
+
+    .chat-audio-attachment {
+        width: min(300px, 100%);
+        min-height: 62px;
+        padding: 8px 12px 8px 8px;
+        gap: 10px;
+        border-radius: 16px;
+    }
+
+    .chat-audio-play-btn {
+        flex-basis: 40px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .chat-audio-waveform {
+        gap: 2px;
+        height: 23px;
+    }
+
+    .chat-audio-waveform span {
+        width: 2px;
+        min-width: 2px;
+    }
+
+    .chat-audio-name {
+        max-width: 145px;
+        font-size: 11px;
+    }
+
+    .chat-audio-duration {
+        font-size: 10px;
+    }
+
+    .chat-audio-icon {
+        right: 9px;
+        top: 6px;
+    }
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .chat-audio-play-btn {
+        transition: none;
+    }
+
+    .chat-audio-attachment.is-playing
+    .chat-audio-waveform span {
+        animation: none;
+    }
+}
