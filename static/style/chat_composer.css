@@ -196,6 +196,11 @@
 
 .chat-composer-left .dropdown-menu {
     z-index: 2000;
+    pointer-events: auto;
+}
+
+.chat-composer-left .dropdown-menu .dropdown-item {
+    pointer-events: auto;
 }
 
 
