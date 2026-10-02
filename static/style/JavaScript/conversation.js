@@ -654,6 +654,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function resetComposerAfterSend() {
         if (messageBodyField) {
             messageBodyField.value = '';
+            messageBodyField.style.height = 'auto';
+            messageBodyField.style.overflowY = 'hidden';
         }
 
         if (replyToInput) {
