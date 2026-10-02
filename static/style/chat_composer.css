@@ -3,6 +3,7 @@
 ========================================================= */
 
 .chat-composer {
+    position: relative;
     width: 100%;
     margin-top: 0.75rem;
 }
@@ -12,6 +13,7 @@
     align-items: center;
     width: 100%;
     gap: 0.3rem;
+    position: relative;
 }
 
 .chat-composer-left {
@@ -19,13 +21,14 @@
     align-items: center;
     gap: 0.2rem;
     flex: 0 0 auto;
+    position: relative;
+    overflow: visible;
 }
 
 .chat-composer-input-wrap {
     position: relative;
     flex: 1 1 auto;
     min-width: 0;
-
     padding: 0;
 }
 
@@ -36,29 +39,20 @@
     min-height: 42px !important;
     height: 42px;
     max-height: 160px;
-
     margin: 0;
     padding: 8px 12px;
-
     resize: none;
-
     overflow-x: hidden;
     overflow-y: hidden;
-
     border: 1px solid #ced4da;
     border-radius: 21px;
-
     background: #fff;
     color: #212529;
-
     font-size: 0.95rem;
     line-height: 1.4;
-
     box-sizing: border-box;
-
     box-shadow: none;
     outline: none;
-
     transition:
         height 0.12s ease,
         border-color 0.15s ease,
@@ -87,8 +81,8 @@
 .chat-composer-left .btn {
     width: 42px;
     height: 42px;
-    border: 0;
     padding: 0;
+    border: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -99,6 +93,82 @@
 .chat-composer-left .btn i {
     margin: 0;
     font-size: 16px;
+}
+
+
+/* =========================================================
+   DROPDOWN CONTAINERS
+========================================================= */
+
+.chat-composer-left .dropdown {
+    position: relative;
+}
+
+.chat-composer-left .dropdown-menu {
+    z-index: 2000;
+}
+
+
+/* =========================================================
+   EMOJI PICKER
+   Open upward from the composer
+========================================================= */
+
+.chat-composer-left .emoji-picker {
+    position: absolute !important;
+    left: 0 !important;
+    bottom: calc(100% + 8px) !important;
+    top: auto !important;
+    transform: none !important;
+    margin: 0 !important;
+    min-width: 300px;
+    max-width: min(360px, calc(100vw - 20px));
+    max-height: min(430px, calc(100vh - 110px));
+    overflow: hidden;
+    padding: 0.5rem !important;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+
+/*
+   Keep the complete category/navigation area visible.
+   Only the emoji content itself may scroll.
+*/
+
+.chat-composer-left .emoji-picker .emoji-categories,
+.chat-composer-left .emoji-picker .emoji-category-tabs,
+.chat-composer-left .emoji-picker .emoji-tabs {
+    flex: 0 0 auto;
+
+    overflow: visible;
+}
+
+
+/* =========================================================
+   ATTACHMENT PICKER
+   Open upward from the composer
+========================================================= */
+
+.chat-composer-left .attachment-picker {
+    position: absolute !important;
+    left: 0 !important;
+    bottom: calc(100% + 8px) !important;
+    top: auto !important;
+    transform: none !important;
+    margin: 0 !important;
+    min-width: 210px;
+    max-width: calc(100vw - 20px);
+    padding: 0.5rem !important;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.16);
+    z-index: 2000;
 }
 
 
@@ -130,7 +200,6 @@
 .chat-composer-submit-btn i {
     margin: 0;
     padding: 0;
-
     font-size: 16px;
     line-height: 1;
 }
@@ -159,27 +228,18 @@
 
 #chat-drop-overlay {
     position: absolute;
-
     inset: 0;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     padding: 8px;
-
     border: 2px dashed rgba(13, 110, 253, 0.45);
     border-radius: 21px;
-
     background: rgba(255, 255, 255, 0.94);
-
     color: #0d6efd;
-
     font-size: 0.9rem;
     font-weight: 500;
-
     text-align: center;
-
     z-index: 20;
 }
 
@@ -211,10 +271,8 @@
 
 #image-preview-container img {
     display: block;
-
     max-width: 180px;
     max-height: 180px;
-
     border-radius: 10px;
     object-fit: cover;
 }
@@ -230,10 +288,8 @@
 
 #video-preview-container video {
     display: block;
-
     max-width: 240px;
     max-height: 180px;
-
     border-radius: 10px;
     object-fit: cover;
 }
@@ -247,14 +303,10 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-
     max-width: 100%;
-
     padding: 8px 12px;
-
     border: 1px solid #dee2e6;
     border-radius: 10px;
-
     background: #f8f9fa;
 }
 
@@ -264,9 +316,7 @@
 
 #file-preview-container span {
     min-width: 0;
-
     overflow: hidden;
-
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -279,13 +329,10 @@
 .chat-composer .remove-media-btn {
     width: 32px;
     height: 32px;
-
     padding: 0;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     border-radius: 50%;
 }
 
@@ -297,9 +344,7 @@
 .chat-composer .progress {
     width: 100%;
     height: 5px;
-
     margin-top: 0.5rem;
-
     border-radius: 999px;
 }
 
@@ -321,17 +366,14 @@
     .chat-composer-left .btn {
         width: 40px;
         height: 40px;
-
         flex-basis: 40px;
     }
 
     .chat-composer-submit-btn {
         width: 40px;
         height: 40px;
-
         min-width: 40px !important;
         min-height: 40px;
-
         flex-basis: 40px;
     }
 
@@ -344,10 +386,20 @@
         min-height: 40px !important;
         height: 40px;
         max-height: 140px;
-
         padding: 7px 11px;
-
         border-radius: 20px;
+    }
+
+    .chat-composer-left .emoji-picker {
+        min-width: 280px;
+        max-width: calc(100vw - 16px);
+        max-height: min(400px, calc(100vh - 90px));
+        bottom: calc(100% + 7px) !important;
+    }
+
+    .chat-composer-left .attachment-picker {
+        max-width: calc(100vw - 16px);
+        bottom: calc(100% + 7px) !important;
     }
 }
 
@@ -361,17 +413,14 @@
     .chat-composer-left .btn {
         width: 38px;
         height: 38px;
-
         flex-basis: 38px;
     }
 
     .chat-composer-submit-btn {
         width: 38px;
         height: 38px;
-
         min-width: 38px !important;
         min-height: 38px;
-
         flex-basis: 38px;
     }
 
@@ -379,5 +428,11 @@
     .chat-composer-input-wrap .form-control {
         min-height: 38px !important;
         height: 38px;
+    }
+
+    .chat-composer-left .emoji-picker {
+        min-width: 260px;
+        max-width: calc(100vw - 12px);
+        max-height: calc(100vh - 80px);
     }
 }
