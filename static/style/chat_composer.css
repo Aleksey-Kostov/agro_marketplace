@@ -1,0 +1,351 @@
+/* =========================================================
+   CHAT COMPOSER
+   VIBER-LIKE MESSAGE INPUT
+========================================================= */
+
+/* =========================================================
+   COMPOSER WRAPPER
+========================================================= */
+
+.chat-composer {
+    width: 100%;
+    margin-top: 0.75rem;
+}
+
+
+/* =========================================================
+   INPUT WRAPPER
+========================================================= */
+
+.chat-composer-input-wrap {
+    position: relative;
+    width: 100%;
+}
+
+/*
+   The existing Django form field is expected to render
+   as a textarea.
+*/
+
+.chat-composer-input-wrap textarea {
+    width: 100%;
+
+    min-height: 42px;
+    max-height: 160px;
+
+    margin: 0;
+    padding: 10px 14px;
+
+    resize: none;
+    overflow-y: auto;
+
+    border: 1px solid #ced4da;
+    border-radius: 21px;
+
+    background: #fff;
+    color: #212529;
+
+    line-height: 1.4;
+
+    box-shadow: none;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        height 0.12s ease;
+}
+
+.chat-composer-input-wrap textarea:focus {
+    border-color: #86b7fe;
+
+    outline: 0;
+
+    box-shadow:
+        0 0 0 0.15rem rgba(13, 110, 253, 0.12);
+}
+
+.chat-composer-input-wrap textarea::placeholder {
+    color: #8a8f98;
+}
+
+
+/* =========================================================
+   COMPOSER ACTIONS
+========================================================= */
+
+.chat-composer-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+
+    margin-top: 0.5rem;
+
+    gap: 0.5rem;
+}
+
+
+/* =========================================================
+   LEFT ACTIONS
+========================================================= */
+
+.chat-composer-left {
+    display: flex;
+    align-items: center;
+
+    gap: 0.35rem;
+
+    min-width: 0;
+}
+
+
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+
+.chat-composer-action-btn {
+    width: 38px;
+    height: 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border-radius: 50%;
+
+    flex: 0 0 auto;
+}
+
+.chat-composer-action-btn i {
+    margin: 0;
+}
+
+
+/* =========================================================
+   SUBMIT / MICROPHONE BUTTON
+========================================================= */
+
+.chat-composer-submit-btn {
+    width: 42px;
+    height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    margin-left: auto;
+
+    border-radius: 50%;
+
+    flex: 0 0 auto;
+
+    transition:
+        transform 0.15s ease,
+        background-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.chat-composer-submit-btn i {
+    margin: 0;
+
+    font-size: 15px;
+}
+
+.chat-composer-submit-btn:hover {
+    transform: scale(1.04);
+}
+
+.chat-composer-submit-btn:active {
+    transform: scale(0.94);
+}
+
+.chat-composer-submit-btn:focus-visible {
+    outline: 2px solid rgba(13, 110, 253, 0.35);
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
+   EMOJI PICKER
+========================================================= */
+
+.chat-composer .emoji-picker {
+    z-index: 1055;
+
+    max-width: min(340px, calc(100vw - 30px));
+}
+
+
+/* =========================================================
+   ATTACHMENT PICKER
+========================================================= */
+
+.chat-composer .attachment-picker {
+    min-width: 170px;
+
+    z-index: 1055;
+}
+
+
+/* =========================================================
+   REMOVE ATTACHMENT BUTTON
+========================================================= */
+
+.chat-composer #remove-media-btn {
+    width: 38px;
+    height: 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border-radius: 50%;
+}
+
+
+/* =========================================================
+   DROP OVERLAY
+========================================================= */
+
+.chat-composer .chat-drop-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 21px;
+
+    background: rgba(255, 255, 255, 0.94);
+
+    z-index: 20;
+
+    pointer-events: none;
+}
+
+.chat-composer .chat-drop-overlay-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.2rem;
+
+    text-align: center;
+}
+
+.chat-composer .chat-drop-icon {
+    font-size: 1.4rem;
+}
+
+.chat-composer .chat-drop-overlay-content small {
+    color: #6c757d;
+}
+
+
+/* =========================================================
+   IMAGE / VIDEO / FILE PREVIEWS
+========================================================= */
+
+.chat-composer #image-preview-wrap,
+.chat-composer #video-preview-wrap,
+.chat-composer #file-preview-wrap {
+    margin-top: 0.5rem;
+}
+
+.chat-composer .attach-preview {
+    display: block;
+
+    max-width: 100%;
+    max-height: 220px;
+
+    border-radius: 12px;
+}
+
+.chat-composer .file-preview {
+    max-width: 100%;
+
+    padding: 0.75rem 1rem;
+
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+
+    background: #f8f9fa;
+}
+
+
+/* =========================================================
+   UPLOAD PROGRESS
+========================================================= */
+
+.chat-composer .upload-progress-wrap {
+    margin-top: 0.5rem;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 576px) {
+
+    .chat-composer {
+        margin-top: 0.5rem;
+    }
+
+    .chat-composer-input-wrap textarea {
+        min-height: 40px;
+        max-height: 140px;
+
+        padding: 9px 13px;
+
+        border-radius: 20px;
+    }
+
+    .chat-composer-action-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .chat-composer-submit-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .chat-composer-actions {
+        gap: 0.35rem;
+    }
+
+}
+
+
+/* =========================================================
+   VERY SMALL SCREENS
+========================================================= */
+
+@media (max-width: 360px) {
+
+    .chat-composer-left {
+        gap: 0.2rem;
+    }
+
+    .chat-composer-action-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    .chat-composer-submit-btn {
+        width: 38px;
+        height: 38px;
+    }
+
+}
