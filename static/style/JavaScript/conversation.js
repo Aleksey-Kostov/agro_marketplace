@@ -1610,16 +1610,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 ? messageBodyField.value.trim()
                 : '';
 
+        const audioInput =
+            replyForm.querySelector(
+                '[name="audio"]'
+            );
+
+        const hasAudioAttachment = Boolean(
+            audioInput &&
+            audioInput.files &&
+            audioInput.files.length
+        );
+
         /*
          * Attachment submit is owned by chat_attachments.js.
          *
          * Its submit listener runs in capture phase and
-         * intercepts attachment submissions before this
+         * intercepts normal attachment submissions before this
          * function reaches the network.
          *
-         * This extra guard prevents conversation.js from
-         * accidentally sending an attachment as a text message
-         * if the attachment controller reports one.
+         * Audio is different:
+         * voice_recorder.js creates the audio input dynamically
+         * and audio is sent directly with this FormData request.
          */
         if (
             window.agroChatAttachments &&
@@ -1630,7 +1641,10 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        if (!body) {
+        if (
+            !body &&
+            !hasAudioAttachment
+        ) {
             if (messageBodyField) {
                 messageBodyField.focus();
             }
