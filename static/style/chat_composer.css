@@ -28,11 +28,23 @@
     left: 0;
     top: 0;
     bottom: 0;
-    width: calc(100% - 128px - 0.3rem);
+    right: calc(128px + 0.3rem);
+    width: auto;
     z-index: 30;
 
     pointer-events: none;
     overflow: visible;
+}
+
+/*
+   Voice cancel button is inserted immediately before
+   the send/record button by voice_recorder.js.
+   Reserve its space so emoji never sits underneath it.
+*/
+.chat-composer-main:has(
+    .chat-voice-cancel-btn:not(.d-none)
+) .chat-composer-left {
+    right: calc(128px + 46px + 0.3rem);
 }
 
 .chat-composer-left .dropdown {
@@ -48,12 +60,41 @@
     left: 3px;
 }
 
+/*
+   Media remove button replaces the attachment button
+   in the same left-side control position.
+*/
 .chat-composer-left #remove-media-btn {
     position: absolute;
     left: 3px;
     bottom: 1px;
+
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+
+    padding: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
     pointer-events: auto;
     z-index: 32;
+
+    border: 0 !important;
+    border-radius: 50%;
+
+    background: transparent !important;
+    color: #dc3545;
+
+    box-shadow: none !important;
+}
+
+.chat-composer-left #remove-media-btn i {
+    margin: 0;
+    font-size: 16px;
 }
 
 
@@ -85,11 +126,6 @@
 
     margin: 0;
 
-    /*
-       Space for:
-       left  = attachment
-       right = emoji
-    */
     padding: 8px 54px 8px 54px;
 
     resize: none;
@@ -471,11 +507,6 @@
     white-space: nowrap;
 }
 
-/*
-   Bootstrap's d-none is !important.
-   Override it on desktop.
-*/
-
 .chat-composer-submit-btn span.d-none {
     display: inline !important;
 }
@@ -491,6 +522,31 @@
 .chat-composer-submit-btn:focus-visible {
     outline: 2px solid rgba(13, 110, 253, 0.35);
     outline-offset: 2px;
+}
+
+
+/* =========================================================
+   VOICE CANCEL BUTTON
+========================================================= */
+
+.chat-composer-main > .chat-voice-cancel-btn {
+    position: relative;
+
+    width: 46px;
+    min-width: 46px;
+
+    height: 46px;
+    min-height: 46px;
+
+    flex: 0 0 46px;
+
+    margin: 0;
+
+    padding: 0;
+
+    z-index: 50;
+
+    border-radius: 50%;
 }
 
 
@@ -661,13 +717,19 @@
     .chat-composer-left {
         left: 0;
 
-        width: calc(100% - 40px - 0.2rem);
+        right: calc(40px + 0.2rem);
+        width: auto;
     }
 
     /*
-       Emoji = right
-       Attachment = left
+       When voice Cancel exists, reserve its width too.
+       This prevents Emoji from moving underneath Cancel.
     */
+    .chat-composer-main:has(
+        .chat-voice-cancel-btn:not(.d-none)
+    ) .chat-composer-left {
+        right: calc(40px + 44px + 0.2rem);
+    }
 
     .chat-composer-left .dropdown:first-child {
         right: 2px;
@@ -685,6 +747,17 @@
         min-height: 38px;
 
         flex-basis: 38px;
+    }
+
+    .chat-composer-left #remove-media-btn {
+        left: 2px;
+        bottom: 1px;
+
+        width: 38px;
+        height: 38px;
+
+        min-width: 38px;
+        min-height: 38px;
     }
 
     .chat-composer-submit-btn {
@@ -761,6 +834,16 @@
 
         bottom: calc(100% + 7px) !important;
     }
+
+    .chat-composer-main > .chat-voice-cancel-btn {
+        width: 44px;
+        min-width: 44px;
+
+        height: 44px;
+        min-height: 44px;
+
+        flex: 0 0 44px;
+    }
 }
 
 
@@ -777,7 +860,14 @@
     .chat-composer-left {
         left: 0;
 
-        width: calc(100% - 38px - 0.15rem);
+        right: calc(38px + 0.15rem);
+        width: auto;
+    }
+
+    .chat-composer-main:has(
+        .chat-voice-cancel-btn:not(.d-none)
+    ) .chat-composer-left {
+        right: calc(38px + 44px + 0.15rem);
     }
 
     .chat-composer-left .dropdown:first-child {
@@ -796,6 +886,17 @@
         min-height: 36px;
 
         flex-basis: 36px;
+    }
+
+    .chat-composer-left #remove-media-btn {
+        left: 1px;
+        bottom: 1px;
+
+        width: 36px;
+        height: 36px;
+
+        min-width: 36px;
+        min-height: 36px;
     }
 
     .chat-composer-submit-btn {
@@ -853,6 +954,16 @@
             repeat(6, minmax(30px, 1fr));
 
         max-height: 280px;
+    }
+
+    .chat-composer-main > .chat-voice-cancel-btn {
+        width: 44px;
+        min-width: 44px;
+
+        height: 44px;
+        min-height: 44px;
+
+        flex: 0 0 44px;
     }
 }
 
