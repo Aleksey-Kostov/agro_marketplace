@@ -1573,6 +1573,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 clearBody: true
             });
 
+            window.dispatchEvent(
+                new CustomEvent('agro:message-sent')
+            );
+
         } catch (error) {
             console.error(
                 'Edit message error:',
