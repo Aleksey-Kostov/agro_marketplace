@@ -8,7 +8,7 @@ class MessageForm(forms.ModelForm):
         fields = ['body', 'image', 'video']
         widgets = {
             'body': forms.Textarea(attrs={
-                'rows': 4,
+                'rows': 1,
                 'class': 'form-control',
                 'placeholder': 'Write your message...',
                 'id': 'message-body-input',
