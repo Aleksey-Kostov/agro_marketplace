@@ -87,15 +87,12 @@
 .chat-composer-left .btn {
     width: 42px;
     height: 42px;
-
+    border: 0;
     padding: 0;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     flex: 0 0 42px;
-
     border-radius: 50%;
 }
 
@@ -112,25 +109,18 @@
 .chat-composer-submit-btn {
     width: 42px;
     height: 42px;
-
     min-width: 42px !important;
     min-height: 42px;
-
     padding: 0 !important;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     flex: 0 0 42px;
-
     border-radius: 50% !important;
-
     font-size: 16px;
     line-height: 1;
-
     box-shadow: none;
-
+    margin: 0 20px 0 22px;
     transition:
         transform 0.12s ease,
         background-color 0.15s ease,
