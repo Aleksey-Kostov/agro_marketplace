@@ -10,7 +10,7 @@ class MessageForm(forms.ModelForm):
             'body': forms.Textarea(attrs={
                 'rows': 1,
                 'class': 'form-control',
-                'placeholder': 'Write your message...',
+                'placeholder': 'Writе...',
                 'id': 'message-body-input',
             }),
             'image': forms.ClearableFileInput(attrs={
