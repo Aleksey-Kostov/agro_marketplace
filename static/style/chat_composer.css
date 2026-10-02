@@ -644,3 +644,9 @@
         max-height: 280px;
     }
 }
+
+@media (max-width: 576px) {
+    .chat-composer-submit-btn .chat-submit-status {
+        display: none !important;
+    }
+}

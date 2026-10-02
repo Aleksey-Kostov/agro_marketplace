@@ -743,7 +743,8 @@ document.addEventListener('DOMContentLoaded', function () {
             submitBtn.disabled = true;
 
             submitBtn.innerHTML =
-                '<i class="fas fa-spinner fa-spin me-1"></i> Sending...';
+                '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>' +
+                '<span class="chat-submit-status">Sending...</span>';
 
             return;
         }
@@ -782,7 +783,8 @@ document.addEventListener('DOMContentLoaded', function () {
             submitBtn.disabled = true;
 
             submitBtn.innerHTML =
-                '<i class="fas fa-spinner fa-spin me-1"></i> Saving...';
+                '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>' +
+                '<span class="chat-submit-status">Saving...</span>';
 
             return;
         }
