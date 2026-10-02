@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* =========================================================
        INSERT EMOJI
-       ========================================================= */
+    ========================================================= */
 
     function insertEmojiIntoComposer(emoji) {
         if (
@@ -60,18 +60,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const newPosition =
             start + emoji.length;
 
-        /*
-         * IMPORTANT:
-         *
-         * Do NOT focus the textarea here.
-         *
-         * On Android/iOS calling focus() can immediately
-         * open the virtual keyboard.
-         *
-         * The user can tap the textarea when they want
-         * to continue typing.
-         */
-
         try {
             messageBodyField.setSelectionRange(
                 newPosition,
@@ -83,6 +71,22 @@ document.addEventListener('DOMContentLoaded', function () {
              * changes while the textarea is not focused.
              */
         }
+
+        /*
+         * IMPORTANT:
+         *
+         * Tell all composer controllers that the message
+         * content changed.
+         *
+         * This is required so voice_recorder.js can switch
+         * from the microphone button to the send button
+         * after an emoji is inserted.
+         */
+        messageBodyField.dispatchEvent(
+            new Event('input', {
+                bubbles: true
+            })
+        );
 
         if (
             typeof addRecentChatEmoji ===
@@ -97,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* =========================================================
        CATEGORY HELPERS
-       ========================================================= */
+    ========================================================= */
 
     function getEmojiCategoryList() {
         if (
@@ -160,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* =========================================================
        CATEGORY BAR
-       ========================================================= */
+    ========================================================= */
 
     function createEmojiCategoryBar() {
         if (!emojiPicker) {
@@ -244,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* =========================================================
        RENDER CATEGORY
-       ========================================================= */
+    ========================================================= */
 
     function renderEmojiCategory(
         categoryId
@@ -313,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* =========================================================
        ACTIVE CATEGORY
-       ========================================================= */
+    ========================================================= */
 
     function setActiveEmojiCategory(
         categoryId
@@ -349,19 +353,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* =========================================================
        MOBILE KEYBOARD CONTROL
-       ========================================================= */
+    ========================================================= */
 
     function blurMessageComposer() {
         if (!messageBodyField) {
             return;
         }
 
-        /*
-         * Remove focus before Bootstrap opens the dropdown.
-         *
-         * This prevents Android/iOS from keeping the
-         * virtual keyboard open when the emoji picker opens.
-         */
         if (
             document.activeElement ===
             messageBodyField
@@ -373,19 +371,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* =========================================================
        EMOJI TOGGLE
-       ========================================================= */
+    ========================================================= */
 
     if (emojiToggleBtn) {
         emojiToggleBtn.addEventListener(
             'pointerdown',
             function () {
-                /*
-                 * pointerdown fires before click.
-                 *
-                 * This is important on mobile because the
-                 * browser can otherwise preserve textarea
-                 * focus while the Bootstrap dropdown opens.
-                 */
                 blurMessageComposer();
             }
         );
@@ -411,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* =========================================================
        PICKER CLICK HANDLER
-       ========================================================= */
+    ========================================================= */
 
     if (emojiPicker) {
         emojiPicker.addEventListener(
@@ -453,10 +444,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                /*
-                 * Make sure the textarea does not regain
-                 * focus before inserting the emoji.
-                 */
                 blurMessageComposer();
 
                 insertEmojiIntoComposer(
@@ -464,10 +451,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
                 /*
-                 * Keep the picker open.
-                 *
-                 * This allows the user to select multiple
-                 * emojis without reopening it every time.
+                 * Keep the picker open so multiple
+                 * emojis can be selected.
                  */
             }
         );
@@ -476,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* =========================================================
        INITIALIZE
-       ========================================================= */
+    ========================================================= */
 
     function initializeEmojiPicker() {
         if (!emojiPicker) {
