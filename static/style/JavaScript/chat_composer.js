@@ -43,6 +43,16 @@ document.addEventListener('DOMContentLoaded', function () {
             messageBodyField.scrollHeight > maxHeight
                 ? 'auto'
                 : 'hidden';
+
+        const chatComposerMain =
+            messageBodyField.closest('.chat-composer-main');
+
+        if (chatComposerMain) {
+            chatComposerMain.classList.toggle(
+                'is-expanded',
+                newHeight > minHeight
+            );
+        }
     }
 
     messageBodyField.addEventListener(
