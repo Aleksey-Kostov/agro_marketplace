@@ -19,8 +19,6 @@
 
 /* =========================================================
    COMPOSER SIDE BUTTONS
-   Attachment = bottom left
-   Emoji = bottom right
 ========================================================= */
 
 .chat-composer-left {
@@ -36,11 +34,6 @@
     overflow: visible;
 }
 
-/*
-   Voice cancel button is inserted immediately before
-   the send/record button by voice_recorder.js.
-   Reserve its space so emoji never sits underneath it.
-*/
 .chat-composer-main:has(
     .chat-voice-cancel-btn:not(.d-none)
 ) .chat-composer-left {
@@ -58,43 +51,6 @@
 
 .chat-composer-left .dropdown:nth-child(2) {
     left: 3px;
-}
-
-/*
-   Media remove button replaces the attachment button
-   in the same left-side control position.
-*/
-.chat-composer-left #remove-media-btn {
-    position: absolute;
-    left: 3px;
-    bottom: 1px;
-
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    min-height: 40px;
-
-    padding: 0;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    pointer-events: auto;
-    z-index: 32;
-
-    border: 0 !important;
-    border-radius: 50%;
-
-    background: transparent !important;
-    color: #dc3545;
-
-    box-shadow: none !important;
-}
-
-.chat-composer-left #remove-media-btn i {
-    margin: 0;
-    font-size: 16px;
 }
 
 
@@ -453,7 +409,6 @@
 
 /* =========================================================
    SEND / MICROPHONE BUTTON
-   Desktop = rectangular
 ========================================================= */
 
 .chat-composer-submit-btn {
@@ -541,7 +496,6 @@
     flex: 0 0 46px;
 
     margin: 0;
-
     padding: 0;
 
     z-index: 50;
@@ -588,6 +542,7 @@
     display: flex;
     flex-wrap: wrap;
 
+    align-items: flex-start;
     gap: 0.5rem;
 
     margin-top: 0.5rem;
@@ -674,19 +629,57 @@
 
 /* =========================================================
    REMOVE MEDIA BUTTON
+   Circular button beside the active preview
 ========================================================= */
 
-.chat-composer .remove-media-btn {
-    width: 32px;
-    height: 32px;
+#remove-media-btn {
+    position: static !important;
 
-    padding: 0;
+    width: 36px !important;
+    height: 36px !important;
 
-    display: inline-flex;
+    min-width: 36px !important;
+    min-height: 36px !important;
+
+    padding: 0 !important;
+    margin: 6px 0 0 0 !important;
+
+    display: inline-flex !important;
     align-items: center;
     justify-content: center;
 
-    border-radius: 50%;
+    flex: 0 0 36px;
+
+    border: 0 !important;
+    border-radius: 50% !important;
+
+    background: #dc3545 !important;
+    color: #fff !important;
+
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.15) !important;
+
+    z-index: 40;
+}
+
+#remove-media-btn i {
+    margin: 0 !important;
+    font-size: 14px;
+    line-height: 1;
+}
+
+#remove-media-btn:hover {
+    background: #bb2d3b !important;
+    color: #fff !important;
+}
+
+#remove-media-btn:active {
+    transform: scale(0.94);
+}
+
+#remove-media-btn:focus-visible {
+    outline: 2px solid rgba(220, 53, 69, 0.25);
+    outline-offset: 2px;
 }
 
 
@@ -716,15 +709,10 @@
 
     .chat-composer-left {
         left: 0;
-
         right: calc(40px + 0.2rem);
         width: auto;
     }
 
-    /*
-       When voice Cancel exists, reserve its width too.
-       This prevents Emoji from moving underneath Cancel.
-    */
     .chat-composer-main:has(
         .chat-voice-cancel-btn:not(.d-none)
     ) .chat-composer-left {
@@ -747,17 +735,6 @@
         min-height: 38px;
 
         flex-basis: 38px;
-    }
-
-    .chat-composer-left #remove-media-btn {
-        left: 2px;
-        bottom: 1px;
-
-        width: 38px;
-        height: 38px;
-
-        min-width: 38px;
-        min-height: 38px;
     }
 
     .chat-composer-submit-btn {
@@ -844,6 +821,22 @@
 
         flex: 0 0 44px;
     }
+
+    #remove-media-btn {
+        width: 34px !important;
+        height: 34px !important;
+
+        min-width: 34px !important;
+        min-height: 34px !important;
+
+        flex-basis: 34px;
+
+        margin-top: 5px !important;
+    }
+
+    #remove-media-btn i {
+        font-size: 13px;
+    }
 }
 
 
@@ -859,7 +852,6 @@
 
     .chat-composer-left {
         left: 0;
-
         right: calc(38px + 0.15rem);
         width: auto;
     }
@@ -886,17 +878,6 @@
         min-height: 36px;
 
         flex-basis: 36px;
-    }
-
-    .chat-composer-left #remove-media-btn {
-        left: 1px;
-        bottom: 1px;
-
-        width: 36px;
-        height: 36px;
-
-        min-width: 36px;
-        min-height: 36px;
     }
 
     .chat-composer-submit-btn {
@@ -965,6 +946,22 @@
 
         flex: 0 0 44px;
     }
+
+    #remove-media-btn {
+        width: 32px !important;
+        height: 32px !important;
+
+        min-width: 32px !important;
+        min-height: 32px !important;
+
+        flex-basis: 32px;
+
+        margin-top: 4px !important;
+    }
+
+    #remove-media-btn i {
+        font-size: 12px;
+    }
 }
 
 
@@ -973,6 +970,7 @@
 ========================================================= */
 
 @media (max-width: 576px) {
+
     .chat-composer-submit-btn .chat-submit-status {
         display: none !important;
     }
