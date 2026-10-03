@@ -1,3 +1,7 @@
+/* =========================================================
+   CHAT COMPOSER
+   ========================================================= */
+
 .chat-composer {
     position: relative;
     width: 100%;
@@ -34,7 +38,7 @@
 }
 
 /* =========================================================
-   TEXT AREA
+   INPUT
    ========================================================= */
 
 .chat-composer-input-wrap {
@@ -122,74 +126,72 @@
 }
 
 /*
- * We deliberately keep the two wrapper elements in the layout.
- * This lets us control LEFT and RIGHT groups separately.
+ * IMPORTANT
+ *
+ * The wrappers must NOT behave as separate flex items.
+ * Their children become direct visual items of the action bar.
+ *
+ * This is what allows:
+ *
+ * Emoji | spacer | Attachment | Cancel | Send
  */
 
-.chat-composer-actions-left {
-    display: flex;
-    align-items: center;
-
-    margin-left: auto;
-
-    order: 2;
-
-    pointer-events: auto;
-}
-
+.chat-composer-actions-left,
 .chat-composer-actions-right {
-    display: flex;
-    align-items: center;
-
-    order: 1;
-
-    gap: 6px;
-
-    pointer-events: auto;
+    display: contents;
 }
+
+/* =========================================================
+   VISUAL ORDER
+   ========================================================= */
 
 /*
- * Emoji stays at the far left.
+ * Emoji — far left.
  */
 .chat-composer-actions-right > .dropdown:first-child {
     order: 1;
 }
 
 /*
- * Dynamically inserted voice cancel button.
+ * Attachment — pushed to the right.
+ */
+.chat-composer-actions-left > .dropdown {
+    order: 2;
+
+    margin-left: auto;
+}
+
+/*
+ * Voice cancel — between attachment and send.
  */
 .chat-composer-actions-right > .chat-voice-cancel-btn {
     order: 3;
 }
 
 /*
- * Send/voice is always last.
+ * Send / Voice — always the final element.
  */
-.chat-composer-submit-btn {
+.chat-composer-actions-right > .chat-composer-submit-btn {
     order: 4;
 }
 
 /*
- * IMPORTANT:
- * Move attachment AFTER emoji and before send.
- *
- * Since the attachment group itself is pushed to the right,
- * the visual order becomes:
- *
- * emoji | spacer | attachment | cancel | send
+ * If the recorder dynamically inserts the cancel button
+ * directly before the submit button, this ordering remains
+ * stable because both elements have explicit order values.
  */
 
-.chat-composer-actions-left {
-    margin-left: auto;
-}
-
-.chat-composer-actions-left + .chat-composer-actions-right {
-    margin-left: 0;
-}
-
 /* =========================================================
-   ACTION BUTTON BASE
+   ACTION BUTTONS
    ========================================================= */
+
+.chat-composer-actions button {
+    pointer-events: auto;
+}
+
+.chat-composer-actions .dropdown {
+    pointer-events: auto;
+}
 
 .chat-composer-actions .btn,
 .chat-composer-submit-btn,
@@ -213,12 +215,6 @@
     border-radius: 12px;
 }
 
-.chat-composer-actions button,
-.chat-composer-actions .dropdown,
-.chat-composer-actions .dropdown-toggle {
-    pointer-events: auto;
-}
-
 .chat-composer-actions .btn i,
 .chat-composer-actions .btn svg,
 .chat-composer-submit-btn i,
@@ -229,26 +225,22 @@
 }
 
 /* =========================================================
-   EMOJI / ATTACHMENT BUTTONS
+   EMOJI / ATTACHMENT
    ========================================================= */
 
-.chat-composer-actions-right
-.dropdown > .btn,
-.chat-composer-actions-left
+.chat-composer-actions
 .dropdown > .btn {
     border-color: transparent;
     background: transparent;
 }
 
-.chat-composer-actions-right
-.dropdown > .btn:hover,
-.chat-composer-actions-left
+.chat-composer-actions
 .dropdown > .btn:hover {
     background: var(--bs-tertiary-bg, #f1f3f5);
 }
 
 /* =========================================================
-   SEND BUTTON — DESKTOP
+   SEND — DESKTOP
    ========================================================= */
 
 .chat-composer-submit-btn {
@@ -268,7 +260,6 @@
 
 .chat-composer-submit-btn span {
     display: inline-block;
-
     white-space: nowrap;
 }
 
@@ -278,7 +269,7 @@
 }
 
 /*
- * Voice mode can become icon-only.
+ * Voice mode can be icon-only.
  */
 .chat-composer-submit-btn.chat-voice-recording,
 .chat-composer-submit-btn.chat-voice-button {
@@ -307,20 +298,13 @@
     border-color: var(--bs-danger, #dc3545);
 }
 
-/*
- * NEVER show the cancel button when hidden.
- */
 .chat-voice-cancel-btn.d-none {
     display: none !important;
 }
 
 /* =========================================================
-   DROPDOWN / PICKER
+   DROPDOWN MENUS
    ========================================================= */
-
-.chat-composer-actions .dropdown {
-    position: relative;
-}
 
 .chat-composer-actions .dropdown-menu {
     position: absolute !important;
@@ -502,10 +486,6 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-/*
- * This is critical.
- * When there is no attachment, the button is truly gone.
- */
 #remove-media-btn.d-none {
     display: none !important;
 }
@@ -516,7 +496,6 @@
 
 .upload-progress-wrap {
     width: 100%;
-
     margin-top: 8px;
 }
 
@@ -532,9 +511,7 @@
 
     .chat-composer-main {
         min-height: 52px;
-
         padding: 5px;
-
         border-radius: 19px;
     }
 
@@ -564,15 +541,14 @@
         bottom: 5px;
         left: 5px;
 
-        min-height: 38px;
+        min-height: 40px;
 
         gap: 4px;
     }
 
-    .chat-composer-actions-right {
-        gap: 4px;
-    }
-
+    /*
+     * MOBILE BUTTONS
+     */
     .chat-composer-actions .btn,
     .chat-voice-cancel-btn {
         width: 38px;
@@ -585,10 +561,11 @@
     }
 
     /*
-     * MOBILE SEND:
-     * Always a true circle.
+     * MOBILE SEND MUST ALWAYS BE CIRCULAR.
      */
-    .chat-composer-submit-btn {
+    .chat-composer-submit-btn,
+    .chat-composer-submit-btn.chat-voice-recording,
+    .chat-composer-submit-btn.chat-voice-button {
         width: 40px !important;
         height: 40px !important;
 
@@ -610,26 +587,11 @@
     }
 
     /*
-     * Voice button remains circular.
-     */
-    .chat-composer-submit-btn.chat-voice-recording,
-    .chat-composer-submit-btn.chat-voice-button {
-        width: 40px !important;
-        min-width: 40px !important;
-
-        height: 40px !important;
-        min-height: 40px !important;
-
-        border-radius: 50% !important;
-    }
-
-    /*
-     * Emoji popup.
+     * Emoji picker.
      */
     .chat-composer-actions-right
     .emoji-picker {
         left: 0;
-
         bottom: calc(100% + 8px);
 
         min-width: 280px;
@@ -638,12 +600,11 @@
     }
 
     /*
-     * Attachment popup.
+     * Attachment picker.
      */
     .chat-composer-actions-left
     .attachment-picker {
         right: 0;
-
         bottom: calc(100% + 8px);
 
         min-width: 220px;
@@ -658,7 +619,6 @@
     #image-preview-wrap img,
     #video-preview-wrap video {
         max-width: min(220px, calc(100vw - 32px));
-
         max-height: 150px;
     }
 }
@@ -671,7 +631,6 @@
 
     .chat-composer-main {
         padding: 4px;
-
         border-radius: 17px;
     }
 
@@ -680,10 +639,6 @@
         bottom: 4px;
         left: 4px;
 
-        gap: 3px;
-    }
-
-    .chat-composer-actions-right {
         gap: 3px;
     }
 
@@ -730,14 +685,12 @@
     .chat-composer-actions-right
     .emoji-picker {
         min-width: 270px;
-
         max-width: calc(100vw - 16px);
     }
 
     .chat-composer-actions-left
     .attachment-picker {
         min-width: 210px;
-
         max-width: calc(100vw - 16px);
     }
 }
