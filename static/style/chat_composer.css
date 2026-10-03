@@ -183,7 +183,7 @@
 /*
  * Send / Voice — always final.
  */
-.chat-composer-actions > #message-submit-btn {
+.chat-composer-actions-right > #message-submit-btn {
     order: 40;
 }
 
