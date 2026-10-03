@@ -694,3 +694,248 @@
         max-width: calc(100vw - 16px);
     }
 }
+/* =========================================================
+   FINAL COMPOSER POSITIONING
+   ========================================================= */
+
+/*
+ * The first line must never start underneath the emoji button.
+ *
+ * text-indent affects only the first visual line.
+ * This means that when the message grows to 2+ lines,
+ * the following lines can use the full available width.
+ */
+.chat-composer-input-wrap textarea,
+.chat-composer-input-wrap .form-control {
+    text-indent: 46px;
+}
+
+
+/*
+ * Expanded messages need the same first-line protection,
+ * but their following lines remain full width.
+ */
+.chat-composer-main.is-expanded
+.chat-composer-input-wrap textarea,
+.chat-composer-main.is-expanded
+.chat-composer-input-wrap .form-control {
+    text-indent: 46px;
+}
+
+
+/*
+ * Keep the action controls above the text layer.
+ */
+.chat-composer-actions {
+    z-index: 30;
+}
+
+
+/*
+ * Make sure the actual buttons themselves are above
+ * everything inside the composer.
+ */
+.chat-composer-actions .dropdown,
+.chat-composer-actions button {
+    position: relative;
+    z-index: 31;
+}
+
+
+/*
+ * The attachment control is anchored to the right side.
+ */
+.chat-composer-actions-left > .dropdown {
+    margin-left: auto;
+}
+
+
+/*
+ * The send button is always the final control.
+ */
+.chat-composer-actions-right > #message-submit-btn {
+    order: 100;
+}
+
+
+/*
+ * The dynamically-created voice cancel button must never
+ * be allowed to jump to the left side of the composer.
+ */
+.chat-composer-actions-right > #voice-recording-cancel-btn {
+    order: 90;
+}
+
+
+/*
+ * Emoji remains the first control.
+ */
+.chat-composer-actions-right > .dropdown:first-child {
+    order: 10;
+}
+
+
+/*
+ * Attachment stays before cancel/send.
+ */
+.chat-composer-actions-left > .dropdown {
+    order: 20;
+}
+
+
+/*
+ * IMPORTANT:
+ * The voice cancel button is visually compact in the composer.
+ *
+ * chat_audio.css contains older/general voice styles which
+ * are loaded after this file. These selectors are intentionally
+ * more specific so the composer layout wins without modifying
+ * the voice recorder itself.
+ */
+.chat-composer-actions
+.chat-voice-cancel-btn {
+    position: relative;
+
+    width: 40px !important;
+    min-width: 40px !important;
+
+    height: 40px !important;
+    min-height: 40px !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    border-radius: 50% !important;
+
+    flex: 0 0 40px !important;
+
+    z-index: 32;
+}
+
+
+/*
+ * Hide the cancel button completely when inactive.
+ * No dot, no pseudo-element, no leftover space.
+ */
+.chat-composer-actions
+.chat-voice-cancel-btn.d-none {
+    display: none !important;
+}
+
+
+/*
+ * The decorative drag track from chat_audio.css must not
+ * interfere with the normal composer layout.
+ */
+.chat-composer-actions
+.chat-voice-cancel-btn::before,
+.chat-composer-actions
+.chat-voice-cancel-btn::after {
+    pointer-events: none;
+}
+
+
+/*
+ * On a normal composer state there should be no visible
+ * cancel decoration.
+ */
+.chat-composer-actions
+.chat-voice-cancel-btn:not(.is-active)::before,
+.chat-composer-actions
+.chat-voice-cancel-btn:not(.is-active)::after {
+    opacity: 0;
+}
+
+
+/* =========================================================
+   MOBILE FINAL POSITIONING
+   ========================================================= */
+
+@media (max-width: 767.98px) {
+
+    .chat-composer-input-wrap textarea,
+    .chat-composer-input-wrap .form-control {
+        text-indent: 42px;
+    }
+
+    .chat-composer-main.is-expanded
+    .chat-composer-input-wrap textarea,
+    .chat-composer-main.is-expanded
+    .chat-composer-input-wrap .form-control {
+        text-indent: 42px;
+    }
+
+    /*
+     * Circular mobile controls.
+     */
+    .chat-composer-actions
+    .chat-voice-cancel-btn {
+        width: 38px !important;
+        min-width: 38px !important;
+
+        height: 38px !important;
+        min-height: 38px !important;
+
+        flex-basis: 38px !important;
+
+        border-radius: 50% !important;
+    }
+
+    /*
+     * Send stays circular.
+     */
+    .chat-composer-actions
+    #message-submit-btn {
+        width: 40px !important;
+        min-width: 40px !important;
+
+        height: 40px !important;
+        min-height: 40px !important;
+
+        border-radius: 50% !important;
+
+        flex-basis: 40px !important;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+    .chat-composer-input-wrap textarea,
+    .chat-composer-input-wrap .form-control {
+        text-indent: 40px;
+    }
+
+    .chat-composer-main.is-expanded
+    .chat-composer-input-wrap textarea,
+    .chat-composer-main.is-expanded
+    .chat-composer-input-wrap .form-control {
+        text-indent: 40px;
+    }
+
+    .chat-composer-actions
+    .chat-voice-cancel-btn {
+        width: 36px !important;
+        min-width: 36px !important;
+
+        height: 36px !important;
+        min-height: 36px !important;
+
+        flex-basis: 36px !important;
+    }
+
+    .chat-composer-actions
+    #message-submit-btn {
+        width: 36px !important;
+        min-width: 36px !important;
+
+        height: 36px !important;
+        min-height: 36px !important;
+
+        flex-basis: 36px !important;
+    }
+}
