@@ -60,10 +60,6 @@
 
     margin: 0;
 
-    /*
-       Text uses the complete width.
-       Bottom padding reserves space for the action row.
-    */
     padding: 11px 14px 50px 14px;
 
     resize: none;
@@ -441,6 +437,8 @@
 
 /* =========================================================
    SEND / VOICE BUTTON
+   Desktop:
+   rectangular button with text
 ========================================================= */
 
 .chat-composer-submit-btn {
@@ -457,12 +455,11 @@
     flex: 0 0 108px;
 
     padding: 0 15px !important;
-
     margin: 0;
 
     gap: 7px;
 
-    border-radius: 20px !important;
+    border-radius: 10px !important;
 
     font-size: 0.9rem;
     font-weight: 500;
@@ -515,8 +512,6 @@
 
 /* =========================================================
    VOICE CANCEL BUTTON
-   voice_recorder.js inserts this button into
-   .chat-composer-actions-right immediately before submit.
 ========================================================= */
 
 .chat-composer-actions-right > .chat-voice-cancel-btn {
@@ -719,9 +714,7 @@
 
 /* =========================================================
    REMOVE MEDIA BUTTON
-   Important:
-   - no forced display
-   - Bootstrap .d-none remains authoritative
+   Bootstrap .d-none remains authoritative.
 ========================================================= */
 
 #remove-media-btn {
@@ -805,6 +798,7 @@
 
 /* =========================================================
    MOBILE
+   Send / Voice = perfect circle
 ========================================================= */
 
 @media (max-width: 767.98px) {
@@ -813,10 +807,16 @@
         margin-top: 0.6rem;
     }
 
+
+    /* -----------------------------------------
+       Input
+    ----------------------------------------- */
+
     .chat-composer-input-wrap textarea,
     .chat-composer-input-wrap .form-control {
         min-height: 56px !important;
         height: 56px;
+
         max-height: 140px;
 
         padding:
@@ -829,6 +829,11 @@
 
         font-size: 0.94rem;
     }
+
+
+    /* -----------------------------------------
+       Actions
+    ----------------------------------------- */
 
     .chat-composer-actions {
         padding:
@@ -845,6 +850,11 @@
         gap: 3px;
     }
 
+
+    /* -----------------------------------------
+       Attachment / emoji buttons
+    ----------------------------------------- */
+
     .chat-composer-action-btn {
         width: 38px;
         height: 38px;
@@ -855,20 +865,30 @@
         flex-basis: 38px;
     }
 
+
+    /* -----------------------------------------
+       SEND / VOICE
+       Perfect circle
+    ----------------------------------------- */
+
     .chat-composer-submit-btn {
         width: 40px;
         height: 40px;
 
-        min-width: 40px;
-        min-height: 40px;
+        min-width: 40px !important;
+        max-width: 40px;
 
-        flex-basis: 40px;
+        min-height: 40px;
+        max-height: 40px;
+
+        flex: 0 0 40px;
 
         padding: 0 !important;
-
-        border-radius: 50% !important;
+        margin: 0;
 
         gap: 0;
+
+        border-radius: 50% !important;
     }
 
     .chat-composer-submit-btn span,
@@ -878,16 +898,32 @@
 
     .chat-composer-submit-btn i {
         font-size: 15px;
+
+        margin: 0 !important;
     }
+
+
+    /* -----------------------------------------
+       VOICE CANCEL
+       Perfect circle
+    ----------------------------------------- */
 
     .chat-composer-actions-right > .chat-voice-cancel-btn {
         width: 40px;
         height: 40px;
 
         min-width: 40px;
-        min-height: 40px;
+        max-width: 40px;
 
-        flex-basis: 40px;
+        min-height: 40px;
+        max-height: 40px;
+
+        flex: 0 0 40px;
+
+        margin: 0;
+        padding: 0;
+
+        border-radius: 50%;
     }
 
 
@@ -897,6 +933,7 @@
 
     .chat-composer-actions-right .emoji-picker {
         min-width: 280px;
+
         max-width: calc(100vw - 12px);
 
         max-height:
@@ -1012,14 +1049,26 @@
         font-size: 15px;
     }
 
+
+    /* -----------------------------------------
+       Small circular Send / Voice button
+    ----------------------------------------- */
+
     .chat-composer-submit-btn {
         width: 38px;
         height: 38px;
 
-        min-width: 38px;
-        min-height: 38px;
+        min-width: 38px !important;
+        max-width: 38px;
 
-        flex-basis: 38px;
+        min-height: 38px;
+        max-height: 38px;
+
+        flex: 0 0 38px;
+
+        padding: 0 !important;
+
+        border-radius: 50% !important;
     }
 
     .chat-composer-actions-right > .chat-voice-cancel-btn {
@@ -1027,13 +1076,24 @@
         height: 38px;
 
         min-width: 38px;
-        min-height: 38px;
+        max-width: 38px;
 
-        flex-basis: 38px;
+        min-height: 38px;
+        max-height: 38px;
+
+        flex: 0 0 38px;
+
+        border-radius: 50%;
     }
+
+
+    /* -----------------------------------------
+       Emoji picker
+    ----------------------------------------- */
 
     .chat-composer-actions-right .emoji-picker {
         min-width: 260px;
+
         max-width: calc(100vw - 8px);
     }
 
