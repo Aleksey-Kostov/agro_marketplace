@@ -1505,9 +1505,14 @@ document.addEventListener(
                 submitBtn.disabled =
                     true;
 
-                submitBtn.innerHTML =
-                    '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
+                const isMobile =
+    window.matchMedia(
+        '(max-width: 767.98px)'
+    ).matches;
 
+submitBtn.innerHTML = isMobile
+    ? '<i class="fas fa-spinner fa-spin"></i>'
+    : '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
                 return;
             }
 
@@ -1662,20 +1667,28 @@ document.addEventListener(
                             shouldScroll
                         );
 
+                        if (
+                            window.agroChatConversation &&
+                        typeof window.agroChatConversation.resetComposerAfterSend ===
+                              'function'
+                        ) {
+                        window.agroChatConversation.resetComposerAfterSend();
+                        } else {
+                            clearMediaInputs();
+                        }
+
                         window.dispatchEvent(
                             new CustomEvent(
                                 'agro:message-sent'
                             )
                         );
 
-                        setTimeout(
+                       setTimeout(
                             hideUploadProgress,
                             300
-                        );
+                       );
 
-                        clearMediaInputs();
-
-                        resetUploadState();
+                       resetUploadState();
 
                         return;
                     }
