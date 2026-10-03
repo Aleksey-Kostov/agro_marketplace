@@ -542,6 +542,7 @@ document.addEventListener('DOMContentLoaded', function () {
         appendRenderedMessage,
         refreshMessageFragment,
         isChatAtBottom
+        resetComposerAfterSend
     };
 
 
