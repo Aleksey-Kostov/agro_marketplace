@@ -1027,31 +1027,44 @@ document.addEventListener(
             function (event) {
                 if (
                     isEditMode() ||
-                    (
-                        replyToInput &&
-                        replyToInput.value
-                    )
-                ) {
-                    return;
-                }
+                   (
+                       replyToInput &&
+        replyToInput.value
+                   )
+               ) {
+                   return;
+               }
 
-                if (
-                    hasText() ||
-                    hasNormalAttachment() ||
-                    hasAudioAttachment()
-                ) {
-                    return;
-                }
+               if (
+                   hasText() ||
+        hasNormalAttachment() ||
+                   hasAudioAttachment()
+               ) {
+                   return;
+                 }
 
-                event.preventDefault();
+                 event.preventDefault();
 
-                pointerIsDown = true;
-                cancelRecording = false;
-                isCancelTarget = false;
+                /*
+                 * Keep receiving pointer events while the
+                 * finger moves outside the microphone button.
+                 */
+              if (
+                  typeof submitBtn.setPointerCapture ===
+                  'function'
+               ) {
+        submitBtn.setPointerCapture(
+                       event.pointerId
+                  );
+             }
 
-                startRecording();
-            }
-        );
+             pointerIsDown = true;
+             cancelRecording = false;
+             isCancelTarget = false;
+
+             startRecording();
+           }
+       );
 
 
         document.addEventListener(
