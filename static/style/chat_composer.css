@@ -362,6 +362,10 @@
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
 }
 
+.chat-composer-main.is-expanded
+.chat-composer-actions .dropdown-menu {
+    bottom: calc(100% + 14px);
+}
 
 /* =========================================================
    EMOJI PICKER
