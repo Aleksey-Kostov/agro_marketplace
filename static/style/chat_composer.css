@@ -362,10 +362,6 @@
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
 }
 
-.chat-composer-main.is-expanded
-.chat-composer-actions .dropdown-menu {
-    bottom: calc(100% + 14px);
-}
 
 /* =========================================================
    EMOJI PICKER
@@ -742,4 +738,11 @@
         min-width: 210px;
         max-width: calc(100vw - 16px);
     }
+}
+
+.chat-composer-main.is-expanded
+.chat-composer-actions .dropdown-menu {
+    bottom: calc(
+        100% + 10px + var(--composer-dropdown-shift, 0px)
+    );
 }
