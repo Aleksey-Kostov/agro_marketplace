@@ -1075,39 +1075,51 @@ document.addEventListener(
         );
 
 
-        document.addEventListener(
-            'pointerup',
-            function (event) {
-                if (
-                    isEditMode() ||
-                    !pointerIsDown
-                ) {
+        submitBtn.addEventListener(
+           'pointerup',
+           function (event) {
+               if (
+                   isEditMode() ||
+                   !pointerIsDown
+               ) {
+                   return;
+               }
+
+               event.preventDefault();
+
+               const shouldCancel =
+                   isCancelTarget;
+
+               pointerIsDown = false;
+
+               if (
+                   typeof submitBtn.releasePointerCapture ===
+                   'function' &&
+                   submitBtn.hasPointerCapture &&
+                   submitBtn.hasPointerCapture(
+                       event.pointerId
+                   )
+               ) {
+                   submitBtn.releasePointerCapture(
+                       event.pointerId
+                   );
+               }
+
+               if (shouldCancel) {
+                   cancelCurrentRecording();
                     return;
-                }
+               }
 
-                event.preventDefault();
+               if (isStartingRecording) {
+                   stopAfterStart = true;
+                   return;
+               }
 
-                const shouldCancel =
-                    isCancelTarget;
-
-                pointerIsDown = false;
-
-                if (shouldCancel) {
-                    cancelCurrentRecording();
-                    return;
-                }
-
-                if (isStartingRecording) {
-                    stopAfterStart = true;
-                    return;
-                }
-
-                if (isRecording) {
-                    stopRecording(false);
-                }
-            }
-        );
-
+               if (isRecording) {
+                   stopRecording(false);
+               }
+           }
+       );
 
         submitBtn.addEventListener(
             'pointercancel',
