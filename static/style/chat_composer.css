@@ -204,22 +204,23 @@
 .chat-composer-submit-btn,
 .chat-voice-cancel-btn {
     display: inline-flex;
-
     align-items: center;
     justify-content: center;
-
     flex: 0 0 auto;
-
     width: 40px;
     height: 40px;
-
     min-width: 40px;
     min-height: 40px;
-
     padding: 0;
     margin: 0;
-
     border-radius: 12px;
+}
+
+.chat-composer-actions .chat-composer-submit-btn {
+    width: 108px;
+    min-width: 108px;
+    padding: 0 14px;
+    gap: 7px;
 }
 
 .chat-composer-actions .btn i,
@@ -349,22 +350,15 @@
 
 .chat-composer-actions .dropdown-menu {
     position: absolute !important;
-
     top: auto;
     bottom: calc(100% + 10px);
-
     z-index: 1000;
-
+    transform: none !important;
     margin: 0;
-
     max-height: min(420px, calc(100vh - 150px));
-
     overflow-y: auto;
-
     border: 1px solid var(--bs-border-color, #dee2e6);
-
     border-radius: 14px;
-
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
 }
 
@@ -377,11 +371,8 @@
 .emoji-picker {
     left: 0;
     right: auto;
-
     min-width: 300px;
-
     width: max-content;
-
     max-width: min(360px, calc(100vw - 24px));
 }
 
@@ -394,9 +385,7 @@
 .attachment-picker {
     right: 0;
     left: auto;
-
     min-width: 220px;
-
     max-width: min(320px, calc(100vw - 24px));
 }
 
@@ -411,22 +400,14 @@
 
 .chat-drop-overlay {
     position: absolute;
-
     inset: 5px;
-
     z-index: 15;
-
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     border: 2px dashed var(--bs-primary, #0d6efd);
-
     border-radius: 16px;
-
     background: rgba(13, 110, 253, 0.08);
-
     pointer-events: none;
 }
 
@@ -441,27 +422,21 @@
 
 .chat-composer-previews {
     position: relative;
-
     width: 100%;
-
     margin: 0;
     padding: 8px 4px 0;
-
     z-index: 10;
 }
 
 .chat-attachment-preview {
     position: relative;
-
     width: 100%;
     min-height: 0;
 }
 
 .chat-attachment-preview-content {
     display: flex;
-
     align-items: flex-start;
-
     width: 100%;
     min-width: 0;
 }
@@ -477,24 +452,17 @@
 #image-preview-wrap img,
 #video-preview-wrap video {
     display: block;
-
     max-width: min(260px, 100%);
     max-height: 180px;
-
     object-fit: contain;
-
     border-radius: 12px;
 }
 
 #file-preview {
     max-width: min(360px, 100%);
-
     padding: 8px 12px;
-
     border: 1px solid var(--bs-border-color, #dee2e6);
-
     border-radius: 10px;
-
     background: var(--bs-tertiary-bg, #f8f9fa);
 }
 
@@ -505,30 +473,20 @@
 
 #remove-media-btn {
     position: absolute;
-
     top: 6px;
     left: 6px;
-
     z-index: 20;
-
     display: inline-flex;
-
     align-items: center;
     justify-content: center;
-
     width: 32px;
     height: 32px;
-
     min-width: 32px;
     min-height: 32px;
-
     padding: 0;
     margin: 0;
-
     border-radius: 50%;
-
     background: rgba(255, 255, 255, 0.95);
-
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
