@@ -364,82 +364,69 @@ document.addEventListener(
                 !pointerIsDown ||
                 !isRecording
             ) {
-                return;
+               return;
             }
 
-            const cancelBtn =
-                document.getElementById(
-                    'voice-recording-cancel-btn'
-                );
+           const cancelBtn =
+               document.getElementById(
+     'voice-recording-cancel-btn'
+           );
 
-            if (!cancelBtn) {
-                return;
-            }
+           if (!cancelBtn) {
+              return;
+           }
 
-            const submitRect =
-                submitBtn.getBoundingClientRect();
+           const submitRect =
+               submitBtn.getBoundingClientRect();
 
-            const cancelRect =
-                cancelBtn.getBoundingClientRect();
+           const cancelRect =
+               cancelBtn.getBoundingClientRect();
 
-            /*
-             * Start of the drag:
-             * center of the Voice button.
-             */
-            const startX =
-                submitRect.left +
-                submitRect.width / 2;
+           const startX =
+               submitRect.left +
+               submitRect.width / 2;
 
-            /*
-             * Cancel target:
-             * center of the X button.
-             */
-            const cancelX =
-                cancelRect.left +
-                cancelRect.width / 2;
+           const cancelX =
+               cancelRect.left +
+               cancelRect.width / 2;
 
-            /*
-             * How far the pointer has moved
-             * towards the Cancel button.
-             */
-            const totalDistance =
-                Math.max(
-                    1,
-                    startX - cancelX
-                );
+           const totalDistance =
+               Math.max(
+                   1,
+                   startX - cancelX
+               );
 
-            const currentDistance =
-                Math.max(
-                    0,
-                    startX - event.clientX
-                );
+           const currentDistance =
+               Math.max(
+                   0,
+                   startX - event.clientX
+               );
 
-            const progress =
-                Math.min(
-                    1,
-                    currentDistance /
-                    totalDistance
-                );
+           const progress =
+               Math.min(
+                   1,
+                   currentDistance /
+                   totalDistance
+               );
 
-            setDragProgress(
-                progress
-            );
+           setDragProgress(
+              progress
+           );
 
-            /*
-             * Cancel when the pointer enters
-             * the actual X button.
-             */
-            const isInside =
-                event.clientX >= cancelRect.left &&
-                event.clientX <= cancelRect.right &&
-                event.clientY >= cancelRect.top &&
-                event.clientY <= cancelRect.bottom;
+          /*
+           * Cancel becomes active when the pointer
+           * reaches the X button.
+           */
+           const isInside =
+               event.clientX >= cancelRect.left &&
+               event.clientX <= cancelRect.right &&
+               event.clientY >= cancelRect.top &&
+               event.clientY <= cancelRect.bottom;
 
-            setCancelTarget(
-                isInside
-            );
+           setCancelTarget(
+               isInside
+           );
         }
-
 
         /* =========================================================
            TIMER
