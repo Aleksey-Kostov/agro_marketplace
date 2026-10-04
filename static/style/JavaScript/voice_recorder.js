@@ -57,6 +57,11 @@ document.addEventListener(
         let pointerIsDown = false;
         let stopAfterStart = false;
 
+        let isRecordingLocked = false;
+        let recordingStartY = 0;
+
+        const VOICE_LOCK_DISTANCE = 70;
+
         let isCancelTarget = false;
 
         let originalPlaceholder =
@@ -590,8 +595,28 @@ document.addEventListener(
             );
 
             submitBtn.innerHTML =
-                '<i class="fas fa-microphone" ' +
-                'id="message-submit-icon"></i>';
+                isRecordingLocked
+                    ? '<i class="fas fa-lock" ' +
+                      'id="message-submit-icon"></i>'
+                    : '<i class="fas fa-microphone" ' +
+                      'id="message-submit-icon"></i>';
+
+            submitBtn.classList.toggle(
+                'voice-recording-locked',
+                isRecordingLocked
+            );
+
+            submitBtn.title =
+                isRecordingLocked
+                    ? 'Tap to send'
+                    : 'Release to send';
+
+            submitBtn.setAttribute(
+                'aria-label',
+                isRecordingLocked
+                    ? 'Tap to send voice message'
+                    : 'Release to send voice message'
+            );
 
             setDragProgress(0);
         }
@@ -1058,19 +1083,94 @@ document.addEventListener(
                   );
              }
 
+             if (
+                isRecording &&
+                isRecordingLocked
+            ) {
+                event.preventDefault();
+                stopRecording(false);
+                return;
+            }
+
              pointerIsDown = true;
              cancelRecording = false;
              isCancelTarget = false;
+             isRecordingLocked = false;
+             recordingStartY = event.clientY;
 
              startRecording();
            }
        );
 
 
-        document.addEventListener(
+        function handleRecordingMove(
+            clientX,
+            clientY
+        ) {
+            if (
+                !pointerIsDown ||
+                !isRecording ||
+                isRecordingLocked
+            ) {
+                return;
+            }
+
+            const movedUp =
+                recordingStartY - clientY;
+
+            if (
+                movedUp >=
+                VOICE_LOCK_DISTANCE
+            ) {
+                isRecordingLocked = true;
+                pointerIsDown = false;
+
+                setCancelTarget(false);
+                setDragProgress(0);
+
+                setRecordingButton();
+
+                return;
+            }
+
+            updateCancelTarget({
+                clientX: clientX,
+                clientY: clientY
+            });
+        }
+
+
+        submitBtn.addEventListener(
             'pointermove',
             function (event) {
-                updateCancelTarget(event);
+                handleRecordingMove(
+                    event.clientX,
+                    event.clientY
+                );
+            }
+        );
+
+
+        submitBtn.addEventListener(
+            'touchmove',
+            function (event) {
+                if (
+                    !event.touches ||
+                    !event.touches.length
+                ) {
+                    return;
+                }
+
+                const touch =
+                    event.touches[0];
+
+                handleRecordingMove(
+                    touch.clientX,
+                    touch.clientY
+                );
+            },
+            {
+                passive: false
             }
         );
 

@@ -746,3 +746,33 @@
         100% + 10px + var(--composer-dropdown-shift, 0px)
     );
 }
+
+.chat-composer-submit-btn.voice-recording-locked {
+    position: relative;
+}
+
+.chat-composer-submit-btn.voice-recording-locked::after {
+    content: '';
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--bs-body-bg, #fff);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+.chat-composer-submit-btn.voice-recording-locked::before {
+    content: '↑';
+    position: absolute;
+    top: -21px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 700;
+}
