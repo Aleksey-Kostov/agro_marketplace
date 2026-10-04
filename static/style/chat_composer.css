@@ -397,12 +397,6 @@
     display: block;
 }
 
-.chat-composer-actions .dropdown-menu.is-floating-above {
-    position: fixed !important;
-    top: auto !important;
-    bottom: auto !important;
-    transform: none !important;
-}
 
 /* =========================================================
    DROP OVERLAY
