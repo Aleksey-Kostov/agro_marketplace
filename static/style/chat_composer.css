@@ -280,10 +280,9 @@
  */
 .chat-composer-submit-btn.chat-voice-recording,
 .chat-composer-submit-btn.chat-voice-button {
-    width: 40px;
-    min-width: 40px;
-
-    padding: 0;
+    width: 108px;
+    min-width: 108px;
+    padding: 0 14px;
 }
 
 
@@ -293,10 +292,8 @@
 
 .chat-voice-cancel-btn {
     position: relative;
-
     width: 40px !important;
     min-width: 40px !important;
-
     height: 40px !important;
     min-height: 40px !important;
 
