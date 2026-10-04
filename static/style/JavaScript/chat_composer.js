@@ -255,7 +255,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 ),
                 maxHeight
             );
+        const dropdownShift =
+            Math.max(
+                0,
+                finalHeight -
+                SINGLE_LINE_HEIGHT
+            );
 
+        composerMain.style.setProperty(
+            '--composer-dropdown-shift',
+            `${dropdownShift}px`
+        );
         messageBodyField.style.height =
             `${finalHeight}px`;
 
