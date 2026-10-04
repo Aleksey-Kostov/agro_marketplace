@@ -252,17 +252,14 @@
    SEND — DESKTOP
    ========================================================= */
 
-.chat-composer-submit-btn {
+.chat-composer-submit-btn {                     
+    touch-action: none;
     width: 108px;
     min-width: 108px;
-
     padding: 0 14px;
-
     gap: 7px;
-
     border: 0;
     border-radius: 12px;
-
     font-size: 14px;
     font-weight: 600;
 }
