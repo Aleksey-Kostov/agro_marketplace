@@ -555,24 +555,6 @@
 
 
 /* =========================================================
-   FIRST-LINE CONTROL SPACE
-   ========================================================= */
-
-/*
- * The first line must never start underneath the emoji.
- *
- * text-indent affects only the first visual line.
- * The actual right-side reservation is handled by
- * chat_composer.js so the Send button is not covered
- * while the message is still one line.
- */
-.chat-composer-input-wrap textarea,
-.chat-composer-input-wrap .form-control {
-    text-indent: 46px;
-}
-
-
-/* =========================================================
    LAYERING
    ========================================================= */
 
