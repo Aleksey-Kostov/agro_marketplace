@@ -87,21 +87,6 @@ document.addEventListener(
                 '.chat-composer-main'
             );
 
-        if (
-            removeMediaBtn &&
-            chatComposerMain &&
-            removeMediaBtn.parentElement !==
-                chatComposerMain
-        ) {
-            chatComposerMain.appendChild(
-                removeMediaBtn
-            );
-
-            removeMediaBtn.classList.add(
-                'chat-attachment-cancel-btn'
-            );
-        }
-
         const chatWindow =
             document.getElementById(
                 'chat-window'
