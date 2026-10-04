@@ -541,7 +541,7 @@ document.addEventListener('DOMContentLoaded', function () {
     window.agroChatConversation = {
         appendRenderedMessage,
         refreshMessageFragment,
-        isChatAtBottom
+        isChatAtBottom, 
         resetComposerAfterSend
     };
 
