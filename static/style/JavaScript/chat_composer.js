@@ -83,9 +83,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 : '10px';
 
         messageBodyField.style.paddingLeft =
-            isMobile()
-                ? '10px'
-                : '14px';
+           expanded
+               ? (
+                   isMobile()
+                       ? '10px'
+                       : '14px'
+               )
+                : (
+                   isMobile()
+                       ? '52px'
+                       : '60px'
+               );
 
         messageBodyField.style.paddingRight =
             expanded
