@@ -942,4 +942,11 @@
     }
 }
 
+.chat-composer-actions-right > .dropdown:first-child {
+    order: 10;
+}
 
+.chat-composer-actions-left > .dropdown {
+    order: 10;
+    margin-left: 0;
+}
