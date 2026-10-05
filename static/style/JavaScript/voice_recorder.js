@@ -598,8 +598,11 @@ document.addEventListener(
 
             submitBtn.innerHTML =
                 isRecordingLocked
-                    ? '<i class="fas fa-lock" ' +
-                      'id="message-submit-icon"></i>'
+                    ? '<i class="fas fa-paper-plane" ' +
+                      'id="message-submit-icon"></i>' +
+                      '<span id="message-submit-text">' +
+                      'Send' +
+                      '</span>'
                     : '<i class="fas fa-microphone" ' +
                       'id="message-submit-icon"></i>';
 
