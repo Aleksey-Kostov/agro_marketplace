@@ -217,8 +217,8 @@
 
 .chat-composer-submit-btn {
     touch-action: none;
-    width: 108px;
-    min-width: 108px;
+    width: 120px;
+    min-width: 120px;
     padding: 0 14px;
     gap: 7px;
     border: 0;
@@ -244,8 +244,8 @@
 
 .chat-composer-submit-btn.chat-voice-recording,
 .chat-composer-submit-btn.chat-voice-button {
-    width: 108px;
-    min-width: 108px;
+    width: 120px;
+    min-width: 120px;
     padding: 0 14px;
 }
 
