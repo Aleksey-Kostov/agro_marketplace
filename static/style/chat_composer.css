@@ -754,7 +754,7 @@
 .chat-composer-submit-btn.voice-recording {
     position: relative;
 
-    transform: scale(1.06);
+    transform: scale(1.08);
 
     transition:
         transform 160ms ease,
