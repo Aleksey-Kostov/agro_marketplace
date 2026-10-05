@@ -57,22 +57,15 @@
 
     min-height: 44px;
     max-height: 160px;
-
     margin: 0;
     padding: 10px 14px;
-
     border: 0;
     outline: 0;
-
     resize: none;
-
     overflow-x: hidden;
     overflow-y: hidden;
-
     background: transparent;
-
     box-shadow: none;
-
     line-height: 24px;
     font-size: 15px;
 }
@@ -109,21 +102,17 @@
 
 .chat-composer-actions {
     position: absolute;
-
     right: 6px;
     bottom: 6px;
     left: 6px;
-
     z-index: 30;
-
     display: flex;
     align-items: center;
-
     width: auto;
     min-height: 40px;
-
     gap: 6px;
-
+    padding-top: 6px;
+    background: var(--bs-body-bg, #fff);
     pointer-events: none;
 }
 
