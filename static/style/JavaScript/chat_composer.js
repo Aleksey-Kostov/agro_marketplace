@@ -285,23 +285,28 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     ];
 
-    function closeAll(except) {
+    function closeAll(exceptMenu) {
         items.forEach(function (item) {
             if (!item.btn || !item.menu) return;
-            if (except && item.menu === except) return;
+            if (exceptMenu && item.menu === exceptMenu) return;
             item.menu.classList.remove('is-open');
             item.menu.hidden = true;
             item.btn.setAttribute('aria-expanded', 'false');
         });
     }
 
-    function toggle(item) {
-        const open = item.menu.classList.contains('is-open');
-        closeAll();
-        if (!open) {
-            item.menu.hidden = false;
-            item.menu.classList.add('is-open');
-            item.btn.setAttribute('aria-expanded', 'true');
+    function openItem(item) {
+        closeAll(item.menu);
+        item.menu.hidden = false;
+        item.menu.classList.add('is-open');
+        item.btn.setAttribute('aria-expanded', 'true');
+    }
+
+    function toggleItem(item) {
+        if (item.menu.classList.contains('is-open')) {
+            closeAll();
+        } else {
+            openItem(item);
         }
     }
 
@@ -311,18 +316,13 @@ document.addEventListener('DOMContentLoaded', function () {
         item.btn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            toggle(item);
+            toggleItem(item);
         });
     });
 
     document.addEventListener('click', function (e) {
-        if (main.contains(e.target) &&
-            e.target.closest('.chat-composer-menu')) {
-            return; /* click inside menu */
-        }
-        if (e.target.closest('#emoji-toggle-btn, #attachment-toggle-btn')) {
-            return;
-        }
+        if (e.target.closest('.chat-composer-menu')) return;
+        if (e.target.closest('#emoji-toggle-btn, #attachment-toggle-btn')) return;
         closeAll();
     });
 
@@ -330,3 +330,4 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.key === 'Escape') closeAll();
     });
 });
+
