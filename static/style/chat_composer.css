@@ -55,7 +55,9 @@
     display: block;
     width: 100%;
     min-width: 0;
+    /* Един ред: line-height 24 + padding 10+10 = 44px (border-box) */
     min-height: 44px;
+    height: 44px;
     max-height: 160px;
     margin: 0;
     padding: 10px 14px;
@@ -63,11 +65,13 @@
     outline: 0;
     resize: none;
     overflow-x: hidden;
-    overflow-y: hidden;
+    overflow-y: hidden; /* JS сменя на auto при нужда */
     background: transparent;
     box-shadow: none;
     line-height: 24px;
     font-size: 15px;
+    box-sizing: border-box;
+    field-sizing: content; /* native auto-grow където се поддържа */
 }
 
 .chat-composer-input-wrap textarea:focus,
@@ -529,7 +533,9 @@
 
     .chat-composer-input-wrap textarea,
     .chat-composer-input-wrap .form-control {
-        min-height: 40px;
+        /* Един ред mobile: line-height 22 + padding 8+8 = 38px */
+        min-height: 38px;
+        height: 38px;
         max-height: 160px;
         padding-top: 8px;
         padding-right: 10px;
@@ -537,6 +543,7 @@
         padding-left: 10px;
         line-height: 22px;
         font-size: 15px;
+        box-sizing: border-box;
     }
 
 
@@ -700,11 +707,14 @@
 
     .chat-composer-input-wrap textarea,
     .chat-composer-input-wrap .form-control {
-        min-height: 38px;
+        min-height: 36px;
+        height: 36px;
         padding-top: 7px;
         padding-right: 8px;
         padding-bottom: 7px;
         padding-left: 8px;
+        line-height: 22px;
+        box-sizing: border-box;
     }
 
 

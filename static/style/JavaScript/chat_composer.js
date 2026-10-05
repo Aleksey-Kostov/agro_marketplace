@@ -16,9 +16,15 @@ document.addEventListener('DOMContentLoaded', function () {
      * =========================================================
      * DIMENSIONS
      * =========================================================
+     *
+     * Трябва да съвпадат с chat_composer.css:
+     * Desktop: line-height 24 + padding 10+10 = 44px
+     * Mobile:  line-height 22 + padding 8+8  = 38px
      */
 
-    const SINGLE_LINE_HEIGHT = 40;
+    function getSingleLineHeight() {
+        return isMobile() ? 38 : 44;
+    }
 
     /*
      * Space reserved at the bottom when the textarea grows.
@@ -183,8 +189,8 @@ document.addEventListener('DOMContentLoaded', function () {
      */
 
     function autoResizeMessageInput() {
-        const maxHeight =
-            getMaxHeight();
+        const maxHeight = getMaxHeight();
+        const singleLineHeight = getSingleLineHeight();
 
         /*
          * Always start from compact state.
@@ -194,11 +200,8 @@ document.addEventListener('DOMContentLoaded', function () {
             'is-expanded'
         );
 
-        messageBodyField.style.height =
-            'auto';
-
-        messageBodyField.style.overflowY =
-            'hidden';
+        messageBodyField.style.height = 'auto';
+        messageBodyField.style.overflowY = 'hidden';
 
         /*
          * Compact measurement.
@@ -214,15 +217,17 @@ document.addEventListener('DOMContentLoaded', function () {
         /*
          * One-line message.
          */
-        if (
-            naturalHeight <=
-            SINGLE_LINE_HEIGHT + 4
-        ) {
+        if (naturalHeight <= singleLineHeight + 4) {
             messageBodyField.style.height =
-                `${SINGLE_LINE_HEIGHT}px`;
+                `${singleLineHeight}px`;
 
             messageBodyField.style.overflowY =
                 'hidden';
+
+            composerMain.style.setProperty(
+                '--composer-dropdown-shift',
+                '0px'
+            );
 
             return;
         }
@@ -238,34 +243,30 @@ document.addEventListener('DOMContentLoaded', function () {
             'is-expanded'
         );
 
-        messageBodyField.style.height =
-            'auto';
-
+        messageBodyField.style.height = 'auto';
         setTextareaPadding(true);
 
         const expandedHeight =
             messageBodyField.scrollHeight;
 
-        const finalHeight =
-            Math.min(
-                Math.max(
-                    expandedHeight,
-                    SINGLE_LINE_HEIGHT +
-                    ACTIONS_RESERVED_HEIGHT
-                ),
-                maxHeight
-            );
-        const dropdownShift =
+        const finalHeight = Math.min(
             Math.max(
-                0,
-                finalHeight -
-                SINGLE_LINE_HEIGHT
-            );
+                expandedHeight,
+                singleLineHeight + ACTIONS_RESERVED_HEIGHT
+            ),
+            maxHeight
+        );
+
+        const dropdownShift = Math.max(
+            0,
+            finalHeight - singleLineHeight
+        );
 
         composerMain.style.setProperty(
             '--composer-dropdown-shift',
             `${dropdownShift}px`
         );
+
         messageBodyField.style.height =
             `${finalHeight}px`;
 
