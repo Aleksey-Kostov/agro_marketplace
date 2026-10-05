@@ -261,19 +261,18 @@
 
 /* =========================================================
    COMPOSER MENUS — always ABOVE the entire .chat-composer-main
-   Menus are direct children of .chat-composer-main.
-   bottom: 100% tracks the full box height (1-line AND expanded).
+   IMPORTANT: do NOT use "inset: auto" after bottom — it resets bottom.
    ========================================================= */
 
 .chat-composer-main > .chat-composer-menu,
 .chat-composer-main > .dropdown-menu.chat-composer-menu {
     position: absolute !important;
     top: auto !important;
-    bottom: calc(100% + 8px) !important;
+    bottom: calc(100% + 8px) !important; /* full main height, 1-line + expanded */
     z-index: 2000;
     transform: none !important;
-    inset: auto !important; /* kill Bootstrap / Popper inline inset */
     margin: 0 !important;
+    float: none !important;
     display: none;
     max-height: min(420px, calc(100vh - 150px));
     overflow-x: hidden;
@@ -282,17 +281,13 @@
     border-radius: 14px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
     background: var(--bs-body-bg, #fff);
-    /* neutralize Bootstrap dropdown defaults */
-    float: none !important;
 }
 
-/* Open state: class and/or without [hidden] */
 .chat-composer-main > .chat-composer-menu.is-open,
 .chat-composer-main > .dropdown-menu.chat-composer-menu.is-open {
     display: block !important;
 }
 
-/* If JS only toggles the hidden attribute */
 .chat-composer-main > .chat-composer-menu[hidden],
 .chat-composer-main > .dropdown-menu.chat-composer-menu[hidden] {
     display: none !important;
@@ -303,23 +298,23 @@
     display: block !important;
 }
 
-/* Expanded: same rule — 100% is the full main height including both rows */
+/* Expanded: same bottom — 100% includes both grid rows */
 .chat-composer-main.is-expanded > .chat-composer-menu,
 .chat-composer-main.is-expanded > .dropdown-menu.chat-composer-menu {
     bottom: calc(100% + 8px) !important;
 }
 
-/* Emoji — left aligned */
+/* Emoji — left */
 #emoji-picker-menu {
     left: 0 !important;
     right: auto !important;
     min-width: 300px;
     width: max-content;
     max-width: min(360px, calc(100vw - 24px));
-    padding: 0 !important; /* emoji picker has its own internal padding */
+    padding: 0 !important;
 }
 
-/* Attachment — right aligned */
+/* Attachment — right */
 #attachment-picker-menu {
     right: 0 !important;
     left: auto !important;
