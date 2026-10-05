@@ -55,31 +55,30 @@
     display: block;
     width: 100%;
     min-width: 0;
-    /* Един ред: line-height 24 + padding 10+10 = 44px (border-box) */
-    min-height: 44px;
+    /* 1 ред: line-height 24 + padding 10+10 = 44 (border-box) */
+    min-height: 44px !important;
     height: 44px;
     max-height: 160px;
     margin: 0;
     padding: 10px 14px;
-    border: 0;
+    border: 0 !important;
     outline: 0;
     resize: none;
     overflow-x: hidden;
-    overflow-y: hidden; /* JS сменя на auto при нужда */
-    background: transparent;
-    box-shadow: none;
+    overflow-y: hidden;
+    background: transparent !important;
+    box-shadow: none !important;
     line-height: 24px;
     font-size: 15px;
     box-sizing: border-box;
-    field-sizing: content; /* native auto-grow където се поддържа */
 }
 
 .chat-composer-input-wrap textarea:focus,
 .chat-composer-input-wrap .form-control:focus {
-    border: 0;
+    border: 0 !important;
     outline: 0;
-    box-shadow: none;
-    background: transparent;
+    box-shadow: none !important;
+    background: transparent !important;
 }
 
 .chat-composer-input-wrap textarea::placeholder,
@@ -118,12 +117,6 @@
     grid-row: 2;
 }
 
-.chat-composer-main.is-expanded
-.chat-composer-actions > .chat-voice-cancel-btn {
-    grid-column: 2;
-    grid-row: 2;
-}
-
 
 /* =========================================================
    ACTION BAR
@@ -149,14 +142,9 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 6px;
+    /* Cancel и Send един до друг — малък gap за swipe */
+    gap: 4px;
     min-width: 0;
-}
-
-.chat-composer-actions > .chat-voice-cancel-btn {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: center;
 }
 
 
@@ -241,11 +229,6 @@
     flex: 0 0 auto;
 }
 
-
-/*
- * Voice mode.
- */
-
 .chat-composer-submit-btn.chat-voice-recording,
 .chat-composer-submit-btn.chat-voice-button {
     width: 120px;
@@ -255,7 +238,7 @@
 
 
 /* =========================================================
-   VOICE CANCEL
+   VOICE CANCEL — винаги до Send (в actions-right)
    ========================================================= */
 
 .chat-voice-cancel-btn {
@@ -272,6 +255,18 @@
     background: var(--bs-body-bg, #fff);
     color: var(--bs-danger, #dc3545);
     z-index: 32;
+    /* НЕ в средата на grid — остава във flex до Send */
+    grid-column: unset !important;
+    grid-row: unset !important;
+    justify-self: unset !important;
+}
+
+.chat-composer-actions-right .chat-voice-cancel-btn {
+    order: 0;
+}
+
+.chat-composer-actions-right .chat-composer-submit-btn {
+    order: 1;
 }
 
 .chat-voice-cancel-btn:hover,
@@ -283,12 +278,6 @@
 .chat-voice-cancel-btn.d-none {
     display: none !important;
 }
-
-
-/*
- * Older voice CSS may contain pseudo-elements.
- * They must never affect composer positioning.
- */
 
 .chat-composer-actions
 .chat-voice-cancel-btn::before,
@@ -330,12 +319,6 @@
     display: block;
 }
 
-
-/*
- * The menus are anchored to the composer itself.
- * This avoids the old artificial dropdown shift.
- */
-
 .chat-composer-actions-left
 .dropdown-menu {
     left: 0;
@@ -347,11 +330,6 @@
     right: 0;
     left: auto;
 }
-
-
-/* =========================================================
-   EXPANDED DROPDOWN POSITION
-   ========================================================= */
 
 .chat-composer-main.is-expanded
 .chat-composer-actions
@@ -533,23 +511,22 @@
 
     .chat-composer-input-wrap textarea,
     .chat-composer-input-wrap .form-control {
-        /* Един ред mobile: line-height 22 + padding 8+8 = 38px */
-        min-height: 38px;
+        /* 1 ред: 22 + 8+8 = 38 */
+        min-height: 38px !important;
         height: 38px;
         max-height: 160px;
         padding-top: 8px;
-        padding-right: 10px;
         padding-bottom: 8px;
-        padding-left: 10px;
+        padding-left: 8px;
+        padding-right: 10px;
         line-height: 22px;
         font-size: 15px;
         box-sizing: border-box;
     }
 
-
-    /* =====================================================
-       MOBILE BUTTONS
-       ===================================================== */
+    .chat-composer-actions-right {
+        gap: 4px;
+    }
 
     .chat-composer-actions .btn,
     .chat-voice-cancel-btn {
@@ -559,11 +536,6 @@
         min-height: 38px;
         border-radius: 50%;
     }
-
-
-    /*
-     * Mobile send must always be circular.
-     */
 
     .chat-composer-submit-btn,
     .chat-composer-submit-btn.chat-voice-recording,
@@ -578,19 +550,9 @@
         gap: 0;
     }
 
-
-    /*
-     * Hide Send text on mobile.
-     */
-
     .chat-composer-submit-btn span {
         display: none !important;
     }
-
-
-    /*
-     * Mobile cancel button.
-     */
 
     .chat-composer-actions
     .chat-voice-cancel-btn {
@@ -601,12 +563,9 @@
         flex: 0 0 38px !important;
         flex-basis: 38px !important;
         border-radius: 50% !important;
+        grid-column: unset !important;
+        grid-row: unset !important;
     }
-
-
-    /* =====================================================
-       MOBILE DROPDOWNS
-       ===================================================== */
 
     .chat-composer-main.is-expanded
     .chat-composer-actions
@@ -627,11 +586,6 @@
         max-width:
             calc(100vw - 20px);
     }
-
-
-    /* =====================================================
-       MOBILE PREVIEW
-       ===================================================== */
 
     .chat-composer-previews {
         padding-top: 6px;
@@ -656,7 +610,7 @@
         border-radius: 17px;
     }
 
-    .chat-composer-actions {
+    .chat-composer-actions-right {
         gap: 3px;
     }
 
@@ -669,11 +623,6 @@
         border-radius: 50%;
     }
 
-
-    /* =====================================================
-       SMALL PHONE SEND
-       ===================================================== */
-
     .chat-composer-submit-btn,
     .chat-composer-submit-btn.chat-voice-recording,
     .chat-composer-submit-btn.chat-voice-button {
@@ -685,11 +634,6 @@
         flex-basis: 36px !important;
     }
 
-
-    /* =====================================================
-       SMALL PHONE CANCEL
-       ===================================================== */
-
     .chat-composer-actions
     .chat-voice-cancel-btn {
         width: 36px !important;
@@ -698,29 +642,21 @@
         min-height: 36px !important;
         flex: 0 0 36px !important;
         flex-basis: 36px !important;
+        grid-column: unset !important;
+        grid-row: unset !important;
     }
-
-
-    /* =====================================================
-       SMALL PHONE INPUT
-       ===================================================== */
 
     .chat-composer-input-wrap textarea,
     .chat-composer-input-wrap .form-control {
-        min-height: 36px;
+        min-height: 36px !important;
         height: 36px;
         padding-top: 7px;
-        padding-right: 8px;
         padding-bottom: 7px;
-        padding-left: 8px;
+        padding-left: 6px;
+        padding-right: 8px;
         line-height: 22px;
         box-sizing: border-box;
     }
-
-
-    /* =====================================================
-       SMALL PHONE PICKERS
-       ===================================================== */
 
     .chat-composer-actions-left
     .emoji-picker {
@@ -749,12 +685,6 @@
         transform 160ms ease,
         box-shadow 160ms ease;
 }
-
-
-/*
- * While recording:
- * small upward arrow as a visual hint.
- */
 
 .chat-composer-submit-btn.voice-recording:not(
     .voice-recording-locked
@@ -789,13 +719,6 @@
         1.4s ease-in-out infinite;
 }
 
-
-/*
- * Locked state:
- * button stays slightly larger and
- * gets a small lock indicator.
- */
-
 .chat-composer-submit-btn.voice-recording-locked {
     transform: scale(1.10);
     animation:
@@ -829,13 +752,7 @@
         180ms ease-out;
 }
 
-
-/*
- * Small upward movement of the arrow.
- */
-
 @keyframes voice-lock-arrow {
-
     0%,
     100% {
         opacity: 0.55;
@@ -843,7 +760,6 @@
             translateX(-50%)
             translateY(3px);
     }
-
     50% {
         opacity: 1;
         transform:
@@ -852,27 +768,19 @@
     }
 }
 
-
-/*
- * Short snap when recording becomes locked.
- */
-
 @keyframes voice-lock-badge {
-
     0% {
         opacity: 0;
         transform:
             translateX(-50%)
             scale(0.65);
     }
-
     70% {
         opacity: 1;
         transform:
             translateX(-50%)
             scale(1.12);
     }
-
     100% {
         opacity: 1;
         transform:
@@ -881,32 +789,19 @@
     }
 }
 
-
-/*
- * Subtle pulse while recording is locked.
- */
-
 @keyframes voice-locked-button-pulse {
-
     0%,
     100% {
         box-shadow:
             0 0 0 0
             rgba(13, 110, 253, 0);
     }
-
     50% {
         box-shadow:
             0 0 0 5px
             rgba(13, 110, 253, 0.12);
     }
 }
-
-
-/*
- * On small screens keep the indicators inside
- * the viewport.
- */
 
 @media (max-width: 767.98px) {
     .chat-composer-submit-btn.voice-recording::after {

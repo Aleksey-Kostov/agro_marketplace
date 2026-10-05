@@ -17,9 +17,9 @@ document.addEventListener('DOMContentLoaded', function () {
      * DIMENSIONS
      * =========================================================
      *
-     * Трябва да съвпадат с chat_composer.css:
-     * Desktop: line-height 24 + padding 10+10 = 44px
-     * Mobile:  line-height 22 + padding 8+8  = 38px
+     * Съвпадат с chat_composer.css:
+     * Desktop: 24 line + 10+10 padding = 44
+     * Mobile:  22 line + 8+8  padding = 38
      */
 
     function getSingleLineHeight() {
@@ -27,25 +27,23 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /*
-     * Space reserved at the bottom when the textarea grows.
-     * The action buttons stay inside this area.
-     */
-    const ACTIONS_RESERVED_HEIGHT = 46;
-
-    /*
-     * Horizontal space reserved for the right-side controls
-     * while the textarea is still on one line.
+     * Compact mode: по-малко резервирано място вдясно,
+     * за да стигне текстът почти до бутоните преди 2-ри ред.
      *
-     * Desktop:
-     * attachment + cancel + send
+     * Desktop: attachment (~40) + send (~120) + gap ≈ 130
+     * Mobile:  attachment (~38) + send (~40) + gap ≈ 78
      */
-    const DESKTOP_RIGHT_ACTION_SPACE = 150;
+    const DESKTOP_RIGHT_ACTION_SPACE = 130;
+    const MOBILE_RIGHT_ACTION_SPACE = 78;
 
     /*
-     * Mobile:
-     * attachment + cancel + circular send
+     * Compact left: emoji бутонът е извън textarea-та (grid col 1),
+     * затова left padding е малък — само визуален въздух.
      */
-    const MOBILE_RIGHT_ACTION_SPACE = 92;
+    const DESKTOP_LEFT_PADDING_COMPACT = '12px';
+    const MOBILE_LEFT_PADDING_COMPACT = '8px';
+
+    const ACTIONS_RESERVED_HEIGHT = 46;
 
     /*
      * =========================================================
@@ -75,26 +73,20 @@ document.addEventListener('DOMContentLoaded', function () {
             ? MOBILE_RIGHT_ACTION_SPACE
             : DESKTOP_RIGHT_ACTION_SPACE;
 
-        /*
-         * Compact:
-         * reserve horizontal space for the buttons.
-         *
-         * Expanded:
-         * buttons are on the bottom row, so the text can use
-         * the full width again.
-         */
         messageBodyField.style.paddingTop =
-            isMobile()
-                ? '8px'
-                : '10px';
+            isMobile() ? '8px' : '10px';
 
+        /*
+         * Compact: малък left — emoji е в отделна grid колона.
+         * Expanded: пълен width, бутоните са на 2-ри ред.
+         */
         messageBodyField.style.paddingLeft =
             expanded
                 ? '14px'
                 : (
                     isMobile()
-                        ? '48px'
-                        : '52px'
+                        ? MOBILE_LEFT_PADDING_COMPACT
+                        : DESKTOP_LEFT_PADDING_COMPACT
                 );
 
         messageBodyField.style.paddingRight =
@@ -102,68 +94,73 @@ document.addEventListener('DOMContentLoaded', function () {
                 ? '14px'
                 : `${rightSpace}px`;
 
+        /*
+         * Expanded: запазваме място долу за action bar.
+         * Compact: стандартен vertical padding = 1 ред.
+         */
         messageBodyField.style.paddingBottom =
             expanded
                 ? `${ACTIONS_RESERVED_HEIGHT}px`
                 : (
-                    isMobile()
-                        ? '8px'
-                        : '10px'
+                    isMobile() ? '8px' : '10px'
                 );
     }
 
     /*
      * =========================================================
-     * MOVE VOICE CANCEL OUT OF THE EMOJI GROUP
+     * VOICE CANCEL — ОСТАВА ДО SEND
      * =========================================================
      *
-     * voice_recorder.js creates the cancel button inside
-     * .chat-composer-actions-right.
+     * voice_recorder.js вече поставя cancel с insertBefore(submitBtn).
+     * НЕ го местете в средата на grid-а — иначе е далеч от Send
+     * и swipe-to-cancel не работи удобно.
      *
-     * For the professional composer layout we want:
-     *
-     * Emoji | spacer | Attachment | Cancel | Send
-     *
-     * So the cancel button becomes a direct child of the
-     * action bar.
-     *
-     * We do this here instead of changing the recorder itself.
+     * Ако някой друг код го е преместил, връщаме го до Send.
      */
 
-    function normalizeVoiceCancelButton() {
-        if (!composerActions) {
-            return;
-        }
-
+    function ensureCancelNextToSend() {
         const cancelBtn =
             document.getElementById(
                 'voice-recording-cancel-btn'
             );
 
-        if (!cancelBtn) {
+        const submitBtn =
+            document.getElementById(
+                'message-submit-btn'
+            );
+
+        if (!cancelBtn || !submitBtn) {
             return;
         }
 
+        const rightActions =
+            document.querySelector(
+                '.chat-composer-actions-right'
+            );
+
+        if (!rightActions) {
+            return;
+        }
+
+        /*
+         * Cancel трябва да е непосредствено преди Send,
+         * вътре в .chat-composer-actions-right.
+         */
         if (
-            cancelBtn.parentElement ===
-            composerActions
+            cancelBtn.parentElement !== rightActions ||
+            cancelBtn.nextElementSibling !== submitBtn
         ) {
-            return;
+            rightActions.insertBefore(
+                cancelBtn,
+                submitBtn
+            );
         }
-
-        composerActions.appendChild(
-            cancelBtn
-        );
     }
 
-    /*
-     * The recorder creates the button dynamically,
-     * therefore observe the composer for it.
-     */
     if (composerActions) {
         const composerObserver =
             new MutationObserver(function () {
-                normalizeVoiceCancelButton();
+                ensureCancelNextToSend();
             });
 
         composerObserver.observe(
@@ -174,11 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         );
 
-        /*
-         * Also try immediately in case the recorder has
-         * already created it.
-         */
-        normalizeVoiceCancelButton();
+        ensureCancelNextToSend();
     }
 
 
@@ -192,37 +185,30 @@ document.addEventListener('DOMContentLoaded', function () {
         const maxHeight = getMaxHeight();
         const singleLineHeight = getSingleLineHeight();
 
-        /*
-         * Always start from compact state.
-         * This allows the textarea to shrink again.
-         */
-        composerMain.classList.remove(
-            'is-expanded'
-        );
+        composerMain.classList.remove('is-expanded');
 
         messageBodyField.style.height = 'auto';
         messageBodyField.style.overflowY = 'hidden';
 
-        /*
-         * Compact measurement.
-         *
-         * Right-side buttons are reserved here so text cannot
-         * run underneath Send while still on one line.
-         */
         setTextareaPadding(false);
+
+        /*
+         * Force reflow преди измерване.
+         */
+        void messageBodyField.offsetHeight;
 
         const naturalHeight =
             messageBodyField.scrollHeight;
 
         /*
-         * One-line message.
+         * Един ред — само ако scrollHeight е близо до 1 ред.
+         * Толеранс 6px заради subpixel / font metrics.
          */
-        if (naturalHeight <= singleLineHeight + 4) {
+        if (naturalHeight <= singleLineHeight + 6) {
             messageBodyField.style.height =
                 `${singleLineHeight}px`;
 
-            messageBodyField.style.overflowY =
-                'hidden';
+            messageBodyField.style.overflowY = 'hidden';
 
             composerMain.style.setProperty(
                 '--composer-dropdown-shift',
@@ -233,18 +219,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         /*
-         * Message needs additional lines.
-         *
-         * From this point onward the textarea gets the full
-         * horizontal width and the action buttons occupy the
-         * bottom area.
+         * Повече от 1 ред → expanded layout.
          */
-        composerMain.classList.add(
-            'is-expanded'
-        );
+        composerMain.classList.add('is-expanded');
 
         messageBodyField.style.height = 'auto';
         setTextareaPadding(true);
+
+        void messageBodyField.offsetHeight;
 
         const expandedHeight =
             messageBodyField.scrollHeight;
@@ -280,45 +262,18 @@ document.addEventListener('DOMContentLoaded', function () {
      * =========================================================
      * RESET AFTER SEND
      * =========================================================
-     *
-     * conversation.js already dispatches:
-     *
-     * agro:message-sent
-     *
-     * after a successful send/edit.
-     *
-     * Use that event to force the composer back to one line.
      */
 
     function resetComposerLayout() {
-        /*
-         * Wait one frame so that any DOM update performed by
-         * conversation.js has already completed.
-         */
-        window.requestAnimationFrame(
-            function () {
-                composerMain.classList.remove(
-                    'is-expanded'
-                );
+        window.requestAnimationFrame(function () {
+            composerMain.classList.remove('is-expanded');
 
-                messageBodyField.style.height =
-                    'auto';
+            messageBodyField.style.height = 'auto';
+            messageBodyField.style.overflowY = 'hidden';
 
-                messageBodyField.style.overflowY =
-                    'hidden';
-
-                /*
-                 * Recalculate using the now-empty textarea.
-                 */
-                autoResizeMessageInput();
-
-                /*
-                 * Make sure any dynamically-created voice
-                 * cancel button has its correct parent.
-                 */
-                normalizeVoiceCancelButton();
-            }
-        );
+            autoResizeMessageInput();
+            ensureCancelNextToSend();
+        });
     }
 
     window.addEventListener(
@@ -337,17 +292,16 @@ document.addEventListener('DOMContentLoaded', function () {
         autoResizeMessageInput
     );
 
-    /*
-     * When the viewport changes width, the amount of wrapping
-     * can change as well.
-     */
     window.addEventListener(
         'resize',
         autoResizeMessageInput
     );
 
     /*
-     * Initial state.
+     * Initial — след layout, за да няма 2 реда при load.
      */
-    autoResizeMessageInput();
+    window.requestAnimationFrame(function () {
+        autoResizeMessageInput();
+        ensureCancelNextToSend();
+    });
 });
