@@ -539,7 +539,7 @@
     .chat-composer-input-wrap textarea,
     .chat-composer-input-wrap .form-control {
         min-height: 40px;
-        max-height: 140px;
+        max-height: 160px;
         padding-top: 8px;
         padding-right: 10px;
         padding-bottom: 8px;
