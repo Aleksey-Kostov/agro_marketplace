@@ -103,10 +103,11 @@
     position: relative;
     display: flex;
     align-items: center;
-    width: 100%;
+    justify-content: flex-end;
+    width: auto;
     min-height: 40px;
     gap: 6px;
-    margin-top: 2px;
+    margin-top: 0;
     pointer-events: none;
 }
 
