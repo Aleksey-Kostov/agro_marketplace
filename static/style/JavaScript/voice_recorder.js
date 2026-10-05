@@ -515,7 +515,7 @@ document.addEventListener(
             }
 
             submitBtn.classList.remove(
-                'voice-recording'
+                'voice-recording',
                 'voice-recording-locked'
             );
 
@@ -550,7 +550,7 @@ document.addEventListener(
             }
 
             submitBtn.classList.remove(
-                'voice-recording'
+                'voice-recording',
                 'voice-recording-locked'
             );
 
