@@ -28,8 +28,8 @@ document.addEventListener('DOMContentLoaded', function () {
      * Затова right padding е само визуален въздух, не ширина на бутоните.
      * Текстът стига почти до Attachment, после минава на 2-ри ред.
      */
-    const DESKTOP_RIGHT_ACTION_SPACE = 12;
-    const MOBILE_RIGHT_ACTION_SPACE = 10;
+    const DESKTOP_RIGHT_ACTION_SPACE = 4;
+    const MOBILE_RIGHT_ACTION_SPACE = 2;
 
     const DESKTOP_LEFT_PADDING_COMPACT = '10px';
     const MOBILE_LEFT_PADDING_COMPACT = '6px';
