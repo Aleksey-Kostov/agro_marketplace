@@ -268,3 +268,65 @@ document.addEventListener('DOMContentLoaded', function () {
         ensureCancelNextToSend();
     });
 });
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const main = document.querySelector('.chat-composer-main');
+    if (!main) return;
+
+    const items = [
+        {
+            btn: document.getElementById('emoji-toggle-btn'),
+            menu: document.getElementById('emoji-picker-menu')
+        },
+        {
+            btn: document.getElementById('attachment-toggle-btn'),
+            menu: document.getElementById('attachment-picker-menu')
+        }
+    ];
+
+    function closeAll(except) {
+        items.forEach(function (item) {
+            if (!item.btn || !item.menu) return;
+            if (except && item.menu === except) return;
+            item.menu.classList.remove('is-open');
+            item.menu.hidden = true;
+            item.btn.setAttribute('aria-expanded', 'false');
+        });
+    }
+
+    function toggle(item) {
+        const open = item.menu.classList.contains('is-open');
+        closeAll();
+        if (!open) {
+            item.menu.hidden = false;
+            item.menu.classList.add('is-open');
+            item.btn.setAttribute('aria-expanded', 'true');
+        }
+    }
+
+    items.forEach(function (item) {
+        if (!item.btn || !item.menu) return;
+
+        item.btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggle(item);
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        if (main.contains(e.target) &&
+            e.target.closest('.chat-composer-menu')) {
+            return; /* click inside menu */
+        }
+        if (e.target.closest('#emoji-toggle-btn, #attachment-toggle-btn')) {
+            return;
+        }
+        closeAll();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAll();
+    });
+});

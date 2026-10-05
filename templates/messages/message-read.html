@@ -351,73 +351,34 @@
 
                             <div class="chat-composer-actions">
 
-                                <!-- =================================================
-                                     LEFT ACTIONS — EMOJI
-                                ================================================== -->
+                                <!-- LEFT — EMOJI (no Bootstrap dropdown) -->
 
                                 <div class="chat-composer-actions-left">
-                                    <div class="dropdown">
-                                        <button type="button"
-                                                id="emoji-toggle-btn"
-                                                class="btn btn-outline-secondary btn-sm chat-composer-action-btn"
-                                                data-bs-toggle="dropdown"
-                                                data-bs-display="static"
-                                                data-bs-placement="top-start"
-                                                aria-expanded="false"
-                                                title="Emoji"
-                                                aria-label="Emoji">
-                                            <i class="far fa-face-smile"></i>
-                                        </button>
-                                        <div class="dropdown-menu p-2 emoji-picker"
-                                             aria-labelledby="emoji-toggle-btn">
-                                            <div class="emoji-grid"></div>
-                                        </div>
-                                    </div>
+                                    <button type="button"
+                                            id="emoji-toggle-btn"
+                                            class="btn btn-outline-secondary btn-sm chat-composer-action-btn"
+                                            aria-expanded="false"
+                                            aria-controls="emoji-picker-menu"
+                                            title="Emoji"
+                                            aria-label="Emoji">
+                                        <i class="far fa-face-smile"></i>
+                                    </button>
                                 </div>
 
 
-                                <!-- =================================================
-                                     RIGHT ACTIONS — ATTACHMENT + SEND
-                                ================================================== -->
+                                <!-- RIGHT — ATTACHMENT + SEND -->
 
                                 <div class="chat-composer-actions-right">
 
-                                    <!-- ATTACHMENT -->
-
-                                    <div class="dropdown">
-                                        <button type="button"
-                                                id="attachment-toggle-btn"
-                                                class="btn btn-outline-secondary btn-sm chat-composer-action-btn"
-                                                data-bs-toggle="dropdown"
-                                                data-bs-display="static"
-                                                data-bs-placement="top-end"
-                                                aria-expanded="false"
-                                                title="Attachments"
-                                                aria-label="Attachments">
-                                            <i class="fas fa-paperclip"></i>
-                                        </button>
-                                        <div class="dropdown-menu attachment-picker"
-                                             aria-labelledby="attachment-toggle-btn">
-                                            <button type="button"
-                                                    class="dropdown-item attachment-option"
-                                                    id="attach-image-btn">
-                                                <i class="fas fa-image me-2"></i>
-                                                Image
-                                            </button>
-                                            <button type="button"
-                                                    class="dropdown-item attachment-option"
-                                                    id="attach-video-btn">
-                                                <i class="fas fa-video me-2"></i>
-                                                Video
-                                            </button>
-                                            <button type="button"
-                                                    class="dropdown-item attachment-option"
-                                                    id="attach-file-btn">
-                                                <i class="fas fa-file-alt me-2"></i>
-                                                File
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <button type="button"
+                                            id="attachment-toggle-btn"
+                                            class="btn btn-outline-secondary btn-sm chat-composer-action-btn"
+                                            aria-expanded="false"
+                                            aria-controls="attachment-picker-menu"
+                                            title="Attachments"
+                                            aria-label="Attachments">
+                                        <i class="fas fa-paperclip"></i>
+                                    </button>
 
 
                                     <!-- SEND / VOICE -->
@@ -438,7 +399,45 @@
                                     </button>
                                 </div>
                             </div>
-                        </div>
+
+
+                            <!-- =================================================
+                                 MENUS — direct children of main
+                                 Always positioned above the entire composer
+                            ================================================== -->
+
+                            <div id="emoji-picker-menu"
+                                 class="dropdown-menu p-2 emoji-picker chat-composer-menu"
+                                 role="menu"
+                                 hidden>
+                                <div class="emoji-grid"></div>
+                            </div>
+
+                            <div id="attachment-picker-menu"
+                                 class="dropdown-menu attachment-picker chat-composer-menu"
+                                 role="menu"
+                                 hidden>
+                                <button type="button"
+                                        class="dropdown-item attachment-option"
+                                        id="attach-image-btn">
+                                    <i class="fas fa-image me-2"></i>
+                                    Image
+                                </button>
+                                <button type="button"
+                                        class="dropdown-item attachment-option"
+                                        id="attach-video-btn">
+                                    <i class="fas fa-video me-2"></i>
+                                    Video
+                                </button>
+                                <button type="button"
+                                        class="dropdown-item attachment-option"
+                                        id="attach-file-btn">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    File
+                                </button>
+                            </div>
+
+                        </div><!-- end chat-composer-main -->
 
 
                         <!-- =================================================
