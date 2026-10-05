@@ -16,10 +16,6 @@ document.addEventListener('DOMContentLoaded', function () {
      * =========================================================
      * DIMENSIONS
      * =========================================================
-     *
-     * Съвпадат с chat_composer.css:
-     * Desktop: 24 line + 10+10 padding = 44
-     * Mobile:  22 line + 8+8  padding = 38
      */
 
     function getSingleLineHeight() {
@@ -27,23 +23,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /*
-     * Compact mode: по-малко резервирано място вдясно,
-     * за да стигне текстът почти до бутоните преди 2-ри ред.
-     *
-     * Desktop: attachment (~40) + send (~120) + gap ≈ 130
-     * Mobile:  attachment (~38) + send (~40) + gap ≈ 78
+     * Compact: резервираме място само за attachment + send.
+     * По-малко = по-дълъг първи ред преди пренасяне.
      */
-    const DESKTOP_RIGHT_ACTION_SPACE = 130;
-    const MOBILE_RIGHT_ACTION_SPACE = 78;
+    const DESKTOP_RIGHT_ACTION_SPACE = 110;
+    const MOBILE_RIGHT_ACTION_SPACE = 72;
 
-    /*
-     * Compact left: emoji бутонът е извън textarea-та (grid col 1),
-     * затова left padding е малък — само визуален въздух.
-     */
-    const DESKTOP_LEFT_PADDING_COMPACT = '12px';
-    const MOBILE_LEFT_PADDING_COMPACT = '8px';
-
-    const ACTIONS_RESERVED_HEIGHT = 46;
+    const DESKTOP_LEFT_PADDING_COMPACT = '10px';
+    const MOBILE_LEFT_PADDING_COMPACT = '6px';
 
     /*
      * =========================================================
@@ -73,49 +60,38 @@ document.addEventListener('DOMContentLoaded', function () {
             ? MOBILE_RIGHT_ACTION_SPACE
             : DESKTOP_RIGHT_ACTION_SPACE;
 
-        messageBodyField.style.paddingTop =
-            isMobile() ? '8px' : '10px';
+        const vPad = isMobile() ? '8px' : '10px';
+
+        messageBodyField.style.paddingTop = vPad;
 
         /*
-         * Compact: малък left — emoji е в отделна grid колона.
-         * Expanded: пълен width, бутоните са на 2-ри ред.
+         * Expanded: бутоните са на grid ред 2, НЕ вътре в textarea.
+         * Затова нормален padding от всички страни — БЕЗ 46px долу.
          */
-        messageBodyField.style.paddingLeft =
-            expanded
-                ? '14px'
-                : (
-                    isMobile()
-                        ? MOBILE_LEFT_PADDING_COMPACT
-                        : DESKTOP_LEFT_PADDING_COMPACT
-                );
+        if (expanded) {
+            messageBodyField.style.paddingLeft = '14px';
+            messageBodyField.style.paddingRight = '14px';
+            messageBodyField.style.paddingBottom = vPad;
+            return;
+        }
+
+        /*
+         * Compact: малко място вляво, резерв вдясно за бутоните.
+         */
+        messageBodyField.style.paddingLeft = isMobile()
+            ? MOBILE_LEFT_PADDING_COMPACT
+            : DESKTOP_LEFT_PADDING_COMPACT;
 
         messageBodyField.style.paddingRight =
-            expanded
-                ? '14px'
-                : `${rightSpace}px`;
+            `${rightSpace}px`;
 
-        /*
-         * Expanded: запазваме място долу за action bar.
-         * Compact: стандартен vertical padding = 1 ред.
-         */
-        messageBodyField.style.paddingBottom =
-            expanded
-                ? `${ACTIONS_RESERVED_HEIGHT}px`
-                : (
-                    isMobile() ? '8px' : '10px'
-                );
+        messageBodyField.style.paddingBottom = vPad;
     }
 
     /*
      * =========================================================
-     * VOICE CANCEL — ОСТАВА ДО SEND
+     * VOICE CANCEL — до Send
      * =========================================================
-     *
-     * voice_recorder.js вече поставя cancel с insertBefore(submitBtn).
-     * НЕ го местете в средата на grid-а — иначе е далеч от Send
-     * и swipe-to-cancel не работи удобно.
-     *
-     * Ако някой друг код го е преместил, връщаме го до Send.
      */
 
     function ensureCancelNextToSend() {
@@ -142,10 +118,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        /*
-         * Cancel трябва да е непосредствено преди Send,
-         * вътре в .chat-composer-actions-right.
-         */
         if (
             cancelBtn.parentElement !== rightActions ||
             cancelBtn.nextElementSibling !== submitBtn
@@ -192,19 +164,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         setTextareaPadding(false);
 
-        /*
-         * Force reflow преди измерване.
-         */
         void messageBodyField.offsetHeight;
 
         const naturalHeight =
             messageBodyField.scrollHeight;
 
         /*
-         * Един ред — само ако scrollHeight е близо до 1 ред.
-         * Толеранс 6px заради subpixel / font metrics.
+         * Един ред — толеранс 2px (не 6), за да не скача рано.
          */
-        if (naturalHeight <= singleLineHeight + 6) {
+        if (naturalHeight <= singleLineHeight + 2) {
             messageBodyField.style.height =
                 `${singleLineHeight}px`;
 
@@ -219,7 +187,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         /*
-         * Повече от 1 ред → expanded layout.
+         * Повече от 1 ред → expanded.
+         * Бутоните отиват на grid ред 2 — textarea без extra bottom padding.
          */
         composerMain.classList.add('is-expanded');
 
@@ -231,11 +200,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const expandedHeight =
             messageBodyField.scrollHeight;
 
+        /*
+         * Височина = само текст + нормален padding.
+         * БЕЗ + ACTIONS_RESERVED_HEIGHT (това правеше 2 празни реда).
+         */
         const finalHeight = Math.min(
-            Math.max(
-                expandedHeight,
-                singleLineHeight + ACTIONS_RESERVED_HEIGHT
-            ),
+            Math.max(expandedHeight, singleLineHeight),
             maxHeight
         );
 
@@ -281,12 +251,6 @@ document.addEventListener('DOMContentLoaded', function () {
         resetComposerLayout
     );
 
-    /*
-     * =========================================================
-     * EVENTS
-     * =========================================================
-     */
-
     messageBodyField.addEventListener(
         'input',
         autoResizeMessageInput
@@ -297,9 +261,6 @@ document.addEventListener('DOMContentLoaded', function () {
         autoResizeMessageInput
     );
 
-    /*
-     * Initial — след layout, за да няма 2 реда при load.
-     */
     window.requestAnimationFrame(function () {
         autoResizeMessageInput();
         ensureCancelNextToSend();
