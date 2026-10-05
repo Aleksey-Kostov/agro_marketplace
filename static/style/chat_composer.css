@@ -12,7 +12,7 @@
 }
 
 .chat-composer-main {
-    position: relative;
+    position: relative; /* anchor for absolute menus */
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-rows: minmax(44px, auto);
@@ -20,6 +20,7 @@
     width: 100%;
     min-height: 56px;
     padding: 6px;
+    overflow: visible; /* menus must not be clipped */
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: 22px;
     background: var(--bs-body-bg, #fff);
@@ -259,38 +260,66 @@
 
 
 /* =========================================================
-   COMPOSER MENUS — always above entire .chat-composer-main
+   COMPOSER MENUS — always ABOVE the entire .chat-composer-main
+   Menus are direct children of .chat-composer-main.
+   bottom: 100% tracks the full box height (1-line AND expanded).
    ========================================================= */
 
-.chat-composer-main > .chat-composer-menu {
+.chat-composer-main > .chat-composer-menu,
+.chat-composer-main > .dropdown-menu.chat-composer-menu {
     position: absolute !important;
     top: auto !important;
     bottom: calc(100% + 8px) !important;
     z-index: 2000;
     transform: none !important;
-    inset: auto !important;
+    inset: auto !important; /* kill Bootstrap / Popper inline inset */
     margin: 0 !important;
     display: none;
     max-height: min(420px, calc(100vh - 150px));
+    overflow-x: hidden;
     overflow-y: auto;
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: 14px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
     background: var(--bs-body-bg, #fff);
+    /* neutralize Bootstrap dropdown defaults */
+    float: none !important;
 }
 
-.chat-composer-main > .chat-composer-menu.is-open {
+/* Open state: class and/or without [hidden] */
+.chat-composer-main > .chat-composer-menu.is-open,
+.chat-composer-main > .dropdown-menu.chat-composer-menu.is-open {
     display: block !important;
 }
 
+/* If JS only toggles the hidden attribute */
+.chat-composer-main > .chat-composer-menu[hidden],
+.chat-composer-main > .dropdown-menu.chat-composer-menu[hidden] {
+    display: none !important;
+}
+
+.chat-composer-main > .chat-composer-menu:not([hidden]).is-open,
+.chat-composer-main > .dropdown-menu.chat-composer-menu:not([hidden]).is-open {
+    display: block !important;
+}
+
+/* Expanded: same rule — 100% is the full main height including both rows */
+.chat-composer-main.is-expanded > .chat-composer-menu,
+.chat-composer-main.is-expanded > .dropdown-menu.chat-composer-menu {
+    bottom: calc(100% + 8px) !important;
+}
+
+/* Emoji — left aligned */
 #emoji-picker-menu {
     left: 0 !important;
     right: auto !important;
     min-width: 300px;
     width: max-content;
     max-width: min(360px, calc(100vw - 24px));
+    padding: 0 !important; /* emoji picker has its own internal padding */
 }
 
+/* Attachment — right aligned */
 #attachment-picker-menu {
     right: 0 !important;
     left: auto !important;
