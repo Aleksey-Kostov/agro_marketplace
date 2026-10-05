@@ -295,16 +295,17 @@
 
 
 /* =========================================================
-   DROPDOWN MENUS
+   DROPDOWN MENUS — винаги НАД текстовото поле
    ========================================================= */
 
 .chat-composer-actions .dropdown-menu {
     position: absolute !important;
-    top: auto;
-    bottom: calc(100% + 10px);
-    z-index: 1000;
+    top: auto !important;
+    bottom: calc(100% + 10px) !important;
+    z-index: 1050;
     transform: none !important;
-    margin: 0;
+    inset: auto !important; /* нулира Popper inset */
+    margin: 0 !important;
     max-height:
         min(420px, calc(100vh - 150px));
     overflow-y: auto;
@@ -316,25 +317,26 @@
 }
 
 .chat-composer-actions .dropdown-menu.show {
-    display: block;
+    display: block !important;
 }
 
 .chat-composer-actions-left
 .dropdown-menu {
-    left: 0;
-    right: auto;
+    left: 0 !important;
+    right: auto !important;
 }
 
 .chat-composer-actions-right
 .dropdown-menu {
-    right: 0;
-    left: auto;
+    right: 0 !important;
+    left: auto !important;
 }
 
+/* Expanded: менюто е над action реда (40px) + gap */
 .chat-composer-main.is-expanded
 .chat-composer-actions
 .dropdown-menu {
-    bottom: calc(40px + 10px);
+    bottom: calc(40px + 10px) !important;
 }
 
 
@@ -570,7 +572,7 @@
     .chat-composer-main.is-expanded
     .chat-composer-actions
     .dropdown-menu {
-        bottom: calc(40px + 8px);
+        bottom: calc(40px + 8px) !important;
     }
 
     .chat-composer-actions-left
