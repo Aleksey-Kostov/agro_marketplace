@@ -176,47 +176,6 @@
 
 
 /* =========================================================
-   VISUAL ORDER
-   ========================================================= */
-
-/*
- * Emoji — always first.
- */
-.chat-composer-actions-right > .dropdown:first-child {
-    order: 10;
-}
-
-
-/*
- * Attachment — pushed to the right.
- */
-.chat-composer-actions-left > .dropdown {
-    order: 20;
-    margin-left: auto;
-}
-
-
-/*
- * Voice cancel.
- *
- * IMPORTANT:
- * chat_composer.js moves the cancel button directly
- * into .chat-composer-actions.
- */
-.chat-composer-actions > .chat-voice-cancel-btn {
-    order: 30;
-}
-
-
-/*
- * Send / Voice — always final.
- */
-.chat-composer-actions-right > #message-submit-btn {
-    order: 40;
-}
-
-
-/* =========================================================
    ACTION BUTTONS
    ========================================================= */
 
