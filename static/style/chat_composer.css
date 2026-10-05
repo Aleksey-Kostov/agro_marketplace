@@ -13,7 +13,8 @@
 .chat-composer-main {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: minmax(44px, auto);
     align-items: center;
     width: 100%;
     min-height: 56px;
@@ -84,14 +85,39 @@
 }
 
 .chat-composer-main.is-expanded {
+    grid-template-rows: minmax(44px, auto) 40px;
     border-radius: 20px;
+}
+
+.chat-composer-main.is-expanded
+.chat-composer-input-wrap {
+    grid-column: 1 / -1;
+    grid-row: 1;
+}
+
+.chat-composer-main.is-expanded
+.chat-composer-actions-left {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.chat-composer-main.is-expanded
+.chat-composer-actions-right {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+.chat-composer-main.is-expanded
+.chat-composer-actions > .chat-voice-cancel-btn {
+    grid-column: 2;
+    grid-row: 2;
 }
 
 .chat-composer-main.is-expanded
 .chat-composer-input-wrap textarea,
 .chat-composer-main.is-expanded
 .chat-composer-input-wrap .form-control {
-    padding-bottom: 46px;
+    padding-bottom: 10px;
 }
 
 
@@ -100,18 +126,32 @@
    ========================================================= */
 
 .chat-composer-actions {
-    position: relative;
+    display: contents;
+}
+
+.chat-composer-actions-left {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.chat-composer-actions-right {
+    grid-column: 3;
+    grid-row: 1;
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    gap: 6px;
+    min-width: 0;
+}
+
+.chat-composer-actions > .chat-voice-cancel-btn {
     grid-column: 2;
     grid-row: 1;
-    justify-self: end;
-    width: max-content;
-    min-height: 40px;
-    gap: 6px;
-    margin-top: 0;
-    pointer-events: none;
+    justify-self: center;
 }
 
 /*
