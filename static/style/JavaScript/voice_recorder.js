@@ -516,6 +516,7 @@ document.addEventListener(
 
             submitBtn.classList.remove(
                 'voice-recording'
+                'voice-recording-locked'
             );
 
             submitBtn.type = 'button';
@@ -550,6 +551,7 @@ document.addEventListener(
 
             submitBtn.classList.remove(
                 'voice-recording'
+                'voice-recording-locked'
             );
 
             submitBtn.type = 'submit';
@@ -722,6 +724,13 @@ document.addEventListener(
 
 
         function endRecordingUI() {
+            isRecordingLocked = false;
+            recordingStartY = 0;
+
+            submitBtn.classList.remove(
+                'voice-recording-locked'
+            );
+
             setCancelTarget(false);
             setDragProgress(0);
 
