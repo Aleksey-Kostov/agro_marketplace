@@ -130,7 +130,7 @@
 }
 
 .chat-composer-actions-left {
-    grid-column: 3;
+    grid-column: 1;
     grid-row: 1;
     display: flex;
     align-items: center;
@@ -148,10 +148,6 @@
     min-width: 0;
 }
 
-.chat-composer-actions-right > .dropdown {
-    position: absolute;
-    right: 54px;
-}
 
 .chat-composer-actions > .chat-voice-cancel-btn {
     grid-column: 2;
