@@ -129,7 +129,9 @@
 
 .chat-composer-actions-left,
 .chat-composer-actions-right {
-    display: contents;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 
