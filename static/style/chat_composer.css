@@ -12,17 +12,16 @@
 
 .chat-composer-main {
     position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
     width: 100%;
     min-height: 56px;
     padding: 6px;
-
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: 22px;
-
     background: var(--bs-body-bg, #fff);
-
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-
     transition:
         border-color 0.15s ease,
         box-shadow 0.15s ease,
