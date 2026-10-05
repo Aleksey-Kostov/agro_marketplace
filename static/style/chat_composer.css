@@ -139,13 +139,18 @@
 }
 
 .chat-composer-actions-right {
-    grid-column: 1;
+    grid-column: 3;
     grid-row: 1;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: flex-end;
     gap: 6px;
     min-width: 0;
+}
+
+.chat-composer-actions-right > .dropdown {
+    position: absolute;
+    right: 54px;
 }
 
 .chat-composer-actions > .chat-voice-cancel-btn {
