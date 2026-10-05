@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
      * Space reserved at the bottom when the textarea grows.
      * The action buttons stay inside this area.
      */
-    const ACTIONS_RESERVED_HEIGHT = 52;
+    const ACTIONS_RESERVED_HEIGHT = 64;
 
     /*
      * Horizontal space reserved for the right-side controls
