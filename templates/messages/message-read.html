@@ -40,6 +40,7 @@
             ================================================== -->
 
             <div class="conversation-title d-flex justify-content-between align-items-center flex-wrap gap-2">
+
                 <h3 class="m-0">
                     {{ root_message.title|default:"Direct conversation" }}
                 </h3>
@@ -49,15 +50,15 @@
 
                     {% if not is_system %}
 
-                    <!-- =============================================
-                         BLOCK / UNBLOCK
-                    ============================================== -->
+                    <!-- BLOCK / UNBLOCK -->
 
                     {% if is_blocked %}
+
                     <form method="post"
                           action="{% url 'unblock-user' other_user.pk %}"
                           class="d-inline"
                           onsubmit="return confirm('Unblock this user?');">
+
                         {% csrf_token %}
 
                         <input type="hidden"
@@ -68,18 +69,24 @@
                                 class="btn btn-outline-success btn-sm activate shadow-none rounded-start"
                                 title="Unblock"
                                 aria-label="Unblock">
+
                             <i class="fas fa-unlock"></i>
 
                             <span class="tooltip-text">
                                 Unblock
                             </span>
+
                         </button>
+
                     </form>
+
                     {% else %}
+
                     <form method="post"
                           action="{% url 'block-user' other_user.pk %}"
                           class="d-inline"
                           onsubmit="return confirm('Block this user?');">
+
                         {% csrf_token %}
 
                         <input type="hidden"
@@ -90,58 +97,68 @@
                                 class="btn btn-outline-dark btn-sm activate shadow-none rounded-start"
                                 title="Block"
                                 aria-label="Block">
+
                             <i class="fas fa-ban"></i>
 
                             <span class="tooltip-text">
                                 Block
                             </span>
+
                         </button>
+
                     </form>
+
                     {% endif %}
 
 
-                    <!-- =============================================
-                         REPORT
-                    ============================================== -->
+                    <!-- REPORT -->
 
                     {% if last_message and not last_message.is_system and not last_message.sender.is_staff %}
+
                     <form method="post"
                           action="{% url 'report-message' last_message.pk %}"
                           class="d-inline"
                           onsubmit="return confirm('Report this message?');">
+
                         {% csrf_token %}
 
                         <button type="submit"
                                 class="btn btn-outline-primary btn-sm activate shadow-none rounded-0"
                                 title="Report"
                                 aria-label="Report">
+
                             <i class="fas fa-flag"></i>
 
                             <span class="tooltip-text">
                                 Report
                             </span>
+
                         </button>
+
                     </form>
-                    {% endif %}
 
                     {% endif %}
 
+                    {% endif %}
 
-                    <!-- =============================================
-                         DELETE CONVERSATION
-                    ============================================== -->
+
+                    <!-- DELETE CONVERSATION -->
 
                     {% if root_message %}
+
                     <a href="{% url 'delete-message' root_message.pk %}?filter={{ request.GET.filter|default:'inbox' }}"
                        class="btn btn-outline-danger btn-sm activate shadow-none rounded-end"
                        title="Delete conversation"
                        aria-label="Delete conversation">
+
                         <i class="fas fa-trash-alt"></i>
 
                         <span class="tooltip-text">
                             Delete
                         </span>
+
                     </a>
+
                     {% endif %}
 
                 </div>
@@ -154,9 +171,7 @@
 
             <div class="conversation-scroll-wrap">
 
-                <!-- =================================================
-                     SCROLLING MESSAGE AREA
-                ================================================== -->
+                <!-- SCROLLING MESSAGE AREA -->
 
                 <div class="conversation-scroll"
                      id="chat-window"
@@ -165,20 +180,20 @@
                      data-message-fragment-url="{% url 'message-fragment' 0 %}"
                      data-default-avatar="{% static 'images/profile_picture.webp' %}">
 
-                    <!-- =================================================
-                         MESSAGES
-                    ================================================== -->
-
                     <div class="conversation"
                          id="chat-messages">
 
                         {% for item in conversation_messages %}
+
                         {% include 'messages/_message.html' with item=item %}
+
                         {% empty %}
 
                         <div class="alert alert-info"
                              id="no-messages-placeholder">
+
                             No messages in this conversation.
+
                         </div>
 
                         {% endfor %}
@@ -187,18 +202,14 @@
                 </div>
 
 
-                <!-- =================================================
-                     FLOATING DATE
-                ================================================== -->
+                <!-- FLOATING DATE -->
 
                 <div class="chat-floating-date"
                      aria-hidden="true">
                 </div>
 
 
-                <!-- =================================================
-                     TYPING INDICATOR
-                ================================================== -->
+                <!-- TYPING INDICATOR -->
 
                 <div id="chat-typing-indicator"
                      class="chat-typing-indicator d-none"
@@ -213,17 +224,17 @@
 
                     <span class="chat-typing-dots"
                           aria-hidden="true">
+
                         <span>.</span>
                         <span>.</span>
                         <span>.</span>
+
                     </span>
 
                 </div>
 
 
-                <!-- =================================================
-                     SCROLL BUTTONS
-                ================================================== -->
+                <!-- SCROLL BUTTONS -->
 
                 <div class="conversation-scroll-buttons">
 
@@ -232,8 +243,11 @@
                             class="scroll-navigation-btn scroll-top-btn d-none"
                             title="First message"
                             aria-label="Go to first message">
+
                         <i class="fas fa-chevron-up"></i>
+
                     </button>
+
 
                     <button type="button"
                             id="scroll-bottom-btn"
@@ -262,9 +276,13 @@
             {% if is_system %}
 
             <div class="alert alert-info mt-4 mb-0 text-center">
+
                 <i class="fas fa-info-circle me-1"></i>
+
                 This is a system message.
+
                 Replies are disabled.
+
             </div>
 
             {% elif is_blocked or is_blocked_by_other %}
@@ -291,6 +309,7 @@
                     {% endif %}
 
                 </div>
+
             </div>
 
             {% else %}
@@ -306,18 +325,22 @@
 
                     {% csrf_token %}
 
+
                     <input type="hidden"
                            name="product_type"
                            value="{{ root_message.product_type|default:'' }}">
+
 
                     <input type="hidden"
                            name="product_id"
                            value="{{ root_message.product_id|default:'' }}">
 
+
                     <input type="hidden"
                            name="reply_to"
                            id="reply-to"
                            value="">
+
 
                     <input type="hidden"
                            name="editing_message_id"
@@ -337,6 +360,7 @@
                             <i class="fas fa-edit"></i>
 
                             <div>
+
                                 <strong>
                                     Editing message
                                 </strong>
@@ -344,9 +368,11 @@
                                 <small id="editing-message-preview">
                                     Edit your message
                                 </small>
+
                             </div>
 
                         </div>
+
 
                         <button type="button"
                                 id="cancel-edit-btn"
@@ -386,6 +412,7 @@
 
                         </div>
 
+
                         <button type="button"
                                 id="cancel-reply-btn"
                                 class="replying-cancel-btn"
@@ -406,11 +433,13 @@
                     <div class="chat-composer"
                          id="chat-composer">
 
+
                         <!-- =================================================
                              MAIN COMPOSER
                         ================================================== -->
 
                         <div class="chat-composer-main">
+
 
                             <!-- =================================================
                                  MESSAGE INPUT
@@ -421,9 +450,7 @@
                                 {{ form.body }}
 
 
-                                <!-- =============================================
-                                     DROP OVERLAY
-                                ============================================== -->
+                                <!-- DROP OVERLAY -->
 
                                 <div id="chat-drop-overlay"
                                      class="chat-drop-overlay"
@@ -456,11 +483,50 @@
 
                             <div class="chat-composer-actions">
 
-                                <!-- =============================================
-                                     LEFT ACTION
-                                ============================================== -->
+
+                                <!-- =================================================
+                                     LEFT ACTIONS — EMOJI
+                                ================================================== -->
 
                                 <div class="chat-composer-actions-left">
+
+                                    <div class="dropdown">
+
+                                        <button type="button"
+                                                id="emoji-toggle-btn"
+                                                class="btn btn-outline-secondary btn-sm chat-composer-action-btn"
+                                                data-bs-toggle="dropdown"
+                                                data-bs-display="static"
+                                                data-bs-placement="bottom-start"
+                                                aria-expanded="false"
+                                                title="Emoji"
+                                                aria-label="Emoji">
+
+                                            <i class="far fa-face-smile"></i>
+
+                                        </button>
+
+
+                                        <div class="dropdown-menu p-2 emoji-picker"
+                                             aria-labelledby="emoji-toggle-btn">
+
+                                            <div class="emoji-grid"></div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- =================================================
+                                     RIGHT ACTIONS — ATTACHMENT + SEND
+                                ================================================== -->
+
+                                <div class="chat-composer-actions-right">
+
+
+                                    <!-- ATTACHMENT -->
 
                                     <div class="dropdown">
 
@@ -469,7 +535,7 @@
                                                 class="btn btn-outline-secondary btn-sm chat-composer-action-btn"
                                                 data-bs-toggle="dropdown"
                                                 data-bs-display="static"
-                                                data-bs-placement="bottom-start"
+                                                data-bs-placement="bottom-end"
                                                 aria-expanded="false"
                                                 title="Attachments"
                                                 aria-label="Attachments">
@@ -491,6 +557,7 @@
 
                                             </button>
 
+
                                             <button type="button"
                                                     class="dropdown-item attachment-option"
                                                     id="attach-video-btn">
@@ -499,6 +566,7 @@
                                                 Video
 
                                             </button>
+
 
                                             <button type="button"
                                                     class="dropdown-item attachment-option"
@@ -513,51 +581,8 @@
 
                                     </div>
 
-                                </div>
 
-
-                                <!-- =============================================
-                                     RIGHT ACTIONS
-                                ============================================== -->
-
-                                <div class="chat-composer-actions-right">
-
-                                    <!-- =========================================
-                                         EMOJI
-                                    ========================================== -->
-
-                                    <div class="dropdown">
-
-                                        <button type="button"
-                                                id="emoji-toggle-btn"
-                                                class="btn btn-outline-secondary btn-sm chat-composer-action-btn"
-                                                data-bs-toggle="dropdown"
-                                                data-bs-display="static"
-                                                data-bs-placement="bottom-end"
-                                                aria-expanded="false"
-                                                title="Emoji"
-                                                aria-label="Emoji">
-
-                                            <i class="far fa-face-smile"></i>
-
-                                        </button>
-
-
-                                        <div class="dropdown-menu p-2 emoji-picker"
-                                             aria-labelledby="emoji-toggle-btn">
-
-                                            <div class="emoji-grid"></div>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    <!-- =========================================
-                                         SEND / VOICE
-                                         voice_recorder.js may insert the
-                                         cancel button before this button.
-                                    ========================================== -->
+                                    <!-- SEND / VOICE -->
 
                                     <button type="submit"
                                             class="btn btn-primary chat-composer-submit-btn"
@@ -593,11 +618,11 @@
                             <div class="chat-attachment-preview"
                                  id="chat-attachment-preview">
 
+
                                 <div class="chat-attachment-preview-content">
 
-                                    <!-- =========================================
-                                         IMAGE
-                                    ========================================== -->
+
+                                    <!-- IMAGE -->
 
                                     <div id="image-preview-wrap"
                                          class="d-none">
@@ -610,9 +635,7 @@
                                     </div>
 
 
-                                    <!-- =========================================
-                                         VIDEO
-                                    ========================================== -->
+                                    <!-- VIDEO -->
 
                                     <div id="video-preview-wrap"
                                          class="d-none">
@@ -625,9 +648,7 @@
                                     </div>
 
 
-                                    <!-- =========================================
-                                         FILE
-                                    ========================================== -->
+                                    <!-- FILE -->
 
                                     <div id="file-preview-wrap"
                                          class="d-none">
@@ -641,12 +662,7 @@
                                 </div>
 
 
-                                <!-- =============================================
-                                     SINGLE ATTACHMENT REMOVE BUTTON
-
-                                     This is intentionally the only
-                                     remove-media button.
-                                ============================================== -->
+                                <!-- REMOVE MEDIA -->
 
                                 <button type="button"
                                         id="remove-media-btn"
@@ -695,21 +711,16 @@
                                     <small id="upload-progress-text">
                                         Uploading...
                                     </small>
-
                                     <small id="upload-progress-percent">
                                         0%
                                     </small>
-
                                 </div>
-
-
                                 <div class="progress"
                                      role="progressbar"
                                      aria-label="Upload progress"
                                      aria-valuemin="0"
                                      aria-valuemax="100"
                                      aria-valuenow="0">
-
                                     <div id="upload-progress-bar"
                                          class="progress-bar"
                                          style="width: 0%;">

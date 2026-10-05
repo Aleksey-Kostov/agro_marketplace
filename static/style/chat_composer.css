@@ -22,7 +22,8 @@
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: 22px;
     background: var(--bs-body-bg, #fff);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.06);
     transition:
         border-color 0.15s ease,
         box-shadow 0.15s ease,
@@ -31,7 +32,6 @@
 
 .chat-composer-main:focus-within {
     border-color: var(--bs-primary, #0d6efd);
-
     box-shadow:
         0 2px 10px rgba(0, 0, 0, 0.06),
         0 0 0 3px rgba(13, 110, 253, 0.08);
@@ -46,15 +46,15 @@
     position: relative;
     width: 100%;
     min-width: 0;
+    grid-column: 2;
+    grid-row: 1;
 }
 
 .chat-composer-input-wrap textarea,
 .chat-composer-input-wrap .form-control {
     display: block;
-
     width: 100%;
     min-width: 0;
-
     min-height: 44px;
     max-height: 160px;
     margin: 0;
@@ -84,8 +84,15 @@
     opacity: 0.9;
 }
 
+
+/* =========================================================
+   EXPANDED COMPOSER
+   ========================================================= */
+
 .chat-composer-main.is-expanded {
-    grid-template-rows: minmax(44px, auto) 40px;
+    grid-template-rows:
+        minmax(44px, auto)
+        40px;
     border-radius: 20px;
 }
 
@@ -113,13 +120,6 @@
     grid-row: 2;
 }
 
-.chat-composer-main.is-expanded
-.chat-composer-input-wrap textarea,
-.chat-composer-main.is-expanded
-.chat-composer-input-wrap .form-control {
-    padding-bottom: 10px;
-}
-
 
 /* =========================================================
    ACTION BAR
@@ -127,6 +127,7 @@
 
 .chat-composer-actions {
     display: contents;
+    z-index: 30;
 }
 
 .chat-composer-actions-left {
@@ -148,31 +149,10 @@
     min-width: 0;
 }
 
-
 .chat-composer-actions > .chat-voice-cancel-btn {
     grid-column: 2;
     grid-row: 1;
     justify-self: center;
-}
-
-/*
- * IMPORTANT
- *
- * The left/right wrappers must not behave as separate
- * flex items.
- *
- * Their children become visual flex items of the action bar.
- *
- * Final order:
- *
- * Emoji | spacer | Attachment | Cancel | Send
- */
-
-.chat-composer-actions-left,
-.chat-composer-actions-right {
-    display: flex;
-    align-items: center;
-    gap: 6px;
 }
 
 
@@ -185,6 +165,7 @@
 }
 
 .chat-composer-actions .dropdown {
+    position: static;
     pointer-events: auto;
 }
 
@@ -204,13 +185,6 @@
     border-radius: 12px;
 }
 
-.chat-composer-actions .chat-composer-submit-btn {
-    width: 108px;
-    min-width: 108px;
-    padding: 0 14px;
-    gap: 7px;
-}
-
 .chat-composer-actions .btn i,
 .chat-composer-actions .btn svg,
 .chat-composer-submit-btn i,
@@ -222,7 +196,7 @@
 
 
 /* =========================================================
-   EMOJI / ATTACHMENT
+   EMOJI / ATTACHMENT BUTTONS
    ========================================================= */
 
 .chat-composer-actions
@@ -241,7 +215,7 @@
    SEND — DESKTOP
    ========================================================= */
 
-.chat-composer-submit-btn {                     
+.chat-composer-submit-btn {
     touch-action: none;
     width: 108px;
     min-width: 108px;
@@ -265,8 +239,9 @@
 
 
 /*
- * Voice mode can be icon-only.
+ * Voice mode.
  */
+
 .chat-composer-submit-btn.chat-voice-recording,
 .chat-composer-submit-btn.chat-voice-button {
     width: 108px;
@@ -285,26 +260,19 @@
     min-width: 40px !important;
     height: 40px !important;
     min-height: 40px !important;
-
     padding: 0 !important;
     margin: 0 !important;
-
     flex: 0 0 40px !important;
-
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: 50% !important;
-
     background: var(--bs-body-bg, #fff);
-
     color: var(--bs-danger, #dc3545);
-
     z-index: 32;
 }
 
 .chat-voice-cancel-btn:hover,
 .chat-voice-cancel-btn.is-active {
     background: var(--bs-danger-bg-subtle, #f8d7da);
-
     border-color: var(--bs-danger, #dc3545);
 }
 
@@ -317,6 +285,7 @@
  * Older voice CSS may contain pseudo-elements.
  * They must never affect composer positioning.
  */
+
 .chat-composer-actions
 .chat-voice-cancel-btn::before,
 .chat-composer-actions
@@ -343,11 +312,47 @@
     z-index: 1000;
     transform: none !important;
     margin: 0;
-    max-height: min(420px, calc(100vh - 150px));
+    max-height:
+        min(420px, calc(100vh - 150px));
     overflow-y: auto;
-    border: 1px solid var(--bs-border-color, #dee2e6);
+    border: 1px solid
+        var(--bs-border-color, #dee2e6);
     border-radius: 14px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.14);
+}
+
+.chat-composer-actions .dropdown-menu.show {
+    display: block;
+}
+
+
+/*
+ * The menus are anchored to the composer itself.
+ * This avoids the old artificial dropdown shift.
+ */
+
+.chat-composer-actions-left
+.dropdown-menu {
+    left: 0;
+    right: auto;
+}
+
+.chat-composer-actions-right
+.dropdown-menu {
+    right: 0;
+    left: auto;
+}
+
+
+/* =========================================================
+   EXPANDED DROPDOWN POSITION
+   ========================================================= */
+
+.chat-composer-main.is-expanded
+.chat-composer-actions
+.dropdown-menu {
+    bottom: calc(40px + 10px);
 }
 
 
@@ -355,13 +360,12 @@
    EMOJI PICKER
    ========================================================= */
 
-.chat-composer-actions-right
+.chat-composer-actions-left
 .emoji-picker {
-    left: 0;
-    right: auto;
     min-width: 300px;
     width: max-content;
-    max-width: min(360px, calc(100vw - 24px));
+    max-width:
+        min(360px, calc(100vw - 24px));
 }
 
 
@@ -369,16 +373,11 @@
    ATTACHMENT PICKER
    ========================================================= */
 
-.chat-composer-actions-left
+.chat-composer-actions-right
 .attachment-picker {
-    right: 0;
-    left: auto;
     min-width: 220px;
-    max-width: min(320px, calc(100vw - 24px));
-}
-
-.chat-composer-actions .dropdown-menu.show {
-    display: block;
+    max-width:
+        min(320px, calc(100vw - 24px));
 }
 
 
@@ -393,9 +392,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px dashed var(--bs-primary, #0d6efd);
+    border:
+        2px dashed
+        var(--bs-primary, #0d6efd);
     border-radius: 16px;
-    background: rgba(13, 110, 253, 0.08);
+    background:
+        rgba(13, 110, 253, 0.08);
     pointer-events: none;
 }
 
@@ -433,25 +435,29 @@
 #video-preview-wrap,
 #file-preview-wrap {
     position: relative;
-
     max-width: 100%;
 }
 
 #image-preview-wrap img,
 #video-preview-wrap video {
     display: block;
-    max-width: min(260px, 100%);
+    max-width:
+        min(260px, 100%);
     max-height: 180px;
     object-fit: contain;
     border-radius: 12px;
 }
 
 #file-preview {
-    max-width: min(360px, 100%);
+    max-width:
+        min(360px, 100%);
     padding: 8px 12px;
-    border: 1px solid var(--bs-border-color, #dee2e6);
+    border:
+        1px solid
+        var(--bs-border-color, #dee2e6);
     border-radius: 10px;
-    background: var(--bs-tertiary-bg, #f8f9fa);
+    background:
+        var(--bs-tertiary-bg, #f8f9fa);
 }
 
 
@@ -474,8 +480,10 @@
     padding: 0;
     margin: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    background:
+        rgba(255, 255, 255, 0.95);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 #remove-media-btn.d-none {
@@ -501,10 +509,6 @@
    LAYERING
    ========================================================= */
 
-.chat-composer-actions {
-    z-index: 30;
-}
-
 .chat-composer-actions .dropdown,
 .chat-composer-actions button {
     position: relative;
@@ -517,7 +521,6 @@
    ========================================================= */
 
 @media (max-width: 767.98px) {
-
     .chat-composer-main {
         min-height: 52px;
         padding: 5px;
@@ -534,20 +537,6 @@
         padding-left: 10px;
         line-height: 22px;
         font-size: 15px;
-    }
-    .chat-composer-main.is-expanded
-    .chat-composer-input-wrap textarea,
-    .chat-composer-main.is-expanded
-    .chat-composer-input-wrap .form-control {
-        padding-bottom: 44px;
-    }
-
-    .chat-composer-actions {
-        right: 5px;
-        bottom: 5px;
-        left: 5px;
-        min-height: 40px;
-        gap: 4px;
     }
 
 
@@ -566,7 +555,7 @@
 
 
     /*
-     * MOBILE SEND MUST ALWAYS BE CIRCULAR.
+     * Mobile send must always be circular.
      */
 
     .chat-composer-submit-btn,
@@ -584,7 +573,7 @@
 
 
     /*
-     * Hide "Send" text on mobile.
+     * Hide Send text on mobile.
      */
 
     .chat-composer-submit-btn span {
@@ -608,29 +597,28 @@
     }
 
 
-    /*
-     * Emoji picker.
-     */
+    /* =====================================================
+       MOBILE DROPDOWNS
+       ===================================================== */
 
-    .chat-composer-actions-right
-    .emoji-picker {
-        left: 0;
-        bottom: calc(100% + 8px);
-        min-width: 280px;
-        max-width: calc(100vw - 20px);
+    .chat-composer-main.is-expanded
+    .chat-composer-actions
+    .dropdown-menu {
+        bottom: calc(40px + 8px);
     }
 
-
-    /*
-     * Attachment picker.
-     */
-
     .chat-composer-actions-left
+    .emoji-picker {
+        min-width: 280px;
+        max-width:
+            calc(100vw - 20px);
+    }
+
+    .chat-composer-actions-right
     .attachment-picker {
-        right: 0;
-        bottom: calc(100% + 8px);
         min-width: 220px;
-        max-width: calc(100vw - 20px);
+        max-width:
+            calc(100vw - 20px);
     }
 
 
@@ -644,7 +632,8 @@
 
     #image-preview-wrap img,
     #video-preview-wrap video {
-        max-width: min(220px, calc(100vw - 32px));
+        max-width:
+            min(220px, calc(100vw - 32px));
         max-height: 150px;
     }
 }
@@ -655,16 +644,12 @@
    ========================================================= */
 
 @media (max-width: 380px) {
-
     .chat-composer-main {
         padding: 4px;
         border-radius: 17px;
     }
 
     .chat-composer-actions {
-        right: 4px;
-        bottom: 4px;
-        left: 4px;
         gap: 3px;
     }
 
@@ -677,6 +662,11 @@
         border-radius: 50%;
     }
 
+
+    /* =====================================================
+       SMALL PHONE SEND
+       ===================================================== */
+
     .chat-composer-submit-btn,
     .chat-composer-submit-btn.chat-voice-recording,
     .chat-composer-submit-btn.chat-voice-button {
@@ -688,6 +678,11 @@
         flex-basis: 36px !important;
     }
 
+
+    /* =====================================================
+       SMALL PHONE CANCEL
+       ===================================================== */
+
     .chat-composer-actions
     .chat-voice-cancel-btn {
         width: 36px !important;
@@ -698,42 +693,40 @@
         flex-basis: 36px !important;
     }
 
+
+    /* =====================================================
+       SMALL PHONE INPUT
+       ===================================================== */
+
     .chat-composer-input-wrap textarea,
     .chat-composer-input-wrap .form-control {
         min-height: 38px;
-
         padding-top: 7px;
         padding-right: 8px;
         padding-bottom: 7px;
         padding-left: 8px;
     }
 
-    .chat-composer-main.is-expanded
-    .chat-composer-input-wrap textarea,
-    .chat-composer-main.is-expanded
-    .chat-composer-input-wrap .form-control {
-        padding-bottom: 42px;
+
+    /* =====================================================
+       SMALL PHONE PICKERS
+       ===================================================== */
+
+    .chat-composer-actions-left
+    .emoji-picker {
+        min-width: 270px;
+        max-width:
+            calc(100vw - 16px);
     }
 
     .chat-composer-actions-right
-    .emoji-picker {
-        min-width: 270px;
-        max-width: calc(100vw - 16px);
-    }
-
-    .chat-composer-actions-left
     .attachment-picker {
         min-width: 210px;
-        max-width: calc(100vw - 16px);
+        max-width:
+            calc(100vw - 16px);
     }
 }
 
-.chat-composer-main.is-expanded
-.chat-composer-actions .dropdown-menu {
-    bottom: calc(
-        100% + 10px + var(--composer-dropdown-shift, 0px)
-    );
-}
 
 /* =========================================================
    VOICE LOCK HINT
@@ -741,9 +734,7 @@
 
 .chat-composer-submit-btn.voice-recording {
     position: relative;
-
     transform: scale(1.08);
-
     transition:
         transform 160ms ease,
         box-shadow 160ms ease;
@@ -759,42 +750,30 @@
     .voice-recording-locked
 )::after {
     content: '↑';
-
     position: absolute;
     left: 50%;
     bottom: calc(100% + 7px);
-
     width: 24px;
     height: 24px;
-
     transform:
         translateX(-50%)
         translateY(3px);
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     border-radius: 50%;
-
     background:
         var(--bs-body-bg, #fff);
-
     color:
         var(--bs-secondary-color, #6c757d);
-
     border:
         1px solid
         var(--bs-border-color, #dee2e6);
-
     box-shadow:
         0 3px 10px rgba(0, 0, 0, 0.12);
-
     font-size: 15px;
     font-weight: 700;
-
     pointer-events: none;
-
     animation:
         voice-lock-arrow
         1.4s ease-in-out infinite;
@@ -809,45 +788,32 @@
 
 .chat-composer-submit-btn.voice-recording-locked {
     transform: scale(1.10);
-
     animation:
         voice-locked-button-pulse
         1.6s ease-in-out infinite;
 }
 
-
 .chat-composer-submit-btn.voice-recording-locked::after {
     content: '🔒';
-
     position: absolute;
     left: 50%;
     bottom: calc(100% + 7px);
-
     width: 24px;
     height: 24px;
-
     transform: translateX(-50%);
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     border-radius: 50%;
-
     background:
         var(--bs-body-bg, #fff);
-
     border:
         1px solid
         var(--bs-primary, #0d6efd);
-
     box-shadow:
         0 3px 10px rgba(0, 0, 0, 0.12);
-
     font-size: 12px;
-
     pointer-events: none;
-
     animation:
         voice-lock-badge
         180ms ease-out;
@@ -863,7 +829,6 @@
     0%,
     100% {
         opacity: 0.55;
-
         transform:
             translateX(-50%)
             translateY(3px);
@@ -871,7 +836,6 @@
 
     50% {
         opacity: 1;
-
         transform:
             translateX(-50%)
             translateY(-2px);
@@ -935,18 +899,8 @@
  */
 
 @media (max-width: 767.98px) {
-
     .chat-composer-submit-btn.voice-recording::after {
         max-width:
             calc(100vw - 32px);
     }
-}
-
-.chat-composer-actions-right > .dropdown:first-child {
-    order: 10;
-}
-
-.chat-composer-actions-left > .dropdown {
-    order: 10;
-    margin-left: 0;
 }
