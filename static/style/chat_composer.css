@@ -101,21 +101,15 @@
    ========================================================= */
 
 .chat-composer-actions {
-    position: absolute;
-    right: 6px;
-    bottom: 6px;
-    left: 6px;
-    z-index: 30;
+    position: relative;
     display: flex;
     align-items: center;
-    width: auto;
+    width: 100%;
     min-height: 40px;
     gap: 6px;
-    padding-top: 6px;
-    background: var(--bs-body-bg, #fff);
+    margin-top: 2px;
     pointer-events: none;
 }
-
 
 /*
  * IMPORTANT
