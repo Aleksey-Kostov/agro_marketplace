@@ -271,6 +271,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 document.addEventListener('DOMContentLoaded', function () {
+    'use strict';
+
     const main = document.querySelector('.chat-composer-main');
     if (!main) return;
 
@@ -285,17 +287,23 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     ];
 
+    function closeItem(item) {
+        if (!item.btn || !item.menu) return;
+        item.menu.classList.remove('is-open');
+        item.menu.hidden = true;
+        item.btn.setAttribute('aria-expanded', 'false');
+    }
+
     function closeAll(exceptMenu) {
         items.forEach(function (item) {
             if (!item.btn || !item.menu) return;
             if (exceptMenu && item.menu === exceptMenu) return;
-            item.menu.classList.remove('is-open');
-            item.menu.hidden = true;
-            item.btn.setAttribute('aria-expanded', 'false');
+            closeItem(item);
         });
     }
 
     function openItem(item) {
+        if (!item.btn || !item.menu) return;
         closeAll(item.menu);
         item.menu.hidden = false;
         item.menu.classList.add('is-open');
@@ -303,7 +311,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function toggleItem(item) {
-        if (item.menu.classList.contains('is-open')) {
+        if (!item.menu) return;
+        if (item.menu.classList.contains('is-open') && !item.menu.hidden) {
             closeAll();
         } else {
             openItem(item);
@@ -320,6 +329,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // клик извън менютата и бутоните → затваря
     document.addEventListener('click', function (e) {
         if (e.target.closest('.chat-composer-menu')) return;
         if (e.target.closest('#emoji-toggle-btn, #attachment-toggle-btn')) return;
@@ -329,5 +339,17 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') closeAll();
     });
-});
 
+    // Attachment: при избор на Image / Video / File → затвори менюто
+    const attachItem = items[1];
+    if (attachItem.menu) {
+        attachItem.menu.addEventListener('click', function (e) {
+            if (e.target.closest('.attachment-option')) {
+                closeItem(attachItem);
+            }
+        });
+    }
+
+    // Emoji: остава отворен при избор (chat_emoji_picker.js вмъква emoji)
+    // нищо не затваряме тук нарочно
+});
