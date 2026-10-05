@@ -754,7 +754,7 @@
 .chat-composer-submit-btn.voice-recording {
     position: relative;
 
-    transform: scale(1.12);
+    transform: scale(1.08);
 
     transition:
         transform 160ms ease,
@@ -820,7 +820,7 @@
  */
 
 .chat-composer-submit-btn.voice-recording-locked {
-    transform: scale(1.12);
+    transform: scale(1.10);
 
     animation:
         voice-locked-button-pulse
