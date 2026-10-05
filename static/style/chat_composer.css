@@ -169,7 +169,7 @@
     pointer-events: auto;
 }
 
-.chat-composer-actions .btn,
+.chat-composer-actions .btn:not(.chat-composer-submit-btn),
 .chat-composer-submit-btn,
 .chat-voice-cancel-btn {
     display: inline-flex;

@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
      * =========================================================
      */
 
-    const SINGLE_LINE_HEIGHT = 44;
+    const SINGLE_LINE_HEIGHT = 40;
 
     /*
      * Space reserved at the bottom when the textarea grows.
