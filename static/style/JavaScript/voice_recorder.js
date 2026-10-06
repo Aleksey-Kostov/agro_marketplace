@@ -968,7 +968,7 @@ document.addEventListener(
            FINISH RECORDING
         ========================================================= */
 
-        function finishRecording() {
+       function finishRecording() {
             const shouldCancel =
                 cancelRecording;
 
@@ -981,6 +981,14 @@ document.addEventListener(
                     recorder.mimeType
                 ) ||
                 'audio/webm';
+            const elapsedSeconds = Math.max(
+                1,
+                Math.round((Date.now() - recordingStartedAt) / 1000)
+            );
+
+            if (!shouldCancel) {
+                window.__agroLastVoiceDuration = elapsedSeconds;
+            }
 
             const blob =
                 new Blob(
@@ -991,11 +999,8 @@ document.addEventListener(
                 );
 
             recordedChunks = [];
-
             cleanupMediaStream();
-
             mediaRecorder = null;
-
             isRecording = false;
             isStartingRecording = false;
 

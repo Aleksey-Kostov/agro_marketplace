@@ -15,13 +15,24 @@
         return minutes + ':' + String(remainingSeconds).padStart(2, '0');
     }
 
+    function isValidDuration(value) {
+        return Number.isFinite(value) && value > 0 && value !== Infinity;
+    }
+
+    function setDurationLabel(elements, seconds) {
+        if (!elements.duration) {
+            return;
+        }
+
+        elements.duration.textContent = formatTime(seconds);
+    }
+
     function createWaveform(container) {
         if (!container || container.children.length > 0) {
             return;
         }
 
         const bars = 28;
-        // по-естествен pattern (не чисто random)
         const pattern = [
             28, 42, 68, 38, 82, 52, 30, 74, 58, 40,
             70, 34, 86, 48, 62, 26, 56, 78, 36, 50,
@@ -38,12 +49,14 @@
 
     function updateWaveformProgress(attachment, audio) {
         const waveform = attachment.querySelector('.chat-audio-waveform');
-        if (!waveform || !audio || !Number.isFinite(audio.duration) || audio.duration <= 0) {
+        if (!waveform || !audio || !isValidDuration(audio.duration)) {
             return;
         }
 
         const bars = waveform.querySelectorAll('span');
-        if (!bars.length) return;
+        if (!bars.length) {
+            return;
+        }
 
         const progress = Math.min(1, Math.max(0, audio.currentTime / audio.duration));
         const filled = Math.round(progress * bars.length);
@@ -59,7 +72,9 @@
 
     function clearWaveformProgress(attachment) {
         const waveform = attachment.querySelector('.chat-audio-waveform');
-        if (!waveform) return;
+        if (!waveform) {
+            return;
+        }
 
         waveform.querySelectorAll('span.is-played').forEach(function (bar) {
             bar.classList.remove('is-played');
@@ -76,8 +91,103 @@
         };
     }
 
+    function getKnownDuration(attachment, audio) {
+        const raw =
+            (attachment && (attachment.getAttribute('data-duration') || attachment.dataset.duration)) ||
+            (audio && audio.getAttribute('data-duration'));
+
+        const fromData = parseFloat(raw);
+        if (isValidDuration(fromData)) {
+            return fromData;
+        }
+
+        if (
+            typeof window.__agroLastVoiceDuration === 'number' &&
+            isValidDuration(window.__agroLastVoiceDuration)
+        ) {
+            return window.__agroLastVoiceDuration;
+        }
+
+        return 0;
+    }
+
+    /**
+     * webm от MediaRecorder често дава duration = Infinity.
+     * Хак: скачаме към края → браузърът открива реалната дължина.
+     */
+    function resolveAudioDuration(audio) {
+        return new Promise(function (resolve) {
+            if (!audio) {
+                resolve(0);
+                return;
+            }
+
+            if (isValidDuration(audio.duration)) {
+                resolve(audio.duration);
+                return;
+            }
+
+            let done = false;
+
+            function finish(value) {
+                if (done) {
+                    return;
+                }
+                done = true;
+                resolve(isValidDuration(value) ? value : 0);
+            }
+
+            function tryFinishFromAudio() {
+                if (isValidDuration(audio.duration)) {
+                    finish(audio.duration);
+                }
+            }
+
+            function onMeta() {
+                tryFinishFromAudio();
+                if (done) {
+                    return;
+                }
+
+                const onTimeUpdate = function () {
+                    audio.removeEventListener('timeupdate', onTimeUpdate);
+                    const d = audio.duration;
+                    try {
+                        audio.currentTime = 0;
+                    } catch (e) {}
+                    finish(d);
+                };
+
+                audio.addEventListener('timeupdate', onTimeUpdate);
+
+                try {
+                    audio.currentTime = 1e101;
+                } catch (e) {
+                    finish(0);
+                }
+            }
+
+            audio.addEventListener('loadedmetadata', onMeta, { once: true });
+            audio.addEventListener('durationchange', tryFinishFromAudio);
+
+            if (audio.readyState >= 1) {
+                onMeta();
+            } else {
+                try {
+                    audio.load();
+                } catch (e) {}
+            }
+
+            setTimeout(function () {
+                finish(audio.duration);
+            }, 1500);
+        });
+    }
+
     function resetPlayer(attachment) {
-        if (!attachment) return;
+        if (!attachment) {
+            return;
+        }
 
         const elements = getPlayerElements(attachment);
 
@@ -90,24 +200,33 @@
         }
 
         if (elements.audio) {
-            elements.audio.currentTime = 0;
+            try {
+                elements.audio.currentTime = 0;
+            } catch (e) {}
         }
 
-        if (elements.duration && elements.audio) {
-            const d = elements.audio.duration;
-            elements.duration.textContent = Number.isFinite(d)
-                ? formatTime(d)
-                : '0:00';
+        if (elements.duration) {
+            const fromData = parseFloat(attachment.dataset.duration || '');
+            let d = 0;
+
+            if (isValidDuration(fromData)) {
+                d = fromData;
+            } else if (elements.audio && isValidDuration(elements.audio.duration)) {
+                d = elements.audio.duration;
+            }
+
+            elements.duration.textContent = formatTime(d);
         }
     }
 
     function pauseCurrentPlayer() {
-        if (!currentAudio) return;
+        if (!currentAudio) {
+            return;
+        }
 
         currentAudio.pause();
 
         if (currentPlayer) {
-            // не reset до 0 — само pause UI
             const el = getPlayerElements(currentPlayer);
             currentPlayer.classList.remove('is-playing');
             if (el.icon) {
@@ -142,7 +261,7 @@
 
     function seekFromWaveform(attachment, audio, event) {
         const waveform = attachment.querySelector('.chat-audio-waveform');
-        if (!waveform || !audio || !Number.isFinite(audio.duration) || audio.duration <= 0) {
+        if (!waveform || !audio || !isValidDuration(audio.duration)) {
             return;
         }
 
@@ -167,24 +286,45 @@
         attachment.dataset.audioPlayerReady = 'true';
         createWaveform(elements.waveform);
 
+        // 1) веднага: известна duration от запис / data-атрибут
+        const known = getKnownDuration(attachment, elements.audio);
+        if (known > 0) {
+            setDurationLabel(elements, known);
+            attachment.dataset.duration = String(known);
+
+            if (window.__agroLastVoiceDuration === known) {
+                window.__agroLastVoiceDuration = null;
+            }
+        }
+
+        // 2) реална duration от файла (webm Infinity hack)
+        resolveAudioDuration(elements.audio).then(function (dur) {
+            if (dur > 0) {
+                setDurationLabel(elements, dur);
+                attachment.dataset.duration = String(dur);
+            }
+        });
+
         elements.audio.addEventListener('loadedmetadata', function () {
-            if (elements.duration) {
-                elements.duration.textContent = formatTime(elements.audio.duration);
+            if (isValidDuration(elements.audio.duration)) {
+                setDurationLabel(elements, elements.audio.duration);
+                attachment.dataset.duration = String(elements.audio.duration);
             }
         });
 
         elements.audio.addEventListener('timeupdate', function () {
             updateWaveformProgress(attachment, elements.audio);
 
-            if (elements.duration) {
-                // оставащо време докато свири; пълно при пауза в началото
-                if (!elements.audio.paused && elements.audio.currentTime > 0) {
-                    const remaining = Math.max(
-                        0,
-                        elements.audio.duration - elements.audio.currentTime
-                    );
-                    elements.duration.textContent = formatTime(remaining);
-                }
+            if (
+                elements.duration &&
+                !elements.audio.paused &&
+                isValidDuration(elements.audio.duration)
+            ) {
+                const remaining = Math.max(
+                    0,
+                    elements.audio.duration - elements.audio.currentTime
+                );
+                elements.duration.textContent = formatTime(remaining);
             }
         });
 
@@ -216,7 +356,6 @@
             }
         });
 
-        // клик по вълната → seek
         if (elements.waveform) {
             elements.waveform.style.cursor = 'pointer';
             elements.waveform.addEventListener('click', function (event) {
@@ -268,7 +407,9 @@
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
                 mutation.addedNodes.forEach(function (node) {
-                    if (node.nodeType !== Node.ELEMENT_NODE) return;
+                    if (node.nodeType !== Node.ELEMENT_NODE) {
+                        return;
+                    }
                     initializePlayers(node);
                 });
             });
