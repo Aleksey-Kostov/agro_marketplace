@@ -1819,26 +1819,43 @@
 
 
 /* =========================================================
-   DELETED MESSAGES
+   DELETED MESSAGE
 ========================================================= */
 
+.deleted-message-placeholder,
 .deleted-message-bubble {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 6px;
+    max-width: 100%;
     padding: 8px 12px;
-    color: #777;
-    background: #f3f3f3;
     border: 1px solid #e2e2e2;
     border-radius: 12px;
+    background: #f3f3f3;
+    color: #777;
     font-size: 13px;
     font-style: italic;
-    max-width: 100%;
+    line-height: 1.25;
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
+.deleted-message-placeholder i,
+.deleted-message-bubble i,
 .deleted-message-icon {
-    font-size: 14px;
+    flex: 0 0 auto;
+    font-size: 13px;
     opacity: 0.75;
+    line-height: 1;
+}
+
+.deleted-message-placeholder span,
+.deleted-message-bubble span {
+    flex: 0 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 

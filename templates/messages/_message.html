@@ -103,11 +103,8 @@
 
                     <div class="deleted-message-placeholder">
                         <i class="fas fa-ban"></i>
-                        <span>
-                            This message was deleted
-                        </span>
+                        <span>This message was deleted</span>
                     </div>
-
                     {% else %}
 
                     <!-- =============================================
@@ -115,9 +112,7 @@
                     ============================================== -->
 
                     {% if item.parent_message %}
-
                     {% with parent_attachments=item.parent_message.attachments.all %}
-
                     <a href="#msg-{{ item.parent_message.pk }}"
                        class="message-reply-preview"
                        data-reply-target="{{ item.parent_message.pk }}"
