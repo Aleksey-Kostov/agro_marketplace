@@ -8,27 +8,6 @@
     <div class="mailbox-container">
 
         <!-- =====================================================
-             HEADER
-        ====================================================== -->
-
-        <div class="col-12 edit-profile text-details mb-2 message-box">
-            <div class="d-flex align-items-center p-0 rounded flex-wrap gap-2">
-                <a href="{% url 'message-inbox' %}"
-                   class="btn btn-secondary back-button">
-                    <i class="fas fa-arrow-left"></i>
-                    <span class="d-none d-sm-inline">
-                        Back
-                    </span>
-                </a>
-                <h3 class="text-center bg-white text-dark opacity-75 m-0 flex-grow-1 rounded pb-1">
-                    <i class="fas fa-comments"></i>
-                    Conversation
-                </h3>
-            </div>
-        </div>
-
-
-        <!-- =====================================================
              CONVERSATION
         ====================================================== -->
 
@@ -38,90 +17,155 @@
                  TITLE + ACTIONS
             ================================================== -->
 
-            <div class="conversation-title d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h3 class="m-0">
-                    {{ root_message.title|default:"Direct conversation" }}
-                </h3>
-                <div class="btn-group conversation-actions"
-                     role="group">
-                    {% if not is_system %}
-                    <!-- BLOCK / UNBLOCK -->
-                    {% if is_blocked %}
-                    <form method="post"
-                          action="{% url 'unblock-user' other_user.pk %}"
-                          class="d-inline"
-                          onsubmit="return confirm('Unblock this user?');">
-                        {% csrf_token %}
-                        <input type="hidden"
-                               name="next"
-                               value="{{ request.path }}">
-                        <button type="submit"
-                                class="btn btn-outline-success btn-sm activate shadow-none rounded-start"
-                                title="Unblock"
-                                aria-label="Unblock">
-                            <i class="fas fa-unlock"></i>
-                            <span class="tooltip-text">
-                                Unblock
-                            </span>
-                        </button>
-                    </form>
-                    {% else %}
-                    <form method="post"
-                          action="{% url 'block-user' other_user.pk %}"
-                          class="d-inline"
-                          onsubmit="return confirm('Block this user?');">
-                        {% csrf_token %}
-                        <input type="hidden"
-                               name="next"
-                               value="{{ request.path }}">
-                        <button type="submit"
-                                class="btn btn-outline-dark btn-sm activate shadow-none rounded-start"
-                                title="Block"
-                                aria-label="Block">
-                            <i class="fas fa-ban"></i>
-                            <span class="tooltip-text">
-                                Block
-                            </span>
-                        </button>
-                    </form>
-                    {% endif %}
+                        <!-- =================================================
+                 CHAT HEADER (Telegram-style)
+            ================================================== -->
 
-                    <!-- REPORT -->
+            <header class="chat-header">
 
-                    {% if last_message and not last_message.is_system and not last_message.sender.is_staff %}
-                    <form method="post"
-                          action="{% url 'report-message' last_message.pk %}"
-                          class="d-inline"
-                          onsubmit="return confirm('Report this message?');">
-                        {% csrf_token %}
-                        <button type="submit"
-                                class="btn btn-outline-primary btn-sm activate shadow-none rounded-0"
-                                title="Report"
-                                aria-label="Report">
-                            <i class="fas fa-flag"></i>
-                            <span class="tooltip-text">
-                                Report
-                            </span>
-                        </button>
-                    </form>
-                    {% endif %}
-                    {% endif %}
+                <!-- Back + peer -->
+                <div class="chat-header-left">
 
-                    <!-- DELETE CONVERSATION -->
+                    <a href="{% url 'message-inbox' %}"
+                       class="chat-header-back"
+                       title="Back"
+                       aria-label="Back to inbox">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
 
-                    {% if root_message %}
-                    <a href="{% url 'delete-message' root_message.pk %}?filter={{ request.GET.filter|default:'inbox' }}"
-                       class="btn btn-outline-danger btn-sm activate shadow-none rounded-end"
-                       title="Delete conversation"
-                       aria-label="Delete conversation">
-                        <i class="fas fa-trash-alt"></i>
-                        <span class="tooltip-text">
-                            Delete
-                        </span>
+                    {% if other_user %}
+                    <a href="{% url 'profile-details' pk=other_user.pk %}"
+                       class="chat-header-peer"
+                       title="View profile">
+
+                        <div class="chat-header-avatar-wrap">
+                            {% if other_user.profile.profile_photo %}
+                            <img src="{{ other_user.profile.profile_photo.url }}"
+                                 class="chat-header-avatar"
+                                 alt=""
+                                 width="42"
+                                 height="42"
+                                 loading="lazy">
+                            {% else %}
+                            <img src="{% static 'images/profile_picture.webp' %}"
+                                 class="chat-header-avatar"
+                                 alt=""
+                                 width="42"
+                                 height="42"
+                                 loading="lazy">
+                            {% endif %}
+                        </div>
+
+                        <div class="chat-header-text">
+                            <div class="chat-header-title">
+                                {{ other_user.profile.username_in_marketplace|default:other_user.username }}
+                            </div>
+
+                            {# Заглавие само ако идва от обява #}
+                            {% if root_message.title %}
+                            <div class="chat-header-subtitle chat-header-ad-title"
+                                 title="{{ root_message.title }}">
+                                {{ root_message.title|truncatechars:42 }}
+                            </div>
+                            {% else %}
+                            <div class="chat-header-subtitle">
+                                {# placeholder за online / last seen по-късно #}
+                                &nbsp;
+                            </div>
+                            {% endif %}
+                        </div>
                     </a>
                     {% endif %}
                 </div>
-            </div>
+
+                <!-- Actions: call placeholders + menu -->
+                <div class="chat-header-right">
+
+                    {% if not is_system and other_user %}
+                    <button type="button"
+                            class="chat-header-btn"
+                            disabled
+                            title="Voice call — soon"
+                            aria-label="Voice call">
+                        <i class="fas fa-phone"></i>
+                    </button>
+
+                    <button type="button"
+                            class="chat-header-btn"
+                            disabled
+                            title="Video call — soon"
+                            aria-label="Video call">
+                        <i class="fas fa-video"></i>
+                    </button>
+                    {% endif %}
+
+                    <!-- ⋮ menu: Block / Report / Delete -->
+                    <div class="dropdown chat-header-menu">
+                        <button type="button"
+                                class="chat-header-btn"
+                                id="chatHeaderMenuBtn"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                title="More"
+                                aria-label="More options">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm"
+                            aria-labelledby="chatHeaderMenuBtn">
+
+                            {% if not is_system and other_user %}
+                            <li>
+                                {% if is_blocked %}
+                                <form method="post"
+                                      action="{% url 'unblock-user' other_user.pk %}"
+                                      onsubmit="return confirm('Unblock this user?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="fas fa-unlock me-2"></i> Unblock
+                                    </button>
+                                </form>
+                                {% else %}
+                                <form method="post"
+                                      action="{% url 'block-user' other_user.pk %}"
+                                      onsubmit="return confirm('Block this user?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="fas fa-ban me-2"></i> Block
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </li>
+
+                            {% if last_message and not last_message.is_system and not last_message.sender.is_staff %}
+                            <li>
+                                <form method="post"
+                                      action="{% url 'report-message' last_message.pk %}"
+                                      onsubmit="return confirm('Report this message?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="fas fa-flag me-2"></i> Report
+                                    </button>
+                                </form>
+                            </li>
+                            {% endif %}
+                            {% endif %}
+
+                            {% if root_message %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger"
+                                   href="{% url 'delete-message' root_message.pk %}?filter={{ request.GET.filter|default:'inbox' }}">
+                                    <i class="fas fa-trash-alt me-2"></i> Delete chat
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </header>
 
 
             <!-- =====================================================
