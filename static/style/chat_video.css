@@ -22,8 +22,7 @@
     border-radius: 50%;
     background: rgba(30, 30, 30, 0.62);
     color: #fff;
-    box-shadow:
-        0 4px 14px rgba(0, 0, 0, 0.28);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     cursor: pointer;
@@ -40,22 +39,16 @@
     font-size: 18px;
     line-height: 1;
     color: #fff;
-    /* премахнат translateX – сега е точно в средата */
 }
 
 .message-video-play-btn:hover {
     background: rgba(25, 25, 25, 0.76);
-    transform:
-        translate(-50%, -50%)
-        scale(1.06);
-    box-shadow:
-        0 6px 18px rgba(0, 0, 0, 0.34);
+    transform: translate(-50%, -50%) scale(1.06);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.34);
 }
 
 .message-video-play-btn:active {
-    transform:
-        translate(-50%, -50%)
-        scale(0.94);
+    transform: translate(-50%, -50%) scale(0.94);
 }
 
 .message-video-play-btn:focus-visible {
@@ -67,3 +60,13 @@
     display: none !important;
 }
 
+@media (max-width: 576px) {
+    .message-video-play-btn {
+        width: 48px;
+        height: 48px;
+    }
+
+    .message-video-play-btn i {
+        font-size: 16px;
+    }
+}

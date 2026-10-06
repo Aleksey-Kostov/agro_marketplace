@@ -694,12 +694,13 @@
 
 /* =========================================================
    CHAT MESSAGE CONTENT
+   Desktop: по-тесни балони (Telegram-like)
 ========================================================= */
 
 .chat-message-content {
     display: block;
     width: fit-content;
-    max-width: min(100%, 520px);
+    max-width: min(72%, 420px);
     min-width: 0;
     box-sizing: border-box;
 }
@@ -809,7 +810,7 @@
     align-items: flex-start;
     gap: 6px;
     width: fit-content;
-    max-width: min(100%, 520px);
+    max-width: min(72%, 440px);
     min-width: 0;
     box-sizing: border-box;
 }
@@ -849,13 +850,13 @@
 
 
 /* =========================================================
-   MEDIA MESSAGE
+   MEDIA MESSAGE — по-тесни на desktop
 ========================================================= */
 
 .chat-message-content:has(.media-wrap) {
     display: block;
-    width: min(100%, 520px);
-    max-width: 520px;
+    width: min(70%, 380px);
+    max-width: min(70%, 380px);
     min-width: 0;
     box-sizing: border-box;
 }
@@ -877,7 +878,7 @@
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    padding: 5px;
+    padding: 4px;
     box-sizing: border-box;
     overflow: hidden;
 }
@@ -927,10 +928,11 @@
     max-width: 100%;
     min-width: 0;
     height: auto;
-    max-height: 65vh;
-    object-fit: cover;
+    max-height: min(52vh, 420px);
+    object-fit: contain;
     border-radius: 14px;
     box-sizing: border-box;
+    vertical-align: middle;
 }
 
 
@@ -943,11 +945,10 @@
 .chat-message-content:has(.media-wrap)
 .message-video[data-orientation="landscape"] {
     width: 100%;
-    height: auto;
     max-width: 100%;
-    max-height: none;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
+    height: auto;
+    max-height: min(48vh, 360px);
+    object-fit: contain;
 }
 
 
@@ -962,7 +963,8 @@
     width: auto;
     max-width: 100%;
     height: auto;
-    max-height: min(65vh, 560px);
+    max-height: min(56vh, 480px);
+    margin-inline: auto;
     object-fit: contain;
 }
 
@@ -975,10 +977,10 @@
 .message-image[data-orientation="square"],
 .chat-message-content:has(.media-wrap)
 .message-video[data-orientation="square"] {
-    width: auto;
+    width: 100%;
     max-width: 100%;
     height: auto;
-    max-height: 65vh;
+    max-height: min(52vh, 380px);
     aspect-ratio: 1 / 1;
     object-fit: cover;
 }
@@ -994,11 +996,32 @@
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    margin-top: 5px;
+    margin-top: 6px;
+    padding: 2px 8px 4px;
     box-sizing: border-box;
     overflow-wrap: anywhere;
     word-break: break-word;
     white-space: normal;
+}
+
+
+/* =========================================================
+   LARGE DESKTOP — още по-контролирана ширина
+========================================================= */
+
+@media (min-width: 1200px) {
+    .chat-message-content {
+        max-width: min(60%, 400px);
+    }
+
+    .message-row-content {
+        max-width: min(60%, 420px);
+    }
+
+    .chat-message-content:has(.media-wrap) {
+        width: min(55%, 360px);
+        max-width: min(55%, 360px);
+    }
 }
 
 
@@ -1905,8 +1928,7 @@
     background: #fff;
     box-shadow: none !important;
     transform: none !important;
-    transition:
-        background-color .15s ease;
+    transition: background-color .15s ease;
 }
 
 .inbox-conversation:hover {
@@ -2133,39 +2155,20 @@
     font-size: 0.9rem;
     line-height: 1.2;
     color: #6c757d;
-
-    /*
-     * IMPORTANT:
-     * The indicator is now a sibling of .conversation-scroll
-     * inside .conversation-scroll-wrap.
-     *
-     * Therefore it is anchored to the bottom of the whole
-     * chat area instead of being positioned inside the
-     * scrolling message content.
-     */
     position: absolute !important;
     left: 50% !important;
     bottom: 12px !important;
-
     z-index: 40 !important;
-
     width: max-content;
     max-width: calc(100% - 30px);
-
     border-radius: 18px;
     background: rgba(255, 255, 255, 0.96);
-
-    box-shadow:
-        0 3px 12px rgba(0, 0, 0, 0.14);
-
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
     opacity: 0;
-
     transform: translate(-50%, 6px);
-
     transition:
         opacity 180ms ease,
         transform 180ms ease;
-
     pointer-events: none;
     white-space: nowrap;
 }
@@ -2186,19 +2189,6 @@
     transform: translate(-50%, 4px);
 }
 
-
-/*
- * When the user has scrolled upward:
- *
- *   "John is typing ..."
- *
- * becomes only:
- *
- *   ...
- *
- * This is handled purely by CSS using the class added
- * by chat_typing.js to .conversation-scroll-wrap.
- */
 .conversation-scroll-wrap.typing-scrolled-up
 .chat-typing-name,
 .conversation-scroll-wrap.typing-scrolled-up
@@ -2249,8 +2239,7 @@
 
 .chat-typing-dots span {
     display: inline-block;
-    animation:
-        chatTypingDot 1.4s infinite ease-in-out;
+    animation: chatTypingDot 1.4s infinite ease-in-out;
     opacity: 0.25;
 }
 
@@ -2384,6 +2373,25 @@
     .inbox-delete {
         opacity: 1;
     }
+
+    /* по-широки балони на tablet */
+    .chat-message-content {
+        max-width: min(85%, 100%);
+    }
+
+    .message-row-content {
+        max-width: min(88%, 100%);
+    }
+
+    .chat-message-content:has(.media-wrap) {
+        width: min(85%, 100%);
+        max-width: min(85%, 100%);
+    }
+
+    .chat-message-content:has(.media-wrap) .message-image,
+    .chat-message-content:has(.media-wrap) .message-video {
+        max-height: min(55vh, 360px);
+    }
 }
 
 
@@ -2465,8 +2473,12 @@
 
     .chat-message-content {
         width: fit-content;
-        max-width: 100%;
+        max-width: min(88%, 100%);
         min-width: 0;
+    }
+
+    .message-row-content {
+        max-width: min(92%, 100%);
     }
 
     .chat-message-content .message-bubble {
@@ -2477,8 +2489,8 @@
 
     .chat-message-content:has(.media-wrap) {
         display: block;
-        width: 100%;
-        max-width: 100%;
+        width: min(88%, 100%);
+        max-width: min(88%, 100%);
         min-width: 0;
     }
 
