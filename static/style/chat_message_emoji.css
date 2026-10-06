@@ -1,35 +1,27 @@
 /* =========================================================
    CHAT MESSAGE EMOJI
+   1 emoji  → голям, без балон (Telegram/WhatsApp)
+   2–3     → по-големи от текста, лек/без тежък bubble look
 ========================================================= */
 
-/* BASE */
 .message-bubble.emoji-only {
     position: relative;
     min-width: 0;
 }
 
-
-/* =========================================================
-   REMOVE VIBER BUBBLE ARROW
-========================================================= */
-
+/* без опашка */
 .message-bubble.emoji-only::before {
     display: none !important;
 }
 
-
-/* =========================================================
-   TWEMOJI
-========================================================= */
-
-.message-bubble.emoji-only
-.chat-twemoji {
+/* Twemoji */
+.message-bubble.emoji-only .chat-twemoji {
     display: inline-block;
     width: 1em;
     height: 1em;
     max-width: none;
     max-height: none;
-    margin: 0;
+    margin: 0 1px;
     vertical-align: middle;
     object-fit: contain;
     user-select: none;
@@ -37,45 +29,32 @@
     -webkit-user-drag: none;
 }
 
+/* общо за emoji body */
+.message-bubble.emoji-only .message-body-html {
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+    overflow: visible;
+    word-break: normal;
+    overflow-wrap: normal;
+}
 
-/* =========================================================
-   COMMON EMOJI BODY
-========================================================= */
-
-.message-bubble.emoji-only
-.message-body-html {
-    margin: 0 !important;
-    padding: 0 !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    word-break: normal !important;
-    overflow-wrap: normal !important;
+.message-bubble.emoji-only .message-body-html > p,
+.message-bubble.emoji-only .message-body-html > div,
+.message-bubble.emoji-only .message-body-html > span {
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+    overflow: visible;
 }
 
 
 /* =========================================================
-   COMMON INNER HTML
-========================================================= */
-
-.message-bubble.emoji-only
-.message-body-html > p,
-.message-bubble.emoji-only
-.message-body-html > div,
-.message-bubble.emoji-only
-.message-body-html > span {
-    width: auto !important;
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    white-space: nowrap !important;
-    word-break: normal !important;
-    overflow-wrap: normal !important;
-    overflow: visible !important;
-}
-
-
-/* =========================================================
-   ONE EMOJI
+   ONE EMOJI — голям, без балон
 ========================================================= */
 
 .message-bubble.emoji-only-1 {
@@ -86,263 +65,220 @@
     overflow: visible !important;
 }
 
-
-.message-bubble.emoji-only-1
-.message-content-wrap {
-    width: auto;
+.message-bubble.emoji-only-1 .message-content-wrap {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    overflow: visible !important;
+    width: auto;
+    overflow: visible;
 }
 
+.received-message .message-bubble.emoji-only-1 .message-content-wrap {
+    align-items: flex-start;
+}
 
-.message-bubble.emoji-only-1
-.message-body-html {
-    display: block !important;
-    width: auto !important;
-    max-width: none !important;
-
-    font-size: 42px !important;
-    line-height: 1.25 !important;
-
+.message-bubble.emoji-only-1 .message-body-html {
+    display: block;
+    width: auto;
+    max-width: none;
+    font-size: 48px;
+    line-height: 1.15;
     text-align: right;
-    overflow: visible !important;
+    overflow: visible;
 }
 
-
-.message-bubble.emoji-only-1
-.message-body-html > p,
-.message-bubble.emoji-only-1
-.message-body-html > div,
-.message-bubble.emoji-only-1
-.message-body-html > span {
-    display: inline !important;
-    font-size: inherit !important;
-    line-height: inherit !important;
-    overflow: visible !important;
+.received-message .message-bubble.emoji-only-1 .message-body-html {
+    text-align: left;
 }
 
+.message-bubble.emoji-only-1 .message-body-html > p,
+.message-bubble.emoji-only-1 .message-body-html > div,
+.message-bubble.emoji-only-1 .message-body-html > span {
+    display: inline;
+    font-size: inherit;
+    line-height: inherit;
+    overflow: visible;
+}
 
-/* =========================================================
-   ONE EMOJI META
-========================================================= */
-
-.message-bubble.emoji-only-1
-.message-bubble-meta {
+.message-bubble.emoji-only-1 .message-bubble-meta {
     display: inline-flex;
-    width: fit-content;
-    margin: 2px 0 0 auto;
-    padding: 2px 5px;
-
     align-items: center;
     justify-content: center;
     gap: 3px;
-
+    width: fit-content;
+    margin: 2px 0 0 auto;
+    padding: 0;
     white-space: nowrap;
     font-size: 11px;
     line-height: 1;
-
     background: transparent;
     border: none;
     border-radius: 0;
     box-shadow: none;
+}
 
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+.received-message .message-bubble.emoji-only-1 .message-bubble-meta {
+    margin-left: 0;
+    margin-right: auto;
 }
 
 
 /* =========================================================
-   TWO EMOJIS
-   NORMAL SIZE
+   TWO EMOJIS — средно големи
 ========================================================= */
 
-.message-bubble.emoji-only-2
-.message-content-wrap {
-    display: flex;
-    align-items: center;
-
-    width: auto;
-    max-width: 100%;
-
-    white-space: nowrap;
-    overflow: visible !important;
+.message-bubble.emoji-only-2 {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 2px 0 !important;
 }
 
-
-.message-bubble.emoji-only-2
-.message-body-html {
-    display: inline-block !important;
-
-    width: auto !important;
-    max-width: none !important;
-
-    flex: 0 0 auto;
-
-    font-size: 15px !important;
-    line-height: 1.45 !important;
-
-    text-align: left;
-
-    overflow: visible !important;
-}
-
-
-.message-bubble.emoji-only-2
-.message-body-html > p,
-.message-bubble.emoji-only-2
-.message-body-html > div,
-.message-bubble.emoji-only-2
-.message-body-html > span {
-    display: inline !important;
-
-    font-size: inherit !important;
-    line-height: inherit !important;
-
-    overflow: visible !important;
-}
-
-
-/* =========================================================
-   TWO EMOJI META
-========================================================= */
-
-.message-bubble.emoji-only-2
-.message-bubble-meta {
-    display: inline-flex;
-
-    flex: 0 0 auto;
-
-    width: fit-content;
-
-    margin: 0 0 0 7px;
-    padding: 2px 6px;
-
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-
-    white-space: nowrap;
-
-    font-size: 11px;
-    line-height: 1;
-
-    background: rgba(255, 255, 255, 0.55);
-
-    border: none;
-    border-radius: 10px;
-
-    box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.08);
-
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-}
-
-
-/* =========================================================
-   THREE EMOJIS
-   NORMAL SIZE
-========================================================= */
-
-.message-bubble.emoji-only-3
-.message-content-wrap {
+.message-bubble.emoji-only-2 .message-content-wrap {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-
     width: auto;
     max-width: 100%;
-
-    overflow: visible !important;
+    overflow: visible;
 }
 
+.received-message .message-bubble.emoji-only-2 .message-content-wrap {
+    align-items: flex-start;
+}
 
-.message-bubble.emoji-only-3
-.message-body-html {
-    display: block !important;
-
-    width: auto !important;
-    max-width: none !important;
-
-    font-size: 15px !important;
-    line-height: 1.45 !important;
-
+.message-bubble.emoji-only-2 .message-body-html {
+    display: block;
+    width: auto;
+    max-width: none;
+    font-size: 36px;
+    line-height: 1.2;
     text-align: right;
-
-    overflow: visible !important;
+    overflow: visible;
 }
 
-
-.message-bubble.emoji-only-3
-.message-body-html > p,
-.message-bubble.emoji-only-3
-.message-body-html > div,
-.message-bubble.emoji-only-3
-.message-body-html > span {
-    display: inline !important;
-
-    font-size: inherit !important;
-    line-height: inherit !important;
-
-    overflow: visible !important;
+.received-message .message-bubble.emoji-only-2 .message-body-html {
+    text-align: left;
 }
 
+.message-bubble.emoji-only-2 .message-body-html > p,
+.message-bubble.emoji-only-2 .message-body-html > div,
+.message-bubble.emoji-only-2 .message-body-html > span {
+    display: inline;
+    font-size: inherit;
+    line-height: inherit;
+    overflow: visible;
+}
 
-/* =========================================================
-   THREE EMOJI META
-========================================================= */
-
-.message-bubble.emoji-only-3
-.message-bubble-meta {
+.message-bubble.emoji-only-2 .message-bubble-meta {
     display: inline-flex;
-
-    width: fit-content;
-
-    margin: 3px 0 0 auto;
-    padding: 2px 6px;
-
     align-items: center;
-    justify-content: center;
     gap: 3px;
-
+    width: fit-content;
+    margin: 2px 0 0 auto;
+    padding: 0;
     white-space: nowrap;
-
     font-size: 11px;
     line-height: 1;
-
-    background: rgba(255, 255, 255, 0.55);
-
+    background: transparent;
     border: none;
-    border-radius: 10px;
+    box-shadow: none;
+}
 
-    box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.08);
-
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+.received-message .message-bubble.emoji-only-2 .message-bubble-meta {
+    margin-left: 0;
+    margin-right: auto;
 }
 
 
 /* =========================================================
-   DELIVERY STATUS
+   THREE EMOJIS — малко по-малки от 2
 ========================================================= */
 
-.message-bubble.emoji-only
-.message-bubble-time {
+.message-bubble.emoji-only-3 {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 2px 0 !important;
+}
+
+.message-bubble.emoji-only-3 .message-content-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: auto;
+    max-width: 100%;
+    overflow: visible;
+}
+
+.received-message .message-bubble.emoji-only-3 .message-content-wrap {
+    align-items: flex-start;
+}
+
+.message-bubble.emoji-only-3 .message-body-html {
+    display: block;
+    width: auto;
+    max-width: none;
+    font-size: 30px;
+    line-height: 1.2;
+    text-align: right;
+    overflow: visible;
+}
+
+.received-message .message-bubble.emoji-only-3 .message-body-html {
+    text-align: left;
+}
+
+.message-bubble.emoji-only-3 .message-body-html > p,
+.message-bubble.emoji-only-3 .message-body-html > div,
+.message-bubble.emoji-only-3 .message-body-html > span {
+    display: inline;
+    font-size: inherit;
+    line-height: inherit;
+    overflow: visible;
+}
+
+.message-bubble.emoji-only-3 .message-bubble-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    width: fit-content;
+    margin: 2px 0 0 auto;
+    padding: 0;
+    white-space: nowrap;
+    font-size: 11px;
+    line-height: 1;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.received-message .message-bubble.emoji-only-3 .message-bubble-meta {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+
+/* =========================================================
+   TIME + DELIVERY
+========================================================= */
+
+.message-bubble.emoji-only .message-bubble-time {
+    color: #667781;
     font-size: 11px;
     line-height: 1;
     white-space: nowrap;
 }
 
-
-.message-bubble.emoji-only
-.message-delivery-status {
-    font-size: 11px;
+.message-bubble.emoji-only .message-delivery-status {
+    font-size: 12px;
     line-height: 1;
     white-space: nowrap;
-    letter-spacing: -1px;
+    letter-spacing: -1.5px;
+}
+
+.message-bubble.emoji-only .message-delivery-status-read {
+    color: #53bdeb;
 }
 
 
@@ -351,139 +287,44 @@
 ========================================================= */
 
 @media (max-width: 576px) {
-
-    /* -----------------------------------------
-       ONE EMOJI
-    ----------------------------------------- */
-
-    .message-bubble.emoji-only-1
-    .message-body-html {
-        font-size: 40px !important;
-        line-height: 1.25 !important;
-        overflow: visible !important;
+    .message-bubble.emoji-only-1 .message-body-html {
+        font-size: 44px;
+        line-height: 1.15;
     }
 
-
-    /* -----------------------------------------
-       TWO EMOJIS
-       NORMAL SIZE
-    ----------------------------------------- */
-
-    .message-bubble.emoji-only-2
-    .message-body-html {
-        font-size: 15px !important;
-        line-height: 1.45 !important;
+    .message-bubble.emoji-only-2 .message-body-html {
+        font-size: 32px;
+        line-height: 1.2;
     }
 
-
-    /* -----------------------------------------
-       THREE EMOJIS
-       NORMAL SIZE
-    ----------------------------------------- */
-
-    .message-bubble.emoji-only-3
-    .message-body-html {
-        font-size: 15px !important;
-        line-height: 1.45 !important;
+    .message-bubble.emoji-only-3 .message-body-html {
+        font-size: 28px;
+        line-height: 1.2;
     }
 
-
-    /* -----------------------------------------
-       ONE EMOJI META
-    ----------------------------------------- */
-
-    .message-bubble.emoji-only-1
-    .message-bubble-meta {
-        margin-top: 2px;
-        padding: 2px 5px;
-    }
-
-
-    /* -----------------------------------------
-       TWO EMOJI META
-    ----------------------------------------- */
-
-    .message-bubble.emoji-only-2
-    .message-bubble-meta {
-        margin-left: 6px;
-        padding: 2px 5px;
-    }
-
-
-    /* -----------------------------------------
-       THREE EMOJI META
-    ----------------------------------------- */
-
-    .message-bubble.emoji-only-3
-    .message-bubble-meta {
-        margin-top: 3px;
-        padding: 2px 5px;
-    }
-
-
-    /* -----------------------------------------
-       TIME + DELIVERY
-    ----------------------------------------- */
-
-    .message-bubble.emoji-only
-    .message-bubble-time,
-
-    .message-bubble.emoji-only
-    .message-delivery-status {
-        font-size: 10px;
+    .message-bubble.emoji-only .message-bubble-time,
+    .message-bubble.emoji-only .message-delivery-status {
+        font-size: 10.5px;
     }
 }
-
-
-/* =========================================================
-   VERY SMALL
-========================================================= */
 
 @media (max-width: 360px) {
-
-    /* -----------------------------------------
-       ONE EMOJI
-    ----------------------------------------- */
-
-    .message-bubble.emoji-only-1
-    .message-body-html {
-        font-size: 38px !important;
-        line-height: 1.25 !important;
+    .message-bubble.emoji-only-1 .message-body-html {
+        font-size: 40px;
     }
 
-
-    /* -----------------------------------------
-       TWO EMOJIS
-    ----------------------------------------- */
-
-    .message-bubble.emoji-only-2
-    .message-body-html {
-        font-size: 15px !important;
-        line-height: 1.45 !important;
+    .message-bubble.emoji-only-2 .message-body-html {
+        font-size: 30px;
     }
 
-
-    /* -----------------------------------------
-       THREE EMOJIS
-    ----------------------------------------- */
-
-    .message-bubble.emoji-only-3
-    .message-body-html {
-        font-size: 15px !important;
-        line-height: 1.45 !important;
+    .message-bubble.emoji-only-3 .message-body-html {
+        font-size: 26px;
     }
 }
 
-
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
-
 @media (prefers-reduced-motion: reduce) {
-
     .message-bubble.emoji-only,
-    .message-bubble.emoji-only
-    .chat-twemoji {
-        transition: none !important;
+    .message-bubble.emoji-only .chat-twemoji {
+        transition: none;
     }
 }
