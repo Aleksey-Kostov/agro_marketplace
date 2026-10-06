@@ -2,49 +2,45 @@
    CHAT MESSAGE META
 ========================================================= */
 
-
-/* =========================================================
-   CONVERSATION META
-========================================================= */
-
 .conversation-meta {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
     min-width: 0;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
 .conversation-name {
-    color: #222;
-    font-size: 15px;
+    color: #00a884;
+    font-size: 13px;
     font-weight: 600;
+    line-height: 1.2;
     overflow-wrap: anywhere;
     word-break: break-word;
 }
 
+.own-message .conversation-name {
+    color: #667781;
+}
+
 .conversation-date {
-    color: #777;
-    font-size: 12px;
+    color: #8696a0;
+    font-size: 11px;
+    line-height: 1.2;
     white-space: nowrap;
 }
 
 
 /* =========================================================
-   MESSAGE BUBBLE
+   MESSAGE BUBBLE / CONTENT WRAP
 ========================================================= */
 
 .message-bubble {
     position: relative;
     min-width: 0;
 }
-
-
-/* =========================================================
-   MESSAGE CONTENT
-========================================================= */
 
 .message-content-wrap {
     width: 100%;
@@ -54,7 +50,6 @@
 
 /* =========================================================
    SHORT TEXT
-   Text above, time/status always bottom-right
 ========================================================= */
 
 .message-bubble.message-text-short
@@ -64,11 +59,6 @@
     align-items: stretch;
     width: 100%;
 }
-
-
-/* =========================================================
-   SHORT TEXT BODY
-========================================================= */
 
 .message-bubble.message-text-short
 .message-body-html {
@@ -81,11 +71,6 @@
     overflow-wrap: anywhere;
     word-break: break-word;
 }
-
-
-/* =========================================================
-   SHORT TEXT INNER HTML
-========================================================= */
 
 .message-bubble.message-text-short
 .message-body-html > p,
@@ -110,39 +95,6 @@
 
 
 /* =========================================================
-   SHORT TEXT META
-   Always bottom-right
-========================================================= */
-
-.message-bubble.message-text-short
-.message-bubble-meta {
-    display: flex;
-    width: fit-content;
-    margin: 4px 0 0 auto;
-    padding: 2px 6px;
-
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-
-    white-space: nowrap;
-    font-size: 11px;
-    line-height: 1;
-    user-select: none;
-
-    background: rgba(255, 255, 255, 0.72);
-    border: none;
-    border-radius: 10px;
-
-    box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.08);
-
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-}
-
-
-/* =========================================================
    LONG TEXT
 ========================================================= */
 
@@ -156,36 +108,27 @@
 
 
 /* =========================================================
-   LONG TEXT META
-   Always bottom-right inside bubble
+   BUBBLE META (час + статус) — общо за short / long
+   Дискретно, долу вдясно — без тежка „badge“ сянка
 ========================================================= */
 
-.message-bubble.message-text-long
-.message-bubble-meta {
+.message-bubble.message-text-short .message-bubble-meta,
+.message-bubble.message-text-long .message-bubble-meta {
     display: flex;
-    width: fit-content;
-    margin-top: 4px;
-    margin-left: auto;
-    padding: 2px 6px;
-
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 3px;
-
+    width: fit-content;
+    margin: 3px 0 0 auto;
+    padding: 0 1px;
     white-space: nowrap;
     font-size: 11px;
     line-height: 1;
     user-select: none;
-
-    background: rgba(255, 255, 255, 0.72);
+    background: transparent;
     border: none;
-    border-radius: 10px;
-
-    box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.08);
-
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+    border-radius: 0;
+    box-shadow: none;
 }
 
 
@@ -195,105 +138,97 @@
 
 .message-bubble-time {
     display: inline-block;
-    color: #666;
+    color: #667781;
     font-size: 11px;
     line-height: 1;
     font-weight: 400;
     white-space: nowrap;
 }
 
+.own-message .message-bubble-time {
+    color: #5f7a6b;
+}
+
 
 /* =========================================================
-   DELIVERY STATUS
+   DELIVERY STATUS (✓ / ✓✓)
 ========================================================= */
 
 .message-delivery-status {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-left: 1px;
-    color: #888;
-    font-size: 11px;
+    margin-left: 2px;
+    color: #8696a0;
+    font-size: 12px;
     line-height: 1;
     font-weight: 600;
-    letter-spacing: -1px;
+    letter-spacing: -1.5px;
     white-space: nowrap;
     user-select: none;
 }
 
-
-/* =========================================================
-   READ STATUS
-========================================================= */
-
 .message-delivery-status-read {
-    color: #8e44ad;
+    color: #53bdeb; /* WhatsApp read blue */
 }
 
 
 /* =========================================================
-   MEDIA MESSAGE
+   MEDIA MESSAGE META
+   Лек pill върху/под медията
 ========================================================= */
 
-.chat-message-content:has(.media-wrap)
-.message-bubble {
+.chat-message-content:has(.media-wrap) .message-bubble {
     position: relative;
     min-width: 0;
 }
 
-
-/* =========================================================
-   MEDIA META
-   Time/status below image/video
-   always bottom-right
-========================================================= */
-
-.chat-message-content:has(.media-wrap)
-.message-bubble-meta {
+.chat-message-content:has(.media-wrap) .message-bubble-meta {
     display: flex;
-    width: fit-content;
-    min-height: 18px;
-
-    margin-top: 4px;
-    margin-left: auto;
-
-    padding: 3px 6px;
-
-    box-sizing: border-box;
-
     align-items: center;
     justify-content: center;
     gap: 3px;
-
+    width: fit-content;
+    min-height: 0;
+    margin-top: 4px;
+    margin-left: auto;
+    margin-right: 2px;
+    padding: 2px 6px;
+    box-sizing: border-box;
     white-space: nowrap;
     font-size: 11px;
     line-height: 1;
     user-select: none;
-
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.85);
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
 
-    box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.08);
+.chat-message-content:has(.media-wrap) .message-bubble-time {
+    color: #54656f;
+}
 
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+.own-message .chat-message-content:has(.media-wrap) .message-bubble-time {
+    color: #54656f;
 }
 
 
 /* =========================================================
-   DELETED MESSAGE
+   DELETED — без meta
 ========================================================= */
 
-.deleted-message-placeholder
-.message-bubble-meta {
+.deleted-message-placeholder .message-bubble-meta,
+.chat-message-content:has(.deleted-message-placeholder) .message-bubble-meta,
+.chat-message-content:has(.deleted-message-bubble) .message-bubble-meta {
     display: none !important;
 }
 
 
 /* =========================================================
-   FLOATING DATE
+   FLOATING DATE (при скрол)
 ========================================================= */
 
 .chat-floating-date {
@@ -301,58 +236,35 @@
     top: 10px;
     left: 50%;
     z-index: 60;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
-    min-height: 30px;
-    padding: 6px 12px;
-
-    border-radius: 16px;
-
-    background: rgba(80, 80, 80, 0.82);
+    min-height: 28px;
+    padding: 5px 12px;
+    border-radius: 14px;
+    background: rgba(17, 27, 33, 0.78);
     color: #fff;
-
     font-size: 12px;
     font-weight: 500;
     line-height: 1;
-
     white-space: nowrap;
-
-    box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.16);
-
-    transform:
-        translateX(-50%)
-        translateY(-6px);
-
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+    transform: translateX(-50%) translateY(-6px);
     opacity: 0;
     visibility: hidden;
-
     pointer-events: none;
-
     transition:
         opacity 0.18s ease,
         transform 0.18s ease,
         visibility 0.18s ease;
-
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
-
-
-/* =========================================================
-   FLOATING DATE - VISIBLE
-========================================================= */
 
 .chat-floating-date.is-visible {
     opacity: 1;
     visibility: visible;
-
-    transform:
-        translateX(-50%)
-        translateY(0);
+    transform: translateX(-50%) translateY(0);
 }
 
 
@@ -364,48 +276,40 @@
 
     .conversation-meta {
         gap: 5px;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
     }
 
     .conversation-name {
-        font-size: 14px;
+        font-size: 12.5px;
     }
 
     .conversation-date {
-        font-size: 11px;
+        font-size: 10.5px;
     }
 
     .message-bubble-time {
-        font-size: 10px;
+        font-size: 10.5px;
     }
 
     .message-delivery-status {
-        font-size: 10px;
+        font-size: 11px;
     }
 
-    .message-bubble.message-text-short
-    .message-bubble-meta {
-        margin-top: 4px;
-        margin-left: auto;
+    .message-bubble.message-text-short .message-bubble-meta,
+    .message-bubble.message-text-long .message-bubble-meta {
+        margin-top: 2px;
+    }
+
+    .chat-message-content:has(.media-wrap) .message-bubble-meta {
         padding: 2px 5px;
-    }
-
-    .message-bubble.message-text-long
-    .message-bubble-meta {
-        padding: 2px 5px;
-    }
-
-    .chat-message-content:has(.media-wrap)
-    .message-bubble-meta {
-        min-height: 17px;
-        padding: 3px 5px;
+        margin-top: 3px;
     }
 
     .chat-floating-date {
         top: 8px;
-        min-height: 28px;
-        padding: 6px 11px;
-        border-radius: 15px;
+        min-height: 26px;
+        padding: 5px 11px;
+        border-radius: 13px;
         font-size: 11px;
     }
 }
@@ -416,7 +320,6 @@
 ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
-
     .chat-floating-date {
         transition: none;
     }
