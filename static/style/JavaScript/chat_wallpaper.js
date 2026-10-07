@@ -64,10 +64,11 @@
 
     function applyTo(el, url, mode) {
         if (!el) return;
-        el.style.backgroundImage = 'url("' + url + '")';
-        el.style.backgroundSize = 'cover';
-        el.style.backgroundPosition = 'center';
-        el.style.backgroundRepeat = 'no-repeat';
+        el.style.setProperty('background-image', 'url("' + url + '")', 'important');
+        el.style.setProperty('background-size', 'cover', 'important');
+        el.style.setProperty('background-position', 'center center', 'important');
+        el.style.setProperty('background-repeat', 'no-repeat', 'important');
+        el.style.setProperty('background-color', 'transparent', 'important');
         el.dataset.chatWallpaperMode = mode;
     }
 

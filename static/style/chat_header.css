@@ -23,8 +23,7 @@
     display: flex;
     flex-direction: column;
     min-height: calc(100vh - 140px);
-    background: transparent !important;
-    background-color: transparent !important;
+    background-color: transparent;
     border: none;
     border-radius: 16px;
     overflow: hidden;
@@ -541,10 +540,6 @@ body.chat-app-page .chat-system-note {
 
 @media (min-width: 769px) {
 
-    body.chat-app-page {
-        /* site chrome (nav, header, footer) ОСТАВА */
-    }
-
     body.chat-app-page .chat-page {
         position: relative;
         display: flex;
@@ -558,7 +553,6 @@ body.chat-app-page .chat-system-note {
     }
 
     body.chat-app-page .chat-shell {
-        /* обвивка за resize */
         width: min(720px, 92vw);
         min-width: 360px;
         max-width: 960px;
@@ -567,7 +561,7 @@ body.chat-app-page .chat-system-note {
         max-height: calc(100vh - 120px);
         margin: 0 auto;
         padding: 0;
-        resize: both;              /* ← мишка: свиване / разтягане */
+        resize: both;
         overflow: auto;
         box-sizing: border-box;
     }
@@ -579,16 +573,18 @@ body.chat-app-page .chat-system-note {
         height: 100%;
         min-height: 100%;
         margin: 0;
+        padding: 0;
         border-radius: 16px;
         border: 1px solid rgba(0, 0, 0, 0.1);
         box-shadow:
             0 8px 32px rgba(0, 0, 0, 0.14),
             0 2px 8px rgba(0, 0, 0, 0.06);
         overflow: hidden;
-        /* background-image идва от chat_wallpaper.js */
-        background-color: rgba(255, 255, 255, 0.15);
-        background-size: cover;
-        background-position: center;
+
+        background-color: transparent !important;
+        background-size: cover !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
     }
 
     body.chat-app-page .chat-header {
@@ -611,12 +607,17 @@ body.chat-app-page .chat-system-note {
         background: transparent !important;
     }
 
+    body.chat-app-page .conversation-scroll,
+    body.chat-app-page .conversation,
+    body.chat-app-page #chat-messages {
+        background: transparent !important;
+    }
+
     body.chat-app-page .conversation-scroll {
         height: 100%;
         max-height: none !important;
         min-height: 0 !important;
         overflow-y: auto;
-        background: transparent !important;
     }
 
     body.chat-app-page .reply-form,
@@ -627,14 +628,6 @@ body.chat-app-page .chat-system-note {
         background: rgba(255, 255, 255, 0.96);
         border-top: 1px solid rgba(0, 0, 0, 0.08);
         border-radius: 0 0 16px 16px;
-    }
-}
-
-/* ъгъл за resize — по-забележим */
-@media (min-width: 769px) {
-    body.chat-app-page .chat-shell {
-        /* resize handle е в долния десен ъгъл на браузъра */
-        cursor: default;
     }
 }
 
