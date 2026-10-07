@@ -360,9 +360,12 @@ body.chat-app-page .chat-system-note {
    MOBILE ≤768px — цял екран Viber
 ========================================================= */
 
+/* =========================================================
+   MOBILE ≤768px — цял екран Viber, composer ВИНАГИ видим
+========================================================= */
+
 @media (max-width: 768px) {
 
-    /* скрий site chrome */
     body.chat-app-page nav,
     body.chat-app-page .navbar,
     body.chat-app-page header.header,
@@ -371,32 +374,53 @@ body.chat-app-page .chat-system-note {
         display: none !important;
     }
 
+    html {
+        height: 100%;
+        height: 100dvh;
+    }
+
     body.chat-app-page {
+        display: block !important; /* override main.css flex column */
         margin: 0;
         padding: 0;
+        height: 100%;
+        height: 100dvh;
+        max-height: 100dvh;
         overflow: hidden;
-        /* тапетът от body / DynamicBackground остава видим */
         background-size: cover !important;
         background-position: center !important;
         background-repeat: no-repeat !important;
         background-attachment: fixed !important;
     }
 
+    body.chat-app-page main.chat-page,
     body.chat-app-page .chat-page {
         position: fixed;
-        inset: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
         width: 100%;
+        height: 100%;
         height: 100dvh;
-        height: 100vh;
+        max-height: 100dvh;
         margin: 0;
         padding: 0;
+        min-height: 0 !important; /* override main { min-height: 500px } */
+        display: flex;
+        flex-direction: column;
         z-index: 1;
         background: transparent !important;
+        box-sizing: border-box;
     }
 
     body.chat-app-page .chat-shell {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
         width: 100%;
         height: 100%;
+        min-height: 0;
         max-width: 100%;
         margin: 0;
         padding: 0;
@@ -405,11 +429,13 @@ body.chat-app-page .chat-system-note {
 
     body.chat-app-page .chat-conversation.message-box,
     body.chat-app-page .message-box.conversation-box {
-        display: flex;
-        flex-direction: column;
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 auto;
         width: 100%;
         height: 100%;
-        min-height: 100%;
+        min-height: 0 !important;
+        max-height: 100%;
         margin: 0;
         padding: 0;
         border: 0 !important;
@@ -420,7 +446,7 @@ body.chat-app-page .chat-system-note {
         overflow: hidden;
     }
 
-    /* header — guest + закръглени долу */
+    /* HEADER — fixed height, не расте */
     body.chat-app-page .chat-header {
         flex: 0 0 auto;
         min-height: 52px;
@@ -455,7 +481,6 @@ body.chat-app-page .chat-system-note {
         font-size: 12px;
     }
 
-    /* ad strip */
     body.chat-app-page .chat-ad-strip {
         flex: 0 0 auto;
         margin: 6px 8px 0;
@@ -470,16 +495,17 @@ body.chat-app-page .chat-system-note {
         flex-basis: 36px;
     }
 
-    /* messages — скрол + тапет се вижда */
+    /* MESSAGES — заема САМО свободното място */
     body.chat-app-page .conversation-scroll-wrap {
-        flex: 1 1 auto;
-        min-height: 0;
+        flex: 1 1 0 !important;
+        min-height: 0 !important;
         overflow: hidden;
         background: transparent !important;
     }
 
     body.chat-app-page .conversation-scroll {
         height: 100% !important;
+        min-height: 0 !important; /* беше 240px — буташе composer-а */
         max-height: none !important;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
@@ -487,16 +513,19 @@ body.chat-app-page .chat-system-note {
         padding: 8px 6px 12px;
     }
 
-    /* composer долу */
+    /* COMPOSER — винаги в дъното на екрана */
     body.chat-app-page .reply-form,
     body.chat-app-page .chat-composer-blocked,
     body.chat-app-page .chat-system-note {
-        flex: 0 0 auto;
-        margin: 0;
+        flex: 0 0 auto !important;
+        flex-shrink: 0 !important;
+        margin: 0 !important;
         padding: 6px 8px calc(8px + env(safe-area-inset-bottom, 0px));
-        background: rgba(255, 255, 255, 0.94);
+        background: rgba(255, 255, 255, 0.96);
         border-top: 1px solid rgba(0, 0, 0, 0.06);
         border-radius: 16px 16px 0 0;
+        position: relative;
+        z-index: 30;
     }
 }
 

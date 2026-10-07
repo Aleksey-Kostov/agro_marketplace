@@ -1,7 +1,11 @@
 (function () {
     'use strict';
 
-    if (document.body.classList.contains('chat-app-page')) {
+    // Само mobile chat ползва chat_wallpaper — desktop си върти нормално
+    if (
+        document.body.classList.contains('chat-app-page') &&
+        window.matchMedia('(max-width: 768px)').matches
+    ) {
         return;
     }
 
@@ -22,6 +26,12 @@
     });
 
     function setRandomBackground() {
+        if (
+            document.body.classList.contains('chat-app-page') &&
+            window.matchMedia('(max-width: 768px)').matches
+        ) {
+            return;
+        }
         const randomIndex = Math.floor(Math.random() * imageUrls.length);
         document.body.style.backgroundImage =
             'url("' + imageUrls[randomIndex] + '")';
