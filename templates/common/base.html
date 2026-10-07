@@ -12,7 +12,7 @@
           type="image/png">
     <title>Stats Widget</title>
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
 <!-- Navigation Bar -->
 
@@ -83,6 +83,7 @@
 ========================================================= -->
 
 <script src="{% static 'style/JavaScript/DynamicBackground.js' %}"></script>
+<script src="{% static 'style/JavaScript/chat_wallpaper.js' %}"></script>
 <script src="{% static 'style/JavaScript/CurrentDateTime.js' %}"></script>
 <script src="{% static 'style/JavaScript/FilterMessages.js' %}"></script>
 <script src="{% static 'style/JavaScript/PhotoPreviewProducts.js' %}"></script>

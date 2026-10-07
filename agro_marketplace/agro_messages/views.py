@@ -825,7 +825,6 @@ def validate_message_attachments(request):
     )
 
 
-
 # ============================================================
 # CREATE MESSAGE ATTACHMENT
 # ============================================================
@@ -2335,7 +2334,6 @@ def read_message(
                 product_is_active = exp > now
             else:
                 product_is_active = True
-
 
     # ========================================================
     # RENDER

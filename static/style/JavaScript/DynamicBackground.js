@@ -1,27 +1,32 @@
-const imageUrls = [
-    "/static/images/texture.jpg",
-    "/static/images/pic1.jpg",
-    "/static/images/pic2.jpg",
-    "/static/images/pic3.jpg",
-    "/static/images/pic4.jpeg"
-];
+(function () {
+    'use strict';
 
-// Preload images
-const preloadedImages = [];
+    if (document.body.classList.contains('chat-app-page')) {
+        return;
+    }
 
-imageUrls.forEach((src) => {
-    const img = new Image();
-    img.src = src;
-    preloadedImages.push(img);
-});
+    const imageUrls = [
+        '/static/images/texture.jpg',
+        '/static/images/pic1.jpg',
+        '/static/images/pic2.jpg',
+        '/static/images/pic3.jpg',
+        '/static/images/pic4.jpeg'
+    ];
 
-function setRandomBackground() {
-    const randomIndex = Math.floor(Math.random() * imageUrls.length);
+    const preloadedImages = [];
 
-    document.body.style.backgroundImage =
-        `url("${imageUrls[randomIndex]}")`;
-}
+    imageUrls.forEach(function (src) {
+        const img = new Image();
+        img.src = src;
+        preloadedImages.push(img);
+    });
 
-setRandomBackground();
+    function setRandomBackground() {
+        const randomIndex = Math.floor(Math.random() * imageUrls.length);
+        document.body.style.backgroundImage =
+            'url("' + imageUrls[randomIndex] + '")';
+    }
 
-setInterval(setRandomBackground, 10000);
+    setRandomBackground();
+    setInterval(setRandomBackground, 10000);
+})();
