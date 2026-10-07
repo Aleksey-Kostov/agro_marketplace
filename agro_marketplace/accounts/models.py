@@ -92,5 +92,11 @@ class Profile(models.Model):
         auto_now_add=True
     )
 
+    last_seen = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
     def __str__(self):
         return self.full_name

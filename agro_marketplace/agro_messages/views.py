@@ -2305,6 +2305,39 @@ def read_message(
     )
 
     # ========================================================
+    # PRODUCT (от обява, ако разговорът е по listing)
+    # ========================================================
+
+    product = None
+    product_is_active = False
+
+    if root_message.product_id and root_message.product_type:
+        if root_message.product_type == 'seller':
+            product = (
+                SellerItems.objects
+                .filter(pk=root_message.product_id)
+                .first()
+            )
+        elif root_message.product_type == 'buyer':
+            product = (
+                BuyerItems.objects
+                .filter(pk=root_message.product_id)
+                .first()
+            )
+
+        if product is not None:
+            exp = getattr(product, 'expiration_date', None)
+            if exp is not None:
+                from django.utils import timezone
+                now = timezone.now()
+                if timezone.is_naive(exp):
+                    exp = timezone.make_aware(exp, timezone.get_current_timezone())
+                product_is_active = exp > now
+            else:
+                product_is_active = True
+
+
+    # ========================================================
     # RENDER
     # ========================================================
 
@@ -2317,6 +2350,8 @@ def read_message(
             'conversation_messages': (
                 conversation_messages
             ),
+            'product': product,
+            'product_is_active': product_is_active,
             'last_message': last_message,
             'form': form,
             'other_user': other_user,

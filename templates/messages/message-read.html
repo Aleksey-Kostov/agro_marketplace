@@ -4,26 +4,16 @@
 
 {% block content %}
 
-<main class="container my-2">
-    <div class="mailbox-container">
+<main class="chat-page">
+    <div class="chat-shell">
 
-        <!-- =====================================================
-             CONVERSATION
-        ====================================================== -->
-
-        <div class="message-box conversation-box">
+        <div class="message-box conversation-box chat-conversation">
 
             <!-- =================================================
-                 TITLE + ACTIONS
-            ================================================== -->
-
-                        <!-- =================================================
-                 CHAT HEADER (Telegram-style)
+                 HEADER — Telegram style (guest colors)
             ================================================== -->
 
             <header class="chat-header">
-
-                <!-- Back + peer -->
                 <div class="chat-header-left">
 
                     <a href="{% url 'message-inbox' %}"
@@ -60,46 +50,54 @@
                             <div class="chat-header-title">
                                 {{ other_user.profile.username_in_marketplace|default:other_user.username }}
                             </div>
-
-                            {# Заглавие само ако идва от обява #}
-                            {% if root_message.title %}
-                            <div class="chat-header-subtitle chat-header-ad-title"
-                                 title="{{ root_message.title }}">
-                                {{ root_message.title|truncatechars:42 }}
-                            </div>
-                            {% else %}
-                            <div class="chat-header-subtitle">
-                                {# placeholder за online / last seen по-късно #}
+                            <div class="chat-header-subtitle"
+                                 id="chat-header-presence">
+                                {# last seen / online — след presence tags #}
                                 &nbsp;
                             </div>
-                            {% endif %}
                         </div>
                     </a>
                     {% endif %}
                 </div>
 
-                <!-- Actions: call placeholders + menu -->
                 <div class="chat-header-right">
 
                     {% if not is_system and other_user %}
-                    <button type="button"
-                            class="chat-header-btn"
-                            disabled
-                            title="Voice call — soon"
-                            aria-label="Voice call">
-                        <i class="fas fa-phone"></i>
-                    </button>
-
-                    <button type="button"
-                            class="chat-header-btn"
-                            disabled
-                            title="Video call — soon"
-                            aria-label="Video call">
-                        <i class="fas fa-video"></i>
-                    </button>
+                    {# Един бутон → избор Voice / Video (логика по-късно) #}
+                    <div class="dropdown chat-header-call">
+                        <button type="button"
+                                class="chat-header-btn"
+                                id="chatCallMenuBtn"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                title="Call"
+                                aria-label="Call options">
+                            <i class="fas fa-phone"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm"
+                            aria-labelledby="chatCallMenuBtn">
+                            <li>
+                                <button type="button"
+                                        class="dropdown-item chat-call-option"
+                                        data-call-type="voice"
+                                        disabled>
+                                    <i class="fas fa-phone me-2"></i>
+                                    Voice call
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                        class="dropdown-item chat-call-option"
+                                        data-call-type="video"
+                                        disabled>
+                                    <i class="fas fa-video me-2"></i>
+                                    Video call
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                     {% endif %}
 
-                    <!-- ⋮ menu: Block / Report / Delete -->
                     <div class="dropdown chat-header-menu">
                         <button type="button"
                                 class="chat-header-btn"
@@ -168,13 +166,61 @@
             </header>
 
 
-            <!-- =====================================================
-                 CHAT WINDOW WRAPPER
-            ====================================================== -->
+            <!-- =================================================
+                 AD STRIP — само ако разговорът е по обява
+            ================================================== -->
+
+            {% if product %}
+            <a href="{% if root_message.product_type == 'seller' %}{% url 'seller-details' product.pk %}{% elif root_message.product_type == 'buyer' %}{% url 'buyer-details' product.pk %}{% else %}#{% endif %}"
+               class="chat-ad-strip {% if not product_is_active %}is-inactive{% endif %}"
+               title="{{ product.title }}">
+
+                <div class="chat-ad-thumb">
+                    {% if product.photo_1 %}
+                    <img src="{{ product.photo_1.url }}"
+                         alt=""
+                         loading="lazy">
+                    {% else %}
+                    <img src="{% static 'images/profile_picture.webp' %}"
+                         alt=""
+                         loading="lazy">
+                    {% endif %}
+                </div>
+
+                <div class="chat-ad-body">
+                    <div class="chat-ad-title">
+                        {{ product.title|truncatechars:48 }}
+                    </div>
+                    <div class="chat-ad-meta">
+                        <span class="chat-ad-price">
+                            {% if product.price_per_unit %}
+                                {{ product.price_per_unit }} {{ product.currency }}/{{ product.unit_of_measure }}
+                            {% elif product.price_all_quantity %}
+                                {{ product.price_all_quantity }} {{ product.currency }}
+                            {% else %}
+                                {{ product.get_price_type_display|default:"Negotiable" }}
+                            {% endif %}
+                        </span>
+                        <span class="chat-ad-status">
+                            {% if product_is_active %}
+                                Active
+                            {% else %}
+                                Expired
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <i class="fas fa-chevron-right chat-ad-chevron" aria-hidden="true"></i>
+            </a>
+            {% endif %}
+
+
+            <!-- =================================================
+                 MESSAGES
+            ================================================== -->
 
             <div class="conversation-scroll-wrap">
-
-                <!-- SCROLLING MESSAGE AREA -->
 
                 <div class="conversation-scroll"
                      id="chat-window"
@@ -195,33 +241,18 @@
                     </div>
                 </div>
 
-
-                <!-- FLOATING DATE -->
-
-                <div class="chat-floating-date"
-                     aria-hidden="true">
-                </div>
-
-
-                <!-- TYPING INDICATOR -->
+                <div class="chat-floating-date" aria-hidden="true"></div>
 
                 <div id="chat-typing-indicator"
                      class="chat-typing-indicator d-none"
                      aria-live="polite"
                      aria-atomic="true">
                     <span class="chat-typing-name"></span>
-                    <span class="chat-typing-text">
-                        is typing
-                    </span>
-                    <span class="chat-typing-dots"
-                          aria-hidden="true">
-                        <span>.</span>
-                        <span>.</span>
-                        <span>.</span>
+                    <span class="chat-typing-text">is typing</span>
+                    <span class="chat-typing-dots" aria-hidden="true">
+                        <span>.</span><span>.</span><span>.</span>
                     </span>
                 </div>
-
-                <!-- SCROLL BUTTONS -->
 
                 <div class="conversation-scroll-buttons">
                     <button type="button"
@@ -238,36 +269,29 @@
                             aria-label="Go to latest message">
                         <i class="fas fa-chevron-down"></i>
                         <span id="unread-message-count"
-                              class="unread-message-count d-none">
-                            0
-                        </span>
+                              class="unread-message-count d-none">0</span>
                     </button>
                 </div>
             </div>
 
-            <!-- =====================================================
+
+            <!-- =================================================
                  COMPOSER
-            ====================================================== -->
+            ================================================== -->
 
             {% if is_system %}
-            <div class="alert alert-info mt-4 mb-0 text-center">
+            <div class="alert alert-info mb-0 text-center chat-system-note">
                 <i class="fas fa-info-circle me-1"></i>
-                This is a system message.
-                Replies are disabled.
+                This is a system message. Replies are disabled.
             </div>
             {% elif is_blocked or is_blocked_by_other %}
-            <div class="reply-form mt-4 p-3 border rounded bg-light text-center">
+            <div class="reply-form chat-composer-blocked">
                 <div class="alert alert-warning mb-0">
                     <i class="fas fa-ban me-2"></i>
                     {% if is_blocked_by_other %}
-                    <strong>
-                        You cannot send messages to this user because you have been blocked.
-                    </strong>
+                    <strong>You cannot send messages to this user because you have been blocked.</strong>
                     {% else %}
-                    <strong>
-                        You cannot send messages because you blocked this user.
-                        Unblock first.
-                    </strong>
+                    <strong>You cannot send messages because you blocked this user. Unblock first.</strong>
                     {% endif %}
                 </div>
             </div>
@@ -280,153 +304,69 @@
                       data-send-url="{% url 'read-message' root_message.pk %}"
                       autocomplete="off">
                     {% csrf_token %}
-                    <input type="hidden"
-                           name="product_type"
-                           value="{{ root_message.product_type|default:'' }}">
-                    <input type="hidden"
-                           name="product_id"
-                           value="{{ root_message.product_id|default:'' }}">
-                    <input type="hidden"
-                           name="reply_to"
-                           id="reply-to"
-                           value="">
-                    <input type="hidden"
-                           name="editing_message_id"
-                           id="editing-message-id"
-                           value="">
+                    <input type="hidden" name="product_type" value="{{ root_message.product_type|default:'' }}">
+                    <input type="hidden" name="product_id" value="{{ root_message.product_id|default:'' }}">
+                    <input type="hidden" name="reply_to" id="reply-to" value="">
+                    <input type="hidden" name="editing_message_id" id="editing-message-id" value="">
 
-                    <!-- =================================================
-                         EDIT BAR
-                    ================================================== -->
-
-                    <div id="editing-message-bar"
-                         class="editing-message-bar d-none">
+                    <div id="editing-message-bar" class="editing-message-bar d-none">
                         <div class="editing-message-info">
                             <i class="fas fa-edit"></i>
                             <div>
-                                <strong>
-                                    Editing message
-                                </strong>
-                                <small id="editing-message-preview">
-                                    Edit your message
-                                </small>
+                                <strong>Editing message</strong>
+                                <small id="editing-message-preview">Edit your message</small>
                             </div>
                         </div>
-                        <button type="button"
-                                id="cancel-edit-btn"
-                                class="editing-cancel-btn"
-                                title="Cancel editing"
-                                aria-label="Cancel editing">
+                        <button type="button" id="cancel-edit-btn" class="editing-cancel-btn"
+                                title="Cancel editing" aria-label="Cancel editing">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
 
-
-                    <!-- =================================================
-                         REPLY BAR
-                    ================================================== -->
-
-                    <div id="replying-message-bar"
-                         class="replying-message-bar d-none">
+                    <div id="replying-message-bar" class="replying-message-bar d-none">
                         <div class="replying-message-info">
                             <i class="fas fa-reply"></i>
                             <div>
-                                <strong id="replying-message-name">
-                                    Replying
-                                </strong>
-                                <small id="replying-message-preview">
-                                    Reply
-                                </small>
+                                <strong id="replying-message-name">Replying</strong>
+                                <small id="replying-message-preview">Reply</small>
                             </div>
                         </div>
-                        <button type="button"
-                                id="cancel-reply-btn"
-                                class="replying-cancel-btn"
-                                title="Cancel reply"
-                                aria-label="Cancel reply">
+                        <button type="button" id="cancel-reply-btn" class="replying-cancel-btn"
+                                title="Cancel reply" aria-label="Cancel reply">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
 
-
-                    <!-- =================================================
-                         CHAT COMPOSER
-                    ================================================== -->
-
-                    <div class="chat-composer"
-                         id="chat-composer">
-
-                        <!-- =================================================
-                             MAIN COMPOSER
-                        ================================================== -->
-
+                    {# --- composer block: остави същия chat-composer както досега --- #}
+                    <div class="chat-composer" id="chat-composer">
                         <div class="chat-composer-main">
-
-                            <!-- =================================================
-                                 MESSAGE INPUT
-                            ================================================== -->
-
                             <div class="chat-composer-input-wrap">
                                 {{ form.body }}
-
-                                <!-- DROP OVERLAY -->
-
-                                <div id="chat-drop-overlay"
-                                     class="chat-drop-overlay"
-                                     aria-hidden="true">
+                                <div id="chat-drop-overlay" class="chat-drop-overlay" aria-hidden="true">
                                     <div class="chat-drop-overlay-content">
-                                        <div class="chat-drop-icon">
-                                            <i class="fas fa-cloud-upload-alt"></i>
-                                        </div>
-                                        <strong>
-                                            Drop image or video here
-                                        </strong>
-                                        <small>
-                                            Release to attach
-                                        </small>
+                                        <div class="chat-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                                        <strong>Drop image or video here</strong>
+                                        <small>Release to attach</small>
                                     </div>
                                 </div>
                             </div>
 
-
-                            <!-- =================================================
-                                 COMPOSER ACTIONS
-                            ================================================== -->
-
                             <div class="chat-composer-actions">
-
-                                <!-- LEFT — EMOJI (no Bootstrap dropdown) -->
-
                                 <div class="chat-composer-actions-left">
-                                    <button type="button"
-                                            id="emoji-toggle-btn"
+                                    <button type="button" id="emoji-toggle-btn"
                                             class="btn btn-outline-secondary btn-sm chat-composer-action-btn"
-                                            aria-expanded="false"
-                                            aria-controls="emoji-picker-menu"
-                                            title="Emoji"
-                                            aria-label="Emoji">
+                                            aria-expanded="false" aria-controls="emoji-picker-menu"
+                                            title="Emoji" aria-label="Emoji">
                                         <i class="far fa-face-smile"></i>
                                     </button>
                                 </div>
-
-
-                                <!-- RIGHT — ATTACHMENT + SEND -->
-
                                 <div class="chat-composer-actions-right">
-
-                                    <button type="button"
-                                            id="attachment-toggle-btn"
+                                    <button type="button" id="attachment-toggle-btn"
                                             class="btn btn-outline-secondary btn-sm chat-composer-action-btn"
-                                            aria-expanded="false"
-                                            aria-controls="attachment-picker-menu"
-                                            title="Attachments"
-                                            aria-label="Attachments">
+                                            aria-expanded="false" aria-controls="attachment-picker-menu"
+                                            title="Attachments" aria-label="Attachments">
                                         <i class="fas fa-paperclip"></i>
                                     </button>
-
-
-                                    <!-- SEND / VOICE -->
-
                                     <button type="submit"
                                             class="btn btn-primary chat-composer-submit-btn"
                                             id="message-submit-btn"
@@ -434,155 +374,57 @@
                                             data-voice-label="Voice message"
                                             title="Voice message"
                                             aria-label="Voice message">
-                                        <i class="fas fa-microphone"
-                                           id="message-submit-icon"></i>
-                                        <span id="message-submit-text"
-                                              class="d-none">
-                                            Send
-                                        </span>
+                                        <i class="fas fa-microphone" id="message-submit-icon"></i>
+                                        <span id="message-submit-text" class="d-none">Send</span>
                                     </button>
                                 </div>
                             </div>
 
-
-                            <!-- =================================================
-                                 MENUS — direct children of main
-                                 Always positioned above the entire composer
-                            ================================================== -->
-
-                            <div id="emoji-picker-menu"
-                                 class="dropdown-menu p-2 emoji-picker chat-composer-menu"
-                                 role="menu"
-                                 hidden>
+                            <div id="emoji-picker-menu" class="dropdown-menu p-2 emoji-picker chat-composer-menu" role="menu" hidden>
                                 <div class="emoji-grid"></div>
                             </div>
-
-                            <div id="attachment-picker-menu"
-                                 class="dropdown-menu attachment-picker chat-composer-menu"
-                                 role="menu"
-                                 hidden>
-                                <button type="button"
-                                        class="dropdown-item attachment-option"
-                                        id="attach-image-btn">
-                                    <i class="fas fa-image me-2"></i>
-                                    Image
+                            <div id="attachment-picker-menu" class="dropdown-menu attachment-picker chat-composer-menu" role="menu" hidden>
+                                <button type="button" class="dropdown-item attachment-option" id="attach-image-btn">
+                                    <i class="fas fa-image me-2"></i> Image
                                 </button>
-                                <button type="button"
-                                        class="dropdown-item attachment-option"
-                                        id="attach-video-btn">
-                                    <i class="fas fa-video me-2"></i>
-                                    Video
+                                <button type="button" class="dropdown-item attachment-option" id="attach-video-btn">
+                                    <i class="fas fa-video me-2"></i> Video
                                 </button>
-                                <button type="button"
-                                        class="dropdown-item attachment-option"
-                                        id="attach-file-btn">
-                                    <i class="fas fa-file-alt me-2"></i>
-                                    File
+                                <button type="button" class="dropdown-item attachment-option" id="attach-file-btn">
+                                    <i class="fas fa-file-alt me-2"></i> File
                                 </button>
                             </div>
-
-                        </div><!-- end chat-composer-main -->
-
-
-                        <!-- =================================================
-                             ATTACHMENT PREVIEWS
-                        ================================================== -->
+                        </div>
 
                         <div class="chat-composer-previews">
-                            <div class="chat-attachment-preview"
-                                 id="chat-attachment-preview">
+                            <div class="chat-attachment-preview" id="chat-attachment-preview">
                                 <div class="chat-attachment-preview-content">
-
-
-                                    <!-- IMAGE -->
-
-                                    <div id="image-preview-wrap"
-                                         class="d-none">
-                                        <img id="image-preview"
-                                             src=""
-                                             alt="Preview"
-                                             class="attach-preview">
+                                    <div id="image-preview-wrap" class="d-none">
+                                        <img id="image-preview" src="" alt="Preview" class="attach-preview">
                                     </div>
-
-
-                                    <!-- VIDEO -->
-
-                                    <div id="video-preview-wrap"
-                                         class="d-none">
-                                        <video id="video-preview"
-                                               class="attach-preview"
-                                               controls>
-                                        </video>
+                                    <div id="video-preview-wrap" class="d-none">
+                                        <video id="video-preview" class="attach-preview" controls></video>
                                     </div>
-
-
-                                    <!-- FILE -->
-
-                                    <div id="file-preview-wrap"
-                                         class="d-none">
-                                        <div id="file-preview"
-                                             class="file-preview">
-                                        </div>
+                                    <div id="file-preview-wrap" class="d-none">
+                                        <div id="file-preview" class="file-preview"></div>
                                     </div>
                                 </div>
-
-
-                                <!-- REMOVE MEDIA -->
-
-                                <button type="button"
-                                        id="remove-media-btn"
+                                <button type="button" id="remove-media-btn"
                                         class="btn btn-outline-danger btn-sm d-none"
-                                        title="Remove attachment"
-                                        aria-label="Remove attachment">
+                                        title="Remove attachment" aria-label="Remove attachment">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
-
-
-                            <!-- =================================================
-                                 FILE INPUTS
-                            ================================================== -->
-
-                            <input type="file"
-                                   name="image"
-                                   id="id_image"
-                                   accept="image/*"
-                                   hidden>
-                            <input type="file"
-                                   name="video"
-                                   id="id_video"
-                                   accept="video/*"
-                                   hidden>
-                            <input type="file"
-                                   name="file"
-                                   id="id_file"
-                                   hidden>
-
-
-                            <!-- =================================================
-                                 UPLOAD PROGRESS
-                            ================================================== -->
-
-                            <div id="upload-progress-wrap"
-                                 class="upload-progress-wrap d-none">
+                            <input type="file" name="image" id="id_image" accept="image/*" hidden>
+                            <input type="file" name="video" id="id_video" accept="video/*" hidden>
+                            <input type="file" name="file" id="id_file" hidden>
+                            <div id="upload-progress-wrap" class="upload-progress-wrap d-none">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <small id="upload-progress-text">
-                                        Uploading...
-                                    </small>
-                                    <small id="upload-progress-percent">
-                                        0%
-                                    </small>
+                                    <small id="upload-progress-text">Uploading...</small>
+                                    <small id="upload-progress-percent">0%</small>
                                 </div>
-                                <div class="progress"
-                                     role="progressbar"
-                                     aria-label="Upload progress"
-                                     aria-valuemin="0"
-                                     aria-valuemax="100"
-                                     aria-valuenow="0">
-                                    <div id="upload-progress-bar"
-                                         class="progress-bar"
-                                         style="width: 0%;">
-                                    </div>
+                                <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                                    <div id="upload-progress-bar" class="progress-bar" style="width: 0%;"></div>
                                 </div>
                             </div>
                         </div>
@@ -590,6 +432,7 @@
                 </form>
             </div>
             {% endif %}
+
         </div>
     </div>
 </main>
