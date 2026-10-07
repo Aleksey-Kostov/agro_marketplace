@@ -1,6 +1,7 @@
 {% extends 'common/base.html' %}
 {% load static %}
 {% load message_tags_inbox %}
+{% load presence_tags %}
 
 {% block content %}
 
@@ -10,9 +11,8 @@
         <div class="message-box conversation-box chat-conversation">
 
             <!-- =================================================
-                 HEADER — Telegram style (guest colors)
+                 HEADER — Telegram (guest colors)
             ================================================== -->
-
             <header class="chat-header">
                 <div class="chat-header-left">
 
@@ -28,7 +28,7 @@
                        class="chat-header-peer"
                        title="View profile">
 
-                        <div class="chat-header-avatar-wrap">
+                        <div class="chat-header-avatar-wrap {% if other_user.profile|is_online %}is-online{% endif %}">
                             {% if other_user.profile.profile_photo %}
                             <img src="{{ other_user.profile.profile_photo.url }}"
                                  class="chat-header-avatar"
@@ -50,10 +50,9 @@
                             <div class="chat-header-title">
                                 {{ other_user.profile.username_in_marketplace|default:other_user.username }}
                             </div>
-                            <div class="chat-header-subtitle"
+                            <div class="chat-header-subtitle {% if other_user.profile|is_online %}is-online{% endif %}"
                                  id="chat-header-presence">
-                                {# last seen / online — след presence tags #}
-                                &nbsp;
+                                {{ other_user.profile|last_seen_label }}
                             </div>
                         </div>
                     </a>
@@ -63,7 +62,6 @@
                 <div class="chat-header-right">
 
                     {% if not is_system and other_user %}
-                    {# Един бутон → избор Voice / Video (логика по-късно) #}
                     <div class="dropdown chat-header-call">
                         <button type="button"
                                 class="chat-header-btn"
@@ -167,23 +165,18 @@
 
 
             <!-- =================================================
-                 AD STRIP — само ако разговорът е по обява
+                 AD STRIP — само при обява
             ================================================== -->
-
             {% if product %}
-            <a href="{% if root_message.product_type == 'seller' %}{% url 'seller-details' product.pk %}{% elif root_message.product_type == 'buyer' %}{% url 'buyer-details' product.pk %}{% else %}#{% endif %}"
+            <a href="{% if root_message.product_type == 'seller' %}{% url 'card_info_sell' product.pk %}{% elif root_message.product_type == 'buyer' %}{% url 'card-info-buy' product.pk %}{% else %}#{% endif %}"
                class="chat-ad-strip {% if not product_is_active %}is-inactive{% endif %}"
                title="{{ product.title }}">
 
                 <div class="chat-ad-thumb">
                     {% if product.photo_1 %}
-                    <img src="{{ product.photo_1.url }}"
-                         alt=""
-                         loading="lazy">
+                    <img src="{{ product.photo_1.url }}" alt="" loading="lazy">
                     {% else %}
-                    <img src="{% static 'images/profile_picture.webp' %}"
-                         alt=""
-                         loading="lazy">
+                    <img src="{% static 'images/profile_picture.webp' %}" alt="" loading="lazy">
                     {% endif %}
                 </div>
 
@@ -202,11 +195,7 @@
                             {% endif %}
                         </span>
                         <span class="chat-ad-status">
-                            {% if product_is_active %}
-                                Active
-                            {% else %}
-                                Expired
-                            {% endif %}
+                            {% if product_is_active %}Active{% else %}Expired{% endif %}
                         </span>
                     </div>
                 </div>
@@ -219,7 +208,6 @@
             <!-- =================================================
                  MESSAGES
             ================================================== -->
-
             <div class="conversation-scroll-wrap">
 
                 <div class="conversation-scroll"
@@ -228,13 +216,11 @@
                      data-current-user-id="{{ request.user.pk }}"
                      data-message-fragment-url="{% url 'message-fragment' 0 %}"
                      data-default-avatar="{% static 'images/profile_picture.webp' %}">
-                    <div class="conversation"
-                         id="chat-messages">
+                    <div class="conversation" id="chat-messages">
                         {% for item in conversation_messages %}
                         {% include 'messages/_message.html' with item=item %}
                         {% empty %}
-                        <div class="alert alert-info"
-                             id="no-messages-placeholder">
+                        <div class="alert alert-info" id="no-messages-placeholder">
                             No messages in this conversation.
                         </div>
                         {% endfor %}
@@ -268,8 +254,7 @@
                             title="Latest message"
                             aria-label="Go to latest message">
                         <i class="fas fa-chevron-down"></i>
-                        <span id="unread-message-count"
-                              class="unread-message-count d-none">0</span>
+                        <span id="unread-message-count" class="unread-message-count d-none">0</span>
                     </button>
                 </div>
             </div>
@@ -278,7 +263,6 @@
             <!-- =================================================
                  COMPOSER
             ================================================== -->
-
             {% if is_system %}
             <div class="alert alert-info mb-0 text-center chat-system-note">
                 <i class="fas fa-info-circle me-1"></i>
@@ -337,7 +321,6 @@
                         </button>
                     </div>
 
-                    {# --- composer block: остави същия chat-composer както досега --- #}
                     <div class="chat-composer" id="chat-composer">
                         <div class="chat-composer-main">
                             <div class="chat-composer-input-wrap">
@@ -380,10 +363,14 @@
                                 </div>
                             </div>
 
-                            <div id="emoji-picker-menu" class="dropdown-menu p-2 emoji-picker chat-composer-menu" role="menu" hidden>
+                            <div id="emoji-picker-menu"
+                                 class="dropdown-menu p-2 emoji-picker chat-composer-menu"
+                                 role="menu" hidden>
                                 <div class="emoji-grid"></div>
                             </div>
-                            <div id="attachment-picker-menu" class="dropdown-menu attachment-picker chat-composer-menu" role="menu" hidden>
+                            <div id="attachment-picker-menu"
+                                 class="dropdown-menu attachment-picker chat-composer-menu"
+                                 role="menu" hidden>
                                 <button type="button" class="dropdown-item attachment-option" id="attach-image-btn">
                                     <i class="fas fa-image me-2"></i> Image
                                 </button>
