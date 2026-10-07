@@ -1,7 +1,7 @@
 /**
- * Chat wallpaper — ден/нощ (+ сезон)
- * Само на mobile (≤768px) + body.chat-app-page
- * Desktop → нормален site фон (DynamicBackground)
+ * Chat wallpaper — ден/нощ
+ * Mobile: body (full screen)
+ * Desktop: само .chat-conversation (прозорецът)
  */
 (function () {
     'use strict';
@@ -29,80 +29,87 @@
         }
     };
 
-    const DAY_START_HOUR = 6;
-    const DAY_END_HOUR = 20;
+    const DAY_START = 6;
+    const DAY_END = 20;
 
-    function getSeason(date) {
-        const month = date.getMonth() + 1;
-        if (month >= 3 && month <= 5) return 'spring';
-        if (month >= 6 && month <= 8) return 'summer';
-        if (month >= 9 && month <= 11) return 'autumn';
+    function getSeason(d) {
+        const m = d.getMonth() + 1;
+        if (m >= 3 && m <= 5) return 'spring';
+        if (m >= 6 && m <= 8) return 'summer';
+        if (m >= 9 && m <= 11) return 'autumn';
         return 'winter';
     }
 
-    function isDaytime(date) {
-        const hour = date.getHours();
-        return hour >= DAY_START_HOUR && hour < DAY_END_HOUR;
+    function isDay(d) {
+        const h = d.getHours();
+        return h >= DAY_START && h < DAY_END;
     }
 
-    function pickUrl(date) {
-        const mode = isDaytime(date) ? 'day' : 'night';
-        const season = getSeason(date);
+    function pickUrl(d) {
+        const mode = isDay(d) ? 'day' : 'night';
         const pack = WALLPAPERS[mode];
-        return pack[season] || pack._fallback;
+        return pack[getSeason(d)] || pack._fallback;
     }
 
-    function clearChatWallpaper() {
-        const body = document.body;
-        body.style.backgroundImage = '';
-        body.style.backgroundRepeat = '';
-        body.style.backgroundPosition = '';
-        body.style.backgroundSize = '';
-        body.style.backgroundAttachment = '';
-        delete body.dataset.chatWallpaper;
-        delete body.dataset.chatWallpaperMode;
-        delete body.dataset.chatWallpaperSeason;
+    function clearBodyChatBg() {
+        const b = document.body;
+        b.style.backgroundImage = '';
+        b.style.backgroundRepeat = '';
+        b.style.backgroundPosition = '';
+        b.style.backgroundSize = '';
+        b.style.backgroundAttachment = '';
+        delete b.dataset.chatWallpaper;
+        delete b.dataset.chatWallpaperMode;
+    }
+
+    function applyTo(el, url, mode) {
+        if (!el) return;
+        el.style.backgroundImage = 'url("' + url + '")';
+        el.style.backgroundSize = 'cover';
+        el.style.backgroundPosition = 'center';
+        el.style.backgroundRepeat = 'no-repeat';
+        el.dataset.chatWallpaperMode = mode;
     }
 
     function setWallpaper(url) {
-        const body = document.body;
         const img = new Image();
         img.onload = function () {
-            if (!MOBILE_MQ.matches) return;
-            body.style.backgroundImage = 'url("' + url + '")';
-            body.style.backgroundRepeat = 'no-repeat';
-            body.style.backgroundPosition = 'center center';
-            body.style.backgroundSize = 'cover';
-            body.style.backgroundAttachment = 'fixed';
-            body.style.transition = 'background-image 0.8s ease';
-            body.dataset.chatWallpaper = url;
-            body.dataset.chatWallpaperMode = isDaytime(new Date()) ? 'day' : 'night';
-            body.dataset.chatWallpaperSeason = getSeason(new Date());
+            const mode = isDay(new Date()) ? 'day' : 'night';
+            const panel = document.querySelector('.chat-conversation');
+
+            if (MOBILE_MQ.matches) {
+                // mobile: body full screen
+                applyTo(document.body, url, mode);
+                document.body.style.backgroundAttachment = 'scroll';
+                if (panel) {
+                    panel.style.backgroundImage = '';
+                }
+            } else {
+                // desktop: само прозореца; body = random от DynamicBackground
+                clearBodyChatBg();
+                applyTo(panel, url, mode);
+            }
         };
         img.onerror = function () {
-            const mode = isDaytime(new Date()) ? 'day' : 'night';
-            const fallback = WALLPAPERS[mode]._fallback;
-            if (url !== fallback) setWallpaper(fallback);
+            const mode = isDay(new Date()) ? 'day' : 'night';
+            const fb = WALLPAPERS[mode]._fallback;
+            if (url !== fb) setWallpaper(fb);
         };
         img.src = url;
     }
 
-    function applyChatWallpaper() {
-        if (!MOBILE_MQ.matches) {
-            clearChatWallpaper();
-            return;
-        }
+    function apply() {
         setWallpaper(pickUrl(new Date()));
     }
 
-    applyChatWallpaper();
-    setInterval(applyChatWallpaper, 5 * 60 * 1000);
+    apply();
+    setInterval(apply, 5 * 60 * 1000);
 
-    if (typeof MOBILE_MQ.addEventListener === 'function') {
-        MOBILE_MQ.addEventListener('change', applyChatWallpaper);
-    } else if (typeof MOBILE_MQ.addListener === 'function') {
-        MOBILE_MQ.addListener(applyChatWallpaper);
+    if (MOBILE_MQ.addEventListener) {
+        MOBILE_MQ.addEventListener('change', apply);
+    } else if (MOBILE_MQ.addListener) {
+        MOBILE_MQ.addListener(apply);
     }
 
-    window.__agroRefreshChatWallpaper = applyChatWallpaper;
+    window.__agroRefreshChatWallpaper = apply;
 })();
