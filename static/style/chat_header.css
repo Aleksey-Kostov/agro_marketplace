@@ -548,11 +548,15 @@ body.chat-app-page .chat-system-note {
 
 @media (min-width: 769px) {
 
-    /* body = колона: nav/header | chat | footer */
     body.chat-app-page {
         display: flex !important;
         flex-direction: column !important;
         min-height: 100vh;
+        /* НЕ заключвай целия body на 100vh — footer може да е под fold */
+        height: auto;
+        max-height: none;
+        overflow-x: hidden;
+        overflow-y: auto;
     }
 
     body.chat-app-page > nav,
@@ -562,80 +566,64 @@ body.chat-app-page .chat-system-note {
         flex: 0 0 auto;
     }
 
-    /* main заема мястото МЕЖДУ header и footer */
     body.chat-app-page main.chat-page,
     body.chat-app-page .chat-page {
-        position: relative;
-        flex: 1 1 auto;
+        flex: 0 0 auto;              /* не се сплесква */
         display: flex;
         flex-direction: column;
         align-items: center;
         width: 100%;
         min-height: 0;
         margin: 0;
-        padding: 12px 16px;
+        padding: 16px 16px 24px;
+        overflow: visible;
         background: transparent !important;
         box-sizing: border-box;
     }
 
-    body.chat-app-page .chat-shell.chat-window {
-        min-width: 320px;
-        min-height: 360px;
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        resize: none;
-        overflow: visible;
-    }
-
-    /* DOCKED — пълни main, между header и footer */
+    /* DOCKED — фиксирана комфортна височина + вътрешен скрол */
     body.chat-app-page .chat-shell.chat-window.is-docked {
         position: relative !important;
         left: auto !important;
         top: auto !important;
         transform: none !important;
-        flex: 1 1 auto;
+        flex: none;
         align-self: center;
         width: min(720px, 92vw);
-        height: 100% !important;
-        max-height: 100%;
-        min-height: 360px;
+        height: min(720px, calc(100vh - 220px)) !important;
+        min-height: 520px !important;   /* не става „сплескано“ */
+        max-height: calc(100vh - 180px) !important;
         margin: 0 auto;
+        overflow: hidden;
         z-index: 5;
     }
 
-    /* FLOATING — след drag */
     body.chat-app-page .chat-shell.chat-window.is-floating {
         position: fixed !important;
         z-index: 900;
         margin: 0;
         transform: none;
         flex: none;
+        overflow: visible;
         max-width: 100vw;
         max-height: 100vh;
     }
 
-    body.chat-app-page .chat-shell.chat-window.is-dragging,
-    body.chat-app-page .chat-shell.chat-window.is-resizing {
-        user-select: none;
-        transition: none;
-    }
-
     body.chat-app-page .chat-conversation.message-box {
-        display: flex;
-        flex-direction: column;
+        display: flex !important;
+        flex-direction: column !important;
         width: 100%;
         height: 100% !important;
-        min-height: 0 !important; /* override calc(100vh - 140px) */
+        min-height: 0 !important;
+        max-height: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
+        overflow: hidden !important;
         border-radius: 16px;
         border: 1px solid rgba(0, 0, 0, 0.12);
         box-shadow:
             0 12px 40px rgba(0, 0, 0, 0.18),
             0 2px 8px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
         background-color: transparent !important;
         background-size: cover !important;
         background-position: center center !important;
@@ -647,34 +635,32 @@ body.chat-app-page .chat-system-note {
         border-radius: 16px 16px 0 0;
         background: rgba(255, 255, 255, 0.96);
         cursor: move;
-        touch-action: none;
-    }
-
-    body.chat-app-page .chat-header a,
-    body.chat-app-page .chat-header button {
-        cursor: pointer;
-        touch-action: manipulation;
     }
 
     body.chat-app-page .chat-ad-strip {
         flex: 0 0 auto;
         margin: 8px 10px 0;
-        background: rgba(255, 255, 255, 0.94);
     }
 
     body.chat-app-page .conversation-scroll-wrap {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow: hidden;
+        flex: 1 1 0 !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        display: flex;
+        flex-direction: column;
         background: transparent !important;
     }
 
-    body.chat-app-page .conversation-scroll {
-        height: 100%;
-        max-height: none !important;
+    body.chat-app-page .conversation-scroll,
+    body.chat-app-page #chat-window {
+        flex: 1 1 auto !important;
+        height: 100% !important;
         min-height: 0 !important;
-        overflow-y: auto;
+        max-height: none !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
         background: transparent !important;
+        padding: 8px 6px 12px;
     }
 
     body.chat-app-page .reply-form,
@@ -686,59 +672,8 @@ body.chat-app-page .chat-system-note {
         border-top: 1px solid rgba(0, 0, 0, 0.08);
         border-radius: 0 0 16px 16px;
     }
-
-    .chat-window-handle {
-        position: absolute;
-        z-index: 20;
-        background: transparent;
-    }
-
-    .chat-window-handle[data-edge="n"] {
-        top: -3px; left: 8px; right: 8px; height: 6px;
-        cursor: ns-resize;
-    }
-    .chat-window-handle[data-edge="s"] {
-        bottom: -3px; left: 8px; right: 8px; height: 6px;
-        cursor: ns-resize;
-    }
-    .chat-window-handle[data-edge="e"] {
-        top: 8px; right: -3px; bottom: 8px; width: 6px;
-        cursor: ew-resize;
-    }
-    .chat-window-handle[data-edge="w"] {
-        top: 8px; left: -3px; bottom: 8px; width: 6px;
-        cursor: ew-resize;
-    }
-    .chat-window-handle[data-edge="ne"] {
-        top: -4px; right: -4px; width: 14px; height: 14px;
-        cursor: nesw-resize;
-    }
-    .chat-window-handle[data-edge="nw"] {
-        top: -4px; left: -4px; width: 14px; height: 14px;
-        cursor: nwse-resize;
-    }
-    .chat-window-handle[data-edge="se"] {
-        bottom: -4px; right: -4px; width: 16px; height: 16px;
-        cursor: nwse-resize;
-    }
-    .chat-window-handle[data-edge="sw"] {
-        bottom: -4px; left: -4px; width: 14px; height: 14px;
-        cursor: nesw-resize;
-    }
-
-    .chat-window-handle[data-edge="se"]::after {
-        content: "";
-        position: absolute;
-        right: 3px;
-        bottom: 3px;
-        width: 10px;
-        height: 10px;
-        border-right: 2px solid rgba(0, 0, 0, 0.35);
-        border-bottom: 2px solid rgba(0, 0, 0, 0.35);
-        border-radius: 1px;
-        pointer-events: none;
-    }
 }
+
 
 body.chat-app-page {
     transition: background-image 0.8s ease;
