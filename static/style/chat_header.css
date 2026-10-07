@@ -361,7 +361,6 @@ body.chat-app-page .chat-system-note {
 
 @media (max-width: 768px) {
 
-    /* Скрий ВСИЧКО извън чата (nav, welcome, footer…) */
     body.chat-app-page > *:not(.chat-page) {
         display: none !important;
     }
@@ -370,7 +369,6 @@ body.chat-app-page .chat-system-note {
     body.chat-app-page {
         height: 100% !important;
         height: 100dvh !important;
-        max-height: 100dvh !important;
         margin: 0 !important;
         padding: 0 !important;
         overflow: hidden !important;
@@ -381,17 +379,14 @@ body.chat-app-page .chat-system-note {
         background-size: cover !important;
         background-position: center center !important;
         background-repeat: no-repeat !important;
-        background-attachment: scroll !important; /* fixed чупи iOS */
+        background-attachment: scroll !important;
     }
 
-    /* Целият chat = viewport */
+    /* колона: header | messages | composer */
     body.chat-app-page main.chat-page,
     body.chat-app-page .chat-page {
         position: fixed !important;
-        top: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        left: 0 !important;
+        inset: 0 !important;
         width: 100% !important;
         height: 100% !important;
         height: 100dvh !important;
@@ -399,28 +394,32 @@ body.chat-app-page .chat-system-note {
         min-height: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
-        display: block !important;
+        display: flex !important;
+        flex-direction: column !important;
         background: transparent !important;
         z-index: 1000 !important;
         box-sizing: border-box !important;
     }
 
     body.chat-app-page .chat-shell {
-        position: absolute !important;
-        inset: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 auto !important;
         width: 100% !important;
         height: 100% !important;
+        min-height: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
         max-width: none !important;
         background: transparent !important;
+        overflow: hidden !important;
     }
 
     body.chat-app-page .chat-conversation.message-box,
     body.chat-app-page .message-box.conversation-box {
-        position: absolute !important;
-        inset: 0 !important;
-        display: block !important;
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 auto !important;
         width: 100% !important;
         height: 100% !important;
         min-height: 0 !important;
@@ -428,19 +427,19 @@ body.chat-app-page .chat-system-note {
         padding: 0 !important;
         border: 0 !important;
         border-radius: 0 !important;
-        background: transparent !important;
+        background-color: transparent !important;
         box-shadow: none !important;
         overflow: hidden !important;
+        position: relative !important;
     }
 
-    /* ---- HEADER: залепен горе ---- */
+    /* HEADER */
     body.chat-app-page .chat-header {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        z-index: 40 !important;
-        flex: none !important;
+        position: relative !important;
+        flex: 0 0 auto !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
         min-height: 52px;
         padding: 6px 6px 8px 2px;
         margin: 0 !important;
@@ -449,6 +448,7 @@ body.chat-app-page .chat-system-note {
         border: none;
         border-bottom: 1px solid rgba(0, 0, 0, 0.06);
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        z-index: 5;
     }
 
     body.chat-app-page .chat-header-back,
@@ -465,81 +465,81 @@ body.chat-app-page .chat-system-note {
         flex-basis: 38px;
     }
 
-    body.chat-app-page .chat-header-title {
-        font-size: 15px;
-    }
+    body.chat-app-page .chat-header-title { font-size: 15px; }
+    body.chat-app-page .chat-header-subtitle { font-size: 12px; }
 
-    body.chat-app-page .chat-header-subtitle {
-        font-size: 12px;
-    }
-
-    /* Ad strip под header */
+    /* AD STRIP */
     body.chat-app-page .chat-ad-strip {
-        position: absolute !important;
-        top: 56px; /* ~header height */
-        left: 8px;
-        right: 8px;
-        z-index: 35;
-        margin: 0 !important;
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        flex: 0 0 auto !important;
+        margin: 6px 8px 0 !important;
         min-height: 48px;
         background: rgba(255, 255, 255, 0.94);
+        z-index: 4;
     }
 
-        /* MESSAGES —  */
+    /* SCRОLL — единствен скролващ слой = #chat-window */
     body.chat-app-page .conversation-scroll-wrap {
-        position: absolute !important;
-        top: 56px;
-        bottom: 72px;
-        left: 0 !important;
-        right: 0 !important;
-        z-index: 1;
+        position: relative !important;
+        top: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        flex: 1 1 0 !important;
         min-height: 0 !important;
-        flex: none !important;
+        overflow: hidden !important;
         background: transparent !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
 
+    body.chat-app-page .conversation-scroll,
+    body.chat-app-page #chat-window {
+        flex: 1 1 auto !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: none !important;
         overflow-x: hidden !important;
-        overflow-y: auto !important;
+        overflow-y: scroll !important; /* scroll, не auto — по-добре на Android */
         -webkit-overflow-scrolling: touch !important;
         overscroll-behavior-y: contain;
-        touch-action: pan-y;
-    }
-
-    body.chat-app-page .chat-conversation:has(.chat-ad-strip) .conversation-scroll-wrap {
-        top: 112px;
-    }
-
-    body.chat-app-page .conversation-scroll {
-        height: auto !important;
-        min-height: 100% !important;
-        max-height: none !important;
-        overflow: visible !important;
+        touch-action: pan-y !important;
         background: transparent !important;
-        padding: 8px 6px 16px;
-        touch-action: pan-y;
+        padding: 8px 6px 12px;
     }
 
     body.chat-app-page .conversation,
     body.chat-app-page #chat-messages {
         overflow: visible !important;
-        touch-action: pan-y;
+        min-height: min-content;
     }
 
-    /* ---- COMPOSER:  ---- */
+    /* COMPOSER */
     body.chat-app-page .reply-form,
     body.chat-app-page .chat-composer-blocked,
     body.chat-app-page .chat-system-note {
-        position: absolute !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        z-index: 50 !important;
-        flex: none !important;
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        flex: 0 0 auto !important;
         margin: 0 !important;
         padding: 6px 8px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
         background: rgba(255, 255, 255, 0.96) !important;
         border-top: 1px solid rgba(0, 0, 0, 0.06);
         border-radius: 16px 16px 0 0;
-        box-sizing: border-box;
+        z-index: 5;
+    }
+
+    /* бутоните за скрол да не блокират touch върху messages */
+    body.chat-app-page .conversation-scroll-buttons {
+        pointer-events: none;
+    }
+    body.chat-app-page .conversation-scroll-buttons .scroll-navigation-btn {
+        pointer-events: auto;
     }
 }
 
